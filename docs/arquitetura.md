@@ -142,7 +142,8 @@ Título **acima** (“Figura 1 – Título”), fonte **abaixo** (“Fonte: …�
 
 - Parentética: `[@shannon1948]`, `[@shannon1948, p. 379]`, `[@peirce1931; @saussure1916]`, `[-@shannon1948]`
   (omite autor). Narrativa: `@shannon1948 [p. 379]`.
-- pt-BR: ABNT NBR 10520:2023 (autor-data) e NBR 6023:2018 (lista “Referências”). en: APA 7.
+- pt-BR: ABNT NBR 10520:2023 (autor-data; sobrenomes em maiúsculas e minúsculas) e NBR 6023:2025
+  (3.ª ed. = 2018 + Emenda 1; lista “Referências”). en: APA 7.
 - A lista sai onde houver `::bibliography`; sem a diretiva, é acrescentada ao final. Chave inexistente entre
   colchetes = erro de compilação; `@palavra` fora de colchetes que não seja chave conhecida = texto.
 - Fonte única: `bibliography/*.bib` (BibTeX), analisado pelo núcleo (NFC na fronteira).

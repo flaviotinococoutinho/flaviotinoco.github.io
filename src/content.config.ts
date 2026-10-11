@@ -64,6 +64,25 @@ const work = z.object({
   abstract: z.string().min(1).optional(),
   /** Palavras-chave / keywords (NBR 6028: separated by semicolons when rendered). */
   keywords: z.array(z.string().min(1)).default([]),
+  /**
+   * Provenance (editorial ethics): who/what produced the text and whether the
+   * author has reviewed it. Shown to readers; unreviewed AI-generated text is labelled.
+   */
+  provenance: z
+    .object({
+      assistance: z.enum(['none', 'assisted', 'generated']),
+      reviewed: z.boolean(),
+      note: z.string().optional(),
+    })
+    .strict(),
+  /** Per-document overrides of the automatic lexicon marking (precedence: directive > frontmatter > dictionary). */
+  lexicon: z
+    .object({
+      ignore: z.array(z.string().min(1)).default([]),
+      foreign: z.array(z.object({ term: z.string().min(1), lang: z.string().min(2) }).strict()).default([]),
+    })
+    .strict()
+    .optional(),
   /** Document-local TeX macros (\\newcommand equivalents), isolated per file. */
   macros: z.record(z.string().regex(/^\\[A-Za-z]+$/), z.string()).optional(),
   draft: z.boolean().default(false),

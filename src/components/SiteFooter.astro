@@ -11,5 +11,5 @@ const t = useTranslations(common, Astro.props.locale);
 ---
 
 <footer class="site-footer ui">
-  <p>{t('footer.license')}</p>
+  <p>{t('footer.copyright', { year: new Date().getUTCFullYear() })}</p>
 </footer>
