@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import common from '../../core/i18n/catalogs/common.ts';
+import { href, localeStaticPaths, useTranslations } from '../../adapters/astro/i18n.ts';
+import type { Locale } from '../../core/domain/locale.ts';
+
+export const getStaticPaths = localeStaticPaths;
+const { locale } = Astro.props as { locale: Locale };
+const t = useTranslations(common, locale);
+---
+
+<BaseLayout
+  locale={locale}
+  title={t('site.name')}
+  description={t('site.description')}
+  alternates={{ 'pt-BR': href({ kind: 'home' }, 'pt-BR'), en: href({ kind: 'home' }, 'en') }}
+>
+  <div class="page-grid">
+    <h1>{t('site.name')}</h1>
+    <p>{t('site.tagline')}</p>
+  </div>
+</BaseLayout>

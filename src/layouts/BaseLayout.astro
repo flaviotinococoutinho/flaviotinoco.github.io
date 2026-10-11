@@ -1,0 +1,99 @@
+---
+/**
+ * Document shell shared by every page.
+ * Responsibilities: language & direction, metadata (canonical, hreflang
+ * alternates, Open Graph), fonts, pre-paint preferences, landmarks.
+ */
+import { Font } from 'astro:assets';
+import '../styles/global.css';
+import Glyphs from '../components/Glyphs.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { direction, ogLocale, type Locale } from '../core/domain/locale.ts';
+import common from '../core/i18n/catalogs/common.ts';
+import { useTranslations } from '../adapters/astro/i18n.ts';
+import { PREFS_INIT_HASH, PREFS_INIT_SCRIPT } from '../adapters/astro/prefs-init.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly title: string;
+  readonly description: string;
+  /** Absolute-path URLs of this page in every locale it exists in (hreflang). */
+  readonly alternates: Partial<Record<Locale, string>>;
+  /** Open Graph type. */
+  readonly ogType?: 'website' | 'article';
+  readonly noindex?: boolean;
+}
+
+const { locale, title, description, alternates, ogType = 'website', noindex = false } = Astro.props;
+const t = useTranslations(common, locale);
+const siteName = t('site.name');
+const fullTitle = title === siteName ? siteName : `${title} · ${siteName}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+Astro.csp.insertScriptHash(PREFS_INIT_HASH);
+---
+
+<!doctype html>
+<html lang={locale} dir={direction(locale)}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline set:html={PREFS_INIT_SCRIPT} />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {
+      Object.entries(alternates).map(([code, path]) => (
+        <link rel="alternate" hreflang={code} href={new URL(path, Astro.site)} />
+      ))
+    }
+    {alternates['pt-BR'] && <link rel="alternate" hreflang="x-default" href={new URL(alternates['pt-BR'], Astro.site)} />}
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f9f6f2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1c1915" media="(prefers-color-scheme: dark)" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={ogLocale[locale]} />
+    <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.svg`} type="image/svg+xml" />
+    <link rel="sitemap" href={`${import.meta.env.BASE_URL}sitemap-index.xml`} />
+    <Font cssVariable="--font-text" preload={[{ subset: 'latin', style: 'normal' }]} />
+    <Font cssVariable="--font-ui" />
+    <Font cssVariable="--font-mono" />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link ui" href="#content">{t('skip.toContent')}</a>
+    <Glyphs />
+    <SiteHeader locale={locale} alternates={alternates} />
+    <main id="content" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter locale={locale} />
+    <script>
+      import '../islands/registry.ts';
+    </script>
+  </body>
+</html>
+
+<style>
+  .skip-link {
+    position: absolute;
+    inset-inline-start: var(--space-0);
+    inset-block-start: -10rem;
+    z-index: 100;
+    padding: var(--space-n2) var(--space-n1);
+    background: var(--paper-raised);
+    color: var(--ink);
+    border: 1px solid var(--rule-strong);
+  }
+  .skip-link:focus {
+    inset-block-start: var(--space-0);
+  }
+  main:focus {
+    outline: none;
+  }
+</style>

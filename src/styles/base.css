@@ -1,0 +1,177 @@
+/*
+ * Base typography and interaction states.
+ * Hierarchy is built with size, weight and family — never by lowering contrast
+ * below the verified token pairs (scripts/verify-palette.ts).
+ */
+html {
+  font-family: var(--font-text);
+  background-color: var(--paper);
+  color: var(--ink);
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+:root[data-motion='reduce'] {
+  scroll-behavior: auto;
+}
+
+body {
+  font-size: var(--step-0);
+  line-height: var(--leading-body);
+  font-optical-sizing: auto;
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures contextual;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--paper);
+  background-image: var(--grain-image);
+  background-size: 256px 256px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-text);
+  font-weight: 560;
+  line-height: var(--leading-heading);
+  text-wrap: balance;
+  hyphens: manual;
+  letter-spacing: -0.008em;
+}
+h1 {
+  font-size: var(--step-5);
+  font-weight: 480;
+  letter-spacing: -0.016em;
+}
+h2 {
+  font-size: var(--step-3);
+}
+h3 {
+  font-size: var(--step-2);
+}
+h4 {
+  font-size: var(--step-1);
+}
+h5,
+h6 {
+  font-size: var(--step-0);
+}
+
+p,
+li,
+dd,
+blockquote,
+figcaption,
+td {
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+}
+
+/* Hyphenation follows the language of each element (lang attribute) — on by
+   default for running text, switchable by the reader (dyslexia guidance). */
+:where(p, li, dd, blockquote) {
+  hyphens: auto;
+  hyphenate-limit-chars: 7 3 3;
+}
+:root[data-hyphens='off'] :where(p, li, dd, blockquote) {
+  hyphens: manual;
+}
+
+.ui,
+nav,
+button,
+label,
+input,
+select,
+textarea,
+figcaption,
+caption,
+th,
+.meta {
+  font-family: var(--font-ui);
+  line-height: var(--leading-ui);
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  font-variant-ligatures: none;
+}
+
+/* Foreign terms (<i lang>), Latin locutions, titles of works: semantic italics. */
+i,
+em,
+cite,
+dfn {
+  font-style: italic;
+}
+
+abbr[title] {
+  text-decoration: none;
+  cursor: help;
+}
+
+a {
+  color: var(--link);
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.06em;
+  text-underline-offset: 0.2em;
+  text-decoration-skip-ink: auto;
+  transition: text-decoration-thickness var(--duration-2) var(--ease-standard);
+}
+a:hover {
+  text-decoration-thickness: 0.14em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::selection {
+  background-color: var(--mark);
+  color: var(--ink);
+}
+
+mark {
+  background-color: var(--mark);
+  color: var(--ink);
+  padding-inline: 0.1em;
+}
+
+hr {
+  border: 0;
+  block-size: 1px;
+  background-color: var(--rule);
+  margin-block: var(--space-2);
+}
+
+.visually-hidden:not(:focus):not(:active) {
+  clip-path: inset(50%);
+  block-size: 1px;
+  inline-size: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+}
+
+/* Windows High Contrast / forced colours: let the system palette win. */
+@media (forced-colors: active) {
+  body {
+    background-image: none;
+  }
+  :focus-visible {
+    outline-color: Highlight;
+  }
+}

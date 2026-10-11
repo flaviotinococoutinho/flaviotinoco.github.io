@@ -1,0 +1,43 @@
+---
+/**
+ * Dispatcher for parameterised routes (essay, lab, concept, stratum).
+ * Every path is produced by encodeRoute(), the inverse of decodeRoute().
+ */
+import { LOCALES, type Locale } from '../../../core/domain/locale.ts';
+import { STRATA } from '../../../core/domain/strata.ts';
+import { encodeRoute, type Route } from '../../../core/i18n/routes.ts';
+import { concepts, essays, labs, routeOfConcept, routeOfEssay, routeOfLab } from '../../../adapters/astro/content.ts';
+import EssayView from '../../../views/EssayView.astro';
+import LabView from '../../../views/LabView.astro';
+import ConceptView from '../../../views/ConceptView.astro';
+import StratumView from '../../../views/StratumView.astro';
+
+type Target =
+  | { readonly kind: 'essay'; readonly id: string }
+  | { readonly kind: 'lab'; readonly id: string }
+  | { readonly kind: 'concept'; readonly id: string }
+  | { readonly kind: 'stratum'; readonly stratum: (typeof STRATA)[number] };
+
+export async function getStaticPaths() {
+  const path = (route: Route, locale: Locale, target: Target) => {
+    const [lang, section, slug] = encodeRoute(route, locale).split('/').filter(Boolean);
+    return { params: { lang, section, slug }, props: { locale, target } };
+  };
+  const [allEssays, allLabs, allConcepts] = await Promise.all([essays(), labs(), concepts()]);
+  return [
+    ...allEssays.map((e) => path(routeOfEssay(e), e.data.lang, { kind: 'essay', id: e.id })),
+    ...allLabs.map((e) => path(routeOfLab(e), e.data.lang, { kind: 'lab', id: e.id })),
+    ...LOCALES.flatMap((locale) => [
+      ...allConcepts.map((c) => path(routeOfConcept(c, locale), locale, { kind: 'concept', id: c.id })),
+      ...STRATA.map((stratum) => path({ kind: 'stratum', stratum }, locale, { kind: 'stratum', stratum })),
+    ]),
+  ];
+}
+
+const { locale, target } = Astro.props;
+---
+
+{target.kind === 'essay' && <EssayView locale={locale} id={target.id} />}
+{target.kind === 'lab' && <LabView locale={locale} id={target.id} />}
+{target.kind === 'concept' && <ConceptView locale={locale} id={target.id} />}
+{target.kind === 'stratum' && <StratumView locale={locale} stratum={target.stratum} />}

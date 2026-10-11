@@ -1,0 +1,45 @@
+/* Minimal modern reset: removes UA inconsistencies without erasing semantics. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+* {
+  margin: 0;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  hanging-punctuation: first allow-end last;
+}
+body {
+  min-block-size: 100svh;
+}
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-inline-size: 100%;
+}
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+}
+:where(ul, ol)[role='list'] {
+  list-style: none;
+  padding: 0;
+}
+:target {
+  scroll-margin-block-start: var(--space-3);
+}
+[hidden] {
+  display: none !important;
+}

@@ -1,0 +1,25 @@
+---
+/** Site header — minimal placeholder; refined by the chrome workstream. */
+import type { Locale } from '../core/domain/locale.ts';
+import common from '../core/i18n/catalogs/common.ts';
+import { href, useTranslations } from '../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly alternates: Partial<Record<Locale, string>>;
+}
+const { locale, alternates } = Astro.props;
+const t = useTranslations(common, locale);
+const other: Locale = locale === 'pt-BR' ? 'en' : 'pt-BR';
+const otherHref = alternates[other];
+---
+
+<header class="site-header ui">
+  <nav aria-label={t('nav.label')}>
+    <a href={href({ kind: 'home' }, locale)}>{t('site.name')}</a>
+    <a href={href({ kind: 'essays' }, locale)}>{t('nav.essays')}</a>
+    <a href={href({ kind: 'labs' }, locale)}>{t('nav.labs')}</a>
+    <a href={href({ kind: 'ontology' }, locale)}>{t('nav.ontology')}</a>
+    {otherHref && <a href={otherHref} hreflang={other} lang={other}>{other === 'en' ? 'English' : 'Português'}</a>}
+  </nav>
+</header>

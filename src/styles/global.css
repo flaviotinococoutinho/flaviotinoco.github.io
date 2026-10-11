@@ -1,0 +1,18 @@
+/* Cascade layers make precedence explicit instead of relying on file order. */
+@layer tokens, reset, base, layout, texture, components, utilities, motion, print;
+
+@import './tokens.css' layer(tokens);
+@import './reset.css' layer(reset);
+@import './base.css' layer(base);
+@import './layout.css' layer(layout);
+@import './texture.css' layer(texture);
+@import './motion.css' layer(motion);
+@import './print.css' layer(print);
+
+@import './components/chrome.css' layer(components);
+@import './components/reading.css' layer(components);
+@import './components/latex.css' layer(components);
+@import './components/citations.css' layer(components);
+@import './components/abnt.css' layer(components);
+@import './components/ontology.css' layer(components);
+@import './components/labs.css' layer(components);

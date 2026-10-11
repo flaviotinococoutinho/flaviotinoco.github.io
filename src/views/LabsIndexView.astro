@@ -1,0 +1,11 @@
+---
+/** STUB view — replaced by the owning workstream (labs). */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import type { Locale } from '../core/domain/locale.ts';
+export interface Props { readonly locale: Locale;  }
+const { locale } = Astro.props;
+---
+
+<BaseLayout locale={locale} title="LabsIndexView" description="Placeholder page rendered by a view stub until its workstream lands." alternates={{}} noindex>
+  <div class="page-grid"><h1>LabsIndexView</h1></div>
+</BaseLayout>

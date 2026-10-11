@@ -1,0 +1,33 @@
+---
+/**
+ * Dispatcher for single-segment routes (/pt/ensaios/, /en/lab/, …).
+ * Paths are generated from the core route codec, so URL and type can never
+ * disagree; the matching view renders the page.
+ */
+import { LOCALES } from '../../../core/domain/locale.ts';
+import { encodeRoute, type Route } from '../../../core/i18n/routes.ts';
+import EssaysIndexView from '../../../views/EssaysIndexView.astro';
+import LabsIndexView from '../../../views/LabsIndexView.astro';
+import OntologyView from '../../../views/OntologyView.astro';
+import PageView from '../../../views/PageView.astro';
+
+type IndexRoute = Extract<Route, { kind: 'essays' | 'labs' | 'ontology' | 'about' | 'colophon' }>;
+
+export function getStaticPaths() {
+  // getStaticPaths is hoisted and isolated by Astro: it cannot see other frontmatter bindings.
+  const KINDS: readonly IndexRoute['kind'][] = ['essays', 'labs', 'ontology', 'about', 'colophon'];
+  return LOCALES.flatMap((locale) =>
+    KINDS.map((kind) => {
+      const [lang, section] = encodeRoute({ kind }, locale).split('/').filter(Boolean);
+      return { params: { lang, section }, props: { locale, route: { kind } as IndexRoute } };
+    }),
+  );
+}
+
+const { locale, route } = Astro.props;
+---
+
+{route.kind === 'essays' && <EssaysIndexView locale={locale} />}
+{route.kind === 'labs' && <LabsIndexView locale={locale} />}
+{route.kind === 'ontology' && <OntologyView locale={locale} />}
+{(route.kind === 'about' || route.kind === 'colophon') && <PageView locale={locale} pageKey={route.kind} />}
