@@ -1,0 +1,89 @@
+/*
+ * Temporal system.
+ *
+ * Durations are Fibonacci milliseconds (tokens) so motion shares the spatial
+ * proportion φ. Motion is an enhancement: every animated element's resting
+ * (final) state is its default style, so nothing depends on an animation
+ * running. Reader preference ([data-motion]) overrides the OS setting.
+ */
+:root {
+  --motion: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) {
+    --motion: 0;
+  }
+}
+:root[data-motion='reduce'] {
+  --motion: 0;
+}
+
+/* Cross-document view transitions (Chromium, Safari; Firefox navigates instantly). */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--duration-4);
+  animation-timing-function: var(--ease-standard);
+}
+
+/*
+ * Depth (parallax): elements declare data-depth ∈ {-3 … 3}. Positive values
+ * recede (move slower than the page), negative values approach.
+ * Compositor-driven where scroll-driven animations exist; elsewhere
+ * src/islands/depth.ts writes --scroll-progress (0 → 1) on each element.
+ */
+[data-depth] {
+  --scroll-progress: 0.5;
+  translate: 0 calc((var(--scroll-progress) - 0.5) * var(--depth-unit, 6vh) * var(--depth-n, 0) * var(--motion));
+  will-change: translate;
+}
+[data-depth='-3'] { --depth-n: -3; }
+[data-depth='-2'] { --depth-n: -2; }
+[data-depth='-1'] { --depth-n: -1; }
+[data-depth='1'] { --depth-n: 1; }
+[data-depth='2'] { --depth-n: 2; }
+[data-depth='3'] { --depth-n: 3; }
+
+@property --scroll-progress {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0.5;
+}
+@keyframes depth-progress {
+  from {
+    --scroll-progress: 0;
+  }
+  to {
+    --scroll-progress: 1;
+  }
+}
+@supports (animation-timeline: view()) {
+  [data-depth] {
+    animation: depth-progress linear both;
+    animation-timeline: view();
+    animation-range: cover;
+  }
+}
+
+/* Reveal on entry: opacity only (no layout shift), resting state = visible. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion='reduce']) [data-reveal] {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 38.2%;
+    }
+  }
+}
+@keyframes reveal {
+  from {
+    opacity: 0.001;
+  }
+  to {
+    opacity: 1;
+  }
+}

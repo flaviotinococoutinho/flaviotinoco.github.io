@@ -1,0 +1,62 @@
+/*
+ * Spatial system.
+ *
+ * Wide screens: a reading column of one measure and a margin column in the
+ * ratio φ : 1 (sidenotes, argument map, figures that "breathe out").
+ * Narrow screens: a single column; marginalia fold into the text flow.
+ * Components size themselves with container queries, not the viewport.
+ */
+:root {
+  --phi: 1.618;
+  --gutter: max(var(--space-0), 5vw);
+  --main: min(100%, var(--measure));
+  --margin: calc(var(--measure) / var(--phi));
+}
+
+.page-grid {
+  display: grid;
+  grid-template-columns:
+    [full-start] minmax(var(--gutter), 1fr)
+    [main-start] minmax(0, var(--measure))
+    [main-end] minmax(0, var(--space-2))
+    [margin-start] minmax(0, var(--margin))
+    [margin-end] minmax(var(--gutter), 1fr)
+    [full-end];
+  container-type: inline-size;
+}
+.page-grid > * {
+  grid-column: main;
+}
+.page-grid > .wide {
+  grid-column: main-start / margin-end;
+}
+.page-grid > .full {
+  grid-column: full;
+}
+.page-grid > .margin {
+  grid-column: margin;
+}
+
+@media (width < 72rem) {
+  .page-grid {
+    grid-template-columns:
+      [full-start] minmax(var(--gutter), 1fr)
+      [main-start margin-start] minmax(0, var(--measure))
+      [main-end margin-end] minmax(var(--gutter), 1fr)
+      [full-end];
+  }
+  .page-grid > .wide {
+    grid-column: main;
+  }
+}
+
+.stack > * + * {
+  margin-block-start: var(--stack-space, var(--space-0));
+}
+
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cluster-space, var(--space-n1));
+  align-items: center;
+}

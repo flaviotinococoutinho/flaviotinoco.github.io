@@ -1,0 +1,27 @@
+/*
+ * Grain — discrete noise instead of gradients.
+ * A 256×256 tile of fractal Perlin noise (SVG feTurbulence, rendered once and
+ * tiled by the compositor), mapped to the grain tint with ≈4 % alpha. It sits in
+ * the body background, scrolls with the paper and costs no extra layer.
+ * Disabled for forced colours, increased contrast and print.
+ */
+:root {
+  --grain-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.22  0 0 0 0 0.2  0 0 0 0 0.17  0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+:root[data-theme='dark'] {
+  --grain-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.92  0 0 0 0 0.9  0 0 0 0 0.86  0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --grain-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.92  0 0 0 0 0.9  0 0 0 0 0.86  0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23g)'/%3E%3C/svg%3E");
+  }
+}
+:root[data-contrast='more'],
+:root[data-texture='off'] {
+  --grain-image: none;
+}
+@media (prefers-contrast: more) {
+  :root:not([data-contrast='normal']) {
+    --grain-image: none;
+  }
+}

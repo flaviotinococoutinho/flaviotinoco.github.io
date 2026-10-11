@@ -1,0 +1,33 @@
+---
+/**
+ * Root: language negotiation (RFC 4647 lookup over navigator.languages, pure
+ * core function). No-JS readers are sent to the default locale by a <noscript>
+ * meta refresh; everyone can also choose explicitly.
+ */
+import { href } from '../adapters/astro/i18n.ts';
+import { DEFAULT_LOCALE } from '../core/domain/locale.ts';
+const pt = href({ kind: 'home' }, 'pt-BR');
+const en = href({ kind: 'home' }, 'en');
+const fallback = href({ kind: 'home' }, DEFAULT_LOCALE);
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flavio Tinoco</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={new URL(fallback, Astro.site)} />
+    <noscript><meta http-equiv="refresh" content={`0; url=${fallback}`} /></noscript>
+    <script>
+      import { negotiate } from '../core/domain/locale.ts';
+      const target = negotiate(navigator.languages ?? [navigator.language]) === 'en' ? 'en' : 'pt';
+      const link = document.querySelector<HTMLAnchorElement>(`a[hreflang^="${target}"]`);
+      if (link) location.replace(link.href);
+    </script>
+  </head>
+  <body>
+    <p><a href={pt} hreflang="pt-BR" lang="pt-BR">Português</a> · <a href={en} hreflang="en" lang="en">English</a></p>
+  </body>
+</html>

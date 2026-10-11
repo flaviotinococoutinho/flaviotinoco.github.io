@@ -1,0 +1,15 @@
+---
+/** Site footer — minimal placeholder; refined by the chrome workstream. */
+import type { Locale } from '../core/domain/locale.ts';
+import common from '../core/i18n/catalogs/common.ts';
+import { useTranslations } from '../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+}
+const t = useTranslations(common, Astro.props.locale);
+---
+
+<footer class="site-footer ui">
+  <p>{t('footer.copyright', { year: new Date().getUTCFullYear() })}</p>
+</footer>

@@ -1,0 +1,48 @@
+/*
+ * Print: ABNT NBR 14724 page geometry (A4; margins 3 cm top/left, 2 cm
+ * bottom/right), black ink, URLs made explicit, interactive chrome removed.
+ */
+@media print {
+  @page {
+    size: A4;
+    margin: 3cm 2cm 2cm 3cm;
+  }
+  :root {
+    --paper: #fff;
+    --ink: #000;
+    --ink-muted: #222;
+    --link: #000;
+    --grain-image: none;
+  }
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+    background: none;
+  }
+  nav,
+  .no-print,
+  [data-island],
+  .site-header,
+  .site-footer {
+    display: none !important;
+  }
+  a[href^='http']::after {
+    content: ' <' attr(href) '>';
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    overflow-wrap: anywhere;
+  }
+  h1,
+  h2,
+  h3 {
+    break-after: avoid-page;
+  }
+  figure,
+  table,
+  .env {
+    break-inside: avoid;
+  }
+  [data-depth] {
+    translate: none !important;
+  }
+}
