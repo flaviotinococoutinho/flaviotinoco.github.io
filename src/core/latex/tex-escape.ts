@@ -48,9 +48,10 @@ export const escapeTex = (text: string): string => text.replace(SPECIALS, (c) =>
 export const unescapeTex = (tex: string): string => tex.replace(ESCAPED, (e) => UNESCAPES[e] ?? e);
 
 /**
- * Escaping for URLs inside `\href{…}` / `\url{…}`: hyperref reads the URL
- * almost verbatim, but `#`, `%`, `\`, `{`, `}` and `~` still have to be
- * protected when the command sits inside another command's argument
- * (hyperref manual, §4 "\href").
+ * Escaping for URLs inside `\href{…}` / `\url{…}` / `\includegraphics{…}`:
+ * hyperref reads the URL almost verbatim, but `#`, `%`, `\`, `{`, `}` and `~`
+ * still have to be protected when the command sits inside another command's
+ * argument (hyperref manual, §4 "\href"), and `&` inside a tabular cell
+ * would end the cell.
  */
-export const escapeUrl = (url: string): string => url.replace(/[\\#%{}~]/g, (c) => `\\${c}`);
+export const escapeUrl = (url: string): string => url.replace(/[\\#%{}~&]/g, (c) => `\\${c}`);

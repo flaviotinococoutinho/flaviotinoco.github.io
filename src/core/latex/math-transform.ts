@@ -148,3 +148,38 @@ export const mathRefText = (command: MathRefCommand, number: string): string =>
  */
 const OUTER_ENVIRONMENT = /^\s*\\begin\{(?:equation|align|gather|multline|flalign|alignat)\*?\}/;
 export const isOuterEnvironment = (tex: string): boolean => OUTER_ENVIRONMENT.test(tex);
+
+/**
+ * Environments that KaTeX (≥ 0.13, verified on 0.19) numbers on its own with
+ * a CSS counter (`.eqn-num`), exactly like unstarred amsmath environments.
+ * That counter knows nothing about the document's labels, so the site would
+ * show numbers that no reference can reach and that collide with ours.
+ */
+const AUTO_NUMBERED = new Set(['equation', 'align', 'gather', 'alignat']);
+
+/**
+ * Renames every unstarred auto-numbered environment to its starred form
+ * (`\begin{align}` → `\begin{align*}`, and the matching `\end`), so that only
+ * the numbers this layer assigns are shown (ABNT NBR 14724: only labelled
+ * equations are numbered). Token-level and otherwise byte-preserving; the
+ * caller keeps the author's original TeX in `data-tex`.
+ */
+export const starAutoNumbered = (tex: string): string => {
+  const tokens = tokenize(tex);
+  const out: string[] = [];
+  let i = 0;
+  while (i < tokens.length) {
+    const token = tokens[i];
+    if (token === undefined) break;
+    const name = token.kind === 'command' ? commandName(token) : '';
+    const arg = name === 'begin' || name === 'end' ? readArgument(tokens, i) : undefined;
+    if (arg !== undefined && AUTO_NUMBERED.has(arg.content.trim())) {
+      out.push(`${token.text}{${arg.content.trim()}*}`);
+      i = arg.end;
+    } else {
+      out.push(token.text);
+      i += 1;
+    }
+  }
+  return out.join('');
+};

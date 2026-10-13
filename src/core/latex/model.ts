@@ -52,8 +52,7 @@ export const ENV_STYLE: Readonly<Record<EnvKind, EnvStyle>> = {
   proof: 'proof',
 };
 
-export const isTheoremKind = (name: string): name is TheoremKind =>
-  (THEOREM_KINDS as readonly string[]).includes(name);
+export const isTheoremKind = (name: string): name is TheoremKind => (THEOREM_KINDS as readonly string[]).includes(name);
 export const isEnvKind = (name: string): name is EnvKind => (ENV_KINDS as readonly string[]).includes(name);
 
 /** ABNT NBR 14724 §5.8–5.9 designations, each with its own counter. */
@@ -114,6 +113,7 @@ export type DiagnosticRule =
   | 'proof-target'
   | 'complex-tag'
   | 'eqref-target'
+  | 'stray-fence'
   | 'missing-lang';
 
 export type Severity = 'error' | 'warning';

@@ -50,7 +50,8 @@ export const eqrefText = (locale: Locale, number: string): string => message(loc
 export const captionLabel = (locale: Locale, kind: FigureKind, number: string): string =>
   message(locale, 'ref.numbered', { name: figureName(locale, kind), number });
 
-export type Segment = { readonly type: 'text'; readonly value: string } | { readonly type: 'slot'; readonly name: string };
+export type Segment =
+  { readonly type: 'text'; readonly value: string } | { readonly type: 'slot'; readonly name: string };
 
 const SLOT = /\{([a-zA-Z0-9_]+)\}/g;
 

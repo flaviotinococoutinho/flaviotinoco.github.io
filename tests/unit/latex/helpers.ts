@@ -25,8 +25,11 @@ const context = {} as PipelineContext;
 export const fixture = (name: string): string =>
   readFileSync(new URL(`../../fixtures/latex/${name}`, import.meta.url), 'utf8');
 
-const vfile = (markdown: string, lang: Locale | undefined, extra: Record<string, unknown> = {}): VFile =>
-  new VFile({ value: markdown, data: { astro: { frontmatter: { ...(lang === undefined ? {} : { lang }), ...extra } } } });
+/** `lang: null` = frontmatter without a lang field (a default parameter would swallow `undefined`). */
+export type Lang = Locale | null;
+
+const vfile = (markdown: string, lang: Lang): VFile =>
+  new VFile({ value: markdown, data: { astro: { frontmatter: lang === null ? {} : { lang } } } });
 
 /** Parses Markdown exactly as the site does before the custom stages (the input of src/core/latex). */
 export const parse = (markdown: string): Root => {
@@ -39,7 +42,7 @@ export const parse = (markdown: string): Root => {
 };
 
 /** mdast after the latex (and integrity) stage, plus the file for messages/frontmatter. */
-export const mdast = (markdown: string, lang: Locale | undefined = 'pt-BR'): { tree: Root; file: VFile } => {
+export const mdast = (markdown: string, lang: Lang = 'pt-BR'): { tree: Root; file: VFile } => {
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
@@ -55,7 +58,7 @@ export const mdast = (markdown: string, lang: Locale | undefined = 'pt-BR'): { t
 /** Full HTML, optionally without KaTeX (to inspect the TeX handed to it). */
 export const html = (
   markdown: string,
-  lang: Locale | undefined = 'pt-BR',
+  lang: Lang = 'pt-BR',
   options: { readonly katex?: boolean } = {},
 ): { html: string; file: VFile } => {
   const base = unified()
@@ -66,7 +69,8 @@ export const html = (
     .use(remarkLatex, { context })
     .use(remarkIntegrity, { context })
     .use(remarkRehype);
-  const processor = options.katex === false ? base.use(rehypeStringify) : base.use(rehypeKatexIsolated).use(rehypeStringify);
+  const processor =
+    options.katex === false ? base.use(rehypeStringify) : base.use(rehypeKatexIsolated).use(rehypeStringify);
   const file = vfile(markdown, lang);
   const out = processor.processSync(file);
   return { html: String(out), file: out };
@@ -74,3 +78,15 @@ export const html = (
 
 /** Frontmatter exported by the stages. */
 export const frontmatter = (file: VFile): Record<string, unknown> => file.data.astro?.frontmatter ?? {};
+
+export const NBSP = ' ';
+
+/** The message of the error a build step throws ('' when it does not throw). */
+export const failure = (run: () => unknown): string => {
+  try {
+    run();
+  } catch (error) {
+    return String(error);
+  }
+  return '';
+};

@@ -5,11 +5,11 @@
  *   1. reads the document language from frontmatter.lang;
  *   2. runs the two-pass transform (numbering, then rendering/resolution);
  *   3. swaps the tree's children for the transformed ones (the only mutation);
- *   4. reports diagnostics — warnings through file.message, errors through a
- *      single file.fail that lists ALL of them (applicative validation: the
- *      author sees every problem of the document at once);
- *   5. exports frontmatter.hasMath (views load <MathAssets/> only when true)
- *      and frontmatter.crossrefs (label table: lists of figures/tables, etc.).
+ *   4. reports diagnostics — warnings through file.message, errors through ONE
+ *      file.fail that lists all of them (applicative validation: the author
+ *      sees every problem of the document at once), positioned at the first;
+ *   5. exports frontmatter.hasMath (views render <MathAssets/> only when true)
+ *      and frontmatter.crossrefs (the label table, e.g. for lists of figures).
  */
 import type { Root } from 'mdast';
 import type { VFile } from 'vfile';
@@ -33,18 +33,17 @@ const where = (d: Diagnostic): string =>
   d.position === undefined ? '' : `${String(d.position.start.line)}:${String(d.position.start.column)}: `;
 
 const report = (file: VFile, diagnostics: readonly Diagnostic[]): void => {
-  const errors = diagnostics.filter((d) => d.severity === 'error');
   for (const d of diagnostics) {
-    const m = file.message(d.message, d.position, `${ORIGIN}:${d.rule}`);
-    if (d.severity === 'error') m.fatal = true;
+    if (d.severity === 'warning') file.message(d.message, d.position, `${ORIGIN}:${d.rule}`);
   }
-  const first = errors[0];
+  const errors = diagnostics.filter((d) => d.severity === 'error');
+  const [first] = errors;
   if (first === undefined) return;
-  const summary =
+  const reason =
     errors.length === 1
       ? first.message
       : `${String(errors.length)} LaTeX errors:\n${errors.map((d) => `  ${where(d)}${d.message} [${d.rule}]`).join('\n')}`;
-  file.fail(summary, first.position, `${ORIGIN}:${first.rule}`);
+  file.fail(reason, first.position, `${ORIGIN}:${first.rule}`);
 };
 
 export function remarkLatex(_options: RemarkLatexOptions) {

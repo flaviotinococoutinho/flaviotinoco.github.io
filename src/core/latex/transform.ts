@@ -44,6 +44,7 @@ import {
   hasLabel,
   mathRefText,
   replaceRefs,
+  starAutoNumbered,
   type MathRef,
 } from './math-transform.ts';
 import {
@@ -65,6 +66,7 @@ import {
 } from './model.ts';
 import {
   directiveLabelSource,
+  hasBracketLabel,
   hasChildren,
   isClaimed,
   isOpaque,
@@ -107,7 +109,6 @@ export interface TransformResult {
   readonly diagnostics: readonly Diagnostic[];
 }
 
-
 interface EnvItem {
   readonly node: ContainerDirective;
   readonly kind: EnvKind;
@@ -143,14 +144,24 @@ interface EquationItem {
 const isLabelParagraph = (node: Nodes): node is Paragraph =>
   node.type === 'paragraph' && node.data?.directiveLabel === true;
 
+/**
+ * A paragraph with a line that is only a closing fence (":::"). remark-directive
+ * closes the OUTERMOST open container whose fence is not longer than the
+ * closing one, so ":::theorem … :::proof … ::: … :::" ends the theorem at the
+ * first ":::" and leaves the second as text (its own paragraph, or a lazy
+ * continuation line of the previous one) — the classic nesting mistake.
+ */
+const STRAY_FENCE = /^[ \t]*:{3,}[ \t]*$/m;
+const isStrayFence = (node: Nodes): boolean =>
+  node.type === 'paragraph' && node.children.some((child) => child.type === 'text' && STRAY_FENCE.test(child.value));
+
 const attributesOf = (node: Directive): Readonly<Record<string, string>> => {
   const out: Record<string, string> = {};
   for (const [key, value] of Object.entries(node.attributes ?? {})) out[key] = value ?? '';
   return out;
 };
 
-const lineOf = (position: Position | undefined): string =>
-  position === undefined ? '?' : String(position.start.line);
+const lineOf = (position: Position | undefined): string => (position === undefined ? '?' : String(position.start.line));
 
 export const transformLatex = (tree: Root, options: TransformOptions): TransformResult => {
   const { locale, source } = options;
@@ -195,7 +206,12 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     if (raw === undefined || raw === '') return undefined;
     const parsed = parseLabel(raw);
     if (parsed.ok) return parsed.value;
-    report('error', 'invalid-label', `${parsed.error} on :${node.name} (expected prefix:name, e.g. thm:sampling)`, node);
+    report(
+      'error',
+      'invalid-label',
+      `${parsed.error} on :${node.name} (expected prefix:name, e.g. thm:sampling)`,
+      node,
+    );
     return undefined;
   };
 
@@ -235,6 +251,10 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
   const bodyOf = (node: ContainerDirective): readonly Nodes[] =>
     node.children.filter((child) => !isLabelParagraph(child));
 
+  /** `:ref[…]` / `:eqref[…]` written with brackets and not claimed by an earlier stage. */
+  const isReference = (node: Nodes): node is TextDirective =>
+    node.type === 'textDirective' && !isClaimed(node) && isRefDirective(node.name) && hasBracketLabel(node, source);
+
   // ── pass 1: number and validate (pre-order fold) ──────────────────────────
 
   const registerEnv = (node: ContainerDirective, kind: EnvKind): void => {
@@ -267,12 +287,22 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     const rawKind = attributes['kind'] ?? 'figure';
     const kind: FigureKind = isFigureKind(rawKind) ? rawKind : 'figure';
     if (!isFigureKind(rawKind)) {
-      report('error', 'invalid-kind', `invalid figure kind "${rawKind}" (expected figure, chart, frame or table)`, node);
+      report(
+        'error',
+        'invalid-kind',
+        `invalid figure kind "${rawKind}" (expected figure, chart, frame or table)`,
+        node,
+      );
     }
     const label = labelAttribute(node, 'id');
     const title = titleOf(node);
     if (title === undefined) {
-      report('error', 'missing-title', ':::figure needs a title (ABNT NBR 14724 §5.8: designation, number and title)', node);
+      report(
+        'error',
+        'missing-title',
+        ':::figure needs a title (ABNT NBR 14724 §5.8: designation, number and title)',
+        node,
+      );
     }
     const source = attributes['source']?.trim();
     if (source === undefined || source === '') {
@@ -344,6 +374,10 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
   };
 
   const collect = (node: Nodes): void => {
+    // rehype-katex ≥ 7 also renders ```math fences (class language-math, which
+    // Shiki is told to skip): they need the KaTeX stylesheet, but their content
+    // stays opaque to this stage (no \label, no \ref there; see docs/guia-latex.md).
+    if (node.type === 'code' && node.lang === 'math') hasMath = true;
     if (isOpaque(node)) return;
     if (node.type === 'containerDirective' && !isClaimed(node)) {
       if (isEnvKind(node.name)) registerEnv(node, node.name);
@@ -361,8 +395,16 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
           node,
         );
       }
-    } else if (node.type === 'textDirective' && !isClaimed(node) && isRefDirective(node.name)) {
+    } else if (isReference(node)) {
       localized = true;
+    } else if (isStrayFence(node)) {
+      report(
+        'error',
+        'stray-fence',
+        `stray "${STRAY_FENCE.exec(plainText(node))?.[0].trim() ?? ':::'}" line: a container closed early. When nesting, the OUTER fence needs ` +
+          'more colons (::::theorem … :::proof … ::: … ::::)',
+        node,
+      );
     }
     if (hasChildren(node)) for (const child of node.children as readonly Nodes[]) collect(child);
   };
@@ -388,7 +430,12 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     }
     const entry = table.get(parsed.value);
     if (entry === undefined) {
-      report('error', 'unknown-label', `unknown label "${parsed.value}" (no environment, figure or equation defines it)`, node);
+      report(
+        'error',
+        'unknown-label',
+        `unknown label "${parsed.value}" (no environment, figure or equation defines it)`,
+        node,
+      );
       return undefined;
     }
     return { label: parsed.value, entry };
@@ -435,7 +482,9 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
 
   const renderDisplayMath = (node: DisplayMath): RootContent => {
     const item = equations.get(node);
-    const tagged = item === undefined ? node.value : item.explicitTag ? item.tex : appendTag(item.tex, item.number);
+    // Only this layer numbers equations: KaTeX's own counter is switched off (see starAutoNumbered).
+    const body = starAutoNumbered(item === undefined ? node.value : item.tex);
+    const tagged = item === undefined || item.explicitTag ? body : appendTag(body, item.number);
     const tex = resolveMath(tagged, node);
     if (tex === node.value) return node;
     const properties: Properties = {
@@ -460,9 +509,13 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     const name = (children: readonly PhrasingContent[]): PhrasingContent =>
       latexInline('env-name', { className: ['env__name'] }, children);
     const note = (): PhrasingContent[] =>
-      title === undefined ? [] : [text(' '), latexInline('env-title', { className: ['env__title'] }, [text('('), ...title, text(')')])];
+      title === undefined
+        ? []
+        : [text(' '), latexInline('env-title', { className: ['env__title'] }, [text('('), ...title, text(')')])];
     if (item.kind === 'proof') {
-      if (title !== undefined) return [name(title), text('.')];
+      // \begin{proof}[Esboço]: the author's title REPLACES the name (amsthm).
+      if (title !== undefined)
+        return [name([latexInline('env-title', { className: ['env__title'] }, title)]), text('.')];
       if (item.of !== undefined) {
         const found = lookup(item.of, item.node);
         if (found !== undefined && found.entry.target.type === 'environment') {
@@ -472,7 +525,12 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
           return [name(phrase), text('.')];
         }
         if (found !== undefined) {
-          report('error', 'proof-target', `:proof of="${item.of}" must name a numbered theorem-like environment`, item.node);
+          report(
+            'error',
+            'proof-target',
+            `:proof of="${item.of}" must name a numbered theorem-like environment`,
+            item.node,
+          );
         }
       }
       return [name([text(envName(locale, 'proof'))]), text('.')];
@@ -525,7 +583,9 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
   const renderFigure = (node: ContainerDirective, item: FigureItem): RootContent => {
     const title = item.title.map((child) => mapNode(child) as PhrasingContent);
     const caption = latexBlock('figure-caption', 'figcaption', { className: ['figure__caption'], id: item.captionId }, [
-      latexInline('figure-label', { className: ['figure__label'] }, [text(captionLabel(locale, item.kind, item.number))]),
+      latexInline('figure-label', { className: ['figure__label'] }, [
+        text(captionLabel(locale, item.kind, item.number)),
+      ]),
       text(message(locale, 'caption.separator')),
       latexInline('figure-title', { className: ['figure__title'] }, title),
     ]);
@@ -569,28 +629,26 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
 
   const mapParent = <P extends Parent>(node: P): P => {
     const children = (node.children as readonly Nodes[]).map(mapNode);
-    return children.every((child, i) => child === node.children[i]) ? node : ({ ...node, children } as P);
+    return children.every((child, i) => child === node.children[i]) ? node : { ...node, children };
   };
 
+  /**
+   * Structural map: four node types are rewritten, every other parent is
+   * rebuilt only if a descendant changed, leaves and opaque nodes are shared.
+   * (Not a case analysis over the closed mdast union, hence no switch.)
+   */
   function mapNode(node: Nodes): Nodes {
     if (isOpaque(node)) return node;
-    switch (node.type) {
-      case 'containerDirective': {
-        const env = envs.get(node);
-        if (env !== undefined) return renderEnv(node, env);
-        const figure = figures.get(node);
-        if (figure !== undefined) return renderFigure(node, figure);
-        return mapParent(node);
-      }
-      case 'textDirective':
-        return !isClaimed(node) && isRefDirective(node.name) ? renderRef(node) : mapParent(node);
-      case 'math':
-        return renderDisplayMath(node);
-      case 'inlineMath':
-        return renderInlineMath(node);
-      default:
-        return hasChildren(node) ? mapParent(node) : node;
+    if (node.type === 'containerDirective') {
+      const env = envs.get(node);
+      if (env !== undefined) return renderEnv(node, env);
+      const figure = figures.get(node);
+      return figure === undefined ? mapParent(node) : renderFigure(node, figure);
     }
+    if (node.type === 'textDirective') return isReference(node) ? renderRef(node) : mapParent(node);
+    if (node.type === 'math') return renderDisplayMath(node);
+    if (node.type === 'inlineMath') return renderInlineMath(node);
+    return hasChildren(node) ? mapParent(node) : node;
   }
 
   const output = mapParent(tree);

@@ -11,7 +11,8 @@
  *     (`\newtheorem{lemma}[theorem]{Lema}`), Halmos tombstone;
  *   - amsmath equations keep their `\label`; `\eqref` works natively;
  *   - ABNT NBR 14724 floats: caption above with an en dash separator
- *     (caption package, `labelsep=endash`), source below (`\ftsource`),
+ *     (caption package; the separator is the catalog's, as on the site),
+ *     source below (`\ftsource`),
  *     separate counters for Gráfico/Quadro (newfloat);
  *   - biblatex: `style=abnt` (biblatex-abnt) for pt-BR, `style=apa` for en;
  *     Pandoc-style citations become `\parencite`/`\textcite`;
@@ -37,12 +38,13 @@ import type {
 import type { Position } from 'unist';
 import { err, ok, type Result } from '../algebra/result.ts';
 import { absurd } from '../algebra/match.ts';
+import { parseCitationKey, parseLabel } from '../domain/identifiers.ts';
 import { parseLocale, type Locale } from '../domain/locale.ts';
 import common from '../i18n/catalogs/common.ts';
 import { escapedPositions, scanCitations, type CitationItem, type CitationToken } from './citation-parser.ts';
 import { envName, equationName, figureName, longDate, message, proofOfTemplate } from './format.ts';
 import { MACROS } from './macros.ts';
-import { extractLabels, findTag, hasLabel, isOuterEnvironment } from './math-transform.ts';
+import { extractLabels, findTag, hasLabel, isOuterEnvironment, starAutoNumbered } from './math-transform.ts';
 import {
   ENV_STYLE,
   FIGURE_KINDS,
@@ -56,6 +58,7 @@ import {
 } from './model.ts';
 import {
   directiveLabelSource,
+  hasBracketLabel,
   hasChildren,
   plainText,
   sourceOf,
@@ -218,7 +221,12 @@ const FTMACRO = [
   '\\makeatother',
 ].join('\n');
 
-const preamble = (meta: ExportMeta, options: ExportOptions, warn: (m: string) => void): string => {
+const preamble = (
+  meta: ExportMeta,
+  options: ExportOptions,
+  warn: (m: string) => void,
+  verbatims: readonly string[],
+): string => {
   const { lang } = meta;
   const others = Object.values(BABEL).filter((b) => b !== BABEL[lang]);
   const t = (key: Parameters<typeof message>[1]): string => message(lang, key);
@@ -268,11 +276,13 @@ const preamble = (meta: ExportMeta, options: ExportOptions, warn: (m: string) =>
     '\\usepackage{newfloat}',
     '\\usepackage{caption}',
     '% ABNT NBR 14724:2024 §5.8: designation, number, dash and title ABOVE; source below.',
-    '\\captionsetup{labelsep=endash,position=top}',
+    `\\DeclareCaptionLabelSeparator{ft}{${escapeTex(t('caption.separator'))}}`,
+    '\\captionsetup{labelsep=ft,position=top}',
     `\\DeclareFloatingEnvironment[fileext=lgr,name={${escapeTex(figureName(lang, 'chart'))}},listname={${escapeTex(t('tex.listOfCharts'))}}]{ftchart}`,
     `\\DeclareFloatingEnvironment[fileext=lqd,name={${escapeTex(figureName(lang, 'frame'))}},listname={${escapeTex(t('tex.listOfFrames'))}}]{ftframe}`,
     `\\newcommand{\\ftsource}[1]{\\par\\smallskip{\\footnotesize ${escapeTex(t('figure.source'))} #1\\par}}`,
-    '\\DefineVerbatimEnvironment{ftverbatim}{Verbatim}{}',
+    // Extra verbatim environments, only for listings that contain \end{verbatim} (see `code`).
+    ...verbatims.map((name) => `\\DefineVerbatimEnvironment{${name}}{Verbatim}{}`),
     `\\usepackage[backend=biber,style=${BIBLATEX_STYLE[lang]}]{biblatex}`,
     ...resources.map((r) => `\\addbibresource{${r}}`),
     '\\usepackage{hyperref}',
@@ -338,8 +348,26 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
     warnings.push(node?.position === undefined ? { message: text } : { message: text, position: node.position });
   };
 
+  /**
+   * The `#id` of an environment or figure, when it is a valid Label. An
+   * invalid one (the site build rejects it) is reported and left out, so it
+   * can never inject TeX through `\label{…}`.
+   */
+  const labelOf = (node: ContainerDirective): string | undefined => {
+    const id = attributesOf(node)['id'];
+    if (id === undefined || id === '') return undefined;
+    if (parseLabel(id).ok) return id;
+    warn(`invalid label "${id}" on :::${node.name} (expected prefix:name); \\label omitted`, node);
+    return undefined;
+  };
+
+  /** fancyvrb environments the body needed (defined in the preamble). */
+  const verbatims = new Set<string>();
+
   // ── pre-pass: label kinds, definitions, footnotes, heading depth ──────────
   const labels = new Map<string, LabelKind>();
+  /** Validated `#id` of each environment/figure (validated once, so warnings are not repeated). */
+  const ids = new Map<Nodes, string>();
   const definitions = new Map<string, Definition>();
   const footnotes = new Map<string, FootnoteDefinition>();
   let minDepth = 6;
@@ -347,9 +375,10 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
   const scan = (node: Nodes): void => {
     if (node.type === 'code' || node.type === 'inlineCode' || node.type === 'html') return;
     if (node.type === 'containerDirective') {
-      const id = attributesOf(node)['id'];
-      if (id !== undefined && id !== '' && isEnvKind(node.name)) labels.set(id, { type: 'environment', kind: node.name });
-      if (id !== undefined && id !== '' && node.name === 'figure') {
+      const id = isEnvKind(node.name) || node.name === 'figure' ? labelOf(node) : undefined;
+      if (id !== undefined) ids.set(node, id);
+      if (id !== undefined && isEnvKind(node.name)) labels.set(id, { type: 'environment', kind: node.name });
+      if (id !== undefined && node.name === 'figure') {
         const kind = attributesOf(node)['kind'] ?? 'figure';
         labels.set(id, { type: 'figure', kind: isFigureKind(kind) ? kind : 'figure' });
       }
@@ -377,7 +406,14 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
     return post === '' ? '' : optional(post);
   };
 
-  const citation = (token: Exclude<CitationToken, { type: 'text' }>): string => {
+  const citation = (token: Exclude<CitationToken, { type: 'text' }>, node?: Nodes): string => {
+    const keys = token.type === 'narrative' ? [token.item.key] : token.items.map((i) => i.key);
+    const invalid = keys.filter((k) => !parseCitationKey(k).ok);
+    if (invalid.length > 0) {
+      // Pandoc's key grammar admits # $ % & ~, which biblatex keys cannot carry.
+      warn(`"${token.raw}": citation key(s) ${invalid.join(', ')} are not BibTeX keys; kept as text`, node);
+      return escapeTex(token.raw);
+    }
     citations += 1;
     if (token.type === 'narrative') return `\\textcite${notes(token.item)}{${token.item.key}}`;
     const [single, ...rest] = token.items;
@@ -398,23 +434,45 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
       warn('text with character references around "[" or "@": citations in it were left as literal text', node);
       return escapeTex(value);
     }
-    const isKey = options.citationKeys === undefined ? undefined : (k: string): boolean => options.citationKeys?.has(k) === true;
-    return scanCitations(value, { ...(isKey === undefined ? {} : { isKey }), ...(escaped === undefined ? {} : { escaped }) })
-      .map((token) => (token.type === 'text' ? escapeTex(token.raw) : citation(token)))
+    const isKey =
+      options.citationKeys === undefined ? undefined : (k: string): boolean => options.citationKeys?.has(k) === true;
+    return scanCitations(value, {
+      ...(isKey === undefined ? {} : { isKey }),
+      ...(escaped === undefined ? {} : { escaped }),
+    })
+      .map((token) => (token.type === 'text' ? escapeTex(token.raw) : citation(token, node)))
       .join('');
   };
 
   // ── phrasing ───────────────────────────────────────────────────────────────
 
-  const KNOWN_TEXT = new Set(['ref', 'eqref', 'sidenote', 'marginnote', 'concept', 'foreign', 'name', 'abbr', 'raw', 'sc']);
+  const KNOWN_TEXT = new Set([
+    'ref',
+    'eqref',
+    'sidenote',
+    'marginnote',
+    'concept',
+    'foreign',
+    'name',
+    'abbr',
+    'raw',
+    'sc',
+  ]);
 
   /** Unknown text directives are prose ("10:30"): restore them and merge text runs so citations can be found. */
   const normalize = (nodes: readonly PhrasingContent[]): PhrasingContent[] => {
     const out: PhrasingContent[] = [];
     for (const node of nodes) {
-      const unknown = node.type === 'textDirective' && !KNOWN_TEXT.has(node.name);
-      const raw = unknown ? (sourceOf(node, source) ?? `:${node.name}${node.children.length > 0 ? `[${plainText(node)}]` : ''}`) : '';
-      if (unknown && /[[{]/.test(raw)) warn(`unknown text directive ":${node.type === 'textDirective' ? node.name : ''}" exported as literal text`, node);
+      // Unknown names, and known ones written without [label] ("nota:ref", "10:sc"), are prose.
+      const unknown = node.type === 'textDirective' && (!KNOWN_TEXT.has(node.name) || !hasBracketLabel(node, source));
+      const raw = unknown
+        ? (sourceOf(node, source) ?? `:${node.name}${node.children.length > 0 ? `[${plainText(node)}]` : ''}`)
+        : '';
+      if (unknown && /[[{]/.test(raw))
+        warn(
+          `unknown text directive ":${node.type === 'textDirective' ? node.name : ''}" exported as literal text`,
+          node,
+        );
       const restored: PhrasingContent = unknown
         ? { type: 'text', value: raw, ...(node.position === undefined ? {} : { position: node.position }) }
         : node;
@@ -434,7 +492,15 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
     return out;
   };
 
-  const phrasing = (nodes: readonly PhrasingContent[]): string => normalize(nodes).map(inline).join('');
+  /**
+   * Inline content in order. A footnote mark attaches to the word before it
+   * (no space, as `word\footnote{…}` in LaTeX), even when the Markdown had
+   * `word :sidenote[…]`.
+   */
+  const phrasing = (nodes: readonly PhrasingContent[]): string =>
+    normalize(nodes)
+      .map(inline)
+      .reduce((out, tex) => (tex.startsWith('\\footnote{') ? out.trimEnd() : out) + tex, '');
 
   /** Link text: escaped, but never scanned for citations (a link label is not running prose). */
   const linkText = (nodes: readonly PhrasingContent[]): string =>
@@ -453,7 +519,12 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
       warn(`remote image ${image.url} is linked, not embedded`, node);
       return `\\href{${url(image.url)}}{\\textit{${escapeTex(image.alt ?? image.url)}}}`;
     }
-    return `\\includegraphics[width=\\linewidth,alt={${escapeTex(image.alt ?? '')}}]{${image.url}}`;
+    // pdfTeX/LuaTeX cannot embed SVG/WebP/AVIF/GIF: drop the extension so graphicx
+    // picks a converted sibling (.pdf, .png) — the CLI converts, the author is told.
+    const unsupported = /\.(?:svg|webp|avif|gif)$/i.exec(image.url);
+    if (unsupported !== null) warn(`image ${image.url}: ${unsupported[0]} needs conversion to PDF or PNG`, node);
+    const file = unsupported === null ? image.url : image.url.slice(0, unsupported.index);
+    return `\\includegraphics[width=\\linewidth,alt={${escapeTex(image.alt ?? '')}}]{${escapeUrl(file)}}`;
   };
 
   const mathInline = (value: string): string =>
@@ -462,6 +533,10 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
 
   const reference = (node: TextDirective): string => {
     const raw = directiveLabelSource(node, source).trim();
+    if (!parseLabel(raw).ok) {
+      warn(`:${node.name}[${raw}] is not a valid label (expected prefix:name); exported as literal text`, node);
+      return escapeTex(sourceOf(node, source) ?? `:${node.name}[${raw}]`);
+    }
     if (node.name === 'eqref') return `\\eqref{${raw}}`;
     const kind = labels.get(raw);
     if (kind === undefined) {
@@ -559,12 +634,16 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
         return `\\footnote{${definition.children.map((child) => block(child, false)).join('\n\n')}}`;
       }
       case 'html':
-        return `%html: ${node.value.replace(/\n/g, ' ')}\n`;
+        // Inline HTML has no print form: kept as a comment on its own line. The
+        // `%` before the line break swallows it, so no space is added around it.
+        return `%\n% html: ${node.value.replace(/\n/g, ' ')}\n`;
       case 'textDirective':
         return textDirective(node);
+      case 'latexInline':
+        // Generated by the site's latex stage, which runs AFTER the tree this fold reads.
+        return phrasing(node.children);
       default:
-        warn(`unsupported inline node "${node.type}" exported as plain text`, node);
-        return escapeTex(plainText(node));
+        return absurd(node);
     }
   }
 
@@ -581,7 +660,10 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
     const last = node.children[node.children.length - 1];
     const m = last?.type === 'text' ? HEADING_ATTRIBUTES.exec(last.value) : null;
     if (m === null || last?.type !== 'text') return `\\${level}{${phrasing(node.children)}}`;
-    const children: PhrasingContent[] = [...node.children.slice(0, -1), { ...last, value: last.value.slice(0, m.index) }];
+    const children: PhrasingContent[] = [
+      ...node.children.slice(0, -1),
+      { ...last, value: last.value.slice(0, m.index) },
+    ];
     const attributes = m[1] ?? '';
     const id = /#([A-Za-z][\w:-]*)/.exec(attributes)?.[1];
     const rest = attributes.replace(/#[A-Za-z][\w:-]*/, '').trim();
@@ -593,7 +675,10 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
 
   const list = (node: List): string => {
     const env = node.ordered === true ? 'enumerate' : 'itemize';
-    const start = node.ordered === true && typeof node.start === 'number' && node.start !== 1 ? `[start=${String(node.start)}]` : '';
+    const start =
+      node.ordered === true && typeof node.start === 'number' && node.start !== 1
+        ? `[start=${String(node.start)}]`
+        : '';
     const items = node.children.map((item) => {
       const marker = item.checked === true ? '[$\\boxtimes$]' : item.checked === false ? '[$\\square$]' : '';
       const content = blocks(item.children, false);
@@ -627,18 +712,28 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
   };
 
   const code = (node: Code): string => {
-    if (node.lang === 'math') return `\\begin{equation*}\n${node.value}\n\\end{equation*}`;
-    const env = node.value.includes('\\end{verbatim}') ? 'ftverbatim' : 'verbatim';
-    if (env === 'ftverbatim' && node.value.includes('\\end{ftverbatim}')) {
-      warn('code block contains both \\end{verbatim} and \\end{ftverbatim}; the listing will end early', node);
-    }
+    // ```math fences render on the site too (rehype-katex), always unnumbered.
+    if (node.lang === 'math') return displayMath(node.value);
+    // A verbatim environment ends at the first `\end{<name>}`: pick a name the
+    // listing does not contain, so any code — even LaTeX about verbatim — survives.
+    let env = 'verbatim';
+    for (let n = 1; node.value.includes(`\\end{${env}}`); n += 1) env = `ftverbatim${n === 1 ? '' : String(n)}`;
+    if (env !== 'verbatim') verbatims.add(env);
     const language = node.lang === null || node.lang === undefined ? [] : [`% language: ${node.lang}`];
     return [...language, `\\begin{${env}}`, node.value, `\\end{${env}}`].join('\n');
   };
 
-  const displayMath = (value: string): string => {
-    if (isOuterEnvironment(value)) return value;
-    const env = hasLabel(value) || findTag(value) !== undefined ? 'equation' : 'equation*';
+  /**
+   * Only labelled (or explicitly tagged) displays are numbered, as on the site
+   * (ABNT NBR 14724): an unlabelled `align`/`gather`/… is exported starred.
+   */
+  const displayMath = (raw: string): string => {
+    // A blank line is \par, an error in math mode ("Missing $ inserted"); KaTeX
+    // ignores it. Collapsing it changes no formula (math mode ignores spaces).
+    const value = raw.replace(/\n[ \t]*(?:\n[ \t]*)+/g, '\n');
+    const numbered = hasLabel(value) || findTag(value) !== undefined;
+    if (isOuterEnvironment(value)) return numbered ? value : starAutoNumbered(value);
+    const env = numbered ? 'equation' : 'equation*';
     return `\\begin{${env}}\n${value}\n\\end{${env}}`;
   };
 
@@ -651,10 +746,16 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
         : first !== undefined && isLabelParagraph(first)
           ? phrasing(first.children)
           : undefined;
-    const id = attributes['id'];
-    const label = id === undefined || id === '' ? '' : `\\label{${id}}`;
+    const id = ids.get(node);
+    const label = id === undefined ? '' : `\\label{${id}}`;
+    // The site nests a proof inside its statement (::::theorem … :::proof … ::::);
+    // in LaTeX a proof FOLLOWS the statement (inside it, it would inherit the
+    // statement's italic body font). Direct-child proofs are moved after it.
+    const isProof = (child: Nodes): boolean => child.type === 'containerDirective' && child.name === 'proof';
+    const children = node.children.filter((c) => !isLabelParagraph(c));
+    const hoisted = kind === 'proof' ? [] : children.filter(isProof);
     const body = blocks(
-      node.children.filter((c) => !isLabelParagraph(c)),
+      children.filter((c) => kind === 'proof' || !isProof(c)),
       false,
     );
     let head = title;
@@ -671,14 +772,18 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
       }
     }
     const env = kind === 'proof' ? 'proof' : kind;
-    return `\\begin{${env}}${head === undefined ? '' : optional(head)}${label}\n${body}\n\\end{${env}}`;
+    return [
+      `\\begin{${env}}${head === undefined ? '' : optional(head)}${label}\n${body}\n\\end{${env}}`,
+      ...hoisted.map((proof) => block(proof, false)),
+    ].join('\n\n');
   };
 
   const figure = (node: ContainerDirective): string => {
     const attributes = attributesOf(node);
     const rawKind = attributes['kind'] ?? 'figure';
     const kind: FigureKind = isFigureKind(rawKind) ? rawKind : 'figure';
-    if (!isFigureKind(rawKind)) warn(`figure kind "${rawKind}" is not one of ${FIGURE_KINDS.join(', ')}; exported as figure`, node);
+    if (!isFigureKind(rawKind))
+      warn(`figure kind "${rawKind}" is not one of ${FIGURE_KINDS.join(', ')}; exported as figure`, node);
     const first = node.children[0];
     const caption =
       attributes['title'] !== undefined && attributes['title'] !== ''
@@ -686,13 +791,13 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
         : first !== undefined && isLabelParagraph(first)
           ? phrasing(first.children)
           : '';
-    const id = attributes['id'];
+    const id = ids.get(node);
     const source = attributes['source'];
     const env = FLOAT_ENV[kind];
     return [
       `\\begin{${env}}[htbp]`,
       '\\centering',
-      `\\caption{${caption}}${id === undefined || id === '' ? '' : `\\label{${id}}`}`,
+      `\\caption{${caption}}${id === undefined ? '' : `\\label{${id}}`}`,
       blocks(
         node.children.filter((c) => !isLabelParagraph(c)),
         true,
@@ -766,20 +871,49 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
         return containerDirective(node, inFloat);
       case 'leafDirective':
         return leafDirective(node);
+      case 'yaml':
+        // Frontmatter is metadata (ExportMeta), not content.
+        return '';
+      case 'listItem':
+        return blocks(node.children, inFloat);
+      case 'tableRow':
+        return node.children.map((cell) => phrasing(cell.children)).join(' & ');
+      case 'tableCell':
+      case 'latexInline':
+        return phrasing(node.children);
+      case 'latexBlock':
+        return blocks(node.children, inFloat);
+      case 'break':
+      case 'delete':
+      case 'emphasis':
+      case 'footnoteReference':
+      case 'image':
+      case 'imageReference':
+      case 'inlineCode':
+      case 'inlineMath':
+      case 'link':
+      case 'linkReference':
+      case 'strong':
+      case 'text':
+      case 'textDirective':
+        // Phrasing where a block is expected (remark-parse never does this; the fold stays total).
+        return guard(phrasing([node]));
       case 'root':
         return blocks(node.children, inFloat);
       default:
-        return 'children' in node || 'value' in node ? guard(phrasing([node as PhrasingContent])) : '';
+        return absurd(node);
     }
   }
 
   // ── assembly ───────────────────────────────────────────────────────────────
 
   const body = blocks(tree.children, false);
-  const head = preamble(meta, options, (m) => warn(m));
+  const head = preamble(meta, options, (m) => warn(m), [...verbatims]);
   const date = meta.date === undefined ? undefined : longDate(lang, meta.date);
   const title =
-    meta.subtitle === undefined ? escapeTex(meta.title) : `${escapeTex(meta.title)}\\\\[0.5ex]\\large ${escapeTex(meta.subtitle)}`;
+    meta.subtitle === undefined
+      ? escapeTex(meta.title)
+      : `${escapeTex(meta.title)}\\\\[0.5ex]\\large ${escapeTex(meta.subtitle)}`;
   const abstract =
     meta.abstract === undefined
       ? []

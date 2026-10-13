@@ -7,6 +7,7 @@ import {
   findTag,
   isOuterEnvironment,
   replaceRefs,
+  starAutoNumbered,
 } from '../../../src/core/latex/math-transform.ts';
 
 describe('extractLabels', () => {
@@ -61,5 +62,38 @@ describe('references in math', () => {
 
   it('keeps unresolved references verbatim', () => {
     expect(replaceRefs('y = \\eqref{eq:z}', () => undefined)).toBe('y = \\eqref{eq:z}');
+  });
+});
+
+describe('starAutoNumbered', () => {
+  it('stars the environments KaTeX would number with its own counter', () => {
+    expect(starAutoNumbered('\\begin{align}a&=b\\end{align}')).toBe('\\begin{align*}a&=b\\end{align*}');
+    expect(starAutoNumbered('\\begin{equation}x\\end{equation}')).toBe('\\begin{equation*}x\\end{equation*}');
+    expect(starAutoNumbered('\\begin{gather}x\\end{gather}')).toBe('\\begin{gather*}x\\end{gather*}');
+    expect(starAutoNumbered('\\begin{alignat}{2}x\\end{alignat}')).toBe('\\begin{alignat*}{2}x\\end{alignat*}');
+  });
+
+  it('leaves starred, inner and unknown environments, comments and escapes alone', () => {
+    for (const tex of [
+      '\\begin{align*}a\\end{align*}',
+      '\\begin{aligned}a\\end{aligned}',
+      '\\begin{cases}a\\end{cases}',
+      '% \\begin{align}',
+      '\\\\begin{align}',
+    ]) {
+      expect(starAutoNumbered(tex)).toBe(tex);
+    }
+  });
+
+  test.prop([fc.string({ maxLength: 120 })], { numRuns: 500 })(
+    'is the identity on formulas without \\begin/\\end',
+    (s) => {
+      fc.pre(!s.includes('\\begin') && !s.includes('\\end'));
+      expect(starAutoNumbered(s)).toBe(s);
+    },
+  );
+
+  test.prop([fc.string({ maxLength: 120 })], { numRuns: 500 })('is idempotent', (s) => {
+    expect(starAutoNumbered(starAutoNumbered(s))).toBe(starAutoNumbered(s));
   });
 });

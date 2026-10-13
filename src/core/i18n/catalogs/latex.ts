@@ -5,7 +5,7 @@ import { defineMessages } from '../messages.ts';
  * tables (ABNT NBR 14724:2024 §5.8–5.9), cross-reference forms and the few
  * strings of the .tex exporter.
  *
- * ` ` (no-break space) binds a name to its number, as `~` does in
+ * U+00A0 (no-break space) binds a name to its number, as `~` does in
  * `Teorema~\ref{…}`: a line must never end between "Teorema" and "2".
  * pt-BR contractions ("do Teorema", "da Proposição") depend on the gender of
  * each noun, so the proof-of phrases are spelled out per environment kind.

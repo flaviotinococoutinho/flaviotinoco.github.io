@@ -6,7 +6,11 @@ const kinds = (s: string): string[] => scanCitations(s).map((t) => `${t.type}:${
 
 describe('scanCitations (export-only Pandoc syntax)', () => {
   it('recognises parenthetical, multiple, suppressed and narrative citations', () => {
-    expect(kinds('A [@shannon1948, p. 379] b.')).toEqual(['text:A ', 'parenthetical:[@shannon1948, p. 379]', 'text: b.']);
+    expect(kinds('A [@shannon1948, p. 379] b.')).toEqual([
+      'text:A ',
+      'parenthetical:[@shannon1948, p. 379]',
+      'text: b.',
+    ]);
     const [, group] = scanCitations('x [ver @a; @b, cap. 2] y');
     expect(group).toEqual({
       type: 'parenthetical',

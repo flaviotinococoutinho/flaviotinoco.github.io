@@ -145,6 +145,19 @@ const rebuild = (node: Nodes): string => {
   return plainText(node);
 };
 
+/**
+ * Whether a text directive was written with a `[label]`.
+ *
+ * remark-directive turns ANY ":word" into a text directive, so prose such as
+ * "nota:ref" or "3:ref" yields a bracket-less `ref` directive. Only the
+ * bracketed form is a reference; the rest is prose for the integrity stage to
+ * restore verbatim. Without source positions, a non-empty label decides.
+ */
+export const hasBracketLabel = (node: TextDirective, source: string | undefined): boolean => {
+  const raw = sourceOf(node, source);
+  return raw === undefined ? node.children.length > 0 : raw.startsWith(`:${node.name}[`);
+};
+
 /** Exact source of any node, when positions are available. */
 export const sourceOf = (node: Nodes, source: string | undefined): string | undefined => {
   const start = node.position?.start.offset;
@@ -173,5 +186,6 @@ export const withMathValue = <M extends MathNode>(node: M, value: string): M => 
         })
       : children;
   const data = node.data === undefined ? undefined : { ...node.data, hChildren: replace(node.data.hChildren) };
-  return { ...node, value, ...(data === undefined ? {} : { data }) } as M;
+  const copy: M = { ...node, value, ...(data === undefined ? {} : { data }) };
+  return copy;
 };

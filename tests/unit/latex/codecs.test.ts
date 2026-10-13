@@ -10,7 +10,23 @@ import { idToLabel, labelToId } from '../../../src/core/latex/label-codec.ts';
 import { escapeTex, escapeUrl, unescapeTex } from '../../../src/core/latex/tex-escape.ts';
 import { print, readArgument, tokenize } from '../../../src/core/latex/tex-parser.ts';
 
-const texAlphabet = fc.constantFrom('\\', '{', '}', '%', '\n', ' ', 'a', 'b', 'l', 'label', 'ref', '\\label', '#', '$', '*');
+const texAlphabet = fc.constantFrom(
+  '\\',
+  '{',
+  '}',
+  '%',
+  '\n',
+  ' ',
+  'a',
+  'b',
+  'l',
+  'label',
+  'ref',
+  '\\label',
+  '#',
+  '$',
+  '*',
+);
 const texString = fc.array(texAlphabet, { maxLength: 40 }).map((parts) => parts.join(''));
 
 const labelArbitrary: fc.Arbitrary<Label> = fc
