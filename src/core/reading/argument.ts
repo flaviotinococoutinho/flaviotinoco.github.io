@@ -64,6 +64,9 @@ export interface GlyphPath {
 }
 export const GLYPH_VIEWBOX = '0 0 16 16';
 
+/** Id of the SVG <symbol> of a kind in the argument-map sprite (src/components/reading/ArgumentGlyphs.astro). */
+export const glyphSymbolId = (kind: ArgumentKind): `arg-${ArgumentKind}` => `arg-${kind}`;
+
 const CIRCLE = 'M8 2.5a5.5 5.5 0 1 0 0 11a5.5 5.5 0 1 0 0-11Z';
 const SQUARE = 'M3 3h10v10H3Z';
 const DIAMOND = 'M8 1.8 14.2 8 8 14.2 1.8 8Z';
@@ -144,7 +147,7 @@ export const describeGraphError = (e: GraphError): string => {
 /**
  * Builds the graph and proves it is a DAG (a cycle would be circular
  * reasoning). Every problem is reported, not just the first. Cycle detection:
- * iterative-in-spirit DFS with three colours (Cormen et al., *Introduction to
+ * depth-first search with three colours (Cormen et al., *Introduction to
  * Algorithms*, §22.3); each cycle is reported once, rotated to start at its
  * earliest node in document order.
  */
@@ -163,25 +166,28 @@ export const argumentGraph = (nodes: readonly ArgumentNode[]): Result<ArgumentGr
       else edges.push({ from: d, to: n.id });
     }
   }
-  // Adjacency in the direction of dependency (node → what it rests on) to find cycles.
-  const rests = new Map<string, readonly string[]>(
-    nodes.map((n) => [n.id, n.depends.filter((d) => index.has(d) && d !== n.id)]),
-  );
-  const colour = new Map<string, 'grey' | 'black'>();
+  // Adjacency in the direction of dependency (node → what it rests on) to find cycles;
+  // the dependencies of a duplicated id are merged, so no cycle hides behind a duplicate.
+  const rests = new Map<SectionId, readonly SectionId[]>();
+  for (const n of nodes) {
+    rests.set(n.id, [...(rests.get(n.id) ?? []), ...n.depends.filter((d) => index.has(d) && d !== n.id)]);
+  }
+  const colour = new Map<SectionId, 'grey' | 'black'>();
   const seen = new Set<string>();
-  const visit = (id: string, stack: readonly string[]): void => {
+  const order = (id: SectionId): number => index.get(id) ?? 0;
+  const visit = (id: SectionId, stack: readonly SectionId[]): void => {
     colour.set(id, 'grey');
     for (const next of rests.get(id) ?? []) {
       const c = colour.get(next);
       if (c === 'grey') {
         const cycle = stack.slice(stack.indexOf(next));
-        const start = cycle.reduce((best, x) => ((index.get(x) ?? 0) < (index.get(best) ?? 0) ? x : best), next);
+        const start = cycle.reduce((best, x) => (order(x) < order(best) ? x : best), next);
         const k = cycle.indexOf(start);
-        const rotated = [...cycle.slice(k), ...cycle.slice(0, k), start];
+        const rotated: readonly SectionId[] = [...cycle.slice(k), ...cycle.slice(0, k), start];
         const key = [...new Set(rotated)].sort().join('\u0000');
         if (!seen.has(key)) {
           seen.add(key);
-          errors.push({ type: 'cycle', path: rotated as readonly SectionId[] });
+          errors.push({ type: 'cycle', path: rotated });
         }
       } else if (c === undefined) visit(next, [...stack, next]);
     }

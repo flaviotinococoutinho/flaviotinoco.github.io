@@ -7,9 +7,10 @@
  * github-slugger lower-cases the text, deletes every code point that is not
  * Alphabetic, Mark, Decimal_Number, Connector_Punctuation or Join_Control
  * (its generated regex is exactly that set for the Unicode version it was
- * built from; verified exhaustively over U+0000–U+10FFFF: the only differences
- * are code points assigned after that version), keeps spaces and hyphens, and
- * turns each space into "-". Duplicates get "-1", "-2", … in order.
+ * built from; checked exhaustively over U+0000–U+10FFFF against
+ * github-slugger 2.0.0: the only differences are code points assigned in later
+ * Unicode versions, e.g. U+0870–U+0887, Arabic, Unicode 14), keeps spaces and
+ * hyphens, and turns each space into "-". Duplicates get "-1", "-2", … in order.
  */
 
 const STRIP = /[^\p{Alphabetic}\p{M}\p{Nd}\p{Pc}\p{Join_Control} -]/gu;

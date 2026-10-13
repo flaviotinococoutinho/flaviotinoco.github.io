@@ -92,7 +92,6 @@ export const isGenerated = (node: MdNode): boolean => node.data?.[GENERATED] ===
 /**
  * Plain text with the exact semantics of mdast-util-to-string (default options):
  * literal `value`s, image `alt`, otherwise the concatenation of the children.
- * Used as the reference projection in the injectivity laws.
  */
 export const plainText = (node: MdNode): string => {
   if (typeof node.value === 'string') return node.value;
@@ -111,29 +110,6 @@ export const foldTree = <R>(node: MdNode, algebra: (node: MdNode, children: read
     childrenOf(node).map((c) => foldTree(c, algebra)),
   );
 
-/**
- * Pre-order collection: every node for which `pick` returns a value
- * contributes it, in document order. `descend` decides whether the interior
- * of a node is visited (default: everything but opaque nodes). Ancestors are
- * passed root-first.
- */
-export const collect = <T>(
-  root: MdNode,
-  pick: (node: MdNode, ancestors: readonly MdNode[]) => T | undefined,
-  descend: (node: MdNode) => boolean = (n) => !OPAQUE_TYPES.has(n.type),
-): readonly T[] => {
-  const out: T[] = [];
-  const go = (node: MdNode, ancestors: readonly MdNode[]): void => {
-    const picked = pick(node, ancestors);
-    if (picked !== undefined) out.push(picked);
-    if (!descend(node)) return;
-    const next = [...ancestors, node];
-    for (const child of childrenOf(node)) go(child, next);
-  };
-  go(root, []);
-  return out;
-};
-
 /** Source slice of a node, when positions and the source are known. */
 export const sourceOf = (node: MdNode, source: string | null): string | null => {
   const start = node.position?.start.offset;
@@ -142,33 +118,46 @@ export const sourceOf = (node: MdNode, source: string | null): string | null => 
 };
 
 /**
- * Text a reader actually sees for a fragment of the tree, before rehype:
- * like plainText, but an unclaimed text directive that is really prose
- * (remark-directive reads "10:30" as `:30`) contributes its source slice —
- * exactly what the integrity stage will restore — while a directive with a
- * label or attributes contributes its label. Generated nodes are skipped.
+ * True for an unclaimed text directive that carries neither a label nor
+ * attributes — `:30` in "10:30", `:b` in "a:b" — i.e. prose that
+ * remark-directive mistook for syntax. The integrity stage restores it verbatim.
  */
-export const visibleText = (node: MdNode, source: string | null): string => {
+export const isProseDirective = (node: MdNode, source: string | null): boolean => {
+  if (node.type !== 'textDirective' || isClaimed(node)) return false;
+  const raw = sourceOf(node, source);
+  return raw !== null && !/[[{]/.test(raw);
+};
+
+/**
+ * When the visible text is computed.
+ *   'pending' — during the reading stage: later stages (concepts, abnt…) will
+ *               still claim the text directives that have a label or
+ *               attributes, so their label is the best prediction of the text;
+ *   'final'   — after every claiming stage (meta): any directive still
+ *               unclaimed will be restored verbatim by the integrity stage.
+ */
+export type TextMode = 'pending' | 'final';
+
+/**
+ * Text a reader actually sees for a fragment of the tree, before rehype:
+ * like plainText, but unclaimed text directives contribute what the integrity
+ * stage will restore (see TextMode). Generated nodes and footnote markers are
+ * skipped.
+ */
+export const visibleText = (node: MdNode, source: string | null, mode: TextMode = 'pending'): string => {
   if (isGenerated(node)) return '';
   if (node.type === 'footnoteReference') return '';
   if (node.type === 'textDirective' && !isClaimed(node)) {
     const raw = sourceOf(node, source);
-    if (raw !== null && !/[[{]/.test(raw)) return raw;
+    if (raw !== null && (mode === 'final' || !/[[{]/.test(raw))) return raw;
   }
   if (typeof node.value === 'string') return node.value;
   const alt = node['alt'];
   if (typeof alt === 'string' && alt.length > 0) return alt;
   return childrenOf(node)
-    .map((c) => visibleText(c, source))
+    .map((c) => visibleText(c, source, mode))
     .join('');
 };
-
-/** Builds a node immutably from an existing one, replacing selected fields. */
-export const withFields = (node: MdNode, fields: Readonly<Record<string, unknown>>): MdNode => ({ ...node, ...fields });
-
-export const withChildren = (node: MdNode, children: readonly MdNode[]): MdNode => ({ ...node, children });
-
-export const withData = (node: MdNode, data: NodeData): MdNode => ({ ...node, data: { ...node.data, ...data } });
 
 /** Deep clone of a subtree (used when a stage must show the same content twice, e.g. a table of contents). */
 export const cloneTree = (node: MdNode): MdNode => structuredClone(node) as MdNode;

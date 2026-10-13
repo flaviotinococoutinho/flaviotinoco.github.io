@@ -2,10 +2,11 @@
  * Document metadata as a fold over the finished mdast tree (catamorphism:
  * Tree → Summary), exported to the page through remarkPluginFrontmatter.
  *
- *   wordCount, readingMinutes   prose only: code, math, HTML, image alt,
+ *   wordCount, readingMinutes   prose only: code, math, raw HTML, image alt,
  *                               hidden/popover content and generated labels
- *                               are excluded (math is excluded before KaTeX
- *                               would duplicate it in the MathML annotation)
+ *                               are excluded. Math is excluded here, before
+ *                               rehype-katex would duplicate every formula in
+ *                               the MathML <annotation> (TeX source) of its output.
  *   expandableWordCount         words inside stretchtext (folded by default)
  *   outline                     headings with their ids, in document order
  *   argument                    argument graph {nodes, edges} (Toulmin)
@@ -20,23 +21,14 @@ import { err, ok, type Result } from '../algebra/result.ts';
 import type { Locale } from '../domain/locale.ts';
 import { ARGUMENT_KINDS, isArgumentKind, type ArgumentKind } from '../reading/argument.ts';
 import { HEADING_RECORD, isHeadingRecord } from '../reading/records.ts';
-import {
-  childrenOf,
-  directiveName,
-  isClaimed,
-  isGenerated,
-  OPAQUE_TYPES,
-  sourceOf,
-  visibleText,
-  type MdNode,
-} from './tree.ts';
+import { childrenOf, directiveName, isClaimed, isGenerated, OPAQUE_TYPES, sourceOf, visibleText, type MdNode } from './tree.ts';
 import { countWords, readingMinutes } from './words.ts';
 
 export interface OutlineEntry {
   readonly depth: number;
   readonly id: string;
   readonly text: string;
-  /** False for headings inside stretchtext, asides, epigraphs or horizontal panels. */
+  /** False for headings inside stretchtext, asides, epigraphs, horizontal panels or footnotes. */
   readonly inToc: boolean;
 }
 
@@ -68,19 +60,6 @@ export interface DocumentMeta {
   readonly marginnoteCount: number;
 }
 
-export const EMPTY_META: DocumentMeta = {
-  wordCount: 0,
-  readingMinutes: 1,
-  expandableWordCount: 0,
-  outline: [],
-  argument: { nodes: [], edges: [] },
-  embeds: [],
-  hasEmbeds: false,
-  hasMath: false,
-  sidenoteCount: 0,
-  marginnoteCount: 0,
-};
-
 /** mdast node types that are phrasing content (inline). */
 const INLINE_TYPES = new Set([
   'text',
@@ -99,11 +78,41 @@ const INLINE_TYPES = new Set([
 ]);
 /** HTML phrasing elements that stages may emit through hName. */
 const INLINE_TAGS = new Set([
-  'a', 'abbr', 'b', 'bdi', 'bdo', 'br', 'cite', 'code', 'data', 'dfn', 'em', 'i', 'kbd', 'mark', 'math', 'q', 's',
-  'samp', 'small', 'span', 'strong', 'sub', 'sup', 'svg', 'time', 'u', 'var', 'wbr',
+  'a',
+  'abbr',
+  'b',
+  'bdi',
+  'bdo',
+  'br',
+  'cite',
+  'code',
+  'data',
+  'dfn',
+  'em',
+  'i',
+  'kbd',
+  'mark',
+  'math',
+  'q',
+  's',
+  'samp',
+  'small',
+  'span',
+  'strong',
+  'sub',
+  'sup',
+  'svg',
+  'time',
+  'u',
+  'var',
+  'wbr',
 ]);
 const isInline = (n: MdNode): boolean =>
   n.data?.hName !== undefined ? INLINE_TAGS.has(n.data.hName) : INLINE_TYPES.has(n.type);
+
+/** A side- or margin note: read as a separate text, never glued to the word before it. */
+const isNote = (n: MdNode): boolean =>
+  n.data?.hProperties?.['dataSidenote'] !== undefined || n.data?.hProperties?.['dataMarginnote'] !== undefined;
 
 /** Content no reader reads as prose. */
 const isExcluded = (n: MdNode): boolean => {
@@ -122,17 +131,16 @@ interface Block {
   readonly expandable: boolean;
 }
 
-/** Text of an inline run; code and math become word separators, claimed directives are space-delimited. */
+/** Text of an inline run; inline code and math become word separators. */
 const inlineText = (n: MdNode, source: string | null): string => {
   if (n.type === 'inlineCode' || n.type === 'inlineMath') return ' ';
   if (isExcluded(n)) return '';
   if (n.type === 'break') return ' ';
-  if (n.type === 'textDirective' && !isClaimed(n)) return visibleText(n, source);
+  if (n.type === 'textDirective' && !isClaimed(n)) return visibleText(n, source, 'final');
   if (typeof n.value === 'string') return n.value;
-  const inner = childrenOf(n)
+  return childrenOf(n)
     .map((c) => inlineText(c, source))
     .join('');
-  return n.type === 'textDirective' ? ` ${inner} ` : inner;
 };
 
 /** Splits the document into prose blocks so that words never glue across block boundaries. */
@@ -147,7 +155,7 @@ const proseBlocks = (root: MdNode, source: string | null): readonly Block[] => {
       run = '';
     };
     for (const c of childrenOf(node)) {
-      if (isInline(c)) run += inlineText(c, source);
+      if (isInline(c) && !isNote(c)) run += inlineText(c, source);
       else {
         flush();
         go(c, inside);
@@ -159,16 +167,13 @@ const proseBlocks = (root: MdNode, source: string | null): readonly Block[] => {
   return blocks;
 };
 
-const outlineOf = (root: MdNode, source: string | null): readonly OutlineEntry[] => {
-  const out: OutlineEntry[] = [];
+/** Headings recorded by the reading stage, in document order. */
+const headingsOf = (root: MdNode): readonly MdNode[] => {
+  const out: MdNode[] = [];
   const go = (node: MdNode): void => {
     if (OPAQUE_TYPES.has(node.type)) return;
     if (node.type === 'heading') {
-      const record = node.data?.[HEADING_RECORD];
-      const depth = node['depth'];
-      if (isHeadingRecord(record) && typeof depth === 'number') {
-        out.push({ depth, id: record.id, text: visibleText(node, source).trim(), inToc: record.inToc });
-      }
+      if (isHeadingRecord(node.data?.[HEADING_RECORD])) out.push(node);
       return;
     }
     for (const c of childrenOf(node)) go(c);
@@ -177,20 +182,22 @@ const outlineOf = (root: MdNode, source: string | null): readonly OutlineEntry[]
   return out;
 };
 
-const argumentOf = (root: MdNode, source: string | null): ArgumentMeta => {
-  const nodes: ArgumentNodeMeta[] = [];
-  const go = (node: MdNode): void => {
-    if (OPAQUE_TYPES.has(node.type)) return;
-    if (node.type === 'heading') {
-      const record = node.data?.[HEADING_RECORD];
-      if (isHeadingRecord(record) && record.kind !== null) {
-        nodes.push({ id: record.id, kind: record.kind, title: visibleText(node, source).trim(), depends: record.depends });
-      }
-      return;
-    }
-    for (const c of childrenOf(node)) go(c);
-  };
-  go(root);
+const outlineOf = (headings: readonly MdNode[], source: string | null): readonly OutlineEntry[] =>
+  headings.flatMap((node) => {
+    const record = node.data?.[HEADING_RECORD];
+    const depth = node['depth'];
+    return isHeadingRecord(record) && typeof depth === 'number'
+      ? [{ depth, id: record.id, text: visibleText(node, source, 'final').trim(), inToc: record.inToc }]
+      : [];
+  });
+
+const argumentOf = (headings: readonly MdNode[], source: string | null): ArgumentMeta => {
+  const nodes = headings.flatMap((node): readonly ArgumentNodeMeta[] => {
+    const record = node.data?.[HEADING_RECORD];
+    return isHeadingRecord(record) && record.kind !== null
+      ? [{ id: record.id, kind: record.kind, title: visibleText(node, source, 'final').trim(), depends: record.depends }]
+      : [];
+  });
   const ids = new Set(nodes.map((n) => n.id));
   const edges = nodes.flatMap((n) => n.depends.filter((d) => ids.has(d)).map((d) => ({ from: d, to: n.id })));
   return { nodes, edges };
@@ -199,15 +206,17 @@ const argumentOf = (root: MdNode, source: string | null): ArgumentMeta => {
 const count = (root: MdNode, predicate: (n: MdNode) => boolean): number =>
   (predicate(root) ? 1 : 0) + childrenOf(root).reduce((acc, c) => acc + count(c, predicate), 0);
 
+/** Custom-element tags: emitted by stages (hName) or written as raw HTML by the author. */
 const embedsOf = (root: MdNode): readonly string[] => {
   const tags = new Set<string>();
   const go = (n: MdNode): void => {
     const tag = n.data?.hName;
     if (tag !== undefined && tag.startsWith('ft-')) tags.add(tag);
+    if (n.type === 'html') for (const m of (n.value ?? '').matchAll(/<(ft-[a-z0-9-]+)/g)) tags.add(m[1] ?? '');
     for (const c of childrenOf(n)) go(c);
   };
   go(root);
-  return [...tags].sort();
+  return [...tags].filter((t) => t.length > 0).sort();
 };
 
 export interface FoldOptions {
@@ -218,17 +227,16 @@ export interface FoldOptions {
 /** The metadata fold. Deterministic; reads only. */
 export const foldDocument = (root: MdNode, options: FoldOptions): DocumentMeta => {
   const blocks = proseBlocks(root, options.source);
-  const wordCount = blocks.reduce((acc, b) => acc + countWords(b.text, options.locale), 0);
-  const expandableWordCount = blocks
-    .filter((b) => b.expandable)
-    .reduce((acc, b) => acc + countWords(b.text, options.locale), 0);
+  const words = (bs: readonly Block[]): number => bs.reduce((acc, b) => acc + countWords(b.text, options.locale), 0);
+  const wordCount = words(blocks);
   const embeds = embedsOf(root);
+  const headings = headingsOf(root);
   return {
     wordCount,
     readingMinutes: readingMinutes(wordCount),
-    expandableWordCount,
-    outline: outlineOf(root, options.source),
-    argument: argumentOf(root, options.source),
+    expandableWordCount: words(blocks.filter((b) => b.expandable)),
+    outline: outlineOf(headings, options.source),
+    argument: argumentOf(headings, options.source),
     embeds,
     hasEmbeds: embeds.length > 0,
     hasMath: count(root, (n) => n.type === 'math' || n.type === 'inlineMath') > 0,
@@ -271,7 +279,13 @@ export const parseDocumentMeta = (v: unknown): Result<DocumentMeta, readonly str
   const outline: OutlineEntry[] = [];
   if (Array.isArray(outlineRaw)) {
     for (const e of outlineRaw as readonly unknown[]) {
-      if (isRecord(e) && nat(e['depth']) && typeof e['id'] === 'string' && typeof e['text'] === 'string' && typeof e['inToc'] === 'boolean') {
+      if (
+        isRecord(e) &&
+        nat(e['depth']) &&
+        typeof e['id'] === 'string' &&
+        typeof e['text'] === 'string' &&
+        typeof e['inToc'] === 'boolean'
+      ) {
         outline.push({ depth: e['depth'], id: e['id'], text: e['text'], inToc: e['inToc'] });
       } else errors.push('outline: malformed entry');
     }
@@ -281,7 +295,13 @@ export const parseDocumentMeta = (v: unknown): Result<DocumentMeta, readonly str
   const edges: ArgumentEdgeMeta[] = [];
   if (isRecord(argRaw) && Array.isArray(argRaw['nodes']) && Array.isArray(argRaw['edges'])) {
     for (const n of argRaw['nodes'] as readonly unknown[]) {
-      if (isRecord(n) && typeof n['id'] === 'string' && isArgumentKind(n['kind']) && typeof n['title'] === 'string' && strings(n['depends'])) {
+      if (
+        isRecord(n) &&
+        typeof n['id'] === 'string' &&
+        isArgumentKind(n['kind']) &&
+        typeof n['title'] === 'string' &&
+        strings(n['depends'])
+      ) {
         nodes.push({ id: n['id'], kind: n['kind'], title: n['title'], depends: n['depends'] });
       } else errors.push(`argument.nodes: malformed node (kinds: ${ARGUMENT_KINDS.join(', ')})`);
     }
@@ -291,14 +311,14 @@ export const parseDocumentMeta = (v: unknown): Result<DocumentMeta, readonly str
     }
   } else errors.push('argument: expected {nodes, edges}');
   const embedsRaw = v['embeds'];
-  const embeds = strings(embedsRaw) ? embedsRaw : (errors.push('embeds: expected strings'), []);
+  if (!strings(embedsRaw)) errors.push('embeds: expected an array of strings');
   const meta: DocumentMeta = {
     wordCount: num('wordCount'),
     readingMinutes: num('readingMinutes'),
     expandableWordCount: num('expandableWordCount'),
     outline,
     argument: { nodes, edges },
-    embeds,
+    embeds: strings(embedsRaw) ? embedsRaw : [],
     hasEmbeds: bool('hasEmbeds'),
     hasMath: bool('hasMath'),
     sidenoteCount: num('sidenoteCount'),

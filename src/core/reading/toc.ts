@@ -5,8 +5,8 @@
  * copy of the heading's phrasing: foreign-language marking (<i lang>, WCAG
  * 3.1.2), abbreviations and math survive, while links are unwrapped (no
  * nested <a>), ids are dropped (no duplicates) and footnote references and
- * generated marks are removed. Unclaimed prose-like directives ("10:30") are
- * restored from the source exactly as the integrity stage would.
+ * generated marks are removed. Directives no stage claimed ("10:30") are
+ * restored from the source exactly as the integrity stage will do.
  */
 import {
   childrenOf,
@@ -58,10 +58,10 @@ const withoutId = (data: NodeData | undefined): NodeData | undefined => {
 export const tocPhrasing = (nodes: readonly MdNode[], source: string | null): readonly MdNode[] =>
   nodes.flatMap((n): readonly MdNode[] => {
     if (isGenerated(n) || n.type === 'footnoteReference') return [];
+    // Still unclaimed after every claiming stage: the integrity stage restores it verbatim.
     if (n.type === 'textDirective' && !isClaimed(n)) {
       const raw = sourceOf(n, source);
-      if (raw !== null && !/[[{]/.test(raw)) return [{ type: 'text', value: raw }];
-      return tocPhrasing(childrenOf(n), source);
+      return raw !== null ? [{ type: 'text', value: raw }] : tocPhrasing(childrenOf(n), source);
     }
     if (n.type === 'link' || n.type === 'linkReference' || n.data?.hName === 'a') return tocPhrasing(childrenOf(n), source);
     const { children, data, position: _position, ...rest } = n;
