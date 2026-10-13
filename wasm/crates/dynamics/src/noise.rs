@@ -218,8 +218,10 @@ mod tests {
 
     #[test]
     fn zero_at_lattice_points_bounded_and_deterministic() {
+        // Integer points with i + j + k ≡ 0 (mod 3) are vertices of the skewed lattice.
         assert_eq!(noise3(0.0, 0.0, 0.0, 0), 0.0);
-        assert_eq!(noise3(3.0, -2.0, 7.0, 9), 0.0);
+        assert_eq!(noise3(3.0, -2.0, 8.0, 9), 0.0);
+        assert_eq!(noise3(-5.0, 1.0, 1.0, u32::MAX), 0.0);
         let mut max = 0.0_f64;
         for i in 0..20_000 {
             let f = f64::from(i);

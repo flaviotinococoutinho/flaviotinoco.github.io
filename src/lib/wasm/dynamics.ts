@@ -4,12 +4,18 @@
  * flow field of the hero animation. Invalid arguments throw `RangeError`, kernel failures
  * {@link KernelError}.
  */
-import { assertFinite, assertU32, check, type CoreExports, withArena } from './runtime.ts';
+import { assertFinite, assertU32, check, type CoreExports, inArenaScope, withArena } from './runtime.ts';
 
-/** Raw exports of `dynamics.wasm` (ABI v1). Pointers are byte offsets. */
+/**
+ * Raw exports of `dynamics.wasm` (ABI v1). Pointers are byte offsets into the live arena; fallible functions
+ * return a status code (`Status` in `runtime.ts`). Prefer the {@link DynamicsKernel} methods.
+ */
 export interface DynamicsExports extends CoreExports {
+  /** `out[k]`, `k < n`: orbit of `x ↦ r·x·(1 − x)` from `x0` (May 1976). */
   readonly logistic_orbit: (r: number, x0: number, n: number, out: number) => number;
+  /** Lyapunov exponent in nats/iteration (May 1976); `NaN` for invalid parameters. */
   readonly logistic_lyapunov: (r: number, x0: number, transient: number, n: number) => number;
+  /** `u32` density image of the attractor (Feigenbaum 1978); returns the maximum count, `0` on error. */
   readonly logistic_bifurcation: (
     rMin: number,
     rMax: number,
@@ -19,6 +25,7 @@ export interface DynamicsExports extends CoreExports {
     iterations: number,
     out: number,
   ) => number;
+  /** Lyapunov exponent (`f64`) at `samples` pixel-centre values of `r` (May 1976). */
   readonly lyapunov_curve: (
     rMin: number,
     rMax: number,
@@ -27,6 +34,7 @@ export interface DynamicsExports extends CoreExports {
     n: number,
     out: number,
   ) => number;
+  /** RK4 trajectory of the Lorenz (1963) system as `f32` `x, y, z` triples. */
   readonly lorenz: (
     sigma: number,
     rho: number,
@@ -38,6 +46,7 @@ export interface DynamicsExports extends CoreExports {
     z0: number,
     out: number,
   ) => number;
+  /** `u32` histogram over `z ∈ [−4, 4)` of standardised sums of uniforms; PCG32 seed `hi·2^32 + lo` (O'Neill 2014). */
   readonly clt_histogram: (
     seedLo: number,
     seedHi: number,
@@ -46,10 +55,15 @@ export interface DynamicsExports extends CoreExports {
     bins: number,
     out: number,
   ) => number;
+  /** 3D simplex noise in `[−1, 1]` (Gustavson 2005); `NaN` for non-finite input. */
   readonly noise3: (x: number, y: number, z: number, seed: number) => number;
+  /** Creates the curl-noise particle field (Bridson et al. 2007); releases the whole arena. */
   readonly flow_init: (n: number, seed: number, width: number, height: number) => number;
+  /** Advances the particles by `dt` at noise time `t` (Bridson et al. 2007). */
   readonly flow_step: (t: number, dt: number, scale: number, speed: number) => number;
+  /** Byte offset of the `f32` segment buffer `[x0, y0, x1, y1, alpha] × flow_count()` (`0` before `flow_init`). */
   readonly flow_segments_ptr: () => number;
+  /** Number of particles (`0` before `flow_init`). */
   readonly flow_count: () => number;
 }
 
@@ -141,9 +155,10 @@ export interface DynamicsKernel {
   /** 3D simplex noise (Perlin 2001; Gustavson 2005), deterministic per seed, in `[−1, 1]`. */
   readonly noise3: (x: number, y: number, z: number, seed?: number) => number;
   /**
-   * Creates the curl-noise flow field (Bridson, Hourihan & Nordenstam 2007) with `n` particles in
-   * `[0, width) × [0, height)` px. Releases every arena allocation; the particle state then persists
-   * across `arena_reset` until the next `flowInit`.
+   * Creates the curl-noise flow field (Bridson, Hourihan & Nordenstam 2007) with `n ≤ 65536` particles
+   * in `[0, width) × [0, height)` px, seeded deterministically. It releases every arena allocation (so it
+   * throws inside a `withArena` scope); the particle state then persists across `arena_reset` until the
+   * next `flowInit`. There is one field per module instance.
    */
   readonly flowInit: (n: number, seed: number, width: number, height: number) => void;
   /**
@@ -151,11 +166,13 @@ export interface DynamicsKernel {
    * `ψ = noise3(x·scale, y·scale, t)` (divergence-free; Bridson et al. 2007); `speed` in px per time unit.
    */
   readonly flowStep: (t: number, dt: number, scale: number, speed: number) => void;
-  /** Number of particles (`0` before {@link DynamicsKernel.flowInit}). */
+  /** Number of particles of the curl-noise field (Bridson et al. 2007); `0` before {@link DynamicsKernel.flowInit}. */
   readonly flowCount: () => number;
   /**
-   * Copies the last step's segments `[x0, y0, x1, y1, alpha] × count` (px, alpha ∈ [0,1]) into
-   * `target` (allocated when absent or too short) and returns the filled prefix.
+   * Copies the last step's motion segments `[x0, y0, x1, y1, alpha] × count` (px; `alpha ∈ [0, 1]` fades in
+   * and out over each particle's lifetime) of the curl-noise field (Bridson et al. 2007) into `target`
+   * (allocated when absent or too short) and returns the filled prefix. Respawned particles emit a
+   * degenerate segment with `alpha = 0`.
    */
   readonly flowSegments: (target?: Float32Array) => Float32Array;
 }
@@ -223,6 +240,7 @@ export function createDynamicsKernel(exports: DynamicsExports): DynamicsKernel {
     lorenz: ({ steps, sigma = 10, rho = 28, beta = 8 / 3, dt = 0.01, x0 = 1, y0 = 1, z0 = 1 }) => {
       assertU32('steps', steps, 1);
       for (const [name, v] of Object.entries({ sigma, rho, beta, dt, x0, y0, z0 })) assertFinite(name, v);
+      if (dt <= 0) throw new RangeError(`dt must be positive, got ${dt}`);
       return withArena(k, (arena) => {
         const out = arena.alloc('f32', steps * 3);
         check('lorenz', k.lorenz(sigma, rho, beta, dt, steps, x0, y0, z0, out.ptr));
@@ -250,6 +268,7 @@ export function createDynamicsKernel(exports: DynamicsExports): DynamicsKernel {
     flowInit: (n, seed, width, height) => {
       assertU32('n', n, 1);
       assertU32('seed', seed);
+      if (inArenaScope(k)) throw new Error('flowInit releases the whole arena: call it outside withArena');
       check('flow_init', k.flow_init(n, seed, width, height));
     },
 

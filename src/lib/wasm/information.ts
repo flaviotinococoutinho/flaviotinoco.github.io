@@ -5,20 +5,36 @@
  */
 import { assertU32, assertU32Array, check, type CoreExports, KernelError, Status, withArena } from './runtime.ts';
 
-/** Raw exports of `information.wasm` (ABI v1). Pointers are byte offsets. */
+/**
+ * Raw exports of `information.wasm` (ABI v1). Pointers are byte offsets into the live arena; quantities are in
+ * bits; `f64` results are `NaN` for invalid pointers/parameters. Prefer the {@link InformationKernel} methods.
+ */
 export interface InformationExports extends CoreExports {
+  /** Writes the 256 `u32` byte counts of `data[0..len)` to `countsOut`; status code. */
   readonly histogram_u8: (data: number, len: number, countsOut: number) => number;
+  /** Shannon entropy `−Σ (c_i/N) log2(c_i/N)` of `k` `u32` counts (Shannon 1948); `0` if empty. */
   readonly entropy_counts: (counts: number, k: number) => number;
+  /** Order-0 entropy of `len` bytes in bits/symbol (Shannon 1948). */
   readonly entropy_bytes: (data: number, len: number) => number;
+  /** `H(X_n | X_{n−1})` in bits/symbol from bigram counts (Shannon 1948); `0` if `len < 2`. */
   readonly conditional_entropy_bytes: (data: number, len: number) => number;
+  /** Huffman (1952) code lengths (`u32`) for `k ≤ 4096` counts; returns the expected length in bits/symbol. */
   readonly huffman_lengths: (counts: number, k: number, lengthsOut: number) => number;
+  /** `D(P‖Q)` in bits of two `f64` vectors, normalised internally (Kullback & Leibler 1951). */
   readonly kl_divergence: (p: number, q: number, k: number) => number;
+  /** Jensen–Shannon divergence in bits, in `[0, 1]` (Lin 1991). */
   readonly js_divergence: (p: number, q: number, k: number) => number;
+  /** `H2(p)` in bits, `p` clamped to `[0, 1]` (Shannon 1948). */
   readonly binary_entropy: (p: number) => number;
+  /** BSC capacity `1 − H2(p)` in bits per channel use (Shannon 1948). */
   readonly bsc_capacity: (p: number) => number;
+  /** BEC capacity `1 − e` in bits per channel use (Elias 1955). */
   readonly bec_capacity: (e: number) => number;
+  /** `I(X;Y)` in bits of a row-major `f64` joint matrix, normalised internally (Shannon 1948). */
   readonly mutual_information: (joint: number, rows: number, cols: number) => number;
+  /** `out[i] = 1 − ln(hyponyms[i] + 1)/ln(total)` as `f64` (Seco, Veale & Hayes 2004); status code. */
   readonly intrinsic_ic: (hyponyms: number, n: number, total: number, out: number) => number;
+  /** `2·IC(lcs)/(IC(a) + IC(b))` (Lin 1998); `1` when all three are `0`. */
   readonly lin_similarity: (icLcs: number, icA: number, icB: number) => number;
 }
 
@@ -37,7 +53,7 @@ export interface HuffmanCode {
 export interface InformationKernel {
   /** The raw exports (for advanced, allocation-free use). */
   readonly exports: InformationExports;
-  /** Byte histogram: 256 counts `c_b = #{i : data_i = b}`. */
+  /** Byte histogram: 256 counts `c_b = #{i : data_i = b}`, the empirical source statistics of Shannon (1948). */
   readonly histogram: (data: Uint8Array | string) => Uint32Array;
   /** Shannon entropy `H = −Σ (c_i/N) log2(c_i/N)` in bits of a count vector (Shannon 1948); `0` if empty. */
   readonly entropyCounts: (counts: ArrayLike<number>) => number;

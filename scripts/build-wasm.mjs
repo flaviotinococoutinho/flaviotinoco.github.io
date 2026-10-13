@@ -9,12 +9,22 @@
 // optional `wasm-opt -Oz` (only when a wasm-opt binary is on PATH; kept only if smaller) →
 // validation (zero imports, exactly the documented exports, abi_version() === 1, arena
 // smoke test) → size budget (warn > 24 KiB, fail > 48 KiB raw) → report and manifest.
+// Gzip sizes use zlib's default level 6 (as scripts/check-budgets.ts does), i.e. roughly what a static
+// host serves. The manifest is a JSON array of { name, bytes, gzipBytes, sha256 } (bytes = raw size).
 // Plain Node ESM, no dependencies. Exits non-zero on any failure.
 // See docs/adr/0003-wasm-kernels.md.
 
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { accessSync, constants as fsConstants, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  accessSync,
+  constants as fsConstants,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { delimiter, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -98,7 +108,9 @@ function parseArgs(argv) {
   for (const arg of argv) {
     if (arg === '--check') opts.check = true;
     else if (arg === '--help' || arg === '-h') {
-      console.log('Usage: node scripts/build-wasm.mjs [--check]\n  --check  build and validate only; do not write src/wasm/');
+      console.log(
+        'Usage: node scripts/build-wasm.mjs [--check]\n  --check  build and validate only; do not write src/wasm/',
+      );
       process.exit(0);
     } else throw new BuildError(`unknown argument: ${arg}`);
   }
@@ -179,7 +191,9 @@ async function validate(name, bytes) {
   const module = await WebAssembly.compile(bytes);
   const imports = WebAssembly.Module.imports(module);
   if (imports.length !== 0) {
-    throw new BuildError(`${name}.wasm has ${imports.length} import(s): ${imports.map((i) => `${i.module}.${i.name}`).join(', ')}`);
+    throw new BuildError(
+      `${name}.wasm has ${imports.length} import(s): ${imports.map((i) => `${i.module}.${i.name}`).join(', ')}`,
+    );
   }
   const exports = WebAssembly.Module.exports(module);
   const actual = exports.map((e) => e.name).sort();
@@ -187,7 +201,9 @@ async function validate(name, bytes) {
   const missing = expected.filter((e) => !actual.includes(e));
   const extra = actual.filter((e) => !expected.includes(e));
   if (missing.length || extra.length) {
-    throw new BuildError(`${name}.wasm exports differ from ABI v${ABI_VERSION}: missing [${missing.join(', ')}], unexpected [${extra.join(', ')}]`);
+    throw new BuildError(
+      `${name}.wasm exports differ from ABI v${ABI_VERSION}: missing [${missing.join(', ')}], unexpected [${extra.join(', ')}]`,
+    );
   }
   for (const e of exports) {
     const kind = e.name === 'memory' ? 'memory' : 'function';
@@ -197,7 +213,8 @@ async function validate(name, bytes) {
   const version = api.abi_version() >>> 0;
   if (version !== ABI_VERSION) throw new BuildError(`${name}.wasm abi_version() = ${version}, expected ${ABI_VERSION}`);
   const ptr = api.arena_alloc(64, 8) >>> 0;
-  if (ptr === 0 || ptr % 8 !== 0 || api.arena_used() >>> 0 < 64) throw new BuildError(`${name}.wasm arena smoke test failed`);
+  if (ptr === 0 || ptr % 8 !== 0 || api.arena_used() >>> 0 < 64)
+    throw new BuildError(`${name}.wasm arena smoke test failed`);
   if (api.arena_alloc(8, 3) >>> 0 !== 0) throw new BuildError(`${name}.wasm accepted a non-power-of-two alignment`);
   api.arena_reset();
   if (api.arena_used() >>> 0 !== 0) throw new BuildError(`${name}.wasm arena_reset() did not free the arena`);
@@ -207,13 +224,21 @@ const fmtKiB = (n) => `${(n / KIB).toFixed(2)} KiB`;
 
 function printTable(rows) {
   const header = ['module', 'raw', 'gzip', 'wasm-opt', 'budget'];
-  const body = rows.map((r) => [`${r.name}.wasm`, `${r.bytes} B (${fmtKiB(r.bytes)})`, `${r.gzipBytes} B (${fmtKiB(r.gzipBytes)})`, r.optimiser, r.status]);
+  const body = rows.map((r) => [
+    `${r.name}.wasm`,
+    `${r.bytes} B (${fmtKiB(r.bytes)})`,
+    `${r.gzipBytes} B (${fmtKiB(r.gzipBytes)})`,
+    r.optimiser,
+    r.status,
+  ]);
   const widths = header.map((h, i) => Math.max(h.length, ...body.map((row) => row[i].length)));
   const line = (cells) => cells.map((c, i) => c.padEnd(widths[i])).join('  ');
   console.log(`\n${line(header)}\n${widths.map((w) => '-'.repeat(w)).join('  ')}`);
   for (const row of body) console.log(line(row));
   const total = rows.reduce((a, r) => [a[0] + r.bytes, a[1] + r.gzipBytes], [0, 0]);
-  console.log(`${'total'.padEnd(widths[0])}  ${`${total[0]} B (${fmtKiB(total[0])})`.padEnd(widths[1])}  ${total[1]} B (${fmtKiB(total[1])})\n`);
+  console.log(
+    `${'total'.padEnd(widths[0])}  ${`${total[0]} B (${fmtKiB(total[0])})`.padEnd(widths[1])}  ${total[1]} B (${fmtKiB(total[1])})\n`,
+  );
 }
 
 async function main() {
@@ -223,9 +248,13 @@ async function main() {
   }
 
   console.log(`build-wasm: cargo build --release --target ${TARGET} (in ${relative(ROOT, WASM_DIR) || '.'})`);
-  run('cargo', ['build', '--release', '--locked', '--target', TARGET, '--manifest-path', join(WASM_DIR, 'Cargo.toml')], {
-    cwd: WASM_DIR,
-  });
+  run(
+    'cargo',
+    ['build', '--release', '--locked', '--target', TARGET, '--manifest-path', join(WASM_DIR, 'Cargo.toml')],
+    {
+      cwd: WASM_DIR,
+    },
+  );
 
   const optimiser = findOnPath('wasm-opt');
   const rows = [];
@@ -244,7 +273,7 @@ async function main() {
         optimised = 'no gain';
       }
     }
-    const gzipBytes = gzipSync(bytes, { level: 9 }).length;
+    const gzipBytes = gzipSync(bytes).length;
     const sha256 = createHash('sha256').update(bytes).digest('hex');
     let status = 'ok';
     if (bytes.length > FAIL_BYTES) {
@@ -257,7 +286,9 @@ async function main() {
   }
 
   printTable(rows);
-  for (const r of rows) if (r.status.startsWith('warn')) console.warn(`build-wasm: warning: ${r.name}.wasm exceeds the ${fmtKiB(WARN_BYTES)} soft budget`);
+  for (const r of rows)
+    if (r.status.startsWith('warn'))
+      console.warn(`build-wasm: warning: ${r.name}.wasm exceeds the ${fmtKiB(WARN_BYTES)} soft budget`);
   if (failed) throw new BuildError(`a module exceeds the hard budget of ${fmtKiB(FAIL_BYTES)}`);
 
   if (opts.check) {
@@ -266,10 +297,7 @@ async function main() {
   }
   mkdirSync(OUT_DIR, { recursive: true });
   for (const r of rows) writeFileSync(join(OUT_DIR, `${r.name}.wasm`), r.data);
-  const manifest = {
-    abiVersion: ABI_VERSION,
-    modules: rows.map(({ name, bytes, gzipBytes, sha256 }) => ({ name, bytes, gzipBytes, sha256 })),
-  };
+  const manifest = rows.map(({ name, bytes, gzipBytes, sha256 }) => ({ name, bytes, gzipBytes, sha256 }));
   writeFileSync(join(OUT_DIR, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   console.log(`build-wasm: wrote ${rows.length} modules and manifest.json to ${relative(ROOT, OUT_DIR)}/`);
 }

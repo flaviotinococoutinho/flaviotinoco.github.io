@@ -223,6 +223,14 @@ export class Arena {
 const depth = new WeakMap<CoreExports, number>();
 
 /**
+ * Whether a {@link withArena} scope is currently open on `kernel`. Operations that release the whole
+ * arena (such as `flow_init` in `dynamics.wasm`) must not run inside one.
+ */
+export function inArenaScope(kernel: CoreExports): boolean {
+  return (depth.get(kernel) ?? 0) > 0;
+}
+
+/**
  * Runs `fn` with an {@link Arena} on `kernel` and resets the kernel's arena when the outermost scope
  * ends (nested scopes share it). `fn` must be synchronous: copy results out (e.g. with
  * {@link ArenaBuffer.read}) before returning, because every buffer is invalid afterwards.

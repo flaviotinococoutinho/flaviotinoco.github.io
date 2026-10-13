@@ -142,7 +142,10 @@ pub fn kl_divergence(p: &[f64], q: &[f64]) -> f64 {
             return f64::INFINITY;
         }
         let (pi, qi) = (pi / sp, qi / sq);
-        d += pi * (libm::log2(pi) - libm::log2(qi));
+        // A subnormal entry can round to 0 when normalised: its term is 0·log 0 = 0.
+        if pi > 0.0 {
+            d += pi * (libm::log2(pi) - libm::log2(qi));
+        }
     }
     d.max(0.0)
 }

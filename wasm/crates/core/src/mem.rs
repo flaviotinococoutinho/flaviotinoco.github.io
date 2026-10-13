@@ -50,6 +50,10 @@ impl Region {
     }
 }
 
+/// Largest region size in bytes: slices may not span more than `isize::MAX` bytes
+/// (2 GiB − 1 on wasm32), even though linear memory can reach 4 GiB.
+const MAX_REGION_BYTES: u64 = isize::MAX as u64;
+
 /// Validates the region `(ptr, len)` of `T` against the live arena.
 pub fn region<T: Pod>(ptr: u32, len: u32) -> KResult<Region> {
     if len == 0 {
@@ -58,9 +62,15 @@ pub fn region<T: Pod>(ptr: u32, len: u32) -> KResult<Region> {
     let (floor, top) = arena::live();
     let start = u64::from(ptr);
     // No overflow: len < 2^32 and size_of::<T>() <= 8.
-    let end = start + u64::from(len) * size_of::<T>() as u64;
+    let bytes = u64::from(len) * size_of::<T>() as u64;
+    let end = start + bytes;
     let aligned = start % align_of::<T>() as u64 == 0;
-    if ptr == 0 || !aligned || start < u64::from(floor) || end > u64::from(top) {
+    if ptr == 0
+        || !aligned
+        || start < u64::from(floor)
+        || end > u64::from(top)
+        || bytes > MAX_REGION_BYTES
+    {
         return Err(Error::InvalidParameter);
     }
     Ok(Region { start, end })

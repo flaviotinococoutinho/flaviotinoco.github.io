@@ -204,23 +204,25 @@ const ROLES: Readonly<Record<ModuleName, Readonly<Record<string, string>>>> = {
 
 describe('src/wasm/manifest.json', () => {
   const path = fileURLToPath(new URL('../../../src/wasm/manifest.json', import.meta.url));
-  const manifest = JSON.parse(readFileSync(path, 'utf8')) as {
-    abiVersion: number;
-    modules: { name: string; bytes: number; gzipBytes: number; sha256: string }[];
-  };
+  const manifest = JSON.parse(readFileSync(path, 'utf8')) as readonly {
+    name: string;
+    bytes: number;
+    gzipBytes: number;
+    sha256: string;
+  }[];
 
-  it('describes every built module exactly', () => {
-    expect(manifest.abiVersion).toBe(1);
-    expect(manifest.modules.map((m) => m.name).sort()).toEqual([...NAMES].sort());
-    for (const entry of manifest.modules) {
+  it('describes every built module exactly ({ name, bytes, gzipBytes, sha256 })', () => {
+    expect(manifest.map((m) => m.name).sort()).toEqual([...NAMES].sort());
+    for (const entry of manifest) {
+      expect(Object.keys(entry).sort()).toEqual(['bytes', 'gzipBytes', 'name', 'sha256']);
       const bytes = moduleBytes(entry.name as ModuleName);
       expect(entry.bytes).toBe(bytes.length);
-      expect(entry.gzipBytes).toBe(gzipSync(bytes, { level: 9 }).length);
+      expect(entry.gzipBytes).toBe(gzipSync(bytes).length);
       expect(entry.sha256).toBe(createHash('sha256').update(bytes).digest('hex'));
     }
   });
 
   it('keeps every module within the hard size budget (48 KiB raw)', () => {
-    for (const entry of manifest.modules) expect(entry.bytes).toBeLessThanOrEqual(48 * 1024);
+    for (const entry of manifest) expect(entry.bytes).toBeLessThanOrEqual(48 * 1024);
   });
 });

@@ -250,8 +250,10 @@ pub fn ptr(offset: u32) -> *mut u8 {
 
 /// Allocates `len` elements of `T` and returns their offset (for persistent state).
 pub fn alloc_array<T: Pod>(len: usize) -> KResult<u32> {
+    // A slice may span at most `isize::MAX` bytes.
     let bytes = len
         .checked_mul(size_of::<T>())
+        .filter(|&b| b <= isize::MAX as usize)
         .and_then(|b| u32::try_from(b).ok())
         .ok_or(Error::OutOfMemory)?;
     // Alignments of Pod types are tiny powers of two.

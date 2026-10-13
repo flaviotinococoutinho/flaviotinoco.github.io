@@ -15,7 +15,10 @@ beforeAll(async () => {
 
 const randomSignal = (n: number, seed: number): { re: Float64Array; im: Float64Array } => {
   const r = mulberry32(seed);
-  return { re: Float64Array.from({ length: n }, () => 2 * r() - 1), im: Float64Array.from({ length: n }, () => 2 * r() - 1) };
+  return {
+    re: Float64Array.from({ length: n }, () => 2 * r() - 1),
+    im: Float64Array.from({ length: n }, () => 2 * r() - 1),
+  };
 };
 
 describe('fft (Cooley & Tukey 1965)', () => {
@@ -33,7 +36,8 @@ describe('fft (Cooley & Tukey 1965)', () => {
     expect(Array.from(kernel.fft(impulse).re)).toEqual(new Array<number>(16).fill(1));
     const n = 64;
     const tone = Float64Array.from({ length: n }, (_, t) => Math.cos((2 * Math.PI * 5 * t) / n));
-    const spectrum = kernel.magnitude(...Object.values(kernel.fft(tone)) as [Float64Array, Float64Array]);
+    const { re, im } = kernel.fft(tone);
+    const spectrum = kernel.magnitude(re, im);
     expect(at(spectrum, 5)).toBeCloseTo(n / 2, 9);
     expect(at(spectrum, n - 5)).toBeCloseTo(n / 2, 9);
     expect(sum(spectrum) - at(spectrum, 5) - at(spectrum, n - 5)).toBeLessThan(1e-9);
@@ -78,21 +82,33 @@ describe('fft (Cooley & Tukey 1965)', () => {
       const a = arena.alloc('f64', 8);
       expect(raw.fft(a.ptr, a.ptr, 8)).toBe(Status.INVALID_PARAMETER); // re and im alias
       expect(raw.fft(a.ptr + 4, a.ptr + 4 + 64, 2)).toBe(Status.INVALID_PARAMETER); // misaligned
-      expect(raw.fft(a.ptr, a.ptr + 1 << 20, 8)).toBe(Status.INVALID_PARAMETER); // outside the arena
+      expect(raw.fft(a.ptr, a.ptr + (1 << 20), 8)).toBe(Status.INVALID_PARAMETER); // outside the arena
+      expect(raw.fft(a.ptr, a.ptr + 64, 8)).toBe(Status.INVALID_PARAMETER); // im runs past the arena top
       expect(raw.fft(0, a.ptr, 1)).toBe(Status.INVALID_PARAMETER); // null
     });
   });
 });
 
 describe('spectra', () => {
-  it('magnitude and powerDb follow their definitions', () => {
-    const re = [3, 0, -4, 1e-200];
-    const im = [4, 0, 3, 0];
-    expect(Array.from(kernel.magnitude(re, im))).toEqual([5, 0, 5, 1e-200]);
+  it('magnitude and powerDb follow their definitions (no overflow or underflow of |X|²)', () => {
+    const re = [3, 0, -4, 1e-200, 3e200];
+    const im = [4, 0, 3, 0, 4e200];
+    const mag = kernel.magnitude(re, im);
+    expect(Array.from(mag.subarray(0, 4))).toEqual([5, 0, 5, 1e-200]);
+    expect(at(mag, 4) / 5e200).toBeCloseTo(1, 14);
     const db = kernel.powerDb(re, im, -150);
-    expect(at(db, 0)).toBeCloseTo(10 * Math.log10(25 / 16), 12);
+    expect(at(db, 0)).toBeCloseTo(10 * Math.log10(25 / 25), 12);
     expect(at(db, 1)).toBe(-150);
+    expect(at(db, 2)).toBeCloseTo(0, 12);
     expect(at(db, 3)).toBe(-150);
+    expect(at(db, 4)).toBeCloseTo(20 * Math.log10(1e200), 9);
+    // A full-scale tone: a cosine of amplitude 1 puts N/2 in its bin, i.e. −6.02 dB relative to N.
+    const n = 32;
+    const tone = Float64Array.from({ length: n }, (_, t) => Math.cos((2 * Math.PI * 4 * t) / n));
+    const spec = kernel.fft(tone);
+    expect(at(kernel.powerDb(spec.re, spec.im), 4)).toBeCloseTo(10 * Math.log10(0.25), 9);
+    expect(at(kernel.powerDb(spec.re, spec.im), 5)).toBe(-120);
+    expect(() => kernel.powerDb([1], [1], NaN)).toThrow(RangeError);
   });
 
   it('spectral entropy is 1 for white spectra and 0 for a single line', () => {
@@ -138,7 +154,12 @@ describe('windows (Harris 1978)', () => {
   it('multiply applies a window, also in place', () => {
     const w = kernel.window('hann', 8);
     const ones = new Float64Array(8).fill(2);
-    expect(maxAbsDiff(kernel.multiply(ones, w), w.map((v) => 2 * v))).toBe(0);
+    expect(
+      maxAbsDiff(
+        kernel.multiply(ones, w),
+        w.map((v) => 2 * v),
+      ),
+    ).toBe(0);
     withArena(raw, (arena) => {
       const a = arena.from('f64', [1, 2, 3]);
       const b = arena.from('f64', [4, 5, 6]);
@@ -185,11 +206,15 @@ describe('Fourier partial sums and the Gibbs phenomenon', () => {
   });
 
   it('Lanczos σ-factors suppress the overshoot to ≈ 1.0237 (1.19 % of the jump)', () => {
+    const plain = Math.max(...kernel.fourierSeries('square', 200, 1 << 14));
     const peak = Math.max(...kernel.fourierSeries('square', 200, 1 << 14, { sigma: true }));
-    // Asymptotically max_u (G(u+π) − G(u−π))/π² with G(s) = s·Si(s) + cos s, i.e. 1.023740…; the
-    // spec's "< 1.02" is below what σ-factors can reach, see docs/adr/0003-wasm-kernels.md.
+    // Asymptotically max_u (G(u+π) − G(u−π))/π² with G(s) = s·Si(s) + cos s, i.e. 1.023740…: the
+    // σ-factors defined in the spec cannot reach "< 1.02" (see docs/adr/0003-wasm-kernels.md).
     expect(peak).toBeLessThan(1.025);
     expect(Math.abs(peak - 1.02374)).toBeLessThan(2e-3);
+    expect((plain - 1) / (peak - 1)).toBeGreaterThan(7); // the overshoot shrinks 7.5-fold
+    // The σ-smoothed sum still converges to the square wave away from the jump.
+    expect(at(kernel.fourierSeries('square', 200, 4, { sigma: true }), 1)).toBeCloseTo(1, 4);
   });
 
   it('zero harmonics is silence; invalid kinds and counts are rejected', () => {
@@ -286,7 +311,8 @@ describe('sampling and reconstruction (Whittaker 1915; Shannon 1949)', () => {
       for (let k = 0; k < samples.length; k++) want += at(samples, k) * sinc(fs * t - k);
       expect(at(y, i)).toBeCloseTo(want, 10);
     }
+    // At the sample instants every other sinc vanishes (up to the rounding of t = 49/fs · i/49).
     const exact = kernel.reconstructSinc(samples, fs, 0, 49 / fs, 50);
-    expect(maxAbsDiff(exact, samples)).toBeLessThan(1e-15);
+    expect(maxAbsDiff(exact, samples)).toBeLessThan(1e-13);
   });
 });

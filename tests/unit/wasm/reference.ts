@@ -170,6 +170,46 @@ export function logisticOrbit(r: number, x0: number, n: number): Float64Array {
   return out;
 }
 
+/** Logistic-map Lyapunov exponent `(1/n) Σ ln max(|r(1 − 2x_k)|, 1e−300)` after `transient` iterates. */
+export function logisticLyapunov(r: number, x0: number, transient: number, n: number): number {
+  const step = (x: number): number => Math.min(1, Math.max(0, r * x * (1 - x)));
+  let x = x0;
+  for (let i = 0; i < transient; i++) x = step(x);
+  let sum = 0;
+  for (let i = 0; i < n; i++) {
+    sum += Math.log(Math.max(Math.abs(r * (1 - 2 * x)), 1e-300));
+    x = step(x);
+  }
+  return sum / n;
+}
+
+/** Bifurcation density image: column `c` iterates `r = rMin + (rMax − rMin)(c + ½)/width` from `x = ½`. */
+export function logisticBifurcation(
+  rMin: number,
+  rMax: number,
+  width: number,
+  height: number,
+  transient: number,
+  iterations: number,
+): { counts: Uint32Array; max: number } {
+  const counts = new Uint32Array(width * height);
+  let max = 0;
+  for (let c = 0; c < width; c++) {
+    const r = rMin + (rMax - rMin) * ((c + 0.5) / width);
+    const step = (x: number): number => Math.min(1, Math.max(0, r * x * (1 - x)));
+    let x = 0.5;
+    for (let i = 0; i < transient; i++) x = step(x);
+    for (let i = 0; i < iterations; i++) {
+      x = step(x);
+      const row = Math.min(height - 1, Math.floor((1 - x) * height));
+      const idx = row * width + c;
+      counts[idx] = at(counts, idx) + 1;
+      max = Math.max(max, at(counts, idx));
+    }
+  }
+  return { counts, max };
+}
+
 /** Lorenz system integrated with classical RK4 in double precision. */
 export function lorenzRk4(
   sigma: number,

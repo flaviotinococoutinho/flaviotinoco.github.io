@@ -65,22 +65,23 @@ pub fn fft(re: &mut [f64], im: &mut [f64], inverse: bool) -> KResult {
     Ok(())
 }
 
-/// `out[k] = sqrt(re[k]² + im[k]²)`.
+/// `out[k] = sqrt(re[k]² + im[k]²)`, computed with `hypot` so that neither the squares'
+/// overflow (`|X| > 1e154`) nor their underflow (`|X| < 1e-154`) distorts the result.
 pub fn magnitude(re: &[f64], im: &[f64], out: &mut [f64]) {
     for ((o, &r), &i) in out.iter_mut().zip(re).zip(im) {
-        *o = libm::sqrt(r * r + i * i);
+        *o = libm::hypot(r, i);
     }
 }
 
 /// Power spectrum in decibels relative to a full-scale sinusoid of the transform length:
-/// `out[k] = max(10·log10(|X_k|² / N²), floor_db)` with `N = out.len()`.
+/// `out[k] = max(10·log10(|X_k|² / N²), floor_db)` with `N = out.len()`, evaluated as
+/// `20·log10(hypot(re, im) / N)` (same value, no overflow of `|X|²`).
 ///
 /// Zero (and NaN) bins map to `floor_db`.
 pub fn power_db(re: &[f64], im: &[f64], out: &mut [f64], floor_db: f64) {
-    let n = out.len() as f64;
-    let norm = 1.0 / (n * n);
+    let inv_n = 1.0 / out.len() as f64;
     for ((o, &r), &i) in out.iter_mut().zip(re).zip(im) {
-        let db = 10.0 * libm::log10((r * r + i * i) * norm);
+        let db = 20.0 * libm::log10(libm::hypot(r, i) * inv_n);
         *o = if db > floor_db { db } else { floor_db };
     }
 }
@@ -183,6 +184,15 @@ mod tests {
             fft(&mut [0.0; 4], &mut [0.0; 2], false),
             Err(Error::InvalidLength)
         );
+    }
+
+    #[test]
+    fn magnitude_neither_overflows_nor_underflows() {
+        let mut out = [0.0; 3];
+        magnitude(&[3.0, 1e-200, 3e200], &[4.0, 0.0, 4e200], &mut out);
+        assert_eq!(out[0], 5.0);
+        assert_eq!(out[1], 1e-200);
+        assert!((out[2] / 5e200 - 1.0).abs() < 1e-15);
     }
 
     #[test]

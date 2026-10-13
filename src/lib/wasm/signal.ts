@@ -3,24 +3,26 @@
  * phenomenon), sampling and reconstruction. Methods copy their inputs into the kernel arena and
  * return fresh arrays; invalid arguments throw `RangeError`, kernel failures {@link KernelError}.
  */
-import {
-  assertFinite,
-  assertU32,
-  check,
-  type CoreExports,
-  KernelError,
-  Status,
-  withArena,
-} from './runtime.ts';
+import { assertFinite, assertU32, check, type CoreExports, KernelError, Status, withArena } from './runtime.ts';
 
-/** Raw exports of `signal.wasm` (ABI v1). All buffers are `f64`; pointers are byte offsets. */
+/**
+ * Raw exports of `signal.wasm` (ABI v1). Buffers are `f64` arrays addressed by byte offsets that must lie in
+ * the live arena; fallible functions return a {@link Status} code. Prefer the {@link SignalKernel} methods.
+ */
 export interface SignalExports extends CoreExports {
+  /** In-place radix-2 FFT `X_k = Σ x_n e^{−2πikn/N}` (Cooley & Tukey 1965); `−2` unless `n` is a power of two. */
   readonly fft: (re: number, im: number, n: number) => number;
+  /** In-place inverse FFT `x_n = (1/N) Σ X_k e^{+2πikn/N}` (Cooley & Tukey 1965). */
   readonly ifft: (re: number, im: number, n: number) => number;
+  /** `out[k] = sqrt(re[k]² + im[k]²)` (Oppenheim & Schafer 2010). */
   readonly magnitude: (re: number, im: number, out: number, n: number) => number;
+  /** `out[k] = max(10·log10(|X_k|²/n²), floorDb)` in dB (Oppenheim & Schafer 2010). */
   readonly power_db: (re: number, im: number, out: number, n: number, floorDb: number) => number;
+  /** Symmetric window of `kind` 0–4 (rectangular, Hann, Hamming, Blackman, Blackman–Harris; Harris 1978). */
   readonly window: (kind: number, out: number, n: number) => number;
+  /** `out[i] = a[i]·b[i]`; `out` may be exactly `a` and/or `b`. */
   readonly multiply: (a: number, b: number, out: number, n: number) => number;
+  /** Partial Fourier sum of `kind` 0–2 (square, sawtooth, triangle) with optional Lanczos σ-factors (Lanczos 1956). */
   readonly fourier_series: (
     kind: number,
     harmonics: number,
@@ -29,6 +31,7 @@ export interface SignalExports extends CoreExports {
     n: number,
     cycles: number,
   ) => number;
+  /** `out[t] = Σ_j amps[j]·sin(2π·freqs[j]·t/sampleRate + phases[j])` (Fourier 1822). */
   readonly synth: (
     freqs: number,
     amps: number,
@@ -38,6 +41,7 @@ export interface SignalExports extends CoreExports {
     out: number,
     n: number,
   ) => number;
+  /** Samples `sin(2π·freq·t + phase)` at `t = k/fs < duration`; returns the count (Shannon 1949). */
   readonly sample_sinusoid: (
     freq: number,
     phase: number,
@@ -47,6 +51,7 @@ export interface SignalExports extends CoreExports {
     outX: number,
     maxN: number,
   ) => number;
+  /** Whittaker–Shannon interpolation `Σ_k x[k]·sinc(fs·t − k)` on `[t0, tEnd]` (Whittaker 1915; Shannon 1949). */
   readonly reconstruct_sinc: (
     samples: number,
     nSamples: number,
@@ -56,7 +61,9 @@ export interface SignalExports extends CoreExports {
     nOut: number,
     tEnd: number,
   ) => number;
+  /** Folded frequency `|f − fs·round(f/fs)|` in Hz (Nyquist 1928); `NaN` unless `fs > 0`. */
   readonly alias_frequency: (f: number, fs: number) => number;
+  /** Normalised spectral entropy of `p_k = mag_k²/Σ mag²`, in `[0, 1]` (Shannon 1948); `NaN` for a bad pointer. */
   readonly spectral_entropy: (mag: number, n: number) => number;
 }
 
@@ -109,11 +116,11 @@ export interface SignalKernel {
   readonly fft: (re: ArrayLike<number>, im?: ArrayLike<number>) => Complex;
   /** Inverse DFT `x_n = (1/N) Σ_k X_k e^{+2πikn/N}`, so `ifft(fft(x)) = x` (Cooley & Tukey 1965). */
   readonly ifft: (re: ArrayLike<number>, im: ArrayLike<number>) => Complex;
-  /** Magnitude spectrum `|X_k| = sqrt(re_k² + im_k²)`. */
+  /** Magnitude spectrum `|X_k| = sqrt(re_k² + im_k²)` (Oppenheim & Schafer 2010). */
   readonly magnitude: (re: ArrayLike<number>, im: ArrayLike<number>) => Float64Array;
   /**
    * Power spectrum in dB relative to a full-scale sinusoid: `10·log10(|X_k|²/N²)`, clamped below at
-   * `floorDb` (default −120 dB).
+   * `floorDb` (default −120 dB); zero bins map to `floorDb` (Oppenheim & Schafer 2010).
    */
   readonly powerDb: (re: ArrayLike<number>, im: ArrayLike<number>, floorDb?: number) => Float64Array;
   /**
@@ -122,7 +129,7 @@ export interface SignalKernel {
    * `0.35875 − 0.48829cos + 0.14128cos2 − 0.01168cos3` of `2πk/(n−1)`; `n = 1` gives `[1]`.
    */
   readonly window: (kind: WindowKind, n: number) => Float64Array;
-  /** Elementwise product `a[i]·b[i]` (e.g. applying a window). */
+  /** Elementwise product `a[i]·b[i]`, e.g. applying a window before an FFT (Harris 1978). */
   readonly multiply: (a: ArrayLike<number>, b: ArrayLike<number>) => Float64Array;
   /**
    * Partial Fourier sum sampled at `x_j = 2π·cycles·j/n` (Fourier 1822; Gibbs 1899): square
