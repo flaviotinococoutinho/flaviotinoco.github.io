@@ -90,7 +90,7 @@ export interface Complex {
 }
 
 /** One sinusoidal partial `amp · sin(2π·freq·t + phase)` (Hz, arbitrary units, radians). */
-export interface Partial {
+export interface SinePartial {
   readonly freq: number;
   readonly amp: number;
   readonly phase?: number;
@@ -145,7 +145,7 @@ export interface SignalKernel {
     options?: FourierSeriesOptions,
   ) => Float64Array;
   /** Additive synthesis `x[t] = Σ_j amp_j · sin(2π·freq_j·t/sampleRate + phase_j)`, `t = 0..n−1` (Fourier 1822). */
-  readonly synth: (partials: readonly Partial[], sampleRate: number, n: number) => Float64Array;
+  readonly synth: (partials: readonly SinePartial[], sampleRate: number, n: number) => Float64Array;
   /**
    * Samples `x(t) = sin(2π·freq·t + phase)` at `t_k = k/fs` for all `t_k < duration` (seconds, Hz,
    * radians) — the sampling step of the Nyquist–Shannon theorem (Shannon 1949).

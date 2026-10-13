@@ -179,7 +179,7 @@ export interface DynamicsKernel {
 
 const TWO_32 = 0x1_0000_0000;
 
-/** Splits a 64-bit seed into `[lo, hi]` 32-bit halves. */
+/** Splits a 64-bit PCG32 seed (O'Neill 2014) into the `[lo, hi]` halves of the ABI, `seed = hi·2^32 + lo`. */
 export function splitSeed(seed: number | bigint): readonly [number, number] {
   if (typeof seed === 'bigint') {
     if (seed < 0n || seed >= 1n << 64n) throw new RangeError('seed must be in [0, 2^64)');
