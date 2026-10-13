@@ -27,3 +27,6 @@ src/wasm/manifest.json
 !.vscode/extensions.json
 !.vscode/settings.json
 .idea/
+
+# agent worktrees (parallel workstreams; merged through their ws/* branches)
+.claude/worktrees/
