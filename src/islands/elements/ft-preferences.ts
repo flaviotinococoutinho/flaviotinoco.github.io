@@ -9,13 +9,19 @@
  * Every control is a native radio group (fieldset + legend + labels). A change
  * is applied instantly to <html> data-* attributes, persisted to localStorage
  * (PREFS_STORAGE_KEY, canonical JSON from the pure codec) and announced
- * politely ("Theme: Dark."). "Reset" restores system defaults. Changes made in
- * another tab arrive through the `storage` event and are mirrored here.
+ * politely ("Theme: Dark."). "Reset" restores system defaults. Once this module
+ * has loaded (the panel was opened at least once), changes made in another tab
+ * arrive through the `storage` event and are mirrored here; other tabs pick up
+ * the new values on their next page load (pre-paint script).
  *
- * Other islands can react through the `ft:prefs-change` event dispatched on
- * document (detail: the Preferences object), e.g. <ft-depth-scene> for motion.
+ * Other code can react through the `ft:prefs-change` event dispatched on
+ * document (detail: the Preferences object). The always-loaded islands
+ * (<ft-palette-trigger>, <ft-depth-scene>) observe the data-* attributes on
+ * <html> instead, so they never download the preference model.
  *
- * Messages come from the server catalog via data-messages ({ applied, reset }).
+ * Announcements are rendered by the server from the catalog (no UI text here,
+ * no formatter shipped): each radio carries its sentence in data-announce
+ * ("Tema: Escuro."), the reset button in data-announce.
  */
 import {
   DEFAULT_PREFERENCES,
@@ -30,7 +36,6 @@ import {
   withPreference,
   type Preferences,
 } from '../../core/chrome/preferences.ts';
-import { format } from '../../core/i18n/messages.ts';
 
 const TAG = 'ft-preferences';
 
@@ -60,23 +65,6 @@ const apply = (prefs: Preferences): void => {
   document.dispatchEvent(new CustomEvent<Preferences>(PREFS_CHANGE_EVENT, { detail: prefs }));
 };
 
-interface Messages {
-  readonly applied: string;
-  readonly reset: string;
-}
-
-const parseMessages = (raw: string | undefined): Messages => {
-  try {
-    const v = JSON.parse(raw ?? '{}') as Partial<Record<keyof Messages, unknown>>;
-    return {
-      applied: typeof v.applied === 'string' ? v.applied : 'applied',
-      reset: typeof v.reset === 'string' ? v.reset : 'reset',
-    };
-  } catch {
-    return { applied: 'applied', reset: 'reset' };
-  }
-};
-
 class FtPreferences extends HTMLElement {
   #prefs: Preferences = DEFAULT_PREFERENCES;
   #abort: AbortController | null = null;
@@ -86,7 +74,6 @@ class FtPreferences extends HTMLElement {
     const form = this.querySelector('form');
     if (form === null) return;
     this.#status = this.querySelector<HTMLElement>('[role="status"]');
-    const messages = parseMessages(this.dataset['messages']);
     this.#abort = new AbortController();
     const { signal } = this.#abort;
 
@@ -103,22 +90,21 @@ class FtPreferences extends HTMLElement {
         this.#prefs = withPreference(this.#prefs, key, input.value as never);
         write(this.#prefs);
         apply(this.#prefs);
-        const setting = input.closest('fieldset')?.querySelector('legend')?.textContent.trim() ?? key;
-        const value = input.closest('label')?.textContent.trim() ?? input.value;
-        this.#announce(format(messages.applied, { setting, value }));
+        this.#announce(input.dataset['announce'] ?? '');
       },
       { signal },
     );
     form.addEventListener('submit', (event) => event.preventDefault(), { signal });
 
-    this.querySelector<HTMLButtonElement>('[data-reset]')?.addEventListener(
+    const reset = this.querySelector<HTMLButtonElement>('[data-reset]');
+    reset?.addEventListener(
       'click',
       () => {
         this.#prefs = DEFAULT_PREFERENCES;
         write(this.#prefs);
         apply(this.#prefs);
         this.#sync(form);
-        this.#announce(messages.reset);
+        this.#announce(reset.dataset['announce'] ?? '');
       },
       { signal },
     );

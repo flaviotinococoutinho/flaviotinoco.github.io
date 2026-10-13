@@ -18,7 +18,6 @@
  * prefers-reduced-motion) the loop stops and the scene rests.
  */
 import { progressToken, viewProgress } from '../../core/chrome/depth.ts';
-import { PREFS_CHANGE_EVENT } from '../../core/chrome/preferences.ts';
 
 const TAG = 'ft-depth-scene';
 
@@ -50,7 +49,11 @@ class FtDepthScene extends HTMLElement {
     this.#io.observe(this);
 
     window.addEventListener('resize', () => this.#measure(), { passive: true, signal });
-    document.addEventListener(PREFS_CHANGE_EVENT, () => this.#update(), { signal });
+    // The reader's motion preference arrives as data-motion on <html> (set by the pre-paint
+    // script or <ft-preferences>); observing it avoids loading the preference model here.
+    const observer = new MutationObserver(() => this.#update());
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-motion'] });
+    signal.addEventListener('abort', () => observer.disconnect());
     window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', () => this.#update(), { signal });
   }
 

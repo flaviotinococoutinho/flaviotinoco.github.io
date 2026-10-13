@@ -1,0 +1,61 @@
+---
+/**
+ * The home hero scene: the four simplices of the bridge in depth.
+ *
+ * Vector only. Each simplex is its own full-size SVG layer sharing one
+ * viewBox (golden rectangle, 1000 × 382), stacked far → near, and declares a
+ * data-depth (src/core/chrome/depth.ts): the point recedes the most, the
+ * tetrahedron approaches. Perspective is carried redundantly by size (far
+ * shapes are smaller), stacking order and parallax rate, so the scene still
+ * reads as depth when motion is off (reduced motion, reader preference) and
+ * the layers rest at their composed position.
+ *
+ * Motion: CSS scroll-driven animations translate the layers (motion.css);
+ * <ft-depth-scene> is the JavaScript fallback for engines without
+ * `animation-timeline: view()`. Strokes do not scale with the scene
+ * (vector-effect: non-scaling-stroke) so the line weight stays that of the
+ * glyph set at every width.
+ *
+ * Accessibility: one image with a text alternative (role="img"); the layers
+ * themselves are hidden from the accessibility tree. The labelled strata
+ * follow immediately below, in the bridge section.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import chrome from '../../core/i18n/catalogs/chrome.ts';
+import { useTranslations } from '../../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+}
+
+const c = useTranslations(chrome, Astro.props.locale);
+const VIEWBOX = '0 0 1000 382';
+---
+
+<ft-depth-scene class="hero__scene" role="img" aria-label={c('home.scene')}>
+  <svg class="depth-layer depth-layer--path" data-depth="2" viewBox={VIEWBOX} aria-hidden="true" focusable="false">
+    <path d="M24 244C120 226 220 204 377 206S560 234 630 229 800 210 984 192" vector-effect="non-scaling-stroke"></path>
+  </svg>
+  <svg class="depth-layer" data-depth="3" data-stratum="philosophy" viewBox={VIEWBOX} aria-hidden="true" focusable="false">
+    <circle class="vertex" cx="150" cy="214" r="7"></circle>
+  </svg>
+  <svg class="depth-layer" data-depth="1" data-stratum="theory" viewBox={VIEWBOX} aria-hidden="true" focusable="false">
+    <path d="M318 262 436 150" vector-effect="non-scaling-stroke"></path>
+    <circle class="vertex" cx="318" cy="262" r="6.5"></circle>
+    <circle class="vertex" cx="436" cy="150" r="6.5"></circle>
+  </svg>
+  <svg class="depth-layer" data-depth="-1" data-stratum="formal" viewBox={VIEWBOX} aria-hidden="true" focusable="false">
+    <path d="M548 262 702 282 640 136Z" vector-effect="non-scaling-stroke"></path>
+    <circle class="vertex" cx="548" cy="262" r="7"></circle>
+    <circle class="vertex" cx="702" cy="282" r="7"></circle>
+    <circle class="vertex" cx="640" cy="136" r="7"></circle>
+  </svg>
+  <svg class="depth-layer" data-depth="-2" data-stratum="value" viewBox={VIEWBOX} aria-hidden="true" focusable="false">
+    <path class="hidden-edge" d="M752 248 962 236" vector-effect="non-scaling-stroke"></path>
+    <path d="M860 58 752 248 880 334 962 236Z M860 58 880 334" vector-effect="non-scaling-stroke"></path>
+    <circle class="vertex" cx="860" cy="58" r="8"></circle>
+    <circle class="vertex" cx="752" cy="248" r="8"></circle>
+    <circle class="vertex" cx="880" cy="334" r="8"></circle>
+    <circle class="vertex" cx="962" cy="236" r="8"></circle>
+  </svg>
+</ft-depth-scene>

@@ -34,10 +34,17 @@ export const PREFERENCE_DOMAINS = {
   theme: ['auto', 'light', 'dark'],
   contrast: ['auto', 'normal', 'more'],
   motion: ['auto', 'reduce', 'full'],
-  hyphens: ['on', 'off'],
-  texture: ['on', 'off'],
   text: ['s', 'm', 'l', 'xl'],
   face: ['serif', 'sans'],
+  hyphens: ['on', 'off'],
+  texture: ['on', 'off'],
+  /**
+   * The single-character shortcut "/" that opens the command palette. WCAG 2.2
+   * SC 2.1.4 (Character Key Shortcuts, level A) requires a way to turn such a
+   * shortcut off: speech-input users can trigger it by dictation. The chorded
+   * Ctrl/⌘ K shortcut is unaffected (it is not a character key shortcut).
+   */
+  shortcut: ['on', 'off'],
   cvd: ['none', ...CVD_TYPES],
 } as const satisfies Readonly<Record<string, readonly [string, ...string[]]>>;
 
@@ -50,10 +57,11 @@ export const PREFERENCE_KEYS = [
   'theme',
   'contrast',
   'motion',
-  'hyphens',
-  'texture',
   'text',
   'face',
+  'hyphens',
+  'texture',
+  'shortcut',
   'cvd',
 ] as const satisfies readonly PreferenceKey[];
 
@@ -66,10 +74,11 @@ export const DEFAULT_PREFERENCES: Preferences = {
   theme: 'auto',
   contrast: 'auto',
   motion: 'auto',
-  hyphens: 'on',
-  texture: 'on',
   text: 'm',
   face: 'serif',
+  hyphens: 'on',
+  texture: 'on',
+  shortcut: 'on',
   cvd: 'none',
 };
 
@@ -160,7 +169,7 @@ export const decodePreferences = (raw: string | null): Preferences => {
  * except the default (whose absence lets CSS media queries decide).
  * This table is the allow-list compiled into the pre-paint script.
  */
-export const ATTRIBUTE_VALUES: { readonly [K in PreferenceKey]: readonly PreferenceValue<K>[] } = Object.fromEntries(
+export const ATTRIBUTE_VALUES: { readonly [K in PreferenceKey]: readonly PreferenceValue<K>[] } = /* @__PURE__ */ Object.fromEntries(
   PREFERENCE_KEYS.map((key) => [
     key,
     (PREFERENCE_DOMAINS[key] as readonly string[]).filter((v) => v !== DEFAULT_PREFERENCES[key]),

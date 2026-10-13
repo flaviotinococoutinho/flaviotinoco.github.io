@@ -25,7 +25,11 @@ import { daypartExpression } from '../../core/chrome/daypart.ts';
 
 export { PREFS_STORAGE_KEY };
 
-/** Preference keys mirrored as data-<key> on <html> (theme, contrast, motion, hyphens, texture, text, face, cvd). */
+/**
+ * Preference keys mirrored as data-<key> on <html>: theme, contrast, motion, text,
+ * face, hyphens, texture, shortcut, cvd — derived from the pure model, so a key
+ * added there is applied before paint without touching this file.
+ */
 export const PREFS_KEYS = PREFERENCE_KEYS;
 
 /** key → space-separated allow-list, e.g. { theme: "light dark", … }. Values are [a-z]+ so the separator is unambiguous. */

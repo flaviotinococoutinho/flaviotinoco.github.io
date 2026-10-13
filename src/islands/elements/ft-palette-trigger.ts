@@ -9,6 +9,10 @@
  * not rendered, so the registry's IntersectionObserver only sees it — and only
  * then downloads its module and Pagefind — when the reader opens the palette.
  *
+ * The single-key "/" shortcut honours the reader's preference (data-shortcut="off"
+ * on <html>, WCAG 2.1.4); it is read at keystroke time, so a change made in the
+ * preferences panel applies immediately.
+ *
  * Focus: on close, focus returns to whatever had it when the palette opened,
  * or to the trigger when the shortcut was pressed with nothing focused
  * (WAI-ARIA APG dialog pattern). preventScroll keeps the reading position.
@@ -18,9 +22,11 @@
  *   …
  *   <dialog id="DIALOG-ID">…</dialog>
  */
-import { isPaletteShortcut } from '../../core/chrome/shortcut.ts';
+import { isPaletteShortcut, paletteKeyShortcuts } from '../../core/chrome/shortcut.ts';
 
 const TAG = 'ft-palette-trigger';
+
+const singleKeyEnabled = (): boolean => document.documentElement.getAttribute('data-shortcut') !== 'off';
 
 const isEditable = (target: EventTarget | null): boolean =>
   target instanceof HTMLElement &&
@@ -45,6 +51,15 @@ class FtPaletteTrigger extends HTMLElement {
       dialog.showModal();
     };
 
+    // Advertise only the chords that currently work (the visible "/" key cap is hidden by CSS).
+    // Observing the attribute (rather than importing the preferences module for its change
+    // event) keeps this always-loaded element free of the preference model.
+    const syncKeys = (): void => button.setAttribute('aria-keyshortcuts', paletteKeyShortcuts(singleKeyEnabled()));
+    syncKeys();
+    const observer = new MutationObserver(syncKeys);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-shortcut'] });
+    signal.addEventListener('abort', () => observer.disconnect());
+
     button.addEventListener('click', open, { signal });
     document.addEventListener(
       'keydown',
@@ -57,6 +72,7 @@ class FtPaletteTrigger extends HTMLElement {
           isComposing: event.isComposing,
           editableTarget: isEditable(event.target),
           defaultPrevented: event.defaultPrevented,
+          singleKey: singleKeyEnabled(),
         };
         if (dialog.open || !isPaletteShortcut(chord)) return;
         event.preventDefault();

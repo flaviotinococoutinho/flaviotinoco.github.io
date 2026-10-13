@@ -11,9 +11,7 @@ import { defineMessages } from '../messages.ts';
  */
 export default defineMessages({
   'pt-BR': {
-    'header.label': 'Cabeçalho do site',
     'header.menu': 'Menu',
-    'header.tools': 'Ferramentas',
     'lang.otherHome': ' (página inicial; esta página não tem versão em português)',
 
     'search.open': 'Buscar',
@@ -75,6 +73,11 @@ export default defineMessages({
     'prefs.face.serif': 'Com serifa (Literata)',
     'prefs.face.sans': 'Sem serifa (Atkinson Hyperlegible Next)',
     'prefs.face.hint': 'Algumas pessoas leem com mais facilidade uma fonte sem serifa.',
+    'prefs.shortcut': 'Atalho de tecla única (/)',
+    'prefs.shortcut.on': 'Ligado',
+    'prefs.shortcut.off': 'Desligado',
+    'prefs.shortcut.hint':
+      'A tecla / abre a busca. Desligue se usa entrada por voz ou se o atalho dispara sem querer; Ctrl/⌘ K continua funcionando.',
     'prefs.cvd': 'Simular visão de cores',
     'prefs.cvd.none': 'Nenhuma',
     'prefs.cvd.protanopia': 'Protanopia',
@@ -119,26 +122,22 @@ export default defineMessages({
     'stratum.pager': 'Ao longo da ponte',
     'stratum.previous': 'Estrato anterior',
     'stratum.next': 'Próximo estrato',
-    'stratum.end': 'Fim da ponte: voltar ao início',
+    'stratum.end': 'Fim da ponte · recomeçar',
 
     'footer.label': 'Rodapé',
     'footer.pages': 'Sobre o site',
     'footer.data': 'Dados abertos',
-    'footer.feeds': 'Feeds RSS',
     'footer.ontologyData': 'Ontologia (JSON-LD)',
     'footer.strata': 'Os quatro estratos',
 
     'feed.title': 'Flavio Tinoco: ensaios e laboratórios',
     'feed.description': 'Ensaios e laboratórios interativos publicados em português.',
 
-    'notFound.heading': 'Página não encontrada',
     'notFound.body': 'Este endereço não corresponde a nenhuma página. Talvez tenha mudado de lugar.',
     'notFound.home': 'Ir para o início em português',
   },
   en: {
-    'header.label': 'Site header',
     'header.menu': 'Menu',
-    'header.tools': 'Tools',
     'lang.otherHome': ' (home page; this page has no English version)',
 
     'search.open': 'Search',
@@ -200,6 +199,11 @@ export default defineMessages({
     'prefs.face.serif': 'Serif (Literata)',
     'prefs.face.sans': 'Sans serif (Atkinson Hyperlegible Next)',
     'prefs.face.hint': 'Some readers find a sans-serif face easier to read.',
+    'prefs.shortcut': 'Single-key shortcut (/)',
+    'prefs.shortcut.on': 'On',
+    'prefs.shortcut.off': 'Off',
+    'prefs.shortcut.hint':
+      'The / key opens search. Turn it off if you use speech input or trigger it by accident; Ctrl/⌘ K keeps working.',
     'prefs.cvd': 'Simulate colour vision',
     'prefs.cvd.none': 'None',
     'prefs.cvd.protanopia': 'Protanopia',
@@ -244,19 +248,17 @@ export default defineMessages({
     'stratum.pager': 'Along the bridge',
     'stratum.previous': 'Previous stratum',
     'stratum.next': 'Next stratum',
-    'stratum.end': 'End of the bridge: back to the start',
+    'stratum.end': 'End of the bridge · start again',
 
     'footer.label': 'Footer',
     'footer.pages': 'About the site',
     'footer.data': 'Open data',
-    'footer.feeds': 'RSS feeds',
     'footer.ontologyData': 'Ontology (JSON-LD)',
     'footer.strata': 'The four strata',
 
     'feed.title': 'Flavio Tinoco: essays and labs',
     'feed.description': 'Essays and interactive labs published in English.',
 
-    'notFound.heading': 'Page not found',
     'notFound.body': 'This address matches no page. It may have moved.',
     'notFound.home': 'Go to the English home page',
   },

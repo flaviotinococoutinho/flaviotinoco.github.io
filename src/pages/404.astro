@@ -1,0 +1,108 @@
+---
+/**
+ * Not-found page (dist/404.html; GitHub Pages serves it for every missing path
+ * of the site, at any depth).
+ *
+ * An unknown URL has no known language, so the page is bilingual: one column
+ * per locale, each marked with its own lang attribute (WCAG 3.1.2), linking to
+ * that locale's home and main sections. The document language is the default
+ * locale; the English column overrides it.
+ *
+ * It mirrors BaseLayout's document shell (fonts, global styles, the pre-paint
+ * preference script and its CSP hash, the glyph sprite) but not its
+ * monolingual header/footer. Every URL is absolute and carries the base path
+ * (href/asset from the i18n adapter), so the page works wherever it is served.
+ * No island is used: the page ships no JavaScript besides the pre-paint script.
+ *
+ * The global stylesheet is linked as a URL asset (`?url`) instead of being
+ * imported: a second page importing global.css would make Vite split it into a
+ * shared chunk, adding one CSS request to every BaseLayout page (measured).
+ */
+import { Font } from 'astro:assets';
+import globalStyles from '../styles/global.css?url';
+import Glyphs from '../components/Glyphs.astro';
+import { LOCALES, type Locale } from '../core/domain/locale.ts';
+import common from '../core/i18n/catalogs/common.ts';
+import chrome from '../core/i18n/catalogs/chrome.ts';
+import { asset, href, useTranslations } from '../adapters/astro/i18n.ts';
+import { PREFS_INIT_HASH, PREFS_INIT_SCRIPT } from '../adapters/astro/prefs-init.ts';
+import type { Route } from '../core/i18n/routes.ts';
+
+const DOCUMENT_LOCALE: Locale = 'pt-BR';
+Astro.csp?.insertScriptHash(PREFS_INIT_HASH);
+
+const columns = LOCALES.map((locale) => {
+  const t = useTranslations(common, locale);
+  const c = useTranslations(chrome, locale);
+  const link = (route: Route, label: string) => ({ href: href(route, locale), label });
+  return {
+    locale,
+    language: t('lang.name'),
+    title: t('notFound.title'),
+    body: c('notFound.body'),
+    links: [
+      link({ kind: 'home' }, c('notFound.home')),
+      link({ kind: 'essays' }, t('nav.essays')),
+      link({ kind: 'labs' }, t('nav.labs')),
+      link({ kind: 'ontology' }, t('nav.ontology')),
+    ],
+  };
+});
+const siteName = useTranslations(common, DOCUMENT_LOCALE)('site.name');
+const pageTitle = `${columns.map((col) => col.title).join(' · ')} · ${siteName}`;
+---
+
+<!doctype html>
+<html lang={DOCUMENT_LOCALE} dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline set:html={PREFS_INIT_SCRIPT} />
+    <title>{pageTitle}</title>
+    <meta name="robots" content="noindex" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href={asset('favicon.svg')} type="image/svg+xml" />
+    <link rel="stylesheet" href={globalStyles} />
+    <Font cssVariable="--font-text" preload={[{ subset: 'latin', style: 'normal' }]} />
+    <Font cssVariable="--font-ui" />
+    <Font cssVariable="--font-mono" />
+  </head>
+  <body>
+    <Glyphs />
+    <header class="site-header ui" data-pagefind-ignore="all">
+      <div class="site-header__bar">
+        <a class="wordmark" href={asset('')}>
+          <svg class="wordmark__mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#simplex-3"></use></svg>
+          <span class="wordmark__name">{siteName}</span>
+        </a>
+      </div>
+    </header>
+    <main id="content" class="page-grid not-found">
+      <svg class="not-found__mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#simplex-0"></use></svg>
+      <h1 class="not-found__heading">
+        {columns.map((col) => <span lang={col.locale}>{col.title}</span>)}
+      </h1>
+      <div class="not-found__columns">
+        {
+          columns.map((col) => (
+            <section lang={col.locale} aria-labelledby={`not-found-${col.locale}`}>
+              <h2 class="not-found__title" id={`not-found-${col.locale}`}>
+                {col.language}
+              </h2>
+              <p class="not-found__body">{col.body}</p>
+              <ul class="not-found__links" role="list">
+                {col.links.map((l) => (
+                  <li>
+                    <a href={l.href} hreflang={col.locale}>
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))
+        }
+      </div>
+    </main>
+  </body>
+</html>

@@ -47,7 +47,10 @@
 :root[data-cvd='achromatopsia'] {
   filter: url('#cvd-achromatopsia');
 }
-@media (forced-colors: active) {
+/* The simulation is an on-screen audit: never in forced colours (the system palette
+   is authoritative) nor on paper. Top-layer surfaces (palette dialog, preferences
+   popover) are rendered outside the root's filter, so the controls stay legible. */
+@media (forced-colors: active), print {
   :root[data-cvd] {
     filter: none;
   }
@@ -173,6 +176,10 @@
   .tool__keys {
     display: inline-flex;
   }
+}
+/* The single-key shortcut is off (reader preference, WCAG 2.1.4): do not advertise it. */
+:root[data-shortcut='off'] .tool__key--single {
+  display: none;
 }
 @media (width < 48rem) {
   /* Icon-only tools on narrow screens; the label stays as the accessible name. */
@@ -307,7 +314,8 @@
   inline-size: min(100% - 2 * var(--space-0), calc(var(--space-5) * 3.4));
   max-inline-size: none;
   max-block-size: min(100dvh - 2 * var(--space-2), calc(var(--space-5) * 3));
-  margin-block-start: min(12vh, var(--space-4));
+  /* The reset zeroes the UA's `margin: auto` on modal dialogs: restore centring. */
+  margin: min(12vh, var(--space-4)) auto auto;
   padding: 0;
   overflow: hidden;
   color: var(--ink);
@@ -376,6 +384,10 @@
 .palette__input::placeholder {
   color: var(--ink-muted);
 }
+/* One way to clear and close: Esc and the close button (no second, native "×"). */
+.palette__input::-webkit-search-cancel-button {
+  appearance: none;
+}
 .palette__close-form {
   display: contents;
 }
@@ -408,11 +420,11 @@
   text-decoration: none;
 }
 .palette__link:hover,
-.palette__item[aria-selected='true'] > .palette__link {
+.palette__link[aria-selected='true'] {
   background-color: var(--paper-sunken);
 }
 /* Selection is shown by shape too (a bar), not by background colour alone. */
-.palette__item[aria-selected='true'] > .palette__link {
+.palette__link[aria-selected='true'] {
   box-shadow: inset 2px 0 0 var(--focus);
 }
 .palette__glyph {
@@ -447,7 +459,7 @@
   font-size: var(--step-n2);
 }
 @media (forced-colors: active) {
-  .palette__item[aria-selected='true'] > .palette__link {
+  .palette__link[aria-selected='true'] {
     outline: 2px solid Highlight;
     outline-offset: -2px;
   }
@@ -651,12 +663,18 @@ ft-preferences:not(:defined) .prefs__form {
 .site-footer__path a {
   text-decoration: none;
 }
-.site-footer__path li + li::before {
+/* The path of the strata: segments drawn after each step except the last, so a
+   wrapped line ends with the segment that leads on (never starts with a dangling one). */
+.site-footer__path li,
+.stratum-path li {
+  display: inline-flex;
+  align-items: center;
+}
+.site-footer__path li:not(:last-child)::after,
+.stratum-path li:not(:last-child)::after {
   content: '';
-  display: inline-block;
   inline-size: var(--space-1);
   margin-inline: var(--space-n2);
-  vertical-align: middle;
   border-block-start: 1px solid var(--rule-strong);
 }
 .site-footer__links {
@@ -692,15 +710,19 @@ ft-preferences:not(:defined) .prefs__form {
 .hero {
   position: relative;
   isolation: isolate;
-  padding-block: var(--space-3) var(--space-2);
+  padding-block: var(--space-3) var(--space-0);
   overflow: clip;
 }
-/* Canvas host for the labs workstream (curl-noise ambient field): fills the hero, behind it. */
+/* Canvas host for the labs workstream (curl-noise ambient field): fills the whole
+   hero box, behind its content. An absolutely positioned grid child takes its grid
+   area as containing block, so it must span the full track range explicitly. */
 ft-ambient-field {
   position: absolute;
   inset: 0;
   z-index: -1;
   display: block;
+  grid-column: full;
+  grid-row: 1 / -1;
   pointer-events: none;
 }
 .hero__text {
@@ -736,6 +758,8 @@ ft-ambient-field {
   color: var(--stratum, var(--ink-muted));
   fill: none;
   stroke: currentColor;
+  /* Same weight as the glyph set (1.6 on a 24-unit grid), constant at every width. */
+  stroke-width: 1.6;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -755,6 +779,11 @@ ft-ambient-field {
 
 .home-section {
   margin-block-start: var(--space-4);
+}
+@media (width < 48rem) {
+  .home-section {
+    margin-block-start: var(--space-3);
+  }
 }
 .section-title {
   font-size: var(--step-3);
@@ -803,6 +832,11 @@ ft-ambient-field {
   border-inline-end: 1px solid var(--rule-strong);
   translate: -50% 0;
   rotate: 45deg;
+}
+.bridge__heading {
+  margin-block-start: var(--space-n3);
+  font-size: var(--step-2);
+  font-weight: 480;
 }
 .bridge__step-label {
   color: var(--ink-muted);
@@ -968,14 +1002,6 @@ ft-ambient-field {
   align-items: center;
   row-gap: var(--space-n2);
 }
-.stratum-path li + li::before {
-  content: '';
-  display: inline-block;
-  inline-size: var(--space-1);
-  margin-inline: var(--space-n2);
-  vertical-align: middle;
-  border-block-start: 1px solid var(--rule-strong);
-}
 .stratum-path a {
   color: var(--ink-muted);
   text-decoration: none;
@@ -985,8 +1011,13 @@ ft-ambient-field {
 }
 .stratum-path a[aria-current='page'] {
   color: var(--ink);
+}
+/* The current stratum is marked by shape too (an underline), not by ink alone.
+   Decorations do not propagate into the inline-flex mark, so the label carries it. */
+.stratum-path a[aria-current='page'] .stratum-mark__label {
   text-decoration-line: underline;
   text-decoration-thickness: 0.14em;
+  text-underline-offset: 0.25em;
 }
 
 .stratum-head {
@@ -1113,8 +1144,20 @@ ft-ambient-field {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+.not-found__heading {
+  margin-block-start: var(--space-0);
+  font-size: var(--step-4);
+}
+.not-found__heading > span {
+  display: block;
+}
+.not-found__heading > span + span {
+  color: var(--ink-muted);
+}
 .not-found__title {
-  font-size: var(--step-3);
+  font-family: var(--font-ui);
+  font-size: var(--step-0);
+  font-weight: 600;
 }
 .not-found__body {
   margin-block-start: var(--space-n1);

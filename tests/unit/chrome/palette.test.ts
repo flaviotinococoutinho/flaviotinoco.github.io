@@ -161,6 +161,7 @@ describe('global shortcut', () => {
     isComposing: false,
     editableTarget: false,
     defaultPrevented: false,
+    singleKey: true,
     ...over,
   });
 
@@ -176,6 +177,12 @@ describe('global shortcut', () => {
     expect(isPaletteShortcut(chord({ isComposing: true }))).toBe(false);
     expect(isPaletteShortcut(chord({ altKey: true }))).toBe(false);
     expect(isPaletteShortcut(chord({ defaultPrevented: true }))).toBe(false);
+  });
+
+  it('"/" can be turned off (WCAG 2.1.4); the chorded shortcut cannot be', () => {
+    expect(isPaletteShortcut(chord({ singleKey: false }))).toBe(false);
+    expect(isPaletteShortcut(chord({ key: 'k', ctrlKey: true, singleKey: false }))).toBe(true);
+    expect(isPaletteShortcut(chord({ key: 'K', metaKey: true, singleKey: false }))).toBe(true);
   });
 
   it('ignores plain k, Ctrl+/ and Ctrl+⌘+K', () => {

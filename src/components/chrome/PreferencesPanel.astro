@@ -29,9 +29,12 @@ export interface Props {
 }
 
 const c = useTranslations(chrome, Astro.props.locale);
+/** Announcement spoken after a change, rendered here so the island ships no formatter. */
+const applied = (setting: string, value: string): string => c('prefs.applied', { setting, value });
 
-const HINTS: Partial<Record<PreferenceKey, 'prefs.face.hint' | 'prefs.cvd.hint'>> = {
+const HINTS: Partial<Record<PreferenceKey, 'prefs.face.hint' | 'prefs.shortcut.hint' | 'prefs.cvd.hint'>> = {
   face: 'prefs.face.hint',
+  shortcut: 'prefs.shortcut.hint',
   cvd: 'prefs.cvd.hint',
 };
 
@@ -42,15 +45,15 @@ const groups = PREFERENCE_KEYS.map((key) => ({
   options: (PREFERENCE_DOMAINS[key] as readonly (typeof PREFERENCE_DOMAINS)[typeof key][number][]).map((value) => ({
     value,
     label: c(preferenceOptionMessage(key, value)),
+    announce: applied(c(`prefs.${key}`), c(preferenceOptionMessage(key, value))),
     checked: value === DEFAULT_PREFERENCES[key],
   })),
 }));
 
-const messages = { applied: c('prefs.applied'), reset: c('prefs.resetDone') };
 ---
 
 <div id="ft-prefs" class="prefs ui" popover role="dialog" aria-labelledby="ft-prefs-title">
-  <ft-preferences class="prefs__body" data-messages={JSON.stringify(messages)}>
+  <ft-preferences class="prefs__body">
     <div class="prefs__head">
       <h2 id="ft-prefs-title" class="prefs__title">{c('prefs.title')}</h2>
       <button type="button" class="tool" popovertarget="ft-prefs" popovertargetaction="hide">
@@ -67,7 +70,14 @@ const messages = { applied: c('prefs.applied'), reset: c('prefs.resetDone') };
             <div class="prefs__options">
               {g.options.map((o) => (
                 <label class="prefs__option">
-                  <input type="radio" name={`ft-pref-${g.key}`} value={o.value} data-key={g.key} checked={o.checked} />
+                  <input
+                    type="radio"
+                    name={`ft-pref-${g.key}`}
+                    value={o.value}
+                    data-key={g.key}
+                    data-announce={o.announce}
+                    checked={o.checked}
+                  />
                   <span>{o.label}</span>
                 </label>
               ))}
@@ -80,7 +90,7 @@ const messages = { applied: c('prefs.applied'), reset: c('prefs.resetDone') };
           </fieldset>
         ))
       }
-      <button type="button" class="prefs__reset" data-reset>{c('prefs.reset')}</button>
+      <button type="button" class="prefs__reset" data-reset data-announce={c('prefs.resetDone')}>{c('prefs.reset')}</button>
     </form>
     <p class="visually-hidden" role="status"></p>
   </ft-preferences>

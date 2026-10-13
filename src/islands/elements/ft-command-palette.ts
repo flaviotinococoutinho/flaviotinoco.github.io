@@ -167,9 +167,9 @@ class FtCommandPalette extends HTMLElement {
     list.addEventListener(
       'pointermove',
       (e) => {
-        const li = e.target instanceof Element ? e.target.closest<HTMLElement>('[data-index]') : null;
-        if (li === null) return;
-        this.#step({ type: 'point', index: Number(li.dataset['index']) }, false);
+        const option = e.target instanceof Element ? e.target.closest<HTMLElement>('[data-index]') : null;
+        if (option === null) return;
+        this.#step({ type: 'point', index: Number(option.dataset['index']) }, false);
       },
       { signal },
     );
@@ -218,21 +218,25 @@ class FtCommandPalette extends HTMLElement {
     // Pagefind already loads the index of the page's <html lang>; the prefix check makes the
     // language filter explicit and also drops any page that is not under this locale's tree.
     const prefix = this.dataset['localePrefix'] ?? BASE;
+    // Pages already listed by quick navigation are not repeated; a text hit on another
+    // known page (e.g. a stratum whose name did not match) keeps that page's glyph and kind.
     const seen = new Set(quick.map((i) => pathOf(i.href)));
+    const known = new Map(this.#quick.map((i) => [pathOf(i.href), i] as const));
     const text: Item[] = [];
     for (const d of data) {
       if (d === null || text.length >= MAX_TEXT_RESULTS) continue;
       const path = pathOf(d.url);
       if (!inLocale(path, prefix) || seen.has(path)) continue;
       seen.add(path);
+      const page = known.get(path);
       text.push({
-        label: d.meta?.title?.trim() || path,
+        label: d.meta?.title?.trim() || page?.label || path,
         href: d.url,
-        kind: this.#messages.text,
+        kind: page?.kind ?? this.#messages.text,
         keywords: '',
         lang: null,
-        glyph: 'form-essay',
-        stratum: null,
+        glyph: page?.glyph ?? 'form-essay',
+        stratum: page?.stratum ?? null,
         excerpt: sanitiseExcerpt(d.excerpt),
       });
     }
@@ -260,26 +264,42 @@ class FtCommandPalette extends HTMLElement {
     this.#state = stepPalette(afterQuery, { type: 'results', count: items.length }).state;
     list.replaceChildren(
       ...items.map((item, index) => {
+        // The link itself is the option (ARIA in HTML allows role=option on a[href]): an
+        // interactive element nested inside an option would be hidden from assistive
+        // technology (option children are presentational), while a real link keeps
+        // middle-click / open-in-new-tab. The <li> is only layout.
+        const id = `${list.id}-${index}`;
         const li = document.createElement('li');
-        li.id = `${list.id}-${index}`;
         li.className = 'palette__item';
-        li.setAttribute('role', 'option');
-        li.dataset['index'] = String(index);
+        li.setAttribute('role', 'none');
         if (item.stratum !== null) li.dataset['stratum'] = item.stratum;
         const a = document.createElement('a');
+        a.id = id;
         a.className = 'palette__link';
         a.href = item.href;
         a.tabIndex = -1;
+        a.setAttribute('role', 'option');
+        a.setAttribute('aria-selected', 'false');
+        a.dataset['index'] = String(index);
         if (item.lang !== null) a.hreflang = item.lang;
         if (item.glyph !== null) a.append(glyph(item.glyph));
         const label = document.createElement('span');
+        label.id = `${id}-label`;
         label.className = 'palette__label';
         label.textContent = item.label;
         const kind = document.createElement('span');
+        kind.id = `${id}-kind`;
         kind.className = 'palette__kind';
         kind.textContent = item.kind;
         a.append(label, kind);
-        if (item.excerpt !== null && item.excerpt.length > 0) a.append(excerptNode(item.excerpt));
+        // Name = title + kind; the excerpt is the description (read after a pause, skippable).
+        a.setAttribute('aria-labelledby', `${label.id} ${kind.id}`);
+        if (item.excerpt !== null && item.excerpt.length > 0) {
+          const excerpt = excerptNode(item.excerpt);
+          excerpt.id = `${id}-excerpt`;
+          a.append(excerpt);
+          a.setAttribute('aria-describedby', excerpt.id);
+        }
         li.append(a);
         return li;
       }),
@@ -322,10 +342,10 @@ class FtCommandPalette extends HTMLElement {
     const input = this.#input;
     if (list === null || input === null) return;
     let activeEl: HTMLElement | null = null;
-    for (const li of list.children) {
-      const on = li instanceof HTMLElement && Number(li.dataset['index']) === this.#state.active;
-      li.setAttribute('aria-selected', String(on));
-      if (on) activeEl = li;
+    for (const option of list.querySelectorAll<HTMLElement>('[role="option"]')) {
+      const on = Number(option.dataset['index']) === this.#state.active;
+      option.setAttribute('aria-selected', String(on));
+      if (on) activeEl = option;
     }
     if (activeEl === null) input.removeAttribute('aria-activedescendant');
     else {

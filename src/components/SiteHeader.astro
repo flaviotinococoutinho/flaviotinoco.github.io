@@ -89,7 +89,9 @@ const nav = [
         >
           <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#ui-search"></use></svg>
           <span class="tool__label">{c('search.open')}</span>
-          <span class="tool__keys" aria-hidden="true"><kbd>{c('search.kbdSlash')}</kbd><kbd>{c('search.kbdMod')}</kbd></span>
+          <span class="tool__keys" aria-hidden="true"
+            ><kbd class="tool__key--single">{c('search.kbdSlash')}</kbd><kbd>{c('search.kbdMod')}</kbd></span
+          >
         </button>
       </ft-palette-trigger>
       <button type="button" class="tool tool--prefs tool-slot--js" popovertarget="ft-prefs" aria-haspopup="dialog">
