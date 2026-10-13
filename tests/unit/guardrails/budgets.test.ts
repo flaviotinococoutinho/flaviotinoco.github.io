@@ -65,7 +65,8 @@ describe('staticImports', () => {
   });
 
   it('ignores dynamic import(), import.meta and exports without a source', () => {
-    const src = 'const m=()=>import("./lazy.js");const u=import.meta.url;export{u};export default"x";obj.import("./no.js")';
+    const src =
+      'const m=()=>import("./lazy.js");const u=import.meta.url;export{u};export default"x";obj.import("./no.js")';
     expect(staticImports(src)).toEqual([]);
   });
 

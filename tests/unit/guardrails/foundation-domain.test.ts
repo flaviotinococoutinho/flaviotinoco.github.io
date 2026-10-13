@@ -110,7 +110,8 @@ describe('strata', () => {
   });
 
   test.prop([fc.constantFrom(...STRATA), fc.constantFrom(...STRATA)])('compareStrata is antisymmetric', (a, b) => {
-    expect(Math.sign(compareStrata(a, b))).toBe(-Math.sign(compareStrata(b, a)));
+    // Sum, not negation: -Math.sign(0) is -0, which toBe (Object.is) distinguishes from 0.
+    expect(Math.sign(compareStrata(a, b)) + Math.sign(compareStrata(b, a))).toBe(0);
     expect(compareStrata(a, b) === 0).toBe(a === b);
   });
 
@@ -154,9 +155,12 @@ describe('messages', () => {
     expect(format('{a}{a}', { a: 'x' })).toBe('xx');
   });
 
-  test.prop([fc.string().filter((s) => !/\{[a-zA-Z0-9_]+\}/.test(s))])('is the identity on text without placeholders', (s) => {
-    expect(format(s, { a: 1 })).toBe(s);
-  });
+  test.prop([fc.string().filter((s) => !/\{[a-zA-Z0-9_]+\}/.test(s))])(
+    'is the identity on text without placeholders',
+    (s) => {
+      expect(format(s, { a: 1 })).toBe(s);
+    },
+  );
 
   it('uses each locale’s number and plural conventions (CLDR)', () => {
     expect(formatNumber('pt-BR', 1234.5)).toBe('1.234,5');

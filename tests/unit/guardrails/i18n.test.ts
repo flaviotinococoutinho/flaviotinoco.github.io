@@ -26,7 +26,14 @@ const entry = (over: Partial<ContentEntry>): ContentEntry => ({
 
 const pair = (collection: string, key: string): readonly ContentEntry[] => [
   entry({ collection, file: `${collection}/pt/${key}.md`, translationKey: key, slug: key }),
-  entry({ collection, file: `${collection}/en/${key}.md`, folderLocale: 'en', lang: 'en', translationKey: key, slug: key }),
+  entry({
+    collection,
+    file: `${collection}/en/${key}.md`,
+    folderLocale: 'en',
+    lang: 'en',
+    translationKey: key,
+    slug: key,
+  }),
 ];
 
 const allStrata: readonly ContentEntry[] = LOCALES.flatMap((lang) =>
@@ -76,7 +83,10 @@ describe('checkCatalog', () => {
       const en: Record<string, string> = {};
       for (const [k, [w1, w2, names]] of Object.entries(spec)) {
         pt[k] = `${w1} ${names.map((n) => `{${n}}`).join(' ')}`;
-        en[k] = `${[...names].reverse().map((n) => `{${n}}`).join(' ')} ${w2}`;
+        en[k] = `${[...names]
+          .reverse()
+          .map((n) => `{${n}}`)
+          .join(' ')} ${w2}`;
       }
       expect(checkCatalog('generated', { 'pt-BR': pt, en })).toEqual([]);
     },
@@ -125,6 +135,26 @@ describe('checkTranslations', () => {
       'error only-pt.md: no en counterpart with translationKey "only" in essays',
       'warning draft.md: no en counterpart with translationKey "draft" in essays (draft)',
     ]);
+  });
+
+  it('warns when a published work is translated only by a draft (drafts are not built)', () => {
+    const issues = checkTranslations([
+      entry({ file: 'pt/w.md', translationKey: 'w', slug: 'w' }),
+      entry({ file: 'en/w.md', folderLocale: 'en', lang: 'en', translationKey: 'w', slug: 'w', draft: true }),
+    ]);
+    expect(issues.map((i) => `${i.severity} ${i.where}: ${i.message}`)).toEqual([
+      'warning pt/w.md: the en counterpart of translationKey "w" is still a draft: the published page has no translation yet',
+    ]);
+  });
+
+  it('reports a missing counterpart at the published version, not at a draft', () => {
+    const issues = checkTranslations([
+      entry({ file: 'pt/a-draft.md', translationKey: 'v', slug: 'v1', draft: true }),
+      entry({ file: 'pt/b-published.md', translationKey: 'v', slug: 'v2' }),
+    ]);
+    expect(issues.map((i) => `${i.severity} ${i.where}: ${i.message}`)).toContain(
+      'error pt/b-published.md: no en counterpart with translationKey "v" in essays',
+    );
   });
 });
 

@@ -53,7 +53,15 @@ const URL_ATTRIBUTES: Readonly<Record<string, readonly string[]>> = {
 };
 
 /** <meta> whose content is a URL (Open Graph / Twitter cards). */
-const URL_META = new Set(['og:url', 'og:image', 'og:image:url', 'og:image:secure_url', 'twitter:image', 'og:audio', 'og:video']);
+const URL_META = new Set([
+  'og:url',
+  'og:image',
+  'og:image:url',
+  'og:image:secure_url',
+  'twitter:image',
+  'og:audio',
+  'og:video',
+]);
 
 const isSpace = (c: string): boolean => c === ' ' || c === '\t' || c === '\n' || c === '\r' || c === '\f';
 
@@ -143,7 +151,8 @@ export const xmlReferences = (xml: string): readonly Reference[] => {
   for (const m of xml.matchAll(/<(loc|link|url|id)>\s*(?:<!\[CDATA\[)?\s*([^<\]\s]+)\s*(?:\]\]>)?\s*<\/\1>/g)) {
     refs.push({ url: m[2] ?? '', via: `xml <${m[1] ?? ''}>` });
   }
-  for (const m of xml.matchAll(/\shref\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) refs.push({ url: m[1] ?? m[2] ?? '', via: 'xml [href]' });
+  for (const m of xml.matchAll(/\shref\s*=\s*(?:"([^"]*)"|'([^']*)')/g))
+    refs.push({ url: m[1] ?? m[2] ?? '', via: 'xml [href]' });
   return refs;
 };
 
@@ -279,7 +288,8 @@ export const checkLinks = (site: SiteSnapshot, coords: SiteCoordinates): LinkRep
     const fragment = decodeFragment(r.fragment);
     if (isSpecialFragment(fragment)) return;
     const targets = idsOf(target.path);
-    if (targets !== undefined && !targets.has(fragment)) report(source, ref, `no element with id="${fragment}" in ${target.path}`);
+    if (targets !== undefined && !targets.has(fragment))
+      report(source, ref, `no element with id="${fragment}" in ${target.path}`);
   };
 
   for (const path of [...site.pages.keys()].sort()) {
@@ -287,7 +297,8 @@ export const checkLinks = (site: SiteSnapshot, coords: SiteCoordinates): LinkRep
     if (s === undefined) continue;
     const url = pageUrlOf(path, coords);
     for (const ref of referencesOfTags(s.tags)) verify(path, url, ref);
-    for (const raw of s.rawTexts) if (raw.tag.name === 'style') for (const ref of cssReferences(raw.text)) verify(path, url, ref);
+    for (const raw of s.rawTexts)
+      if (raw.tag.name === 'style') for (const ref of cssReferences(raw.text)) verify(path, url, ref);
   }
   for (const [path, css] of [...site.stylesheets].sort(([a], [b]) => byCodeUnit(a, b))) {
     const url = pageUrlOf(path, coords);

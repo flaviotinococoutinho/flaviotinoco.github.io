@@ -37,7 +37,8 @@ const issues: Issue[] = [];
 const catalogFiles = (await listFiles(catalogsDir).catch(() => [] as readonly string[])).filter(
   (f) => f.endsWith('.ts') && !f.includes('/'),
 );
-if (catalogFiles.length === 0) issues.push({ severity: 'error', where: display(catalogsDir), message: 'no catalogs found' });
+if (catalogFiles.length === 0)
+  issues.push({ severity: 'error', where: display(catalogsDir), message: 'no catalogs found' });
 let messageCount = 0;
 for (const file of catalogFiles) {
   const absolute = path.join(catalogsDir, file);

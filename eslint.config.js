@@ -17,7 +17,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, globalIgnores } from 'eslint/config';
-import { builtinRules } from 'eslint/use-at-your-own-risk';
+import * as unsupported from 'eslint/use-at-your-own-risk';
 import tseslint from 'typescript-eslint';
 import astro from 'eslint-plugin-astro';
 import functional from 'eslint-plugin-functional';
@@ -29,7 +29,18 @@ const ROOT = path.dirname(fileURLToPath(import.meta.url));
  * ESLint's "recommended" set, derived from rule metadata (`meta.docs.recommended`).
  * This is exactly how @eslint/js builds its recommended config; deriving it
  * avoids a dependency that the frozen lockfile does not provide.
+ *
+ * `builtinRules` is ESLint's "use at your own risk" (unsupported, JSDoc-deprecated)
+ * export; it is read reflectively so the deprecation hint does not surface in
+ * `astro check`. If it ever disappears, this throws and lint fails loudly —
+ * the recommended set is never silently empty.
+ *
+ * @type {ReadonlyMap<string, import('eslint').Rule.RuleModule>}
  */
+const builtinRules = Reflect.get(unsupported, 'builtinRules');
+if (!(builtinRules instanceof Map) || builtinRules.size === 0) {
+  throw new Error('eslint.config.js: eslint/use-at-your-own-risk no longer exposes builtinRules; add @eslint/js.');
+}
 const eslintRecommended = Object.fromEntries(
   [...builtinRules].filter(([, rule]) => rule.meta?.docs?.recommended === true).map(([name]) => [name, 'error']),
 );

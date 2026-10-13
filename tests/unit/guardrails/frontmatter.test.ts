@@ -23,7 +23,7 @@ describe('readFrontmatter', () => {
         'list: [a, b]',
         'block: |',
         '  text',
-        'quote: \'it\'\'s\'',
+        "quote: 'it''s'",
         '---',
         '',
         'slug: body-is-not-frontmatter',
@@ -50,7 +50,10 @@ describe('readFrontmatter', () => {
       ok: false,
       error: 'missing frontmatter (the file must start with "---")',
     });
-    expect(readFrontmatter('---\nlang: en\n')).toEqual({ ok: false, error: 'unterminated frontmatter (no closing "---")' });
+    expect(readFrontmatter('---\nlang: en\n')).toEqual({
+      ok: false,
+      error: 'unterminated frontmatter (no closing "---")',
+    });
   });
 
   it('keeps the first occurrence of a duplicated key', () => {

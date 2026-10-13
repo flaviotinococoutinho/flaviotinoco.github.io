@@ -97,7 +97,8 @@ export interface ContentEntry {
 const checkLocation = (e: ContentEntry): readonly Issue[] => {
   if (e.folderLocale === undefined) return [error(e.file, 'content must live under a pt/ or en/ folder')];
   if (e.lang === undefined) return [error(e.file, 'missing `lang` in frontmatter')];
-  if (e.lang !== e.folderLocale) return [error(e.file, `lang "${e.lang}" does not match its folder (${e.folderLocale})`)];
+  if (e.lang !== e.folderLocale)
+    return [error(e.file, `lang "${e.lang}" does not match its folder (${e.folderLocale})`)];
   return [];
 };
 
@@ -118,7 +119,8 @@ export const checkTranslations = (entries: readonly ContentEntry[]): readonly Is
     if (e.slug !== undefined && e.lang !== undefined) {
       const route = `${e.collection}\u0000${e.lang}\u0000${e.slug}`;
       const clash = routes.get(route);
-      if (clash !== undefined) issues.push(error(e.file, `slug "${e.slug}" already used by ${clash.file} (same route)`));
+      if (clash !== undefined)
+        issues.push(error(e.file, `slug "${e.slug}" already used by ${clash.file} (same route)`));
       else routes.set(route, e);
     }
   }
@@ -136,10 +138,23 @@ export const checkTranslations = (entries: readonly ContentEntry[]): readonly Is
           ),
         );
       }
+      // Drafts are not built (src/adapters/astro/content.ts), so a work whose every
+      // version is a draft only warns; a PUBLISHED work without a counterpart is an error.
+      const published = members.filter((m) => !m.draft);
       if (inLocale.length === 0) {
-        const allDrafts = members.every((m) => m.draft);
         const message = `no ${locale} counterpart with translationKey "${key}" in ${sample.collection}`;
-        issues.push(allDrafts ? warning(sample.file, `${message} (draft)`) : error(sample.file, message));
+        const first = published[0];
+        issues.push(first === undefined ? warning(sample.file, `${message} (draft)`) : error(first.file, message));
+      } else if (inLocale.every((m) => m.draft)) {
+        const first = published[0];
+        if (first !== undefined) {
+          issues.push(
+            warning(
+              first.file,
+              `the ${locale} counterpart of translationKey "${key}" is still a draft: the published page has no translation yet`,
+            ),
+          );
+        }
       }
     }
   }

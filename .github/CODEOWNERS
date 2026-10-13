@@ -1,0 +1,11 @@
+# Review routing. With branch protection ("Require review from Code Owners"),
+# changes to the guardrails themselves need the owner's approval: weakening a
+# check must never slip in unnoticed.
+*                       @flaviotinococoutinho
+/.github/               @flaviotinococoutinho
+/eslint.config.js       @flaviotinococoutinho
+/vitest.config.ts       @flaviotinococoutinho
+/playwright.config.ts   @flaviotinococoutinho
+/scripts/check-*.ts     @flaviotinococoutinho
+/CLAUDE.md              @flaviotinococoutinho
+/.claude/               @flaviotinococoutinho

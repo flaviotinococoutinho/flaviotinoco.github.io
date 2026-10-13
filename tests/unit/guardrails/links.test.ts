@@ -94,8 +94,16 @@ describe('resolveReference', () => {
     expect(resolveReference('http://[::1', page, coords)).toEqual({ kind: 'invalid' });
   });
   it('resolves relative paths, queries and fragments like a browser', () => {
-    expect(resolveReference('../../en/#x', page, coords)).toEqual({ kind: 'internal', pathname: '/b/en/', fragment: 'x' });
-    expect(resolveReference('?q=1', page, coords)).toEqual({ kind: 'internal', pathname: '/b/pt/ensaios/', fragment: null });
+    expect(resolveReference('../../en/#x', page, coords)).toEqual({
+      kind: 'internal',
+      pathname: '/b/en/',
+      fragment: 'x',
+    });
+    expect(resolveReference('?q=1', page, coords)).toEqual({
+      kind: 'internal',
+      pathname: '/b/pt/ensaios/',
+      fragment: null,
+    });
     expect(resolveReference('https://example.test/b/#', page, coords)).toEqual({
       kind: 'internal',
       pathname: '/b/',
@@ -166,7 +174,10 @@ describe('checkLinks', () => {
       expect(checkLinks(snapshot(pages), coords).issues).toEqual([]);
 
       const victim = slugs[pick % slugs.length] ?? '';
-      const broken = { ...pages, [`${victim}/index.html`]: `<h2>${victim}</h2>${pages[`${victim}/index.html`]?.replace(/<h2[^>]*>[^<]*<\/h2>/, '') ?? ''}` };
+      const broken = {
+        ...pages,
+        [`${victim}/index.html`]: `<h2>${victim}</h2>${pages[`${victim}/index.html`]?.replace(/<h2[^>]*>[^<]*<\/h2>/, '') ?? ''}`,
+      };
       const issues = checkLinks(snapshot(broken), coords).issues;
       expect(issues).toHaveLength(1);
       expect(issues[0]?.reason).toBe(`no element with id="h-${victim}" in ${victim}/index.html`);

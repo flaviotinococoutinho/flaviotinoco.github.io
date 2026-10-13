@@ -60,12 +60,14 @@ const gzFile = async (file: string): Promise<number> => {
 // Preload every JS module so the (synchronous, pure) closure can read sources.
 await Promise.all(files.filter((f) => f.endsWith('.js') || f.endsWith('.mjs')).map(load));
 const readModule = (file: string): string | undefined => contents.get(file)?.toString('utf8');
-const resolveFrom = (base: URL) => (specifier: string): string | undefined => {
-  const r = resolveReference(specifier, base, coords);
-  if (r.kind !== 'internal') return undefined;
-  const t = distTargetOf(r.pathname, coords.base);
-  return t.kind === 'file' ? t.path : undefined;
-};
+const resolveFrom =
+  (base: URL) =>
+  (specifier: string): string | undefined => {
+    const r = resolveReference(specifier, base, coords);
+    if (r.kind !== 'internal') return undefined;
+    const t = distTargetOf(r.pathname, coords.base);
+    return t.kind === 'file' ? t.path : undefined;
+  };
 
 const pages = files.filter((f) => f.endsWith('.html'));
 if (pages.length === 0) {

@@ -10,7 +10,10 @@ import {
 } from '../../../scripts/lib/site.ts';
 
 const segment = fc.stringMatching(/^[a-z0-9][a-z0-9-]{0,11}$/);
-const baseArb = fc.oneof(fc.constant('/'), segment.map((s) => `/${s}/`));
+const baseArb = fc.oneof(
+  fc.constant('/'),
+  segment.map((s) => `/${s}/`),
+);
 const dirPath = fc.array(segment, { maxLength: 4 }).map((parts) => parts.map((p) => `${p}/`).join(''));
 
 describe('site coordinates', () => {

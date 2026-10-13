@@ -25,8 +25,16 @@ describe('functional core purity (src/core/**)', () => {
   const core = 'src/core/algebra/pipe.ts';
 
   it.each([
-    ['I/O modules', `import { readFile } from 'node:fs/promises';\nexport const r = readFile;`, 'no-restricted-imports'],
-    ['Astro modules', `import { getCollection } from 'astro:content';\nexport const g = getCollection;`, 'no-restricted-imports'],
+    [
+      'I/O modules',
+      `import { readFile } from 'node:fs/promises';\nexport const r = readFile;`,
+      'no-restricted-imports',
+    ],
+    [
+      'Astro modules',
+      `import { getCollection } from 'astro:content';\nexport const g = getCollection;`,
+      'no-restricted-imports',
+    ],
     [
       'the shell, at any depth',
       `import { href } from '../../adapters/astro/i18n.ts';\nexport const h = href;`,
@@ -78,7 +86,10 @@ describe('functional core purity (src/core/**)', () => {
 describe('layering of the browser shell (src/islands/**)', () => {
   it('rejects imports of the build-time Markdown pipeline', async () => {
     const code = `import { remarkAbnt } from '../adapters/unified/remark-abnt.ts';\nexport const x = remarkAbnt;\n`;
-    expect(await rulesHit(code, 'src/islands/registry.ts')).toEqual(['local/import-boundaries', 'no-restricted-imports']);
+    expect(await rulesHit(code, 'src/islands/registry.ts')).toEqual([
+      'local/import-boundaries',
+      'no-restricted-imports',
+    ]);
   });
 
   it('allows the same import in the shell', async () => {

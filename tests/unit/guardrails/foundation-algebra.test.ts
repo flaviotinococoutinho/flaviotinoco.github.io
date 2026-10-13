@@ -52,7 +52,13 @@ describe('Result', () => {
   });
 
   test.prop([resultArb])('fold is the eliminator; predicates partition', (r) => {
-    expect(fold(r, () => 'ok', () => 'err')).toBe(r.ok ? 'ok' : 'err');
+    expect(
+      fold(
+        r,
+        () => 'ok',
+        () => 'err',
+      ),
+    ).toBe(r.ok ? 'ok' : 'err');
     expect(isOk(r)).toBe(!isErr(r));
     expect(unwrapOr(r, 42)).toBe(r.ok ? r.value : 42);
     expect(mapErr(r, (e) => e.length)).toEqual(r.ok ? r : err(r.error.length));

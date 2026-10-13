@@ -50,7 +50,8 @@ export const readFrontmatter = (source: string): Result<Frontmatter, string> => 
     if (m === null) continue;
     const key = m[1] ?? '';
     const scalar = m[2] === undefined ? undefined : parseScalar(m[2]);
-    if (!fields.has(key)) fields.set(key, scalar === undefined ? { kind: 'complex' } : { kind: 'scalar', value: scalar });
+    if (!fields.has(key))
+      fields.set(key, scalar === undefined ? { kind: 'complex' } : { kind: 'scalar', value: scalar });
   }
   return ok(fields);
 };

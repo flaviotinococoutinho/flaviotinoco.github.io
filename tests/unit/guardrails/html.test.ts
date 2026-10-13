@@ -10,7 +10,12 @@ describe('scanHtml', () => {
   it('reads start tags with quoted, unquoted and boolean attributes', () => {
     const { tags } = scanHtml(`<A HREF="/x/" data-n=1 hidden title='a > b'><img src=/i.png alt=""/>`);
     expect(tags.map((t) => t.name)).toEqual(['a', 'img']);
-    expect(Object.fromEntries(tags[0]?.attrs ?? [])).toEqual({ href: '/x/', 'data-n': '1', hidden: '', title: 'a > b' });
+    expect(Object.fromEntries(tags[0]?.attrs ?? [])).toEqual({
+      href: '/x/',
+      'data-n': '1',
+      hidden: '',
+      title: 'a > b',
+    });
     expect(tags[1]?.attrs.get('src')).toBe('/i.png');
   });
 
