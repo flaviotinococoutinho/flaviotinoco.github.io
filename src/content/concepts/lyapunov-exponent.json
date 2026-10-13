@@ -1,0 +1,23 @@
+{
+  "slug": {
+    "pt-BR": "expoente-de-lyapunov",
+    "en": "lyapunov-exponent"
+  },
+  "prefLabel": {
+    "pt-BR": "Expoente de Lyapunov",
+    "en": "Lyapunov exponent"
+  },
+  "definition": {
+    "pt-BR": "Taxa média de separação exponencial de trajetórias vizinhas; um expoente positivo é a assinatura do caos.",
+    "en": "The average rate of exponential separation of nearby trajectories; a positive exponent is the signature of chaos."
+  },
+  "notation": "\\lambda = \\lim_{n\\to\\infty} \\frac{1}{n} \\sum_{i=0}^{n-1} \\ln \\left\\lvert f'(x_i) \\right\\rvert",
+  "stratum": "formal",
+  "domains": [
+    "dynamical-systems",
+    "mathematics"
+  ],
+  "broader": [
+    "deterministic-chaos"
+  ]
+}

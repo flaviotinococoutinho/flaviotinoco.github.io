@@ -1,0 +1,25 @@
+{
+  "slug": {
+    "pt-BR": "sinal",
+    "en": "signal"
+  },
+  "prefLabel": {
+    "pt-BR": "Sinal",
+    "en": "Signal"
+  },
+  "definition": {
+    "pt-BR": "Grandeza física que varia no tempo ou no espaço e transporta uma mensagem; matematicamente, uma função do tempo (contínua) ou de um índice inteiro (discreta).",
+    "en": "A physical quantity varying in time or space that carries a message; mathematically, a function of time (continuous) or of an integer index (discrete)."
+  },
+  "notation": "x(t),\\quad x[n]",
+  "stratum": "theory",
+  "domains": [
+    "signal-processing"
+  ],
+  "broader": [
+    "sign"
+  ],
+  "sources": [
+    "nyquist1928"
+  ]
+}

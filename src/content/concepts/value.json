@@ -1,0 +1,19 @@
+{
+  "slug": {
+    "pt-BR": "valor",
+    "en": "value"
+  },
+  "prefLabel": {
+    "pt-BR": "Valor",
+    "en": "Value"
+  },
+  "definition": {
+    "pt-BR": "Grau em que algo serve aos fins de alguém, descontados seus custos; em produto, o benefício percebido menos o esforço, o preço e o risco de obtê-lo.",
+    "en": "The degree to which something serves someone’s ends, net of its costs; in product work, the perceived benefit minus the effort, price and risk of obtaining it."
+  },
+  "stratum": "value",
+  "domains": [
+    "product",
+    "design"
+  ]
+}

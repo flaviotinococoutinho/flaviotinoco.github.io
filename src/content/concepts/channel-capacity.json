@@ -1,0 +1,27 @@
+{
+  "slug": {
+    "pt-BR": "capacidade-de-canal",
+    "en": "channel-capacity"
+  },
+  "prefLabel": {
+    "pt-BR": "Capacidade de canal",
+    "en": "Channel capacity"
+  },
+  "definition": {
+    "pt-BR": "Maior taxa à qual se pode transmitir informação por um canal com probabilidade de erro arbitrariamente pequena; é o máximo da informação mútua sobre as distribuições de entrada.",
+    "en": "The highest rate at which information can be sent over a channel with arbitrarily small probability of error; it is the maximum of the mutual information over input distributions."
+  },
+  "notation": "C = \\max_{p(x)} I(X;Y)",
+  "stratum": "theory",
+  "domains": [
+    "information-theory"
+  ],
+  "broader": [
+    "channel",
+    "mutual-information"
+  ],
+  "sources": [
+    "shannon1948",
+    "cover2006"
+  ]
+}

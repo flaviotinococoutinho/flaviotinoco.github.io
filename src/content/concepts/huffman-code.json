@@ -1,0 +1,37 @@
+{
+  "slug": {
+    "pt-BR": "codigo-de-huffman",
+    "en": "huffman-code"
+  },
+  "prefLabel": {
+    "pt-BR": "Código de Huffman",
+    "en": "Huffman code"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "codificação de Huffman"
+    ],
+    "en": [
+      "Huffman coding"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Código de prefixo ótimo para uma fonte de probabilidades conhecidas, construído fundindo repetidamente os dois símbolos menos prováveis.",
+    "en": "An optimal prefix code for a source with known probabilities, built by repeatedly merging the two least probable symbols."
+  },
+  "notation": "H(X) \\le \\bar{L} < H(X) + 1",
+  "stratum": "formal",
+  "domains": [
+    "information-theory",
+    "computation"
+  ],
+  "broader": [
+    "prefix-code"
+  ],
+  "related": [
+    "entropy"
+  ],
+  "sources": [
+    "huffman1952"
+  ]
+}

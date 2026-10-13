@@ -1,0 +1,33 @@
+{
+  "slug": {
+    "pt-BR": "caos-deterministico",
+    "en": "deterministic-chaos"
+  },
+  "prefLabel": {
+    "pt-BR": "Caos determinístico",
+    "en": "Deterministic chaos"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "caos"
+    ],
+    "en": [
+      "chaos"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Comportamento aperiódico de um sistema determinístico com dependência sensível das condições iniciais: erros mínimos crescem exponencialmente e inviabilizam a previsão de longo prazo.",
+    "en": "Aperiodic behaviour of a deterministic system with sensitive dependence on initial conditions: tiny errors grow exponentially and make long-term prediction infeasible."
+  },
+  "stratum": "formal",
+  "domains": [
+    "dynamical-systems"
+  ],
+  "broader": [
+    "model"
+  ],
+  "sources": [
+    "lorenz1963",
+    "may1976"
+  ]
+}

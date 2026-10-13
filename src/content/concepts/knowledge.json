@@ -1,0 +1,21 @@
+{
+  "slug": {
+    "pt-BR": "conhecimento",
+    "en": "knowledge"
+  },
+  "prefLabel": {
+    "pt-BR": "Conhecimento",
+    "en": "Knowledge"
+  },
+  "definition": {
+    "pt-BR": "Apreensão confiável de fatos, de coisas ou de modos de fazer; na análise clássica, crença verdadeira e justificada.",
+    "en": "A reliable grasp of facts, of things or of ways of doing; in the classical analysis, justified true belief."
+  },
+  "stratum": "philosophy",
+  "domains": [
+    "epistemology"
+  ],
+  "broader": [
+    "epistemology"
+  ]
+}

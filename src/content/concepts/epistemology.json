@@ -1,0 +1,26 @@
+{
+  "slug": {
+    "pt-BR": "epistemologia",
+    "en": "epistemology"
+  },
+  "prefLabel": {
+    "pt-BR": "Epistemologia",
+    "en": "Epistemology"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "teoria do conhecimento"
+    ],
+    "en": [
+      "theory of knowledge"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Ramo da filosofia que investiga a natureza, as fontes, os limites e a justificação do conhecimento.",
+    "en": "The branch of philosophy that investigates the nature, sources, limits and justification of knowledge."
+  },
+  "stratum": "philosophy",
+  "domains": [
+    "epistemology"
+  ]
+}

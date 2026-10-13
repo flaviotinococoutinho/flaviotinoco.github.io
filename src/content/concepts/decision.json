@@ -1,0 +1,34 @@
+{
+  "slug": {
+    "pt-BR": "decisao",
+    "en": "decision"
+  },
+  "prefLabel": {
+    "pt-BR": "Decisão",
+    "en": "Decision"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "tomada de decisão"
+    ],
+    "en": [
+      "decision-making"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Escolha de uma ação entre alternativas sob incerteza; idealmente, a que maximiza o valor esperado segundo as crenças disponíveis.",
+    "en": "The choice of an action among alternatives under uncertainty; ideally, the one that maximises expected value given the available beliefs."
+  },
+  "stratum": "value",
+  "domains": [
+    "product",
+    "probability"
+  ],
+  "broader": [
+    "inference"
+  ],
+  "related": [
+    "value",
+    "information"
+  ]
+}

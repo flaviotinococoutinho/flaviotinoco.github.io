@@ -1,0 +1,21 @@
+{
+  "slug": {
+    "pt-BR": "ser",
+    "en": "being"
+  },
+  "prefLabel": {
+    "pt-BR": "Ser",
+    "en": "Being"
+  },
+  "definition": {
+    "pt-BR": "Aquilo que é comum a tudo o que existe, e o próprio fato de existir; o objeto mais geral da ontologia.",
+    "en": "What is common to everything that exists, and the very fact of existing; the most general object of ontology."
+  },
+  "stratum": "philosophy",
+  "domains": [
+    "ontology"
+  ],
+  "broader": [
+    "ontology"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "slug": {
+    "pt-BR": "redundancia",
+    "en": "redundancy"
+  },
+  "prefLabel": {
+    "pt-BR": "Redundância",
+    "en": "Redundancy"
+  },
+  "definition": {
+    "pt-BR": "Fração de uma mensagem determinada pela estrutura da fonte, e não pela livre escolha: um menos a razão entre a entropia e seu máximo. Permite comprimir e também corrigir erros.",
+    "en": "The fraction of a message determined by the structure of its source rather than by free choice: one minus the ratio of the entropy to its maximum. It allows compression and also error correction."
+  },
+  "notation": "R = 1 - \\frac{H(X)}{\\log_2 \\lvert \\mathcal{X} \\rvert}",
+  "stratum": "theory",
+  "domains": [
+    "information-theory"
+  ],
+  "broader": [
+    "entropy"
+  ],
+  "sources": [
+    "shannon1948"
+  ]
+}

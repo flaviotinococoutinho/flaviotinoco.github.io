@@ -1,0 +1,27 @@
+{
+  "slug": {
+    "pt-BR": "informacao",
+    "en": "information"
+  },
+  "prefLabel": {
+    "pt-BR": "Informação",
+    "en": "Information"
+  },
+  "definition": {
+    "pt-BR": "Redução de incerteza produzida por uma mensagem; na teoria de Shannon, mede-se pela improbabilidade da mensagem escolhida, independentemente de seu significado.",
+    "en": "The reduction of uncertainty brought about by a message; in Shannon’s theory it is measured by the improbability of the message chosen, regardless of its meaning."
+  },
+  "notation": "I(x) = -\\log_2 p(x)",
+  "stratum": "theory",
+  "domains": [
+    "information-theory"
+  ],
+  "related": [
+    "knowledge",
+    "meaning"
+  ],
+  "sources": [
+    "shannon1948",
+    "weaver1949"
+  ]
+}

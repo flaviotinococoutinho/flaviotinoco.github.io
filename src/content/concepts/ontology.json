@@ -1,0 +1,32 @@
+{
+  "slug": {
+    "pt-BR": "ontologia",
+    "en": "ontology"
+  },
+  "prefLabel": {
+    "pt-BR": "Ontologia",
+    "en": "Ontology"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "teoria do ser"
+    ],
+    "en": [
+      "theory of being"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Estudo do que existe e das categorias em que o existente se divide; em ciência da informação, especificação explícita de uma conceitualização.",
+    "en": "The study of what there is and of the categories into which it falls; in information science, an explicit specification of a conceptualization."
+  },
+  "stratum": "philosophy",
+  "domains": [
+    "ontology"
+  ],
+  "related": [
+    "epistemology"
+  ],
+  "sources": [
+    "gruber1993"
+  ]
+}

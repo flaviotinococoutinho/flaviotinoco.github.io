@@ -1,0 +1,34 @@
+{
+  "slug": {
+    "pt-BR": "desigualdade-de-kraft",
+    "en": "kraft-inequality"
+  },
+  "prefLabel": {
+    "pt-BR": "Desigualdade de Kraft",
+    "en": "Kraft inequality"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "desigualdade de Kraft–McMillan"
+    ],
+    "en": [
+      "Kraft–McMillan inequality"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Condição necessária e suficiente para que palavras de código binárias de comprimentos dados possam formar um código de prefixo.",
+    "en": "The necessary and sufficient condition for binary codewords of given lengths to be able to form a prefix code."
+  },
+  "notation": "\\sum_{i} 2^{-\\ell_i} \\le 1",
+  "stratum": "formal",
+  "domains": [
+    "information-theory",
+    "mathematics"
+  ],
+  "broader": [
+    "prefix-code"
+  ],
+  "sources": [
+    "cover2006"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "slug": {
+    "pt-BR": "teorema-da-amostragem",
+    "en": "sampling-theorem"
+  },
+  "prefLabel": {
+    "pt-BR": "Teorema da amostragem",
+    "en": "Sampling theorem"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "teorema de Nyquist–Shannon"
+    ],
+    "en": [
+      "Nyquist–Shannon sampling theorem"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Um sinal sem componentes acima da frequência B é determinado exatamente por amostras tomadas a uma taxa maior que 2B, e pode ser reconstruído a partir delas por interpolação.",
+    "en": "A signal with no components above frequency B is determined exactly by samples taken at a rate greater than 2B, and can be reconstructed from them by interpolation."
+  },
+  "notation": "f_s > 2B",
+  "stratum": "formal",
+  "domains": [
+    "signal-processing",
+    "mathematics"
+  ],
+  "broader": [
+    "fourier-transform"
+  ],
+  "related": [
+    "channel-capacity"
+  ],
+  "sources": [
+    "whittaker1915",
+    "nyquist1928",
+    "shannon1949"
+  ]
+}

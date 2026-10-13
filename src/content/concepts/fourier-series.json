@@ -1,0 +1,23 @@
+{
+  "slug": {
+    "pt-BR": "serie-de-fourier",
+    "en": "fourier-series"
+  },
+  "prefLabel": {
+    "pt-BR": "Série de Fourier",
+    "en": "Fourier series"
+  },
+  "definition": {
+    "pt-BR": "Representação de uma função periódica como soma de senoides cujas frequências são múltiplos inteiros da frequência fundamental.",
+    "en": "The representation of a periodic function as a sum of sinusoids whose frequencies are integer multiples of the fundamental frequency."
+  },
+  "notation": "x(t) = \\sum_{n=-\\infty}^{\\infty} c_n\\,\\e^{2\\pi\\i n t / T}",
+  "stratum": "formal",
+  "domains": [
+    "mathematics",
+    "signal-processing"
+  ],
+  "broader": [
+    "fourier-transform"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "slug": {
+    "pt-BR": "entropia",
+    "en": "entropy"
+  },
+  "prefLabel": {
+    "pt-BR": "Entropia",
+    "en": "Entropy"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "entropia de Shannon",
+      "entropia da informação"
+    ],
+    "en": [
+      "Shannon entropy",
+      "information entropy"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Incerteza média de uma variável aleatória, igual à informação esperada de uma observação; em bits, aproxima o número médio de perguntas de sim ou não necessárias para determinar o resultado.",
+    "en": "The average uncertainty of a random variable, equal to the expected information of one observation; in bits, it approximates the average number of yes-or-no questions needed to determine the outcome."
+  },
+  "notation": "H(X) = -\\sum_{x} p(x)\\,\\log_2 p(x)",
+  "stratum": "theory",
+  "domains": [
+    "information-theory",
+    "probability"
+  ],
+  "broader": [
+    "information"
+  ],
+  "sources": [
+    "shannon1948",
+    "cover2006"
+  ]
+}

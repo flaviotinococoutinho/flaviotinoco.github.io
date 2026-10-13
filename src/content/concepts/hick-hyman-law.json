@@ -1,0 +1,39 @@
+{
+  "slug": {
+    "pt-BR": "lei-de-hick-hyman",
+    "en": "hick-hyman-law"
+  },
+  "prefLabel": {
+    "pt-BR": "Lei de Hick–Hyman",
+    "en": "Hick–Hyman law"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "lei de Hick"
+    ],
+    "en": [
+      "Hick’s law"
+    ]
+  },
+  "definition": {
+    "pt-BR": "O tempo de reação de escolha cresce linearmente com a informação do estímulo, isto é, com o logaritmo do número de alternativas igualmente prováveis.",
+    "en": "Choice reaction time increases linearly with the information in the stimulus, that is, with the logarithm of the number of equally likely alternatives."
+  },
+  "notation": "T = a + b\\,\\log_2(n + 1)",
+  "stratum": "value",
+  "domains": [
+    "design",
+    "information-theory"
+  ],
+  "broader": [
+    "decision",
+    "information"
+  ],
+  "related": [
+    "entropy"
+  ],
+  "sources": [
+    "hick1952",
+    "hyman1953"
+  ]
+}

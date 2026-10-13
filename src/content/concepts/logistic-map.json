@@ -1,0 +1,28 @@
+{
+  "slug": {
+    "pt-BR": "mapa-logistico",
+    "en": "logistic-map"
+  },
+  "prefLabel": {
+    "pt-BR": "Mapa logístico",
+    "en": "Logistic map"
+  },
+  "definition": {
+    "pt-BR": "Recorrência quadrática simples que, conforme o parâmetro r cresce, passa do equilíbrio a oscilações por duplicação de período e chega ao caos.",
+    "en": "A simple quadratic recurrence that, as the parameter r increases, moves from equilibrium through period-doubling oscillations into chaos."
+  },
+  "notation": "x_{n+1} = r\\,x_n\\,(1 - x_n)",
+  "stratum": "formal",
+  "domains": [
+    "dynamical-systems"
+  ],
+  "broader": [
+    "model"
+  ],
+  "related": [
+    "deterministic-chaos"
+  ],
+  "sources": [
+    "may1976"
+  ]
+}
