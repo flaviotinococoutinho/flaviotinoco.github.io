@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>T</title>
+<link rel="canonical" href="https://example.test/base/pt/">
+<link rel="alternate" hreflang="pt-BR" href="https://example.test/base/pt/">
+<link rel="alternate" hreflang="en" href="https://example.test/base/en/">
+<link rel="stylesheet" href="/base/_astro/site.css">
+<link rel="preconnect" href="https://fonts.example.org">
+<style>@font-face{font-family:x;src:url("/base/_astro/font.woff2") format("woff2")}</style>
+<script>if (1 < 2) { document.write('<a href="/base/not-a-link/">'); }</script>
+</head><body>
+<a class="skip" href="#content">skip</a>
+<!-- <a href="/base/commented-out/">ignored</a> -->
+<svg><use href="#glyph"></use><symbol id="glyph"></symbol></svg>
+<main id="content">
+<h1 id="t&#237;tulo">T</h1>
+<p><a href="/base/missing/">missing page</a> <a href="/base/en">no slash</a>
+<a href="/pt/">outside base</a> <a href="#nope">missing id</a> <a href="/base/en/#nope">missing remote id</a>
+<a href="http://[::1">broken url</a></p>
+</main></body></html>
