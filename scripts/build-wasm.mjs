@@ -26,7 +26,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { delimiter, dirname, join, relative } from 'node:path';
+import { delimiter, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
@@ -34,7 +34,11 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WASM_DIR = join(ROOT, 'wasm');
 const OUT_DIR = join(ROOT, 'src', 'wasm');
 const TARGET = 'wasm32-unknown-unknown';
-const ARTIFACT_DIR = join(WASM_DIR, 'target', TARGET, 'release');
+// Cargo resolves a relative CARGO_TARGET_DIR against its working directory (wasm/).
+const TARGET_DIR = process.env.CARGO_TARGET_DIR
+  ? resolve(WASM_DIR, process.env.CARGO_TARGET_DIR)
+  : join(WASM_DIR, 'target');
+const ARTIFACT_DIR = join(TARGET_DIR, TARGET, 'release');
 const ABI_VERSION = 1;
 const KIB = 1024;
 const WARN_BYTES = 24 * KIB;

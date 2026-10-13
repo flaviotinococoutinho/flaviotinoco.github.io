@@ -2,8 +2,10 @@
 //! ("Simplex noise demystified", 2005) with two documented changes:
 //!
 //! 1. **Kernel radius** `r² = 0.5` instead of the original `0.6`. With `0.6` a
-//!    vertex outside the current simplex can still be inside its kernel, which makes the
-//!    field discontinuous across simplex faces (jumps of ~2·10⁻³); `0.5` removes them.
+//!    vertex outside the current simplex can still be inside its kernel but is never
+//!    summed, which makes the field discontinuous across simplex faces (jumps of up to
+//!    ~5·10⁻³ on Gustavson's ×32 output scale along random test lines); with `0.5` the
+//!    largest increment per 10⁻⁵ step is ~3·10⁻⁵, i.e. the field is continuous.
 //! 2. **Normalisation** by the exact worst-case amplitude for `r² = 0.5`: the maximum of
 //!    `Σ_c (0.5 − |d_c|²)⁴ · max_g (g·d_c)` over positions and all 12 gradient choices is
 //!    `0.013007157182859354` (numerical maximisation), so the output covers `[−1, 1]`
