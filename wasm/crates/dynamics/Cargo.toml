@@ -1,0 +1,18 @@
+[package]
+name = "kernel-dynamics"
+description = "dynamics.wasm: logistic map (orbits, Lyapunov exponent, bifurcation), Lorenz system, CLT sampler, simplex noise and curl-noise flow field."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lib]
+name = "dynamics"
+crate-type = ["cdylib"]
+
+[dependencies]
+kernel-core.workspace = true
+libm.workspace = true
+
+[lints]
+workspace = true
