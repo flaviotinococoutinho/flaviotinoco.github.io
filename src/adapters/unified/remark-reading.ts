@@ -31,10 +31,15 @@ export interface RemarkReadingOptions {
 /** Language of the document being processed (frontmatter `lang`); a build error when absent or unknown. */
 export const documentLocale = (file: VFile, stage: string): Locale => {
   const frontmatter: unknown = file.data.astro?.frontmatter;
-  const lang = typeof frontmatter === 'object' && frontmatter !== null ? (frontmatter as { lang?: unknown }).lang : undefined;
+  const lang =
+    typeof frontmatter === 'object' && frontmatter !== null ? (frontmatter as { lang?: unknown }).lang : undefined;
   const parsed = parseLocale(lang);
   if (!parsed.ok) {
-    file.fail(`${parsed.error}: the frontmatter must declare lang: pt-BR | en (it selects generated labels and word segmentation)`, undefined, `${stage}:lang`);
+    file.fail(
+      `${parsed.error}: the frontmatter must declare lang: pt-BR | en (it selects generated labels and word segmentation)`,
+      undefined,
+      `${stage}:lang`,
+    );
   }
   return parsed.value;
 };

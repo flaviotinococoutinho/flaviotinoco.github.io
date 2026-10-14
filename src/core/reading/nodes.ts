@@ -78,18 +78,16 @@ export const glyphHast = (kind: ArgumentKind, className = 'arg-glyph'): HastElem
     ariaHidden: 'true',
     focusable: 'false',
   },
-  children: GLYPHS[kind].map(
-    (p): HastChild => ({
-      type: 'element',
-      tagName: 'path',
-      properties: {
-        d: p.d,
-        fill: p.filled ? 'currentColor' : 'none',
-        stroke: 'currentColor',
-        strokeWidth: 1.5,
-        strokeLinejoin: 'round',
-      },
-      children: [],
-    }),
-  ),
+  children: GLYPHS[kind].map((p): HastChild => ({
+    type: 'element',
+    tagName: 'path',
+    properties: {
+      d: p.d,
+      fill: p.filled ? 'currentColor' : 'none',
+      stroke: 'currentColor',
+      strokeWidth: 1.5,
+      strokeLinejoin: 'round',
+    },
+    children: [],
+  })),
 });

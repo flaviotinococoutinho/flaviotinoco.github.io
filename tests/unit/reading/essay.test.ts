@@ -9,6 +9,7 @@ import {
   kentBand,
   keywordList,
   lastRevision,
+  matchesDomain,
   provenanceMessage,
   revisionsNewestFirst,
 } from '../../../src/core/reading/essay.ts';
@@ -17,7 +18,9 @@ import reading from '../../../src/core/i18n/catalogs/reading.ts';
 
 describe('keywords per ABNT NBR 6028:2021, 4.1.7', () => {
   it('separates by semicolons and ends with a full stop, keeping the authors’ case', () => {
-    expect(keywordList(['entropia', 'teoria da informação', 'Shannon'])).toBe('entropia; teoria da informação; Shannon.');
+    expect(keywordList(['entropia', 'teoria da informação', 'Shannon'])).toBe(
+      'entropia; teoria da informação; Shannon.',
+    );
     expect(keywordList(['canal;', ' ruído. ', ''])).toBe('canal; ruído.');
     expect(keywordList([])).toBe('');
   });
@@ -27,7 +30,11 @@ describe('epistemic status (Kent, 1964)', () => {
   it('orders the scale from the lowest to the highest probability and marks the level', () => {
     expect(CONFIDENCE_SCALE[0]).toBe('almost-certainly-not');
     expect(CONFIDENCE_SCALE.at(-1)).toBe('certain');
-    expect(confidenceScale('probable').filter((s) => s.active).map((s) => s.level)).toEqual(['probable']);
+    expect(
+      confidenceScale('probable')
+        .filter((s) => s.active)
+        .map((s) => s.level),
+    ).toEqual(['probable']);
   });
   it('shows the probability band in the reader’s locale', () => {
     expect(kentBand('probable', 'en')).toBe('63%–87%');
@@ -45,7 +52,9 @@ describe('provenance notice (editorial ethics)', () => {
     expect(provenanceMessage({ assistance: 'assisted', reviewed: false })).toBe('provenance.assisted.pending');
     expect(provenanceMessage({ assistance: 'generated', reviewed: true })).toBe('provenance.generated.reviewed');
     expect(provenanceMessage({ assistance: 'generated', reviewed: false })).toBe('provenance.generated.pending');
-    expect(reading['pt-BR']['provenance.generated.pending']).toBe('Texto-semente gerado com assistência de IA; revisão do autor pendente.');
+    expect(reading['pt-BR']['provenance.generated.pending']).toBe(
+      'Texto-semente gerado com assistência de IA; revisão do autor pendente.',
+    );
   });
 });
 
@@ -78,6 +87,9 @@ describe('bridge, dates and grouping', () => {
       ['value', 2],
     ]);
     expect(domainsPresent(items, (i) => i.d)).toEqual(['ontology', 'logic', 'design', 'product']);
+    expect(matchesDomain(['logic'], '')).toBe(true);
+    expect(matchesDomain(['logic'], 'logic')).toBe(true);
+    expect(matchesDomain(['logic'], 'design')).toBe(false);
   });
 });
 

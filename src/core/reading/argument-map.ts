@@ -31,7 +31,7 @@ export interface MapOptions {
   readonly padding: number;
 }
 
-export const DEFAULT_MAP_OPTIONS: MapOptions = { width: 320, rowHeight: 68, glyph: 18, charWidth: 6.6, padding: 14 };
+export const DEFAULT_MAP_OPTIONS: MapOptions = { width: 320, rowHeight: 76, glyph: 18, charWidth: 6.6, padding: 14 };
 
 export interface MapNode {
   readonly id: string;
@@ -56,6 +56,9 @@ export interface MapDrawing {
   readonly nodes: readonly MapNode[];
   readonly edges: readonly MapEdge[];
 }
+
+/** Vertical room under a glyph taken by its label (baseline at glyph + 13, plus descenders). */
+const LABEL_BAND = 19;
 
 /** Rounds to 0.1 user units: stable output, compact markup. */
 const r = (x: number): number => Math.round(x * 10) / 10;
@@ -88,13 +91,19 @@ const curve = (points: readonly Point[]): string => {
   return d;
 };
 
-export const drawArgumentMap = (input: MapInput, options: MapOptions = DEFAULT_MAP_OPTIONS): Result<MapDrawing, string> => {
+export const drawArgumentMap = (
+  input: MapInput,
+  options: MapOptions = DEFAULT_MAP_OPTIONS,
+): Result<MapDrawing, string> => {
   const layout = layoutDag(input);
   if (!layout.ok) return layout;
   const { width, rowHeight, glyph, charWidth, padding } = options;
   const columns = Math.max(1, layout.value.width);
-  const columnWidth = (width - 2 * padding) / columns;
-  const labelChars = Math.max(4, Math.floor(columnWidth / charWidth));
+  const inner = width - 2 * padding;
+  const columnWidth = inner / columns;
+  // A label may use the width its own layer leaves it (a lone node gets the whole row).
+  const labelChars = (layer: number): number =>
+    Math.max(4, Math.floor(inner / Math.max(1, layout.value.layerSizes[layer] ?? columns) / charWidth));
   const half = glyph / 2;
   const toX = (x: number): number => width / 2 + x * columnWidth;
   const toY = (y: number): number => padding + half + y * rowHeight;
@@ -102,16 +111,22 @@ export const drawArgumentMap = (input: MapInput, options: MapOptions = DEFAULT_M
   for (const [i, p] of layout.value.nodes.entries()) {
     const n = input.nodes[i];
     if (n === undefined || !isArgumentKind(n.kind)) return err(`unknown argument kind "${String(n?.kind)}"`);
-    nodes.push({ id: n.id, kind: n.kind, title: n.title, label: abbreviate(n.title, labelChars), cx: r(toX(p.x)), cy: r(toY(p.y)) });
+    nodes.push({
+      id: n.id,
+      kind: n.kind,
+      title: n.title,
+      label: abbreviate(n.title, labelChars(p.layer)),
+      cx: r(toX(p.x)),
+      cy: r(toY(p.y)),
+    });
   }
   const edges = layout.value.edges.map((e): MapEdge => {
     const pts = e.points.map((p) => ({ x: toX(p.x), y: toY(p.y) }));
-    // Leave the source below its glyph; stop above the target glyph, where the arrowhead ends.
-    const start = pts[0];
+    // Leave the source below its label; stop above the target glyph, where the arrowhead ends.
     const end = pts[pts.length - 1];
     const trimmed = pts.map((p, k) => {
-      if (k === 0 && start !== undefined) return { x: p.x, y: p.y + half + 2 };
-      if (k === pts.length - 1 && end !== undefined) return { x: p.x, y: p.y - half - 6 };
+      if (k === 0) return { x: p.x, y: p.y + half + LABEL_BAND };
+      if (k === pts.length - 1) return { x: p.x, y: p.y - half - 6 };
       return p;
     });
     const tip = end === undefined ? { x: 0, y: 0 } : { x: end.x, y: end.y - half - 1 };

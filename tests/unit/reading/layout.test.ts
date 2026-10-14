@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
 import { layoutDag, type LayoutInput } from '../../../src/core/reading/layout.ts';
 import { abbreviate, drawArgumentMap } from '../../../src/core/reading/argument-map.ts';
-import { argumentGraph, describeGraphError, parseSectionId, type ArgumentNode, type SectionId } from '../../../src/core/reading/argument.ts';
+import {
+  argumentGraph,
+  describeGraphError,
+  parseSectionId,
+  type ArgumentNode,
+  type SectionId,
+} from '../../../src/core/reading/argument.ts';
 
 /** Random DAG: edges only go from an earlier to a later vertex of a random topological order, then vertices are shuffled. */
 const dag: fc.Arbitrary<LayoutInput> = fc
@@ -101,11 +107,26 @@ describe('layoutDag (Sugiyama: longest-path layering + barycentric ordering)', (
 
   it('rejects cycles, unknown endpoints, self-loops and duplicate vertices', () => {
     const v = [{ id: 'a' }, { id: 'b' }];
-    expect(layoutDag({ nodes: v, edges: [{ from: 'a', to: 'b' }, { from: 'b', to: 'a' }] }).ok).toBe(false);
+    expect(
+      layoutDag({
+        nodes: v,
+        edges: [
+          { from: 'a', to: 'b' },
+          { from: 'b', to: 'a' },
+        ],
+      }).ok,
+    ).toBe(false);
     expect(layoutDag({ nodes: v, edges: [{ from: 'a', to: 'z' }] }).ok).toBe(false);
     expect(layoutDag({ nodes: v, edges: [{ from: 'a', to: 'a' }] }).ok).toBe(false);
     expect(layoutDag({ nodes: [...v, { id: 'a' }], edges: [] }).ok).toBe(false);
-    expect(unwrap(layoutDag({ nodes: [], edges: [] }))).toEqual({ layers: 0, width: 0, nodes: [], edges: [], crossings: 0 });
+    expect(unwrap(layoutDag({ nodes: [], edges: [] }))).toEqual({
+      layers: 0,
+      width: 0,
+      layerSizes: [],
+      nodes: [],
+      edges: [],
+      crossings: 0,
+    });
   });
 });
 
@@ -135,17 +156,21 @@ describe('drawArgumentMap', () => {
       expect(e.d).toMatch(/^M[\d.]+ [\d.]+C/);
       expect(e.head).toMatch(/Z$/);
     }
-    expect(d.nodes[0]?.label.length).toBeLessThanOrEqual(d.nodes[0]?.title.length ?? 0);
+    // A lone node in its layer has the whole row for its label.
+    expect(d.nodes.map((n) => n.label)).toEqual(['O que é informação, afinal, para um…', 'Entropia', 'Há um limite']);
   });
   it('rejects unknown kinds and cyclic input', () => {
     expect(drawArgumentMap({ nodes: [{ id: 'a', kind: 'tese', title: 'A' }], edges: [] }).ok).toBe(false);
   });
-  test.prop([fc.string({ maxLength: 80 }), fc.integer({ min: 1, max: 40 })])('abbreviate keeps a prefix and fits the width', (t, max) => {
-    const a = abbreviate(t, max);
-    expect(Array.from(a).length).toBeLessThanOrEqual(Math.max(max, 1));
-    if (Array.from(t.trim()).length <= max) expect(a).toBe(t.trim());
-    else expect(a.endsWith('…')).toBe(true);
-  });
+  test.prop([fc.string({ maxLength: 80 }), fc.integer({ min: 1, max: 40 })])(
+    'abbreviate keeps a prefix and fits the width',
+    (t, max) => {
+      const a = abbreviate(t, max);
+      expect(Array.from(a).length).toBeLessThanOrEqual(Math.max(max, 1));
+      if (Array.from(t.trim()).length <= max) expect(a).toBe(t.trim());
+      else expect(a.endsWith('…')).toBe(true);
+    },
+  );
 });
 
 describe('argumentGraph (Toulmin argument structure, must be a DAG)', () => {
@@ -154,7 +179,12 @@ describe('argumentGraph (Toulmin argument structure, must be a DAG)', () => {
     if (!r.ok) throw new Error(r.error);
     return r.value;
   };
-  const node = (i: string, depends: readonly string[] = []): ArgumentNode => ({ id: id(i), kind: 'claim', title: i, depends: depends.map(id) });
+  const node = (i: string, depends: readonly string[] = []): ArgumentNode => ({
+    id: id(i),
+    kind: 'claim',
+    title: i,
+    depends: depends.map(id),
+  });
   it('builds edges from each dependency to the section resting on it', () => {
     expect(argumentGraph([node('a'), node('b', ['a'])])).toEqual({
       ok: true,

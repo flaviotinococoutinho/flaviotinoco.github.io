@@ -85,3 +85,26 @@ export const scrollOffsetForPanel = (
   boxHeight: number,
   viewportHeight: number,
 ): number => boxTop + progressOfPanel(i, panels) * Math.max(0, boxHeight - viewportHeight);
+
+/** Where a section heading is relative to the reading band (the top part of the viewport). */
+export type BandPosition = 'above' | 'in' | 'below';
+
+/**
+ * Current section for a scroll-spy (argument map, table of contents): the last
+ * heading inside the reading band; when none is inside, the last heading that
+ * has already scrolled above it; null before the first heading. Positions come
+ * from IntersectionObserver entries (no scroll handlers), indexed in document order.
+ */
+export const currentSection = (positions: ReadonlyMap<number, BandPosition>): number | null => {
+  let inside: number | null = null;
+  let above: number | null = null;
+  for (const [i, p] of positions) {
+    if (p === 'in' && (inside === null || i > inside)) inside = i;
+    if (p === 'above' && (above === null || i > above)) above = i;
+  }
+  return inside ?? above;
+};
+
+/** Band position of a box from an IntersectionObserver entry's geometry (viewport coordinates). */
+export const bandPosition = (isIntersecting: boolean, top: number, bandTop: number): BandPosition =>
+  isIntersecting ? 'in' : top < bandTop ? 'above' : 'below';

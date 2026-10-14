@@ -1,4 +1,4 @@
-:::epigraph[Plutarco, *Vida de Pompeu*, 50]{lang=la}
+:::epigraph[Plutarco, _Vida de Pompeu_, 50]{lang=la}
 Navigare necesse est; vivere non est necesse.
 :::
 
@@ -6,7 +6,7 @@ Navigare necesse est; vivere non est necesse.
 
 ## O que é informação? {#questao .question}
 
-Começa às 10:30 com uma pergunta simples:sidenote[Shannon evitou a palavra *significado* de propósito.] e uma
+Começa às 10:30 com uma pergunta simples:sidenote[Shannon evitou a palavra _significado_ de propósito.] e uma
 observação lateral :marginnote[A margem guarda o que o texto principal pode dispensar.] sobre medidas.
 
 :::stretch{label="Por que logaritmo?"}

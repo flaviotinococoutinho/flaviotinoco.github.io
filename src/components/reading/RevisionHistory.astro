@@ -1,0 +1,42 @@
+---
+/**
+ * Revision history: a disclosure (quiet by default) listing every revision,
+ * newest first, ending with the publication date.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import reading from '../../core/i18n/catalogs/reading.ts';
+import { plural } from '../../core/i18n/messages.ts';
+import { isoDate, revisionsNewestFirst } from '../../core/reading/essay.ts';
+import { formatDate, useTranslations } from '../../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly published: Date;
+  readonly revisions: readonly { readonly date: Date; readonly note: string }[];
+  readonly id: string;
+}
+
+const { locale, published, revisions, id } = Astro.props;
+const t = useTranslations(reading, locale);
+const count = plural(locale, revisions.length, { one: t('revisions.one'), other: t('revisions.other') });
+---
+
+{revisions.length > 0 && (
+  <details class="revisions" id={id}>
+    <summary class="revisions__summary">
+      {t('revisions.title')} <span class="revisions__count">({count})</span>
+    </summary>
+    <ol class="revisions__list" role="list">
+      {revisionsNewestFirst(revisions).map((r) => (
+        <li class="revisions__item">
+          <time datetime={isoDate(r.date)}>{formatDate(locale, r.date)}</time>
+          <span class="revisions__note">{r.note}</span>
+        </li>
+      ))}
+      <li class="revisions__item revisions__item--published">
+        <time datetime={isoDate(published)}>{formatDate(locale, published)}</time>
+        <span class="revisions__note">{t('revisions.published')}</span>
+      </li>
+    </ol>
+  </details>
+)}

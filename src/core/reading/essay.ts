@@ -107,3 +107,7 @@ export const domainsPresent = <T>(items: readonly T[], domainsOf: (t: T) => read
   const present = new Set(items.flatMap(domainsOf));
   return DOMAINS.filter((d) => present.has(d));
 };
+
+/** Facet filter of the index: an item matches when no domain is selected or the item has it. */
+export const matchesDomain = (domains: readonly string[], selected: string): boolean =>
+  selected === '' || domains.includes(selected);

@@ -8,14 +8,7 @@
  * generated marks are removed. Directives no stage claimed ("10:30") are
  * restored from the source exactly as the integrity stage will do.
  */
-import {
-  childrenOf,
-  isClaimed,
-  isGenerated,
-  sourceOf,
-  type MdNode,
-  type NodeData,
-} from '../fold/tree.ts';
+import { childrenOf, isClaimed, isGenerated, sourceOf, type MdNode, type NodeData } from '../fold/tree.ts';
 import { element, link } from './nodes.ts';
 import { HEADING_RECORD, isHeadingRecord, TOC_RECORD } from './records.ts';
 
@@ -63,9 +56,10 @@ export const tocPhrasing = (nodes: readonly MdNode[], source: string | null): re
       const raw = sourceOf(n, source);
       return raw !== null ? [{ type: 'text', value: raw }] : tocPhrasing(childrenOf(n), source);
     }
-    if (n.type === 'link' || n.type === 'linkReference' || n.data?.hName === 'a') return tocPhrasing(childrenOf(n), source);
+    if (n.type === 'link' || n.type === 'linkReference' || n.data?.hName === 'a')
+      return tocPhrasing(childrenOf(n), source);
     const { children, data, position: _position, ...rest } = n;
-    const copy: MdNode = structuredClone(rest) as MdNode;
+    const copy = structuredClone(rest);
     const cleanData = withoutId(data);
     return [
       {

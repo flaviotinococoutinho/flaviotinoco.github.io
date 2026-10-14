@@ -161,7 +161,12 @@ const headingCut = (heading: MdNode, source: string | null): HeadingCut | null =
   if (remaining === 0) return { keep: k, head: null, block: split.block, attributes: split.attributes };
   // The block starts inside child k-1, which is a text node (a prose directive has no whitespace).
   const straddling = run[k - 1 - start] ?? '';
-  return { keep: k - 1, head: straddling.slice(0, straddling.length - remaining), block: split.block, attributes: split.attributes };
+  return {
+    keep: k - 1,
+    head: straddling.slice(0, straddling.length - remaining),
+    block: split.block,
+    attributes: split.attributes,
+  };
 };
 
 /** Children of a heading with its attribute block removed. */
@@ -244,15 +249,28 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
     const cut = candidate !== null && (raw === null || !isEscapedInSource(raw)) ? candidate : null;
     if (cut === null) {
       if (candidate === null && looksLikeAttributes(h)) {
-        report('warning', 'heading-attributes', 'the heading ends with "{…}" that is not a valid attribute block; it is kept as text', h);
+        report(
+          'warning',
+          'heading-attributes',
+          'the heading ends with "{…}" that is not a valid attribute block; it is kept as text',
+          h,
+        );
       }
-      return { node: h, cut: null, explicitId: undefined, kind: null, depends: [], title: visibleText(h, ctx.source).trim() };
+      return {
+        node: h,
+        cut: null,
+        explicitId: undefined,
+        kind: null,
+        depends: [],
+        title: visibleText(h, ctx.source).trim(),
+      };
     }
     const title = cutChildren(h, cut)
       .map((k) => visibleText(k, ctx.source))
       .join('')
       .trim();
-    if (title.length === 0) report('error', 'heading-attributes', 'a heading needs a title besides its attribute block', h);
+    if (title.length === 0)
+      report('error', 'heading-attributes', 'a heading needs a title besides its attribute block', h);
     const { ids, classes, pairs } = cut.attributes;
     if (ids.length > 1) report('error', 'heading-attributes', `a heading takes one #id, got ${ids.join(', ')}`, h);
     for (const id of ids) {
@@ -261,11 +279,22 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
     }
     const kinds = classes.filter(isArgumentKind);
     for (const c of classes.filter((x) => !isArgumentKind(x))) {
-      report('error', 'unknown-kind', `unknown argument kind ".${c}" (expected one of ${ARGUMENT_KINDS.join(', ')})`, h);
+      report(
+        'error',
+        'unknown-kind',
+        `unknown argument kind ".${c}" (expected one of ${ARGUMENT_KINDS.join(', ')})`,
+        h,
+      );
     }
-    if (kinds.length > 1) report('error', 'unknown-kind', `a heading has one argument kind, got ${kinds.join(', ')}`, h);
+    if (kinds.length > 1)
+      report('error', 'unknown-kind', `a heading has one argument kind, got ${kinds.join(', ')}`, h);
     for (const [k] of pairs.filter(([key]) => key !== 'depends')) {
-      report('error', 'heading-attributes', `unknown heading attribute "${k}" (only depends="…" is defined; write \\{ to keep a brace as text)`, h);
+      report(
+        'error',
+        'heading-attributes',
+        `unknown heading attribute "${k}" (only depends="…" is defined; write \\{ to keep a brace as text)`,
+        h,
+      );
     }
     const dependsPairs = pairs.filter(([k]) => k === 'depends');
     if (dependsPairs.length > 1) report('error', 'heading-attributes', 'depends is given twice', h);
@@ -381,11 +410,14 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
   const labelOf = (node: MdNode): { readonly label: MdNode | null; readonly rest: readonly MdNode[] } => {
     const kids = childrenOf(node);
     const first = kids[0];
-    return first !== undefined && isLabelParagraph(first) ? { label: first, rest: kids.slice(1) } : { label: null, rest: kids };
+    return first !== undefined && isLabelParagraph(first)
+      ? { label: first, rest: kids.slice(1) }
+      : { label: null, rest: kids };
   };
 
   const noLabel = (node: MdNode, name: string): void => {
-    if (labelOf(node).label !== null) report('error', 'label-not-allowed', `:::${name} takes no [label]; use label="…"`, node);
+    if (labelOf(node).label !== null)
+      report('error', 'label-not-allowed', `:::${name} takes no [label]; use label="…"`, node);
   };
 
   const rebuildAll = (nodes: readonly MdNode[], env: Env): readonly MdNode[] => nodes.flatMap((n) => rebuild(n, env));
@@ -433,13 +465,19 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
       'p',
       { className: ['arg__kind'] },
       [
-        element('span', { className: ['arg__glyph'] }, [], { generated: true, extra: { hChildren: [glyphHast(plan.kind)] } }),
+        element('span', { className: ['arg__glyph'] }, [], {
+          generated: true,
+          extra: { hChildren: [glyphHast(plan.kind)] },
+        }),
         text(t(`kind.${plan.kind}`), true),
       ],
       { generated: true },
     );
     const deps = plan.depends.filter((d) => titleOf.has(d));
-    const parts = deps.length > 0 ? new Intl.ListFormat(ctx.locale, { type: 'conjunction' }).formatToParts(deps.map((d) => titleOf.get(d) ?? d)) : [];
+    const parts =
+      deps.length > 0
+        ? new Intl.ListFormat(ctx.locale, { type: 'conjunction' }).formatToParts(deps.map((d) => titleOf.get(d) ?? d))
+        : [];
     let k = 0;
     const depLinks = parts.map((part): MdNode => {
       if (part.type === 'literal') return text(part.value, true);
@@ -453,15 +491,24 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
             element(
               'p',
               { className: ['arg__deps'] },
-              [element('span', { className: ['arg__deps-label'] }, [text(t('argument.rests'), true)]), text(' ', true), ...depLinks],
+              [
+                element('span', { className: ['arg__deps-label'] }, [text(t('argument.rests'), true)]),
+                text(' ', true),
+                ...depLinks,
+              ],
               { generated: true },
             ),
           ]
         : [];
     return [
-      element('hgroup', { className: ['arg', `arg--${plan.kind}`], dataKind: plan.kind }, [eyebrow, h, ...depsParagraph], {
-        position: node.position,
-      }),
+      element(
+        'hgroup',
+        { className: ['arg', `arg--${plan.kind}`], dataKind: plan.kind },
+        [eyebrow, h, ...depsParagraph],
+        {
+          position: node.position,
+        },
+      ),
     ];
   };
 
@@ -470,8 +517,10 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
       report('error', 'note-placement', `:${name} cannot be placed inside ${env.noNotes}`, node);
       return [node];
     }
-    if (Object.keys(directiveAttributes(node)).length > 0) report('error', 'unknown-attribute', `:${name} takes no attributes`, node);
-    if (childrenOf(node).length === 0) report('error', 'empty-note', `:${name}[…] needs a text between the brackets`, node);
+    if (Object.keys(directiveAttributes(node)).length > 0)
+      report('error', 'unknown-attribute', `:${name} takes no attributes`, node);
+    if (childrenOf(node).length === 0)
+      report('error', 'empty-note', `:${name}[…] needs a text between the brackets`, node);
     const content = rebuildAll(childrenOf(node), { ...env, noNotes: 'another note' });
     if (name === 'sidenote') {
       sidenotes += 1;
@@ -479,10 +528,15 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
       return [
         claim(node, 'span', { className: ['sidenote'], dataSidenote: n, style: `--anchor:--${sidenoteId(n)}` }, [
           element('sup', { className: ['sidenote__ref'], id: sidenoteRefId(n) }, [
-            link(`#${sidenoteId(n)}`, [text(String(n), true)], { className: ['sidenote__link'], ariaLabel: t('sidenote.label', { n }) }),
+            link(`#${sidenoteId(n)}`, [text(String(n), true)], {
+              className: ['sidenote__link'],
+              ariaLabel: t('sidenote.label', { n }),
+            }),
           ]),
           element('span', { className: ['sidenote__note'], id: sidenoteId(n), role: 'note' }, [
-            element('span', { className: ['sidenote__num'], ariaHidden: 'true' }, [text(String(n), true)], { generated: true }),
+            element('span', { className: ['sidenote__num'], ariaHidden: 'true' }, [text(String(n), true)], {
+              generated: true,
+            }),
             ...content,
           ]),
         ]),
@@ -494,7 +548,12 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
       claim(
         node,
         'span',
-        { className: ['marginnote'], dataMarginnote: m, dataLabel: t('marginnote.label'), style: `--anchor:--${marginnoteId(m)}` },
+        {
+          className: ['marginnote'],
+          dataMarginnote: m,
+          dataLabel: t('marginnote.label'),
+          style: `--anchor:--${marginnoteId(m)}`,
+        },
         [
           element('span', { className: ['marginnote__anchor'], ariaHidden: 'true' }, []),
           element('span', { className: ['marginnote__note'], id: marginnoteId(m), role: 'note' }, content),
@@ -507,7 +566,8 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
     const attrs = checkAttributes(node, 'stretch');
     const { label, rest } = labelOf(node);
     const attrLabel = attrs['label'];
-    if (label !== null && attrLabel !== undefined) report('error', 'ambiguous-label', ':::stretch has both [label] and label="…"; keep one', node);
+    if (label !== null && attrLabel !== undefined)
+      report('error', 'ambiguous-label', ':::stretch has both [label] and label="…"; keep one', node);
     if (label === null && (attrLabel === undefined || attrLabel.trim() === '')) {
       report('error', 'missing-label', ':::stretch needs a label: :::stretch{label="Por que…?"}', node);
     }
@@ -515,9 +575,14 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
     const labelText = (label !== null ? visibleText(label, ctx.source) : (attrLabel ?? '')).trim();
     const summary =
       label !== null
-        ? element('summary', { className: ['stretch__label'] }, rebuildAll(childrenOf(label), { noNotes: 'a stretchtext label' }), {
-            position: label.position,
-          })
+        ? element(
+            'summary',
+            { className: ['stretch__label'] },
+            rebuildAll(childrenOf(label), { noNotes: 'a stretchtext label' }),
+            {
+              position: label.position,
+            },
+          )
         : element('summary', { className: ['stretch__label'] }, [text(labelText, true)]);
     return [
       claim(node, 'details', { className: ['stretch'], dataLabel: labelText, id: attrs['id'] }, [
@@ -536,14 +601,25 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
     const rest = figure === null ? kids : kids.slice(1);
     const steps = rest.filter((c) => c.type === 'containerDirective' && directiveName(c) === 'step' && !isClaimed(c));
     for (const c of rest.filter((x) => !steps.includes(x))) {
-      report('error', 'scrolly-content', '::::scrolly holds an optional first figure (::lab, an image or :::figure) followed only by :::step blocks', c);
+      report(
+        'error',
+        'scrolly-content',
+        '::::scrolly holds an optional first figure (::lab, an image or :::figure) followed only by :::step blocks',
+        c,
+      );
     }
     if (steps.length === 0) report('error', 'scrolly-content', '::::scrolly needs at least one :::step', node);
-    if (figure === null) report('warning', 'scrolly-figure', '::::scrolly without a figure: the steps will read as plain text', node);
+    if (figure === null)
+      report('warning', 'scrolly-figure', '::::scrolly without a figure: the steps will read as plain text', node);
     const stepNodes = steps.map((s, i) => {
       const sa = checkAttributes(s, 'step');
       noLabel(s, 'step');
-      return claim(s, 'div', { className: ['scrolly__step'], dataIndex: i, dataState: sa['state'] }, rebuildAll(childrenOf(s), env));
+      return claim(
+        s,
+        'div',
+        { className: ['scrolly__step'], dataIndex: i, dataState: sa['state'] },
+        rebuildAll(childrenOf(s), env),
+      );
     });
     const label = attrs['label'];
     const named = label !== undefined && label.trim().length > 0;
@@ -551,7 +627,13 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
       claim(
         node,
         'ft-scrolly',
-        { className: ['scrolly'], dataSteps: steps.length, role: named ? 'group' : undefined, ariaLabel: named ? label : undefined, id: attrs['id'] },
+        {
+          className: ['scrolly'],
+          dataSteps: steps.length,
+          role: named ? 'group' : undefined,
+          ariaLabel: named ? label : undefined,
+          id: attrs['id'],
+        },
         [
           ...(figure !== null ? [element('div', { className: ['scrolly__figure'] }, rebuild(figure, env))] : []),
           element('div', { className: ['scrolly__steps'] }, stepNodes),
@@ -564,14 +646,21 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
     const attrs = checkAttributes(node, 'horizontal');
     noLabel(node, 'horizontal');
     const label = (attrs['label'] ?? '').trim();
-    if (label === '') report('error', 'missing-label', '::::horizontal needs label="…" (it names the scrollable region for assistive technology)', node);
+    if (label === '')
+      report(
+        'error',
+        'missing-label',
+        '::::horizontal needs label="…" (it names the scrollable region for assistive technology)',
+        node,
+      );
     const kids = childrenOf(node).filter((c) => !isLabelParagraph(c));
     const panels = kids.filter((c) => c.type === 'containerDirective' && directiveName(c) === 'panel' && !isClaimed(c));
     for (const c of kids.filter((x) => !panels.includes(x))) {
       report('error', 'horizontal-content', '::::horizontal holds only :::panel blocks', c);
     }
     if (panels.length === 0) report('error', 'horizontal-content', '::::horizontal needs at least one :::panel', node);
-    if (panels.length === 1) report('warning', 'horizontal-content', '::::horizontal with a single :::panel reads as a plain block', node);
+    if (panels.length === 1)
+      report('warning', 'horizontal-content', '::::horizontal with a single :::panel reads as a plain block', node);
     const n = panels.length;
     const panelNodes = panels.map((p, i) => {
       const pa = checkAttributes(p, 'panel');
@@ -581,24 +670,40 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
       return claim(
         p,
         'div',
-        { className: ['horizontal__panel'], role: 'group', ariaLabel: pl.length > 0 ? `${pl} (${position})` : position, dataIndex: i },
+        {
+          className: ['horizontal__panel'],
+          role: 'group',
+          ariaLabel: pl.length > 0 ? `${pl} (${position})` : position,
+          dataIndex: i,
+        },
         rebuildAll(childrenOf(p), env),
       );
     });
     return [
-      claim(node, 'ft-horizontal', { className: ['horizontal'], dataPanels: n, style: `--panels:${n}`, id: attrs['id'] }, [
-        element('div', { className: ['horizontal__viewport'], role: 'region', ariaLabel: label, tabIndex: 0 }, [
-          element('div', { className: ['horizontal__track'] }, panelNodes),
-        ]),
-        element('p', { className: ['horizontal__hint'], ariaHidden: 'true' }, [text(t('horizontal.hint', { n }), true)], { generated: true }),
-      ]),
+      claim(
+        node,
+        'ft-horizontal',
+        { className: ['horizontal'], dataPanels: n, style: `--panels:${n}`, id: attrs['id'] },
+        [
+          element('div', { className: ['horizontal__viewport'], role: 'region', ariaLabel: label, tabIndex: 0 }, [
+            element('div', { className: ['horizontal__track'] }, panelNodes),
+          ]),
+          element(
+            'p',
+            { className: ['horizontal__hint'], ariaHidden: 'true' },
+            [text(t('horizontal.hint', { n }), true)],
+            { generated: true },
+          ),
+        ],
+      ),
     ];
   };
 
   const epigraph = (node: MdNode, env: Env): readonly MdNode[] => {
     const attrs = checkAttributes(node, 'epigraph');
     const lang = attrs['lang'];
-    if (lang !== undefined && !LANG.test(lang)) report('error', 'unknown-attribute', `:::epigraph lang="${lang}" is not a BCP 47 language tag`, node);
+    if (lang !== undefined && !LANG.test(lang))
+      report('error', 'unknown-attribute', `:::epigraph lang="${lang}" is not a BCP 47 language tag`, node);
     const kids = childrenOf(node);
     // The source is the [label], or a node the citations stage flagged as such.
     const sourceIndex = kids.findIndex((c) => isLabelParagraph(c) || c.data?.[EPIGRAPH_SOURCE] === true);
@@ -638,11 +743,16 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
     const attrs = checkAttributes(node, 'aside');
     const { label, rest } = labelOf(node);
     const attrLabel = attrs['label'];
-    if (label !== null && attrLabel !== undefined) report('error', 'ambiguous-label', ':::aside has both [title] and label="…"; keep one', node);
+    if (label !== null && attrLabel !== undefined)
+      report('error', 'ambiguous-label', ':::aside has both [title] and label="…"; keep one', node);
     const name = (label !== null ? visibleText(label, ctx.source) : (attrLabel ?? '')).trim();
     const title =
       label !== null
-        ? [element('p', { className: ['aside__title'] }, rebuildAll(childrenOf(label), env), { position: label.position })]
+        ? [
+            element('p', { className: ['aside__title'] }, rebuildAll(childrenOf(label), env), {
+              position: label.position,
+            }),
+          ]
         : name.length > 0
           ? [element('p', { className: ['aside__title'] }, [text(name, true)])]
           : [];
@@ -661,7 +771,8 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
     const depthRaw = attrs['depth'];
     const depth = depthRaw === undefined ? DEFAULT_TOC_DEPTH : Number(depthRaw);
     const valid = Number.isInteger(depth) && depth >= 2 && depth <= 6;
-    if (!valid) report('error', 'unknown-attribute', `::toc depth="${String(depthRaw)}" must be an integer from 2 to 6`, node);
+    if (!valid)
+      report('error', 'unknown-attribute', `::toc depth="${String(depthRaw)}" must be an integer from 2 to 6`, node);
     const kids = childrenOf(node);
     const title =
       kids.length > 0

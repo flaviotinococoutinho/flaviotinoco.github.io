@@ -1,11 +1,217 @@
 ---
-/** STUB view — replaced by the owning workstream (reading). */
+/**
+ * Essay page (route kind "essay").
+ *
+ * Quiet by default, expandable by the reader (progressive disclosure): the
+ * article reads as a book page; the stratum, dates, epistemic status and
+ * provenance sit above it; the argument map, side notes and margin notes live
+ * in the margin column on wide screens and fold into the flow on narrow ones;
+ * stretchtext, revision history and the map itself open only on request.
+ *
+ * Layout (.page-grid, src/styles/layout.css): header blocks in the main column;
+ * .essay__main spans main → margin as a subgrid holding the article (main) and,
+ * beside it, the sticky argument map and the side notes (margin). Ids used here
+ * are reserved for headings by src/core/reading/records.ts (PAGE_IDS).
+ */
+import { getEntry, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import MathAssets from '../components/MathAssets.astro';
+import ArgumentGlyphs from '../components/reading/ArgumentGlyphs.astro';
+import ArgumentMap from '../components/reading/ArgumentMap.astro';
+import AbstractBlock from '../components/reading/AbstractBlock.astro';
+import EpistemicStatus from '../components/reading/EpistemicStatus.astro';
+import EssayCard from '../components/reading/EssayCard.astro';
+import ReadingProgress from '../components/reading/ReadingProgress.astro';
+import RevisionHistory from '../components/reading/RevisionHistory.astro';
+import StratumLabel from '../components/reading/StratumLabel.astro';
 import type { Locale } from '../core/domain/locale.ts';
-export interface Props { readonly locale: Locale; readonly id: string; }
-const { locale } = Astro.props;
+import common from '../core/i18n/catalogs/common.ts';
+import reading from '../core/i18n/catalogs/reading.ts';
+import { formatNumber, plural } from '../core/i18n/messages.ts';
+import { parseDocumentMeta } from '../core/fold/meta.ts';
+import { WORDS_PER_MINUTE } from '../core/fold/words.ts';
+import { bridgeTarget, isoDate, lastRevision } from '../core/reading/essay.ts';
+import {
+  alternatesByKey,
+  concepts,
+  essays,
+  labs,
+  routeOfConcept,
+  routeOfEssay,
+  routeOfLab,
+} from '../adapters/astro/content.ts';
+import { formatDate, href, useTranslations } from '../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly id: string;
+}
+
+const { locale, id } = Astro.props;
+const entry = await getEntry('essays', id);
+if (entry === undefined) throw new Error(`EssayView: no essay with id "${id}"`);
+const { Content, remarkPluginFrontmatter } = await render(entry);
+const decoded = parseDocumentMeta(remarkPluginFrontmatter);
+if (!decoded.ok) throw new Error(`EssayView: essay "${id}" has no reading metadata: ${decoded.error.join('; ')}`);
+const meta = decoded.value;
+const data = entry.data;
+
+const t = useTranslations(reading, locale);
+const tc = useTranslations(common, locale);
+const alternates = await alternatesByKey('essays', data.translationKey, (slug) => ({ kind: 'essay', slug }));
+
+const revised = lastRevision(data.published, data.revisions);
+const notes = meta.sidenoteCount + meta.marginnoteCount;
+const expandableMinutes = Math.round(meta.expandableWordCount / WORDS_PER_MINUTE);
+const words = plural(locale, meta.wordCount, { one: t('essay.words.one'), other: t('essay.words.other') });
+
+// Concepts discussed: concept routes use the concept's slug in this locale.
+const conceptIndex = new Map((await concepts()).map((c) => [c.id, c]));
+const discussed = data.concepts.flatMap((cid) => {
+  const c = conceptIndex.get(cid);
+  return c === undefined ? [] : [{ href: href(routeOfConcept(c, locale), locale), label: c.data.prefLabel[locale] }];
+});
+
+// Next on the bridge: essays and labs of the next stratum, in this locale.
+const next = bridgeTarget(data.stratum, data.bridgesTo);
+const nextEssays =
+  next === null ? [] : (await essays(locale)).filter((e) => e.data.stratum === next && e.id !== entry.id);
+const nextLabs = next === null ? [] : (await labs(locale)).filter((l) => l.data.stratum === next);
+
+const IDS = {
+  title: 'essay-title',
+  status: 'essay-status',
+  abstract: 'essay-abstract',
+  article: 'essay-article',
+  revisions: 'essay-revisions',
+  concepts: 'essay-concepts',
+  next: 'essay-next',
+  map: 'argument-map',
+  mapTitle: 'argument-map-title',
+} as const;
 ---
 
-<BaseLayout locale={locale} title="EssayView" description="Placeholder page rendered by a view stub until its workstream lands." alternates={{}} noindex>
-  <div class="page-grid"><h1>EssayView</h1></div>
+<BaseLayout locale={locale} title={data.title} description={data.description} alternates={alternates} ogType="article">
+  {meta.hasMath && <MathAssets />}
+  {meta.argument.nodes.length > 0 && <ArgumentGlyphs />}
+  <div class="page-grid essay" data-stratum={data.stratum}>
+    <ReadingProgress target={IDS.article} />
+    <header class="essay__header">
+      <p class="essay__stratum">
+        <span class="visually-hidden">{t('essay.stratum')}:</span>
+        <a class="essay__stratum-link" href={href({ kind: 'stratum', stratum: data.stratum }, locale)}>
+          <StratumLabel stratum={data.stratum} locale={locale} />
+        </a>
+        {data.bridgesTo !== undefined && (
+          <span class="essay__bridge">
+            {t('essay.bridge', { from: tc(`strata.${data.stratum}`), to: tc(`strata.${data.bridgesTo}`) })}
+          </span>
+        )}
+      </p>
+      <h1 class="essay__title" id={IDS.title}>
+        {data.title}
+      </h1>
+      {data.subtitle !== undefined && <p class="essay__subtitle">{data.subtitle}</p>}
+      <p class="essay__meta">
+        <time datetime={isoDate(data.published)}>
+          {tc('date.published', { date: formatDate(locale, data.published) })}
+        </time>
+        {revised !== null && (
+          <time datetime={isoDate(revised)}>{tc('date.revised', { date: formatDate(locale, revised) })}</time>
+        )}
+        <span>
+          {tc('reading.time', { minutes: formatNumber(locale, meta.readingMinutes) })}
+          {expandableMinutes > 0 && (
+            <span class="essay__expandable">({t('essay.expandable', { minutes: expandableMinutes })})</span>
+          )}
+        </span>
+        <span>{words}</span>
+      </p>
+    </header>
+
+    <EpistemicStatus
+      locale={locale}
+      confidence={data.epistemic.confidence}
+      evidence={data.epistemic.evidence}
+      provenance={data.provenance}
+      headingId={IDS.status}
+    />
+    <AbstractBlock locale={locale} abstract={data.abstract} keywords={data.keywords} headingId={IDS.abstract} />
+
+    <div class:list={['essay__main', { 'essay__main--notes': notes > 0 }]}>
+      <span class="essay__rail" aria-hidden="true"></span>
+      {meta.argument.nodes.length > 1 && (
+        <ArgumentMap locale={locale} argument={meta.argument} notes={notes} id={IDS.map} titleId={IDS.mapTitle} />
+      )}
+      {notes > 0 ? (
+        <ft-sidenotes class="essay__notes" data-eager>
+          <article class="prose essay__article" id={IDS.article} lang={data.lang} aria-labelledby={IDS.title}>
+            <Content />
+          </article>
+        </ft-sidenotes>
+      ) : (
+        <article class="prose essay__article" id={IDS.article} lang={data.lang} aria-labelledby={IDS.title}>
+          <Content />
+        </article>
+      )}
+    </div>
+
+    <footer class="essay__footer">
+      <RevisionHistory locale={locale} published={data.published} revisions={data.revisions} id={IDS.revisions} />
+      {discussed.length > 0 && (
+        <nav class="essay__concepts" aria-labelledby={IDS.concepts}>
+          <h2 class="essay__footer-title" id={IDS.concepts}>
+            {t('concepts.title')}
+          </h2>
+          <ul class="essay__concept-list" role="list">
+            {discussed.map((c) => (
+              <li>
+                <a href={c.href}>{c.label}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+      {next !== null && (
+        <nav class="bridge-next" aria-labelledby={IDS.next} data-stratum={next}>
+          <h2 class="essay__footer-title" id={IDS.next}>
+            <a href={href({ kind: 'stratum', stratum: next }, locale)}>
+              <StratumLabel stratum={next} locale={locale} quiet />
+              {t('bridge.next', { stratum: tc(`strata.${next}`) })}
+            </a>
+          </h2>
+          {(nextEssays.length > 0 || nextLabs.length > 0) && (
+            <div class="bridge-next__list">
+              {nextEssays.map((e) => (
+                <EssayCard
+                  locale={locale}
+                  href={href(routeOfEssay(e), locale)}
+                  title={e.data.title}
+                  description={e.data.description}
+                  stratum={e.data.stratum}
+                  published={e.data.published}
+                  readingMinutes={null}
+                  domains={e.data.domains}
+                  form={tc('form.essay')}
+                />
+              ))}
+              {nextLabs.map((l) => (
+                <EssayCard
+                  locale={locale}
+                  href={href(routeOfLab(l), locale)}
+                  title={l.data.title}
+                  description={l.data.description}
+                  stratum={l.data.stratum}
+                  published={l.data.published}
+                  readingMinutes={null}
+                  domains={l.data.domains}
+                  form={tc('form.lab')}
+                />
+              ))}
+            </div>
+          )}
+        </nav>
+      )}
+    </footer>
+  </div>
 </BaseLayout>

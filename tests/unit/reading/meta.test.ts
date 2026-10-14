@@ -22,10 +22,13 @@ describe('countWords (Intl.Segmenter with the document locale)', () => {
       expect(countWords(ws.join(' '), 'pt-BR')).toBe(ws.length);
     },
   );
-  test.prop([fc.string({ maxLength: 80 }), fc.string({ maxLength: 80 })])('is additive over a block boundary', (a, b) => {
-    // A line break is a mandatory word boundary (UAX #29, WB3a/WB3b), so blocks never glue.
-    expect(countWords(`${a}\n\n${b}`, 'en')).toBe(countWords(a, 'en') + countWords(b, 'en'));
-  });
+  test.prop([fc.string({ maxLength: 80 }), fc.string({ maxLength: 80 })])(
+    'is additive over a block boundary',
+    (a, b) => {
+      // A line break is a mandatory word boundary (UAX #29, WB3a/WB3b), so blocks never glue.
+      expect(countWords(`${a}\n\n${b}`, 'en')).toBe(countWords(a, 'en') + countWords(b, 'en'));
+    },
+  );
 });
 
 describe('readingMinutes (Brysbaert 2019: 238 words/min, rounded up, at least 1)', () => {
@@ -48,11 +51,13 @@ describe('the meta fold', () => {
   };
 
   it('excludes code, math, image alt, generated labels and the table of contents', () => {
-    const md = '::toc\n\n## Título\n\nTexto com `código` e $$x^2$$ fórmula ![alt longo aqui](a.png).\n\n```js\nconst nada = 1;\n```\n\n$$\ny = x\n$$';
+    const md =
+      '::toc\n\n## Título\n\nTexto com `código` e $$x^2$$ fórmula ![alt longo aqui](a.png).\n\n```js\nconst nada = 1;\n```\n\n$$\ny = x\n$$';
     expect(fold(md).wordCount).toBe(1 + 4);
   });
   it('counts notes and footnotes as separate texts, and stretchtext as expandable', () => {
-    const md = 'Palavra:sidenote[nota lateral] fim.\n\n:::stretch{label="Mais"}\nTrês palavras aqui.\n:::\n\nTexto[^1].\n\n[^1]: Nota de rodapé.';
+    const md =
+      'Palavra:sidenote[nota lateral] fim.\n\n:::stretch{label="Mais"}\nTrês palavras aqui.\n:::\n\nTexto[^1].\n\n[^1]: Nota de rodapé.';
     const meta = fold(md);
     expect(meta.wordCount).toBe(2 + 2 + 3 + 1 + 3);
     expect(meta.expandableWordCount).toBe(3);
@@ -63,7 +68,14 @@ describe('the meta fold', () => {
   });
   it('exports the outline, the argument graph, embeds and math', () => {
     const meta = fold(fixture('ensaio.md'));
-    expect(meta.outline.map((o) => o.id)).toEqual(['questao', 'def:entropia', 'premissa-ruido', 'tese', 'objecao', 'nível-sintático']);
+    expect(meta.outline.map((o) => o.id)).toEqual([
+      'questao',
+      'def:entropia',
+      'premissa-ruido',
+      'tese',
+      'objecao',
+      'nível-sintático',
+    ]);
     expect(meta.argument.edges).toContainEqual({ from: 'premissa-ruido', to: 'tese' });
     expect(meta.argument.nodes.find((n) => n.id === 'tese')).toEqual({
       id: 'tese',

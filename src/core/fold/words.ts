@@ -28,7 +28,8 @@ export const countWords = (text: string, locale: Locale): number => {
     if (s === undefined || s.isWordLike !== true) continue;
     const prev = segments[i - 1];
     const before = segments[i - 2];
-    const joined = prev !== undefined && HYPHENS.has(prev.segment) && before !== undefined && before.isWordLike === true;
+    const joined =
+      prev !== undefined && HYPHENS.has(prev.segment) && before !== undefined && before.isWordLike === true;
     if (!joined) count += 1;
   }
   return count;

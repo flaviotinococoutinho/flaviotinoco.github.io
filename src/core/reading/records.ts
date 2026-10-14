@@ -76,6 +76,22 @@ export const PAGE_IDS: readonly string[] = [
   'form-lab',
   'form-concept',
   'form-map',
+  // Site chrome (header, command palette, preferences): fixed ids known at the time of writing.
+  'site-nav-list',
+  'ft-palette',
+  'ft-palette-title',
+  'ft-palette-input',
+  'ft-palette-list',
+  'ft-palette-hint',
+  'ft-prefs',
+  'ft-prefs-title',
+  'ui-arrow',
+  'ui-close',
+  'ui-feed',
+  'ui-language',
+  'ui-menu',
+  'ui-prefs',
+  'ui-search',
   ...ARGUMENT_KINDS.map(glyphSymbolId),
 ];
 

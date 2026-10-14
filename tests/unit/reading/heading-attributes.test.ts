@@ -19,7 +19,7 @@ describe('splitHeadingAttributes (Pandoc header_attributes)', () => {
 
   it('accepts the curly quotes SmartyPants produces before every remark stage', () => {
     expect(splitHeadingAttributes('T {.claim depends=“a, b”}')?.attributes.pairs).toEqual([['depends', 'a, b']]);
-    expect(splitHeadingAttributes("T {.claim depends=‘a’}")?.attributes.pairs).toEqual([['depends', 'a']]);
+    expect(splitHeadingAttributes('T {.claim depends=‘a’}')?.attributes.pairs).toEqual([['depends', 'a']]);
   });
 
   it('accepts bare values, Unicode ids and trailing whitespace', () => {
@@ -69,9 +69,12 @@ describe('splitHeadingAttributes (Pandoc header_attributes)', () => {
     if (r !== null) expect(r.text + r.block).toBe(s);
   });
 
-  test.prop([fc.string({ maxLength: 60 }).filter((s) => !s.includes('{'))])('plain headings (no brace) are never split', (s) => {
-    expect(splitHeadingAttributes(s)).toBeNull();
-  });
+  test.prop([fc.string({ maxLength: 60 }).filter((s) => !s.includes('{'))])(
+    'plain headings (no brace) are never split',
+    (s) => {
+      expect(splitHeadingAttributes(s)).toBeNull();
+    },
+  );
 });
 
 describe('isEscapedInSource', () => {

@@ -21,7 +21,7 @@ import { err, ok, type Result } from '../algebra/result.ts';
 import type { Locale } from '../domain/locale.ts';
 import { ARGUMENT_KINDS, isArgumentKind, type ArgumentKind } from '../reading/argument.ts';
 import { HEADING_RECORD, isHeadingRecord } from '../reading/records.ts';
-import { childrenOf, directiveName, isClaimed, isGenerated, OPAQUE_TYPES, sourceOf, visibleText, type MdNode } from './tree.ts';
+import { childrenOf, directiveName, isClaimed, isGenerated, OPAQUE_TYPES, visibleText, type MdNode } from './tree.ts';
 import { countWords, readingMinutes } from './words.ts';
 
 export interface OutlineEntry {
@@ -195,7 +195,14 @@ const argumentOf = (headings: readonly MdNode[], source: string | null): Argumen
   const nodes = headings.flatMap((node): readonly ArgumentNodeMeta[] => {
     const record = node.data?.[HEADING_RECORD];
     return isHeadingRecord(record) && record.kind !== null
-      ? [{ id: record.id, kind: record.kind, title: visibleText(node, source, 'final').trim(), depends: record.depends }]
+      ? [
+          {
+            id: record.id,
+            kind: record.kind,
+            title: visibleText(node, source, 'final').trim(),
+            depends: record.depends,
+          },
+        ]
       : [];
   });
   const ids = new Set(nodes.map((n) => n.id));
@@ -244,9 +251,6 @@ export const foldDocument = (root: MdNode, options: FoldOptions): DocumentMeta =
     marginnoteCount: count(root, (n) => n.data?.hProperties?.['dataMarginnote'] !== undefined),
   };
 };
-
-/** Raw source of a node, re-exported for adapters that need it. */
-export { sourceOf };
 
 // ── Boundary parser (remarkPluginFrontmatter → DocumentMeta) ────────────────
 
@@ -306,7 +310,8 @@ export const parseDocumentMeta = (v: unknown): Result<DocumentMeta, readonly str
       } else errors.push(`argument.nodes: malformed node (kinds: ${ARGUMENT_KINDS.join(', ')})`);
     }
     for (const e of argRaw['edges'] as readonly unknown[]) {
-      if (isRecord(e) && typeof e['from'] === 'string' && typeof e['to'] === 'string') edges.push({ from: e['from'], to: e['to'] });
+      if (isRecord(e) && typeof e['from'] === 'string' && typeof e['to'] === 'string')
+        edges.push({ from: e['from'], to: e['to'] });
       else errors.push('argument.edges: malformed edge');
     }
   } else errors.push('argument: expected {nodes, edges}');

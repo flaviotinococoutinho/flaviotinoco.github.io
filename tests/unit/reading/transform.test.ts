@@ -9,7 +9,8 @@ const ctx = (source: string, locale: ReadingContext['locale'] = 'pt-BR'): Readin
   source,
   reservedIds: PAGE_IDS,
 });
-const transform = (md: string, locale: ReadingContext['locale'] = 'pt-BR') => transformReading(parse(md), ctx(md, locale));
+const transform = (md: string, locale: ReadingContext['locale'] = 'pt-BR') =>
+  transformReading(parse(md), ctx(md, locale));
 const errors = (md: string): readonly string[] =>
   transform(md)
     .diagnostics.filter((d) => d.severity === 'error')
@@ -37,7 +38,9 @@ describe('stretchtext (:::stretch)', () => {
   });
   it('requires exactly one label', () => {
     expect(errors(':::stretch\nTexto.\n:::')).toEqual([expect.stringMatching(/^reading:missing-label/)]);
-    expect(errors(':::stretch[A]{label="B"}\nTexto.\n:::')).toEqual([expect.stringMatching(/^reading:ambiguous-label/)]);
+    expect(errors(':::stretch[A]{label="B"}\nTexto.\n:::')).toEqual([
+      expect.stringMatching(/^reading:ambiguous-label/),
+    ]);
   });
 });
 
@@ -72,7 +75,8 @@ describe('side and margin notes', () => {
 });
 
 describe('scrollytelling (::::scrolly + :::step)', () => {
-  const md = '::::scrolly{label="Canal"}\n![Canal](./c.svg)\n\n:::step{state="a"}\nUm.\n:::\n\n:::step{state="b"}\nDois.\n:::\n::::';
+  const md =
+    '::::scrolly{label="Canal"}\n![Canal](./c.svg)\n\n:::step{state="a"}\nUm.\n:::\n\n:::step{state="b"}\nDois.\n:::\n::::';
   it('becomes <ft-scrolly> with the first image as sticky figure and indexed steps', async () => {
     const { html } = await render(md);
     expect(html).toBe(
@@ -90,7 +94,9 @@ describe('scrollytelling (::::scrolly + :::step)', () => {
   });
   it('rejects steps outside a scrolly and foreign content inside one', () => {
     expect(errors(':::step\nUm.\n:::')).toEqual([expect.stringMatching(/misplaced-directive/)]);
-    expect(errors('::::scrolly\n:::step\nUm.\n:::\n\nSolto.\n::::')).toEqual([expect.stringMatching(/scrolly-content/)]);
+    expect(errors('::::scrolly\n:::step\nUm.\n:::\n\nSolto.\n::::')).toEqual([
+      expect.stringMatching(/scrolly-content/),
+    ]);
     expect(errors('::::scrolly\n![x](y.png)\n::::')).toEqual([expect.stringMatching(/needs at least one :::step/)]);
   });
   it('warns (only) when there is no figure', () => {
@@ -101,7 +107,9 @@ describe('scrollytelling (::::scrolly + :::step)', () => {
 
 describe('horizontal passages (::::horizontal + :::panel)', () => {
   it('becomes <ft-horizontal> around a labelled, focusable scroll region of panels', async () => {
-    const { html } = await render('::::horizontal{label="Leituras"}\n:::panel{label="A"}\nUm.\n:::\n\n:::panel\nDois.\n:::\n::::');
+    const { html } = await render(
+      '::::horizontal{label="Leituras"}\n:::panel{label="A"}\nUm.\n:::\n\n:::panel\nDois.\n:::\n::::',
+    );
     expect(html).toBe(
       '<ft-horizontal class="horizontal" data-panels="2" style="--panels:2"><div class="horizontal__viewport" role="region" aria-label="Leituras" tabindex="0">' +
         '<div class="horizontal__track"><div class="horizontal__panel" role="group" aria-label="A (Painel 1 de 2)" data-index="0"><p>Um.</p></div>' +
@@ -110,7 +118,9 @@ describe('horizontal passages (::::horizontal + :::panel)', () => {
     );
   });
   it('requires a label and panels only', () => {
-    expect(errors('::::horizontal\n:::panel\nUm.\n:::\n\n:::panel\nDois.\n:::\n::::')).toEqual([expect.stringMatching(/missing-label/)]);
+    expect(errors('::::horizontal\n:::panel\nUm.\n:::\n\n:::panel\nDois.\n:::\n::::')).toEqual([
+      expect.stringMatching(/missing-label/),
+    ]);
     expect(errors('::::horizontal{label="x"}\nSolto.\n::::')).toEqual([
       expect.stringMatching(/only :::panel/),
       expect.stringMatching(/at least one :::panel/),
@@ -146,7 +156,9 @@ describe('epigraph and aside', () => {
     expect(childrenOf(caption ?? { type: 'x' })).toMatchObject([{ type: 'text', value: 'CITAÇÃO' }]);
   });
   it('rejects unknown attributes and malformed languages', () => {
-    expect(errors(':::epigraph{autor="x"}\nY.\n:::')).toEqual([expect.stringMatching(/does not take the attribute "autor"/)]);
+    expect(errors(':::epigraph{autor="x"}\nY.\n:::')).toEqual([
+      expect.stringMatching(/does not take the attribute "autor"/),
+    ]);
     expect(errors(':::epigraph{lang="não"}\nY.\n:::')).toEqual([expect.stringMatching(/BCP 47/)]);
   });
   it('renders :::aside as <aside> named by its label', async () => {
@@ -158,7 +170,8 @@ describe('epigraph and aside', () => {
 
 describe('::toc', () => {
   it('builds a nested, localised table of contents from the headings in the main flow', async () => {
-    const md = '::toc\n\n## Um\n\n### Um ponto um\n\n## Dois\n\n:::stretch{label="x"}\n## Escondido\n:::\n\n#### Fundo demais';
+    const md =
+      '::toc\n\n## Um\n\n### Um ponto um\n\n## Dois\n\n:::stretch{label="x"}\n## Escondido\n:::\n\n#### Fundo demais';
     const { html } = await render(md);
     expect(html).toContain(
       '<nav class="toc" id="toc" aria-labelledby="toc-title"><p class="toc__title" id="toc-title">Sumário</p><div class="toc__body"><ol class="toc__list" role="list">' +
@@ -179,12 +192,17 @@ describe('::toc', () => {
 describe('heading attributes and the argument graph', () => {
   it('sets the id and kind, removes the block from the title and keeps it in data-attrs', async () => {
     const { html } = await render('## Tese central {#tese .claim}');
-    expect(html).toContain('<h2 id="tese" class="arg__title" data-kind="claim" data-attrs="{#tese .claim}">Tese central</h2>');
+    expect(html).toContain(
+      '<h2 id="tese" class="arg__title" data-kind="claim" data-attrs="{#tese .claim}">Tese central</h2>',
+    );
     expect(html).toContain('<hgroup class="arg arg--claim" data-kind="claim"><p class="arg__kind">');
     expect(html).toContain('</svg></span>Tese</p>');
   });
   it('links each dependency by title (non-linear navigation)', async () => {
-    const { html } = await render('## Def {#d .definition}\n\n## Pre {#p .premise}\n\n## Tese {#t .claim depends="d, p"}', 'en');
+    const { html } = await render(
+      '## Def {#d .definition}\n\n## Pre {#p .premise}\n\n## Tese {#t .claim depends="d, p"}',
+      'en',
+    );
     expect(html).toContain(
       '<p class="arg__deps"><span class="arg__deps-label">Rests on</span> <a href="#d" class="arg__dep">Def</a> and <a href="#p" class="arg__dep">Pre</a></p>',
     );
@@ -209,7 +227,9 @@ describe('heading attributes and the argument graph', () => {
   it('fails on unknown kinds, missing or kind-less dependencies, cycles and duplicate ids', () => {
     expect(errors('## A {.tese}')).toEqual([expect.stringMatching(/unknown-kind.*"\.tese"/)]);
     expect(errors('## A {#a .claim depends="b"}')).toEqual([expect.stringMatching(/missing-dependency.*"b"/)]);
-    expect(errors('## B {#b}\n\n## A {#a .claim depends="b"}')).toEqual([expect.stringMatching(/without an argument kind/)]);
+    expect(errors('## B {#b}\n\n## A {#a .claim depends="b"}')).toEqual([
+      expect.stringMatching(/without an argument kind/),
+    ]);
     expect(errors('## A {#a .claim depends="b"}\n\n## B {#b .premise depends="a"}')).toEqual([
       expect.stringMatching(/circular-dependency.*a → b → a/),
     ]);
@@ -220,7 +240,9 @@ describe('heading attributes and the argument graph', () => {
     expect(errors('## A {#a key=v}')).toEqual([expect.stringMatching(/unknown heading attribute "key"/)]);
   });
   it('rejects documents whose stage reports errors, listing every one', async () => {
-    await expect(render('## A {.tese}\n\n:::stretch\nx\n:::')).rejects.toThrow(/2 error\(s\) in the reading stage[\s\S]*tese[\s\S]*label/);
+    await expect(render('## A {.tese}\n\n:::stretch\nx\n:::')).rejects.toThrow(
+      /2 error\(s\) in the reading stage[\s\S]*tese[\s\S]*label/,
+    );
   });
   it('fails when the document language is missing', async () => {
     await expect(render('Texto.', 'xx' as 'en')).rejects.toThrow(/lang: pt-BR \| en/);
@@ -247,6 +269,13 @@ describe('laws of the transform', () => {
     };
     go(r.tree);
     expect(recorded).toHaveLength(6);
-    expect(r.graph.nodes.map((n) => n.kind)).toEqual(['question', 'definition', 'premise', 'claim', 'objection', 'reply']);
+    expect(r.graph.nodes.map((n) => n.kind)).toEqual([
+      'question',
+      'definition',
+      'premise',
+      'claim',
+      'objection',
+      'reply',
+    ]);
   });
 });

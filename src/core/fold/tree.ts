@@ -89,27 +89,6 @@ export const isClaimed = (node: MdNode): boolean => typeof node.data?.hName === 
 export const GENERATED = 'readingGenerated';
 export const isGenerated = (node: MdNode): boolean => node.data?.[GENERATED] === true;
 
-/**
- * Plain text with the exact semantics of mdast-util-to-string (default options):
- * literal `value`s, image `alt`, otherwise the concatenation of the children.
- */
-export const plainText = (node: MdNode): string => {
-  if (typeof node.value === 'string') return node.value;
-  const alt = node['alt'];
-  if (typeof alt === 'string' && alt.length > 0) return alt;
-  return childrenOf(node).map(plainText).join('');
-};
-
-/**
- * Generic catamorphism: folds a tree bottom-up. `algebra` receives the node and
- * the already-folded results of its children (in order).
- */
-export const foldTree = <R>(node: MdNode, algebra: (node: MdNode, children: readonly R[]) => R): R =>
-  algebra(
-    node,
-    childrenOf(node).map((c) => foldTree(c, algebra)),
-  );
-
 /** Source slice of a node, when positions and the source are known. */
 export const sourceOf = (node: MdNode, source: string | null): string | null => {
   const start = node.position?.start.offset;
@@ -158,6 +137,3 @@ export const visibleText = (node: MdNode, source: string | null, mode: TextMode 
     .map((c) => visibleText(c, source, mode))
     .join('');
 };
-
-/** Deep clone of a subtree (used when a stage must show the same content twice, e.g. a table of contents). */
-export const cloneTree = (node: MdNode): MdNode => structuredClone(node) as MdNode;

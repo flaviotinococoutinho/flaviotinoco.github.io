@@ -60,7 +60,11 @@ export const render = async (md: string, lang: Locale = 'pt-BR'): Promise<Render
 
 /** Parses Markdown into mdast with the parse-time extensions of the pipeline (GFM, math, directives). */
 export const parse = (md: string): MdNode => {
-  const p = unified().use(remarkParse).use(remarkGfm).use(remarkMath, { singleDollarTextMath: false }).use(remarkDirective);
+  const p = unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkMath, { singleDollarTextMath: false })
+    .use(remarkDirective);
   return p.parse(new VFile(md)) as unknown as MdNode;
 };
 

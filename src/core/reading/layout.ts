@@ -58,6 +58,8 @@ export interface Layout {
   readonly layers: number;
   /** Largest layer size, dummy vertices included: the drawing spans x ∈ [−(width−1)/2, (width−1)/2]. */
   readonly width: number;
+  /** Size of each layer, dummy vertices included. */
+  readonly layerSizes: readonly number[];
   /** Real vertices, in input order. */
   readonly nodes: readonly PlacedNode[];
   /** Edges, in input order. */
@@ -140,12 +142,10 @@ export const layoutDag = (input: LayoutInput, options: LayoutOptions = {}): Resu
     if (!index.has(e.from) || !index.has(e.to)) return err(`edge ${e.from} → ${e.to} has an unknown endpoint`);
     if (e.from === e.to) return err(`self-loop on "${e.from}"`);
   }
-  const edges = input.edges.filter(
-    (e, i) => input.edges.findIndex((f) => f.from === e.from && f.to === e.to) === i,
-  );
+  const edges = input.edges.filter((e, i) => input.edges.findIndex((f) => f.from === e.from && f.to === e.to) === i);
   const layerOf = layering(ids, edges);
   if (layerOf === null) return err('the graph has a cycle; a layered drawing needs a DAG');
-  if (ids.length === 0) return ok({ layers: 0, width: 0, nodes: [], edges: [], crossings: 0 });
+  if (ids.length === 0) return ok({ layers: 0, width: 0, layerSizes: [], nodes: [], edges: [], crossings: 0 });
 
   // Vertices (real + dummies) and unit-length segments.
   const vertices: Vertex[] = ids.map((id, i) => ({ key: id, rank: i, layer: layerOf.get(id) ?? 0 }));
@@ -190,7 +190,11 @@ export const layoutDag = (input: LayoutInput, options: LayoutOptions = {}): Resu
     const pos = positions(o);
     return segmentsBelow.reduce((acc, segs) => acc + crossingsBetween(segs, pos), 0);
   };
-  const reorder = (layer: readonly string[], neighbours: ReadonlyMap<string, readonly string[]>, pos: ReadonlyMap<string, number>) =>
+  const reorder = (
+    layer: readonly string[],
+    neighbours: ReadonlyMap<string, readonly string[]>,
+    pos: ReadonlyMap<string, number>,
+  ) =>
     layer
       .map((key, i) => {
         const ns = neighbours.get(key) ?? [];
@@ -224,6 +228,7 @@ export const layoutDag = (input: LayoutInput, options: LayoutOptions = {}): Resu
   return ok({
     layers,
     width: Math.max(...best.map((l) => l.length)),
+    layerSizes: best.map((l) => l.length),
     nodes: ids.map((id) => {
       const p = point.get(id) ?? { x: 0, y: 0 };
       return { id, layer: layerOf.get(id) ?? 0, order: pos.get(id) ?? 0, x: p.x, y: p.y };

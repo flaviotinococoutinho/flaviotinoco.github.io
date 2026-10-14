@@ -1,0 +1,33 @@
+---
+/**
+ * A stratum as the site always shows it: k-simplex glyph (shape) + localised
+ * label (text) + the stratum colour token — never colour alone. The glyph is
+ * referenced from the shared sprite (src/components/Glyphs.astro: #simplex-N).
+ *
+ *   <StratumLabel stratum="formal" locale="pt-BR" />
+ *   → <span class="stratum-label" data-stratum="formal">
+ *       <svg class="stratum-label__glyph" aria-hidden="true"><use href="#simplex-2"/></svg>
+ *       <span class="stratum-label__text">Formal</span></span>
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import { STRATUM_SPECS, type Stratum } from '../../core/domain/strata.ts';
+import common from '../../core/i18n/catalogs/common.ts';
+import { useTranslations } from '../../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly stratum: Stratum;
+  readonly locale: Locale;
+  /** Visually hide the text (it stays in the accessibility tree). */
+  readonly quiet?: boolean;
+}
+
+const { stratum, locale, quiet = false } = Astro.props;
+const t = useTranslations(common, locale);
+---
+
+<span class="stratum-label" data-stratum={stratum}>
+  <svg class="stratum-label__glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <use href={`#${STRATUM_SPECS[stratum].glyph}`}></use>
+  </svg>
+  <span class:list={['stratum-label__text', { 'visually-hidden': quiet }]}>{t(`strata.${stratum}`)}</span>
+</span>
