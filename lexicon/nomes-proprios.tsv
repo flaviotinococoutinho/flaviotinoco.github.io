@@ -1,0 +1,215 @@
+# Nomes próprios — marcados como <span class="proper-name" translate="no"> (sem hifenização);
+# obras (category=work) como <cite class="proper-name work" translate="no">, com lang quando
+# o título está em língua diferente da do documento.
+# Esquema: term	lang	case	category	note
+# lang: língua da forma escrita (exônimo) ou de origem do nome (metadado; pessoas e lugares
+#   não recebem atributo lang — WCAG 2.2, 3.1.2, isenta nomes próprios).
+# category: person | place | institution | work.
+# Nomes que coincidem com palavras comuns (Eco, Church, May, Bush, Kay, Alexander, Benjamin)
+# entram só pela forma completa, para não marcar a palavra comum.
+term	lang	case	category	note
+# --- informação, sinais, sistemas dinâmicos ------------------------------------
+Shannon	en	exact	person	Claude E. Shannon (1916–2001), teoria da informação
+Weaver	en	exact	person	Warren Weaver (1894–1978), coautor de The Mathematical Theory of Communication
+Nyquist	sv	exact	person	Harry Nyquist (1889–1976), taxa de amostragem
+Whittaker	en	exact	person	Edmund T. Whittaker (1873–1956), função cardinal de interpolação (1915)
+Kotelnikov	ru-Latn	exact	person	Vladimir Kotelnikov (1908–2005), teorema da amostragem (1933)
+Hartley	en	exact	person	Ralph Hartley (1888–1970), medida logarítmica de informação (1928)
+Fourier	fr	exact	person	Joseph Fourier (1768–1830), séries e transformada
+Gibbs	en	exact	person	J. Willard Gibbs (1839–1903), fenômeno de Gibbs; termodinâmica
+Huffman	en	exact	person	David A. Huffman (1925–1999), código de prefixo ótimo (1952)
+Kraft	en	exact	person	Leon G. Kraft, desigualdade de Kraft (1949)
+Hick	en	exact	person	William Edmund Hick (1912–1974), lei de Hick–Hyman (1952)
+Hyman	en	exact	person	Ray Hyman, lei de Hick–Hyman (1953)
+Hamming	en	exact	person	Richard Hamming (1915–1998), códigos corretores de erro
+Kullback	en	exact	person	Solomon Kullback (1907–1994), divergência de Kullback–Leibler
+Leibler	en	exact	person	Richard Leibler (1914–2003), divergência de Kullback–Leibler
+Wiener	en	exact	person	Norbert Wiener (1894–1964), cibernética
+Kolmogorov	ru-Latn	exact	person	Andrei Kolmogorov (1903–1987), probabilidade; complexidade
+Markov	ru-Latn	exact	person	Andrei Markov (1856–1922), cadeias de Markov
+Chaitin	en	exact	person	Gregory Chaitin, teoria algorítmica da informação
+Solomonoff	en	exact	person	Ray Solomonoff (1926–2009), indução algorítmica
+Landauer	de	exact	person	Rolf Landauer (1927–1999), custo termodinâmico do apagamento
+Szilárd	hu	exact	person	Leó Szilárd (1898–1964), demônio de Maxwell e informação
+Boltzmann	de	exact	person	Ludwig Boltzmann (1844–1906), mecânica estatística
+Maxwell	en	exact	person	James Clerk Maxwell (1831–1879), eletromagnetismo; demônio de Maxwell
+Cooley	en	exact	person	James Cooley (1926–2016), algoritmo de Cooley–Tukey (1965)
+Tukey	en	exact	person	John Tukey (1915–2000), algoritmo de Cooley–Tukey (1965)
+Kalman	en	exact	person	Rudolf E. Kálmán (1930–2016), filtro de Kalman
+Viterbi	en	exact	person	Andrew Viterbi (1935–), algoritmo de Viterbi
+Heaviside	en	exact	person	Oliver Heaviside (1850–1925), cálculo operacional
+Dirac	en	exact	person	Paul Dirac (1902–1984), delta de Dirac
+Feigenbaum	en	exact	person	Mitchell Feigenbaum (1944–2019), constantes de Feigenbaum
+Lyapunov	ru-Latn	exact	person	Aleksandr Lyapunov (1857–1918), estabilidade; expoentes de Lyapunov
+Liapunov	ru-Latn	exact	person	variante de Lyapunov
+Lorenz	en	exact	person	Edward N. Lorenz (1917–2008), atrator de Lorenz (1963)
+Robert May	en	exact	person	Robert M. May (1936–2020), mapa logístico (1976)
+Verhulst	nl	exact	person	Pierre-François Verhulst (1804–1849), equação logística
+Poincaré	fr	exact	person	Henri Poincaré (1854–1912), sistemas dinâmicos
+Mandelbrot	fr	exact	person	Benoît Mandelbrot (1924–2010), fractais
+Smale	en	exact	person	Stephen Smale (1930–), ferradura de Smale
+Prigogine	fr	exact	person	Ilya Prigogine (1917–2003), estruturas dissipativas
+Bateson	en	exact	person	Gregory Bateson (1904–1980), cibernética e ecologia da mente
+Ashby	en	exact	person	W. Ross Ashby (1903–1972), lei da variedade requisita
+von Neumann	de	sentence	person	John von Neumann (1903–1957)
+# --- matemática e lógica ---------------------------------------------------------
+Euler	de	exact	person	Leonhard Euler (1707–1783)
+Gauss	de	exact	person	Carl Friedrich Gauss (1777–1855)
+Laplace	fr	exact	person	Pierre-Simon Laplace (1749–1827)
+Lagrange	fr	exact	person	Joseph-Louis Lagrange (1736–1813)
+Cauchy	fr	exact	person	Augustin-Louis Cauchy (1789–1857)
+Poisson	fr	exact	person	Siméon Denis Poisson (1781–1840)
+Bernoulli	de	exact	person	família de matemáticos suíços (Jacob, Johann, Daniel)
+Bayes	en	exact	person	Thomas Bayes (c. 1701–1761)
+Fisher	en	exact	person	Ronald A. Fisher (1890–1962), estatística; informação de Fisher
+Newton	en	exact	person	Isaac Newton (1643–1727)
+Leibniz	de	exact	person	Gottfried Wilhelm Leibniz (1646–1716)
+Boole	en	exact	person	George Boole (1815–1864), álgebra booliana
+Frege	de	exact	person	Gottlob Frege (1848–1925), lógica; Sinn und Bedeutung (1892)
+Cantor	de	exact	person	Georg Cantor (1845–1918), teoria dos conjuntos
+Peano	it	exact	person	Giuseppe Peano (1858–1932), axiomas da aritmética
+Hilbert	de	exact	person	David Hilbert (1862–1943)
+Russell	en	exact	person	Bertrand Russell (1872–1970)
+Whitehead	en	exact	person	Alfred North Whitehead (1861–1947)
+Gödel	de	exact	person	Kurt Gödel (1906–1978), teoremas da incompletude (1931)
+Turing	en	exact	person	Alan Turing (1912–1954), computabilidade
+Alonzo Church	en	exact	person	Alonzo Church (1903–1995), cálculo lambda
+Tarski	pl	exact	person	Alfred Tarski (1901–1983), semântica da verdade
+Carnap	de	exact	person	Rudolf Carnap (1891–1970), Círculo de Viena
+Quine	en	exact	person	W. V. O. Quine (1908–2000)
+Kripke	en	exact	person	Saul Kripke (1940–2022)
+Euclides	pt-BR	exact	person	Euclides de Alexandria (c. 300 a.C.)
+Euclid	en	exact	person	Euclid of Alexandria (c. 300 BC)
+Pitágoras	pt-BR	exact	person	Pitágoras de Samos (séc. VI a.C.)
+Pythagoras	en	exact	person	Pythagoras of Samos (6th century BC)
+Knuth	en	exact	person	Donald E. Knuth (1938–), análise de algoritmos; TeX
+Dijkstra	nl	exact	person	Edsger W. Dijkstra (1930–2002)
+# --- filosofia, semiótica, linguística -----------------------------------------
+Aristóteles	pt-BR	exact	person	Aristóteles (384–322 a.C.)
+Aristotle	en	exact	person	Aristotle (384–322 BC)
+Platão	pt-BR	exact	person	Platão (c. 428–348 a.C.)
+Plato	en	exact	person	Plato (c. 428–348 BC)
+Sócrates	pt-BR	exact	person	Sócrates (c. 470–399 a.C.)
+Socrates	en	exact	person	Socrates (c. 470–399 BC)
+Heráclito	pt-BR	exact	person	Heráclito de Éfeso, pré-socrático
+Heraclitus	en	exact	person	Heraclitus of Ephesus, Presocratic
+Parmênides	pt-BR	exact	person	Parmênides de Eleia, pré-socrático
+Parmenides	en	exact	person	Parmenides of Elea, Presocratic
+Ockham	en	exact	person	Guilherme de Ockham (c. 1287–1347), navalha de Ockham
+Descartes	fr	exact	person	René Descartes (1596–1650)
+Spinoza	nl	exact	person	Baruch Spinoza (1632–1677)
+Locke	en	exact	person	John Locke (1632–1704)
+Hume	en	exact	person	David Hume (1711–1776)
+Kant	de	exact	person	Immanuel Kant (1724–1804)
+Hegel	de	exact	person	G. W. F. Hegel (1770–1831)
+Schopenhauer	de	exact	person	Arthur Schopenhauer (1788–1860)
+Kierkegaard	da	exact	person	Søren Kierkegaard (1813–1855)
+Nietzsche	de	exact	person	Friedrich Nietzsche (1844–1900)
+Dilthey	de	exact	person	Wilhelm Dilthey (1833–1911)
+Weber	de	exact	person	Max Weber (1864–1920)
+Husserl	de	exact	person	Edmund Husserl (1859–1938), fenomenologia
+Heidegger	de	exact	person	Martin Heidegger (1889–1976)
+Wittgenstein	de	exact	person	Ludwig Wittgenstein (1889–1951)
+Popper	de	exact	person	Karl Popper (1902–1994), falseabilidade
+Kuhn	en	exact	person	Thomas S. Kuhn (1922–1996), paradigmas científicos
+Lakatos	hu	exact	person	Imre Lakatos (1922–1974), programas de pesquisa
+Feyerabend	de	exact	person	Paul Feyerabend (1924–1994)
+Bachelard	fr	exact	person	Gaston Bachelard (1884–1962), epistemologia histórica
+Bergson	fr	exact	person	Henri Bergson (1859–1941)
+Merleau-Ponty	fr	exact	person	Maurice Merleau-Ponty (1908–1961)
+Sartre	fr	exact	person	Jean-Paul Sartre (1905–1980)
+Arendt	de	exact	person	Hannah Arendt (1906–1975)
+Habermas	de	exact	person	Jürgen Habermas (1929–)
+Foucault	fr	exact	person	Michel Foucault (1926–1984)
+Derrida	fr	exact	person	Jacques Derrida (1930–2004)
+Deleuze	fr	exact	person	Gilles Deleuze (1925–1995)
+Bourdieu	fr	exact	person	Pierre Bourdieu (1930–2002)
+Simondon	fr	exact	person	Gilbert Simondon (1924–1989), individuação; objetos técnicos
+Flusser	cs	exact	person	Vilém Flusser (1920–1991), filosofia da comunicação; viveu no Brasil
+Floridi	it	exact	person	Luciano Floridi (1964–), filosofia da informação
+Toulmin	en	exact	person	Stephen Toulmin (1922–2009), modelo de argumentação (1958)
+Kent	en	exact	person	Sherman Kent (1903–1986), Words of Estimative Probability (1964)
+Peirce	en	exact	person	Charles Sanders Peirce (1839–1914), semiótica; pragmatismo
+Saussure	fr	exact	person	Ferdinand de Saussure (1857–1913), linguística estrutural
+Jakobson	ru-Latn	exact	person	Roman Jakobson (1896–1982), funções da linguagem
+Hjelmslev	da	exact	person	Louis Hjelmslev (1899–1965), glossemática
+Barthes	fr	exact	person	Roland Barthes (1915–1980)
+Lévi-Strauss	fr	exact	person	Claude Lévi-Strauss (1908–2009), antropologia estrutural
+Umberto Eco	it	exact	person	Umberto Eco (1932–2016), semiótica
+Sebeok	en	exact	person	Thomas A. Sebeok (1920–2001), biossemiótica
+Uexküll	de	exact	person	Jakob von Uexküll (1864–1944), Umwelt
+Lotman	ru-Latn	exact	person	Iuri Lotman (1922–1993), semiosfera
+Bakhtin	ru-Latn	exact	person	Mikhail Bakhtin (1895–1975), dialogismo
+Walter Benjamin	de	exact	person	Walter Benjamin (1892–1940)
+Baudelaire	fr	exact	person	Charles Baudelaire (1821–1867)
+Castiglione	it	exact	person	Baldassare Castiglione (1478–1529), sprezzatura
+Borges	es	exact	person	Jorge Luis Borges (1899–1986)
+Machado de Assis	pt-BR	exact	person	Machado de Assis (1839–1908)
+Oswald de Andrade	pt-BR	exact	person	Oswald de Andrade (1890–1954), Manifesto Antropófago (1928)
+Paulo Freire	pt-BR	exact	person	Paulo Freire (1921–1997), pedagogia
+# --- design, tipografia, informação, produto ----------------------------------
+Bringhurst	en	exact	person	Robert Bringhurst (1946–), The Elements of Typographic Style
+Tufte	en	exact	person	Edward R. Tufte (1942–), visualização de dados
+Tschichold	de	exact	person	Jan Tschichold (1902–1974), tipografia
+Gropius	de	exact	person	Walter Gropius (1883–1969), Bauhaus
+Rams	de	exact	person	Dieter Rams (1932–), design industrial
+Christopher Alexander	en	exact	person	Christopher Alexander (1936–2022), linguagem de padrões
+Gibson	en	exact	person	James J. Gibson (1904–1979), affordances
+Norman	en	exact	person	Donald A. Norman (1935–), design centrado no usuário
+Simon	en	exact	person	Herbert A. Simon (1916–2001), racionalidade limitada; ciências do artificial
+Kahneman	en	exact	person	Daniel Kahneman (1934–2024), heurísticas e vieses
+Tversky	he-Latn	exact	person	Amos Tversky (1937–1996), heurísticas e vieses
+Thaler	en	exact	person	Richard H. Thaler (1945–), economia comportamental
+Sunstein	en	exact	person	Cass R. Sunstein (1954–), nudge
+Duchamp	fr	exact	person	Marcel Duchamp (1887–1968), ready-made
+Nelson	en	exact	person	Ted Nelson (1937–), hipertexto; Xanadu
+Vannevar Bush	en	exact	person	Vannevar Bush (1890–1974), As We May Think (1945)
+Engelbart	en	exact	person	Douglas Engelbart (1925–2013)
+Licklider	en	exact	person	J. C. R. Licklider (1915–1990)
+Alan Kay	en	exact	person	Alan Kay (1940–), Dynabook; interfaces gráficas
+Berners-Lee	en	exact	person	Tim Berners-Lee (1955–), World Wide Web
+McLuhan	en	exact	person	Marshall McLuhan (1911–1980), teoria dos meios
+Otlet	fr	exact	person	Paul Otlet (1868–1944), documentação
+Ranganathan	ta-Latn	exact	person	S. R. Ranganathan (1892–1972), classificação facetada
+Dewey	en	exact	person	Melvil Dewey (1851–1931), classificação decimal; John Dewey (1859–1952), filosofia
+# --- lugares ----------------------------------------------------------------------
+Princeton	en	exact	place	cidade dos EUA (Institute for Advanced Study)
+Göttingen	de	exact	place	cidade universitária alemã
+Cambridge	en	exact	place	cidade universitária (Inglaterra; Massachusetts)
+Ulm	de	exact	place	cidade alemã (Hochschule für Gestaltung, 1953–1968)
+Viena	pt-BR	exact	place	capital da Áustria (exônimo)
+Vienna	en	exact	place	capital of Austria (exonym)
+# --- instituições -----------------------------------------------------------------
+Associação Brasileira de Normas Técnicas	pt-BR	exact	institution	ABNT
+Academia Brasileira de Letras	pt-BR	exact	institution	ABL; VOLP
+Instituto Brasileiro de Geografia e Estatística	pt-BR	exact	institution	IBGE
+Bell Labs	en	exact	institution	laboratórios da Bell Telephone
+Santa Fe Institute	en	exact	institution	instituto de estudos de sistemas complexos
+Massachusetts Institute of Technology	en	exact	institution	MIT
+Royal Society	en	exact	institution	academia de ciências do Reino Unido
+World Wide Web Consortium	en	exact	institution	W3C
+Bureau International des Poids et Mesures	fr	exact	institution	BIPM
+Bauhaus	de	exact	institution	escola de arte e design (1919–1933)
+Escola de Ulm	pt-BR	exact	institution	Hochschule für Gestaltung Ulm (1953–1968)
+Círculo de Viena	pt-BR	exact	institution	Wiener Kreis (positivismo lógico)
+Vienna Circle	en	exact	institution	Wiener Kreis (logical positivism)
+Escola de Frankfurt	pt-BR	exact	institution	teoria crítica
+Frankfurt School	en	exact	institution	critical theory
+# --- obras --------------------------------------------------------------------------
+A Mathematical Theory of Communication	en	exact	work	Shannon (1948)
+The Mathematical Theory of Communication	en	exact	work	Shannon e Weaver (1949)
+Cours de linguistique générale	fr	exact	work	Saussure (1916, póstumo)
+Tractatus Logico-Philosophicus	la	exact	work	Wittgenstein (1921)
+Philosophische Untersuchungen	de	exact	work	Wittgenstein (1953)
+Philosophical Investigations	en	exact	work	Wittgenstein (1953), tradução inglesa
+Investigações Filosóficas	pt-BR	exact	work	Wittgenstein (1953), tradução portuguesa
+Über Sinn und Bedeutung	de	exact	work	Frege (1892)
+Principia Mathematica	la	exact	work	Whitehead e Russell (1910–1913)
+The Uses of Argument	en	exact	work	Toulmin (1958)
+Words of Estimative Probability	en	exact	work	Kent (1964)
+Colon Classification	en	exact	work	Ranganathan (1933)
+The Elements of Typographic Style	en	exact	work	Bringhurst (1992)
+The Visual Display of Quantitative Information	en	exact	work	Tufte (1983)
+Literary Machines	en	exact	work	Nelson (1981)
+A Pattern Language	en	exact	work	Alexander et al. (1977)
+As We May Think	en	exact	work	Bush (1945)

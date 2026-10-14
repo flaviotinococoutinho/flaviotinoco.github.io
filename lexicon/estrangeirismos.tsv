@@ -1,0 +1,257 @@
+# Estrangeirismos — termos de outras línguas usados no texto do site.
+# Esquema: term	lang	case	variants	vernacular_in	note   (separador: TAB; ver lexicon/README.md)
+# lang: etiqueta BCP 47 do termo; o termo só é marcado em documentos de OUTRA língua.
+# case: exact | insensitive | sentence (como escrito, ou com inicial maiúscula).
+# variants: formas flexionadas ou grafias alternativas separadas por "|" (mesma política de caixa).
+# vernacular_in: línguas (subetiqueta primária) em que o termo já é vernáculo e fica em redondo
+#   (ex.: "en" para Zeitgeist — APA 7 não italiciza estrangeirismos correntes em inglês).
+# Critério de inclusão e de exclusão (naturalizados): lexicon/README.md, seção "Critério".
+term	lang	case	variants	vernacular_in	note
+# --- inglês: software, produto, design -------------------------------------------
+software	en	sentence	softwares		programa; conjunto de instruções
+hardware	en	sentence			componentes físicos de um computador
+firmware	en	sentence			software embarcado em hardware
+open source	en	sentence			código aberto
+feedback	en	sentence	feedbacks		retroalimentação; retorno
+feedforward	en	sentence			controle por antecipação
+design	en	sentence	designs		projeto; desenho industrial
+design thinking	en	sentence			método de projeto centrado no usuário
+designer	en	sentence	designers		projetista
+framework	en	sentence	frameworks		arcabouço
+token	en	sentence	tokens		unidade léxica; ficha
+pixel	en	sentence	pixels		elemento de imagem
+insight	en	sentence	insights		compreensão súbita
+layout	en	sentence	layouts		diagramação (forma aportuguesada: leiaute)
+grid	en	sentence	grids		grade de diagramação
+wireframe	en	sentence	wireframes		esquema estrutural de tela
+mockup	en	sentence	mockups		maquete
+dashboard	en	sentence	dashboards		painel de indicadores
+widget	en	sentence	widgets		componente de interface
+tooltip	en	sentence	tooltips		dica flutuante
+dark mode	en	sentence			modo escuro
+affordance	en	sentence	affordances		possibilidade de ação percebida (Gibson; Norman)
+dark pattern	en	sentence	dark patterns		padrão enganoso de interface
+nudge	en	sentence	nudges		empurrão comportamental (Thaler; Sunstein)
+kerning	en	sentence			ajuste de espaço entre pares de letras
+small caps	en	sentence			versaletes
+startup	en	sentence	startups		empresa emergente
+stakeholder	en	sentence	stakeholders		parte interessada
+roadmap	en	sentence	roadmaps		plano de evolução
+backlog	en	sentence	backlogs		lista de pendências
+sprint	en	sentence	sprints		ciclo curto de desenvolvimento
+deploy	en	sentence	deploys		implantação
+benchmark	en	sentence	benchmarks		referência comparativa
+briefing	en	sentence	briefings		documento de instruções
+brainstorming	en	sentence			tempestade de ideias
+workshop	en	sentence	workshops		oficina
+checklist	en	sentence	checklists		lista de verificação
+trade-off	en	sentence	trade-offs		compromisso entre objetivos
+lock-in	en	sentence			aprisionamento tecnológico
+onboarding	en	sentence			integração de novos usuários
+engagement	en	sentence			engajamento
+churn	en	sentence			taxa de abandono
+feature	en	sentence	features		funcionalidade
+mindset	en	sentence			modo de pensar
+know-how	en	sentence			conhecimento prático
+storytelling	en	sentence			narrativa
+scrollytelling	en	sentence			narrativa guiada pela rolagem
+stretchtext	en	sentence			texto expansível (Nelson)
+hypertext	en	sentence			hipertexto (Nelson)
+hyperlink	en	sentence	hyperlinks		hiperligação
+link	en	sentence	links		ligação
+web	en	sentence			rede mundial
+browser	en	sentence	browsers		navegador
+online	en	sentence			em linha (itálico nos exemplos da NBR 6023:2025)
+offline	en	sentence			fora de linha
+e-mail	en	sentence	e-mails		correio eletrônico (itálico nos exemplos da NBR 6023:2025)
+e-book	en	sentence	e-books		livro eletrônico (itálico nos exemplos da NBR 6023:2025)
+podcast	en	sentence	podcasts		programa de áudio (itálico nos exemplos da NBR 6023:2025)
+slide	en	sentence	slides		diapositivo (itálico nos exemplos da NBR 10520:2023)
+blended learning	en	sentence			ensino híbrido (exemplo da NBR 10520:2023)
+pen drive	en	sentence	pen drives		memória USB (exemplo da NBR 6023:2025)
+proceedings	en	sentence			anais (exemplo da NBR 6023:2025)
+blog	en	sentence	blogs		diário na web
+download	en	sentence	downloads		transferência para o computador local
+upload	en	sentence	uploads		transferência para o servidor
+plug-in	en	sentence	plug-ins		extensão
+login	en	sentence	logins		acesso autenticado
+smartphone	en	sentence	smartphones		telefone inteligente
+tablet	en	sentence	tablets		computador de mão
+app	en	sentence	apps		aplicativo
+marketing	en	sentence			mercadologia
+branding	en	sentence			gestão de marca
+hashtag	en	sentence	hashtags		etiqueta precedida de #
+tag	en	sentence	tags		etiqueta
+spam	en	sentence			mensagem indesejada
+paper	en	sentence	papers		artigo científico
+preprint	en	sentence	preprints		versão prévia de artigo
+peer review	en	sentence			revisão por pares
+fake news	en	sentence			notícias falsas
+copyright	en	sentence			direito autoral
+copyleft	en	sentence			licença que preserva liberdades de cópia
+fair use	en	sentence			uso aceitável (direito dos EUA)
+linked data	en	sentence			dados interligados
+open access	en	sentence			acesso aberto
+folksonomy	en	sentence			classificação colaborativa por etiquetas
+ready-made	en	sentence	ready-mades		objeto pronto (Duchamp)
+# --- inglês: computação, dados ---------------------------------------------------
+bug	en	sentence	bugs		defeito de programa
+script	en	sentence	scripts		programa interpretado
+string	en	sentence	strings		cadeia de caracteres
+array	en	sentence	arrays		vetor; arranjo
+parser	en	sentence	parsers		analisador sintático
+lexer	en	sentence	lexers		analisador léxico
+runtime	en	sentence			ambiente de execução
+build	en	sentence	builds		compilação do projeto
+commit	en	sentence	commits		registro de alteração
+merge	en	sentence			mesclagem
+pull request	en	sentence	pull requests		pedido de integração
+bundle	en	sentence	bundles		pacote gerado
+markup	en	sentence			marcação
+front-end	en	sentence	frontend		interface do cliente
+back-end	en	sentence	backend		servidor
+fallback	en	sentence	fallbacks		alternativa de contingência
+pipeline	en	sentence	pipelines		encadeamento de etapas
+kernel	en	sentence	kernels		núcleo
+buffer	en	sentence	buffers		área de armazenamento temporário
+cache	en	sentence	caches		memória de acesso rápido
+hash	en	sentence	hashes		resumo criptográfico ou de espalhamento
+checksum	en	sentence	checksums		soma de verificação
+streaming	en	sentence			transmissão contínua
+dataset	en	sentence	datasets		conjunto de dados
+big data	en	sentence			dados massivos
+machine learning	en	sentence			aprendizado de máquina
+deep learning	en	sentence			aprendizado profundo
+overfitting	en	sentence			sobreajuste
+embedding	en	sentence	embeddings		representação vetorial
+prompt	en	sentence	prompts		instrução a um modelo de linguagem
+chatbot	en	sentence	chatbots		programa de conversação
+cluster	en	sentence	clusters		agrupamento
+outlier	en	sentence	outliers		valor atípico
+bootstrap	en	sentence			reamostragem (estatística)
+scroll	en	sentence			rolagem
+codec	en	sentence	codecs		codificador-decodificador
+# --- inglês: processamento de sinais --------------------------------------------
+aliasing	en	sentence			dobramento espectral
+jitter	en	sentence			variação aleatória do instante de amostragem
+dithering	en	sentence			adição deliberada de ruído antes da quantização
+oversampling	en	sentence			sobreamostragem
+downsampling	en	sentence			subamostragem
+upsampling	en	sentence			superamostragem
+sampling	en	sentence			amostragem
+chirp	en	sentence	chirps		sinal de frequência variável
+leakage	en	sentence			vazamento espectral
+zero-padding	en	sentence			preenchimento com zeros
+windowing	en	sentence			janelamento
+overlap-add	en	sentence			sobreposição e soma
+delay	en	sentence			atraso
+loop	en	sentence	loops		laço; ciclo
+timing	en	sentence			temporização
+# --- alemão (substantivos: maiúscula em alemão) ----------------------------------
+Gestalt	de	insensitive		en	forma; configuração (psicologia da Gestalt)
+Zeitgeist	de	insensitive		en	espírito da época
+Weltanschauung	de	exact		en	visão de mundo
+Weltbild	de	exact			imagem do mundo
+Sinn	de	exact			sentido (Frege, 1892)
+Bedeutung	de	exact			referência; significado (Frege, 1892)
+Gedanke	de	exact			pensamento (Frege)
+Begriffsschrift	de	exact			conceitografia (Frege, 1879)
+Entscheidungsproblem	de	exact			problema da decisão (Hilbert; Turing)
+Gedankenexperiment	de	exact			experimento mental
+Dasein	de	exact			ser-aí (Heidegger)
+Zuhandenheit	de	exact			manualidade, ser-à-mão (Heidegger)
+Vorhandenheit	de	exact			ser-subsistente (Heidegger)
+Gestell	de	exact			armação (Heidegger)
+Lebenswelt	de	exact			mundo da vida (Husserl)
+Umwelt	de	exact			mundo circundante (Uexküll)
+Innenwelt	de	exact			mundo interior (Uexküll)
+Ding an sich	de	exact			coisa em si (Kant)
+Vorstellung	de	exact			representação (Kant; Schopenhauer)
+Aufhebung	de	exact			suprassunção (Hegel)
+Erlebnis	de	exact			vivência
+Verstehen	de	exact			compreensão (Dilthey; Weber)
+Einfühlung	de	exact			empatia estética
+Bildung	de	exact			formação
+Sprachspiel	de	exact	Sprachspiele		jogo de linguagem (Wittgenstein)
+Lebensform	de	exact	Lebensformen		forma de vida (Wittgenstein)
+Angst	de	exact		en	angústia (Kierkegaard; Heidegger)
+Übermensch	de	exact			além-do-homem (Nietzsche)
+Ansatz	de	exact			abordagem; hipótese de trabalho
+Gesamtkunstwerk	de	exact			obra de arte total (Wagner; Bauhaus)
+Leitmotiv	de	insensitive		en	motivo condutor
+Kitsch	de	insensitive		en	mau gosto ostentatório
+# --- francês --------------------------------------------------------------------
+signifiant	fr	sentence			significante (Saussure)
+signifié	fr	sentence			significado (Saussure)
+langue	fr	sentence			língua como sistema (Saussure)
+parole	fr	sentence			fala, uso individual (Saussure)
+langage	fr	sentence			linguagem como faculdade (Saussure)
+différance	fr	sentence			diferância (Derrida)
+écriture	fr	sentence			escrita
+bricolage	fr	sentence		en	bricolagem (Lévi-Strauss)
+bricoleur	fr	sentence			bricolador (Lévi-Strauss)
+dispositif	fr	sentence			dispositivo (Foucault)
+épistémè	fr	sentence			episteme (Foucault)
+élan vital	fr	sentence		en	impulso vital (Bergson)
+durée	fr	sentence			duração (Bergson)
+mise en abyme	fr	sentence			narrativa em abismo
+mise-en-scène	fr	sentence	mise en scène	en	encenação
+savoir-faire	fr	sentence		en	saber-fazer
+raison d'être	fr	sentence	raison d’être	en	razão de ser
+déjà-vu	fr	sentence	déjà vu	en	sensação de já visto
+avant-garde	fr	sentence		en	vanguarda
+art nouveau	fr	sentence		en	estilo artístico de c. 1890–1910
+art déco	fr	sentence			estilo artístico de c. 1920–1940
+laissez-faire	fr	sentence		en	não intervenção
+en passant	fr	sentence		en	de passagem
+par excellence	fr	sentence		en	por excelência
+vis-à-vis	fr	sentence		en	face a face; em relação a
+tour de force	fr	sentence		en	proeza
+fin de siècle	fr	sentence		en	fim de século
+je ne sais quoi	fr	sentence		en	um não sei quê
+flâneur	fr	sentence			passeante (Baudelaire; Benjamin)
+détournement	fr	sentence			desvio (situacionismo)
+collage	fr	sentence		en	colagem
+découpage	fr	sentence			decupagem
+# --- italiano, japonês -----------------------------------------------------------
+lingua franca	it	sentence		en	língua de contato
+chiaroscuro	it	sentence		en	claro-escuro
+sprezzatura	it	sentence			naturalidade estudada (Castiglione)
+kanban	ja	sentence		en	quadro de sinalização (Toyota)
+kaizen	ja	sentence		en	melhoria contínua
+poka-yoke	ja	sentence			dispositivo à prova de erro
+wabi-sabi	ja	sentence			estética da impermanência
+kintsugi	ja	sentence			reparo com ouro
+# --- grego antigo romanizado (grc-Latn; ver README) -----------------------------
+lógos	grc-Latn	sentence			razão; discurso (logos sem acento é homógrafo: ver homografos.tsv)
+epistēmē	grc-Latn	sentence	epistêmê		conhecimento demonstrativo
+téchnē	grc-Latn	sentence	techne|tékhne		arte; técnica
+phrónēsis	grc-Latn	sentence	phronesis		sabedoria prática
+eudaimonía	grc-Latn	sentence	eudaimonia		florescimento humano
+aretḗ	grc-Latn	sentence	aretē		excelência; virtude
+dóxa	grc-Latn	sentence	doxa		opinião
+noûs	grc-Latn	sentence			intelecto
+ousía	grc-Latn	sentence	ousia		substância; essência
+enérgeia	grc-Latn	sentence	energeia		atividade; ato
+dýnamis	grc-Latn	sentence	dynamis		potência
+mímēsis	grc-Latn	sentence	mimesis		imitação; representação
+poíēsis	grc-Latn	sentence	poiesis		produção; criação
+aísthēsis	grc-Latn	sentence	aisthesis		percepção sensível
+éthos	grc-Latn	sentence	ethos		caráter
+páthos	grc-Latn	sentence	pathos		afeto; paixão
+kairós	grc-Latn	sentence	kairos		momento oportuno
+télos	grc-Latn	sentence	telos		fim; finalidade
+arkhḗ	grc-Latn	sentence	arché|arkhé|arche		princípio
+hýlē	grc-Latn	sentence	hyle		matéria
+morphḗ	grc-Latn	sentence	morphe		forma
+eîdos	grc-Latn	sentence	eidos		forma; aspecto
+sēmeîon	grc-Latn	sentence	semeion		signo
+alḗtheia	grc-Latn	sentence	aletheia		desvelamento; verdade
+akrasía	grc-Latn	sentence	akrasia		fraqueza da vontade
+epokhḗ	grc-Latn	sentence	epoché|epokhé|epoche		suspensão do juízo (Husserl)
+# --- português (estrangeiro só em documentos em inglês) --------------------------
+saudade	pt-BR	sentence			longing; nostalgic yearning
+jeitinho	pt-BR	sentence			improvised workaround (Brazilian social practice)
+gambiarra	pt-BR	sentence	gambiarras		makeshift fix
+bossa nova	pt-BR	sentence			Brazilian music genre (1950s–1960s)
+antropofagia	pt-BR	sentence			cultural cannibalism (Oswald de Andrade, 1928)
