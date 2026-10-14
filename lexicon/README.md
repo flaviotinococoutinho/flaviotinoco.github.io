@@ -100,6 +100,9 @@ VOLP registra; a FUNAG italiciza até _site_). O site adota a convenção das no
   redondo (Brochura do SI, 9. ed., §5.3);
 - abreviaturas latinas de uso corrente que a tradição tipográfica mantém em redondo: _etc._, _e.g._, _i.e._; e
   latinismos aportuguesados como _vice-versa_;
+- o latim _in_ isolado (o “_In_:” das referências): coincide com a preposição inglesa de _check-in_ e _plug-in_ e
+  seria marcado errado. As locuções com _in_ estão no dicionário (_in vitro_, _in situ_, _in loco_, _in memoriam_…),
+  e o “_In_:” das referências é produzido pelo estágio de citações;
 - **na dúvida, fora**: um falso negativo se corrige com `:foreign[…]{lang=xx}`; um falso positivo (italicizar uma
   palavra portuguesa) é pior.
 
