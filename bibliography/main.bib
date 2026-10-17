@@ -1,0 +1,643 @@
+@comment{
+  Bibliografia principal do site (fonte única; docs/guia-citacoes.md).
+
+  Política de dados:
+  - Somente referências reais. Cada campo foi conferido em 2026-10-13: artigos
+    com DOI contra o registro Crossref (api.crossref.org/works/<doi>); livros,
+    teses e anais contra catálogos de bibliotecas, as páginas dos editores ou a
+    própria publicação (indicado no comentário de cada entrada). Em 2026-10-17
+    todas as entradas com DOI foram conferidas de novo contra o Crossref, campo a
+    campo (título, periódico, volume, número, páginas, data, autores), e as URLs
+    das entradas online responderam; as divergências deliberadas estão nos
+    comentários (docs/guia-citacoes.md §7).
+  - Títulos em caixa de sentença, como na catalogação brasileira e no APA;
+    nomes próprios, siglas e títulos citados dentro de títulos ficam entre
+    chaves (caixa protegida). Nomes de periódicos e de documentos normativos
+    mantêm a caixa da publicação. Os formatadores nunca alteram a caixa de
+    títulos (exceto as regras normativas: entrada pelo título na ABNT e a
+    primeira letra do subtítulo no APA), e nunca dentro de chaves.
+  - Prenomes por extenso quando documentados (NBR 6023 §8.1.1, "de forma
+    padronizada"); senão, como impressos na obra.
+  - Datas de acesso (urldate) = data em que a página foi consultada.
+}
+
+@string{ire  = "Proceedings of the {IRE}"}
+@string{tvcg = "{IEEE} Transactions on Visualization and Computer Graphics"}
+@string{w3c  = "{World Wide Web Consortium}"}
+
+% Shannon (1948) appeared in two issues of the BSTJ (July: 27(3), 379-423;
+% October: 27(4), 623-656), under one title, as ONE paper in two parts. It is a
+% single work for citation purposes, so it is ONE entry: both issues and both
+% page ranges, the month interval jul./out., and the DOI of part I (a reference
+% has one DOI; part II is 10.1002/j.1538-7305.1948.tb00917.x). Crossref.
+@article{shannon1948,
+  author   = {Shannon, Claude Elwood},
+  title    = {A mathematical theory of communication},
+  journal  = {Bell System Technical Journal},
+  volume   = 27,
+  number   = {3-4},
+  pages    = {379--423, 623--656},
+  date     = {1948-07/1948-10},
+  doi      = {10.1002/j.1538-7305.1948.tb01338.x},
+  langid   = {english},
+}
+
+% Crossref.
+@article{shannon1949,
+  author   = {Shannon, Claude Elwood},
+  title    = {Communication in the presence of noise},
+  journal  = ire,
+  volume   = 37,
+  number   = 1,
+  pages    = {10--21},
+  date     = {1949-01},
+  doi      = {10.1109/JRPROC.1949.232969},
+  langid   = {english},
+}
+
+% Crossref.
+@article{nyquist1928,
+  author   = {Nyquist, Harry},
+  title    = {Certain topics in telegraph transmission theory},
+  journal  = {Transactions of the American Institute of Electrical Engineers},
+  volume   = 47,
+  number   = 2,
+  pages    = {617--644},
+  date     = {1928-04},
+  doi      = {10.1109/T-AIEE.1928.5055024},
+  langid   = {english},
+}
+
+% Crossref (the journal prints the article number "XVIII.—" before the title; omitted).
+@article{whittaker1915,
+  author   = {Whittaker, Edmund Taylor},
+  title    = {On the functions which are represented by the expansions of the interpolation-theory},
+  journal  = {Proceedings of the Royal Society of Edinburgh},
+  volume   = 35,
+  pages    = {181--194},
+  year     = 1915,
+  doi      = {10.1017/S0370164600017806},
+  langid   = {english},
+}
+
+% Pagination checked on a scan of the 1949 first edition (Internet Archive,
+% in.ernet.dli.2015.503815): Shannon's paper first, Weaver's essay pp. 95-117.
+% Later printings (1963 paperback onward) put Weaver first, at pp. 1-28.
+@incollection{weaver1949,
+  author     = {Weaver, Warren},
+  title      = {Recent contributions to the mathematical theory of communication},
+  booktitle  = {The mathematical theory of communication},
+  bookauthor = {Shannon, Claude Elwood and Weaver, Warren},
+  address    = {Urbana},
+  publisher  = {University of Illinois Press},
+  year       = 1949,
+  pages      = {95--117},
+  langid     = {english},
+}
+
+% Library catalogues (Penn, NLI): vols. 1-6 ed. Hartshorne & Weiss (1931-1935),
+% vols. 7-8 ed. Burks (1958), Harvard University Press.
+@book{peirce1931,
+  author    = {Peirce, Charles Sanders},
+  title     = {Collected papers of {Charles Sanders Peirce}},
+  editor    = {Hartshorne, Charles and Weiss, Paul and Burks, Arthur Walter},
+  volumes   = 8,
+  address   = {Cambridge, MA},
+  publisher = {Harvard University Press},
+  date      = {1931/1958},
+  langid    = {english},
+}
+
+% Bookseller and archive records of the first edition: Lausanne, Paris, Librairie
+% Payot & Cie, 1916; "publié par Charles Bally et Albert Sechehaye".
+@book{saussure1916,
+  author    = {de Saussure, Ferdinand},
+  title     = {Cours de linguistique g{\'e}n{\'e}rale},
+  editor    = {Bally, Charles and Sechehaye, Albert},
+  address   = {Lausanne},
+  publisher = {Payot},
+  year      = 1916,
+  langid    = {french},
+}
+
+% Deutsches Textarchiv and PhilPapers: Zeitschrift für Philosophie und
+% philosophische Kritik, N. F., Bd. 100, H. 1, S. 25-50.
+@article{frege1892,
+  author   = {Frege, Gottlob},
+  title    = {{\"U}ber {Sinn} und {Bedeutung}},
+  journal  = {Zeitschrift f{\"u}r Philosophie und philosophische Kritik},
+  volume   = 100,
+  number   = 1,
+  pages    = {25--50},
+  year     = 1892,
+  langid   = {german},
+}
+
+% Crossref.
+@article{huffman1952,
+  author   = {Huffman, David Albert},
+  title    = {A method for the construction of minimum-redundancy codes},
+  journal  = ire,
+  volume   = 40,
+  number   = 9,
+  pages    = {1098--1101},
+  date     = {1952-09},
+  doi      = {10.1109/JRPROC.1952.273898},
+  langid   = {english},
+}
+
+% Crossref (DOI of the 2nd edition) and library catalogues: Hoboken, N.J.,
+% Wiley-Interscience, c2006.
+@book{cover2006,
+  author    = {Cover, Thomas M. and Thomas, Joy A.},
+  title     = {Elements of information theory},
+  edition   = 2,
+  address   = {Hoboken, NJ},
+  publisher = {Wiley-Interscience},
+  year      = 2006,
+  doi       = {10.1002/047174882X},
+  langid    = {english},
+}
+
+% Crossref.
+@article{cooley1965,
+  author   = {Cooley, James William and Tukey, John Wilder},
+  title    = {An algorithm for the machine calculation of complex {Fourier} series},
+  journal  = {Mathematics of Computation},
+  volume   = 19,
+  number   = 90,
+  pages    = {297--301},
+  year     = 1965,
+  doi      = {10.1090/S0025-5718-1965-0178586-1},
+  langid   = {english},
+}
+
+% Crossref (weekly: issue 5560 of 10 June 1976).
+@article{may1976,
+  author   = {May, Robert McCredie},
+  title    = {Simple mathematical models with very complicated dynamics},
+  journal  = {Nature},
+  volume   = 261,
+  number   = 5560,
+  pages    = {459--467},
+  date     = {1976-06-10},
+  doi      = {10.1038/261459a0},
+  langid   = {english},
+}
+
+% Crossref.
+@article{feigenbaum1978,
+  author   = {Feigenbaum, Mitchell Jay},
+  title    = {Quantitative universality for a class of nonlinear transformations},
+  journal  = {Journal of Statistical Physics},
+  volume   = 19,
+  number   = 1,
+  pages    = {25--52},
+  date     = {1978-07},
+  doi      = {10.1007/BF01020332},
+  langid   = {english},
+}
+
+% Crossref.
+@article{lorenz1963,
+  author   = {Lorenz, Edward Norton},
+  title    = {Deterministic nonperiodic flow},
+  journal  = {Journal of the Atmospheric Sciences},
+  volume   = 20,
+  number   = 2,
+  pages    = {130--141},
+  date     = {1963-03},
+  doi      = {10.1175/1520-0469(1963)020<0130:DNF>2.0.CO;2},
+  langid   = {english},
+}
+
+% Crossref.
+@article{hick1952,
+  author   = {Hick, William Edmund},
+  title    = {On the rate of gain of information},
+  journal  = {Quarterly Journal of Experimental Psychology},
+  volume   = 4,
+  number   = 1,
+  pages    = {11--26},
+  date     = {1952-03},
+  doi      = {10.1080/17470215208416600},
+  langid   = {english},
+}
+
+% Crossref.
+@article{hyman1953,
+  author   = {Hyman, Ray},
+  title    = {Stimulus information as a determinant of reaction time},
+  journal  = {Journal of Experimental Psychology},
+  volume   = 45,
+  number   = 3,
+  pages    = {188--196},
+  year     = 1953,
+  doi      = {10.1037/h0056940},
+  langid   = {english},
+}
+
+% CIA, Center for the Study of Intelligence (archive page, consulted on the urldate)
+% and citing literature: Studies in Intelligence 8(4), Fall 1964, 49-65.
+@article{kent1964,
+  author   = {Kent, Sherman},
+  title    = {Words of estimative probability},
+  journal  = {Studies in Intelligence},
+  volume   = 8,
+  number   = 4,
+  pages    = {49--65},
+  year     = 1964,
+  url      = {https://www.cia.gov/resources/csi/studies-in-intelligence/archives/vol-8-no-4/words-of-estimative-probability},
+  urldate  = {2026-10-13},
+  langid   = {english},
+}
+
+% Library catalogues (GIPE, AIB): Madras, Madras Library Association, 1933.
+% A London co-publisher appears with two spellings in catalogues; only the
+% first place and publisher are given (NBR 6023 §8.4.4, §8.5.3).
+@book{ranganathan1933,
+  author    = {Ranganathan, Shiyali Ramamrita},
+  title     = {Colon classification},
+  address   = {Madras},
+  publisher = {Madras Library Association},
+  year      = 1933,
+  langid    = {english},
+}
+
+% Cambridge University Press (front matter of the 2003 updated edition:
+% "First published 1958"); reviews of 1959: Cambridge University Press, viii + 264 p.
+@book{toulmin1958,
+  author    = {Toulmin, Stephen Edelston},
+  title     = {The uses of argument},
+  address   = {Cambridge},
+  publisher = {Cambridge University Press},
+  year      = 1958,
+  langid    = {english},
+}
+
+% DBLP (via its SIGMOD mirror), poster section pp. 1089-1090; proceedings edited by
+% López de Mántaras & Saitta, IOS Press, 2004 (ISBN 1-58603-452-9).
+@inproceedings{seco2004,
+  author      = {Seco, Nuno and Veale, Tony and Hayes, Jer},
+  title       = {An intrinsic information content metric for semantic similarity in {WordNet}},
+  booktitle   = {Proceedings of the 16th European Conference on Artificial Intelligence},
+  editor      = {{L{\'o}pez de M{\'a}ntaras}, Ram{\'o}n and Saitta, Lorenza},
+  eventtitle  = {European Conference on Artificial Intelligence},
+  eventnumber = 16,
+  eventyear   = 2004,
+  venue       = {Valencia},
+  address     = {Amsterdam},
+  publisher   = {IOS Press},
+  pages       = {1089--1090},
+  year        = 2004,
+  langid      = {english},
+}
+
+% ML Anthology and DBLP: ICML 1998, pp. 296-304; proceedings ed. Jude W. Shavlik,
+% Morgan Kaufmann, 1998 (ISBN 1-55860-556-8).
+@inproceedings{lin1998,
+  author      = {Lin, Dekang},
+  title       = {An information-theoretic definition of similarity},
+  booktitle   = {Proceedings of the Fifteenth International Conference on Machine Learning},
+  editor      = {Shavlik, Jude W.},
+  eventtitle  = {International Conference on Machine Learning},
+  eventnumber = 15,
+  eventyear   = 1998,
+  venue       = {Madison},
+  address     = {San Francisco},
+  publisher   = {Morgan Kaufmann},
+  pages       = {296--304},
+  year        = 1998,
+  langid      = {english},
+}
+
+% IJCAI proceedings site (vol. 1, paper 059: 6 pages from p. 448) and library
+% catalogues: ed. Chris S. Mellish, Morgan Kaufmann, San Mateo, 1995.
+@inproceedings{resnik1995,
+  author      = {Resnik, Philip},
+  title       = {Using information content to evaluate semantic similarity in a taxonomy},
+  booktitle   = {Proceedings of the Fourteenth International Joint Conference on Artificial Intelligence},
+  editor      = {Mellish, Chris S.},
+  volume      = 1,
+  eventtitle  = {International Joint Conference on Artificial Intelligence},
+  eventnumber = 14,
+  eventyear   = 1995,
+  venue       = {Montr{\'e}al},
+  address     = {San Mateo},
+  publisher   = {Morgan Kaufmann},
+  pages       = {448--453},
+  year        = 1995,
+  langid      = {english},
+}
+
+% Crossref.
+@article{gruber1993,
+  author   = {Gruber, Thomas R.},
+  title    = {A translation approach to portable ontology specifications},
+  journal  = {Knowledge Acquisition},
+  volume   = 5,
+  number   = 2,
+  pages    = {199--220},
+  date     = {1993-06},
+  doi      = {10.1006/knac.1993.1008},
+  langid   = {english},
+}
+
+% W3C Recommendation of 18 August 2009 (the dated "This version" URL).
+@online{w3c2009,
+  author    = w3c,
+  title     = {{SKOS Simple Knowledge Organization System} reference},
+  publisher = {W3C},
+  date      = {2009-08-18},
+  url       = {https://www.w3.org/TR/2009/REC-skos-reference-20090818/},
+  urldate   = {2026-10-13},
+  langid    = {english},
+}
+
+% W3C Recommendation of 5 October 2023 (the dated "This version" URL).
+@online{w3c2023,
+  author    = w3c,
+  title     = {{Web Content Accessibility Guidelines (WCAG) 2.2}},
+  publisher = {W3C},
+  date      = {2023-10-05},
+  url       = {https://www.w3.org/TR/2023/REC-WCAG22-20231005/},
+  urldate   = {2026-10-13},
+  langid    = {english},
+}
+
+% Library catalogue (c2004, version 3.0 of the third edition); Hartley & Marks,
+% Point Roberts, WA.
+@book{bringhurst2004,
+  author    = {Bringhurst, Robert},
+  title     = {The elements of typographic style},
+  edition   = 3,
+  address   = {Point Roberts, WA},
+  publisher = {Hartley {\&} Marks},
+  year      = 2004,
+  langid    = {english},
+}
+
+% Library catalogues: Cheshire, Conn., Graphics Press, c1990, 126 p.
+@book{tufte1990,
+  author    = {Tufte, Edward Rolf},
+  title     = {Envisioning information},
+  address   = {Cheshire, CT},
+  publisher = {Graphics Press},
+  year      = 1990,
+  langid    = {english},
+}
+
+% Crossref (proceedings-article; event "ACM '65", Cleveland, Ohio, 24-26 Aug. 1965).
+@inproceedings{nelson1965,
+  author      = {Nelson, Theodor Holm},
+  title       = {Complex information processing},
+  subtitle    = {a file structure for the complex, the changing and the indeterminate},
+  booktitle   = {Proceedings of the 1965 20th National Conference},
+  eventtitle  = {{ACM} National Conference},
+  eventnumber = 20,
+  eventyear   = 1965,
+  venue       = {Cleveland},
+  address     = {New York},
+  publisher   = {{ACM}},
+  pages       = {84--100},
+  year        = 1965,
+  doi         = {10.1145/800197.806036},
+  langid      = {english},
+}
+
+% Crossref (article number 104047; no page range).
+@article{brysbaert2019,
+  author   = {Brysbaert, Marc},
+  title    = {How many words do we read per minute? {A} review and meta-analysis of reading rate},
+  journal  = {Journal of Memory and Language},
+  volume   = 109,
+  eid      = {104047},
+  date     = {2019-12},
+  doi      = {10.1016/j.jml.2019.104047},
+  langid   = {english},
+}
+
+% Crossref.
+@article{machado2009,
+  author   = {Machado, Gustavo M. and Oliveira, Manuel M. and Fernandes, Leandro A. F.},
+  title    = {A physiologically-based model for simulation of color vision deficiency},
+  journal  = tvcg,
+  volume   = 15,
+  number   = 6,
+  pages    = {1291--1298},
+  date     = {2009-11},
+  doi      = {10.1109/TVCG.2009.113},
+  langid   = {english},
+}
+
+% Crossref.
+@article{szafir2018,
+  author   = {Szafir, Danielle Albers},
+  title    = {Modeling color difference for visualization design},
+  journal  = tvcg,
+  volume   = 24,
+  number   = 1,
+  pages    = {392--401},
+  date     = {2018-01},
+  doi      = {10.1109/TVCG.2017.2744359},
+  langid   = {english},
+}
+
+% Crossref (print issue February 2005; online 2004).
+@article{sharma2005,
+  author   = {Sharma, Gaurav and Wu, Wencheng and Dalal, Edul N.},
+  title    = {The {CIEDE2000} color-difference formula},
+  subtitle = {implementation notes, supplementary test data, and mathematical observations},
+  journal  = {Color Research {\&} Application},
+  volume   = 30,
+  number   = 1,
+  pages    = {21--30},
+  date     = {2005-02},
+  doi      = {10.1002/col.20070},
+  langid   = {english},
+}
+
+% Crossref.
+@article{bloom1970,
+  author   = {Bloom, Burton Howard},
+  title    = {Space/time trade-offs in hash coding with allowable errors},
+  journal  = {Communications of the {ACM}},
+  volume   = 13,
+  number   = 7,
+  pages    = {422--426},
+  date     = {1970-07},
+  doi      = {10.1145/362686.362692},
+  langid   = {english},
+}
+
+% Crossref (print issue September 2008).
+@article{kirsch2008,
+  author   = {Kirsch, Adam and Mitzenmacher, Michael},
+  title    = {Less hashing, same performance},
+  subtitle = {building a better {Bloom} filter},
+  journal  = {Random Structures {\&} Algorithms},
+  volume   = 33,
+  number   = 2,
+  pages    = {187--218},
+  date     = {2008-09},
+  doi      = {10.1002/rsa.20208},
+  langid   = {english},
+}
+
+% Title page of the thesis (TUG mirror): Department of Computer Science, Stanford
+% University, August 1983, report STAN-CS-83-977; advisor D. E. Knuth.
+@phdthesis{liang1983,
+  author  = {Liang, Franklin Mark},
+  title   = {Word hy-phen-a-tion by com-put-er},
+  school  = {Stanford University},
+  address = {Stanford},
+  year    = 1983,
+  langid  = {english},
+}
+
+% Knuth's own bibliography (cs.stanford.edu/~knuth/abcde.html): Addison-Wesley,
+% Reading, Massachusetts, 1984; Computers & Typesetting, Volume A.
+@book{knuth1984,
+  author    = {Knuth, Donald Ervin},
+  title     = {The {\TeX}book},
+  series    = {Computers {\&} Typesetting},
+  number    = {A},
+  address   = {Reading, MA},
+  publisher = {Addison-Wesley},
+  year      = 1984,
+  langid    = {english},
+}
+
+% Crossref (ACM TOG 26(3), article 46, July 2007). Crossref spells the second
+% author "Houriham"; the paper's byline and the ACM reference format read Hourihan.
+@article{bridson2007,
+  author   = {Bridson, Robert and Hourihan, Jim and Nordenstam, Marcus},
+  title    = {Curl-noise for procedural fluid flow},
+  journal  = {{ACM} Transactions on Graphics},
+  volume   = 26,
+  number   = 3,
+  eid      = {46},
+  date     = {2007-07},
+  doi      = {10.1145/1276377.1276435},
+  langid   = {english},
+}
+
+% Russian State Library catalogue (record 01009304108): Котельников, В. А.,
+% [Москва], [Ред. упр. связи РККА], [1933], 19 с. — place, publisher and date are
+% bracketed in the catalogue because the pamphlet does not print them
+% (NBR 6023 §8.4.3, §8.6.1.2). Materials for the First All-Union Congress on the
+% technical reconstruction of communications (the congress never met).
+@book{kotelnikov1933,
+  author    = {Kotelnikov, Vladimir Aleksandrovich},
+  title     = {О пропускной способности «эфира» и проволоки в электросвязи},
+  address   = {[Москва]},
+  publisher = {[Ред. упр. связи РККА]},
+  year      = {[1933]},
+  langid    = {russian},
+}
+
+% Crossref.
+@article{godel1931,
+  author   = {G{\"o}del, Kurt},
+  title    = {{\"U}ber formal unentscheidbare {S}{\"a}tze der {Principia Mathematica} und verwandter {Systeme I}},
+  journal  = {Monatshefte f{\"u}r Mathematik und Physik},
+  volume   = 38,
+  number   = 1,
+  pages    = {173--198},
+  date     = {1931-12},
+  doi      = {10.1007/BF01700692},
+  langid   = {german},
+}
+
+% Crossref dates the volume 1937, but the paper was issued in parts 3 and 4 of
+% volume s2-42 in November and December 1936 (A. Hodges, "Turing Sources";
+% auction records of the parts), which is the year it is cited by.
+@article{turing1936,
+  author   = {Turing, Alan Mathison},
+  title    = {On computable numbers, with an application to the {Entscheidungsproblem}},
+  journal  = {Proceedings of the London Mathematical Society},
+  volume   = {s2-42},
+  number   = 1,
+  pages    = {230--265},
+  year     = 1936,
+  doi      = {10.1112/plms/s2-42.1.230},
+  langid   = {english},
+}
+
+% Crossref (Oxford University Press monograph, 2011).
+@book{floridi2011,
+  author    = {Floridi, Luciano},
+  title     = {The philosophy of information},
+  address   = {Oxford},
+  publisher = {Oxford University Press},
+  year      = 2011,
+  doi       = {10.1093/acprof:oso/9780199232383.001.0001},
+  langid    = {english},
+}
+
+% Rare-book and library records of the first English edition (German text en face,
+% introduction by Bertrand Russell): London, Kegan Paul, Trench, Trubner & Co., 1922.
+@book{wittgenstein1922,
+  author    = {Wittgenstein, Ludwig},
+  title     = {Tractatus logico-philosophicus},
+  series    = {International Library of Psychology, Philosophy and Scientific Method},
+  address   = {London},
+  publisher = {Kegan Paul, Trench, Trubner},
+  year      = 1922,
+  langid    = {latin},
+}
+
+% Library records and later copyright pages: "First English edition published
+% 1959 by Hutchinson & Co.", London.
+@book{popper1959,
+  author    = {Popper, Karl Raimund},
+  title     = {The logic of scientific discovery},
+  address   = {London},
+  publisher = {Hutchinson},
+  year      = 1959,
+  langid    = {english},
+}
+
+% The post itself (author, title and date as published).
+@online{king2019,
+  author  = {King, Alexis},
+  title   = {Parse, don't validate},
+  date    = {2019-11-05},
+  url     = {https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/},
+  urldate = {2026-10-13},
+  langid  = {english},
+}
+
+% ABNT norms: title pages of the norms (edition, date and title).
+% NBR 6023: 3rd ed., 21.05.2025, "Informação e documentação — Referências — Elaboração".
+@book{abnt2025,
+  author    = {{Associa{\c c}{\~a}o Brasileira de Normas T{\'e}cnicas}},
+  title     = {{ABNT NBR} 6023: informação e documentação: referências: elaboração},
+  edition   = 3,
+  address   = {Rio de Janeiro},
+  publisher = {{ABNT}},
+  year      = 2025,
+  langid    = {brazil},
+}
+
+% NBR 10520: 2nd ed., 19.07.2023, "Informação e documentação — Citações em documentos — Apresentação".
+@book{abnt2023,
+  author    = {{Associação Brasileira de Normas Técnicas}},
+  title     = {{ABNT NBR} 10520: informação e documentação: citações em documentos: apresentação},
+  edition   = 2,
+  address   = {Rio de Janeiro},
+  publisher = {{ABNT}},
+  year      = 2023,
+  langid    = {brazil},
+}
+
+% NBR 14724: 4th ed., 16.12.2024, "Informação e documentação — Trabalhos acadêmicos — Apresentação".
+@book{abnt2024,
+  author    = {{Associação Brasileira de Normas Técnicas}},
+  title     = {{ABNT NBR} 14724: informação e documentação: trabalhos acadêmicos: apresentação},
+  edition   = 4,
+  address   = {Rio de Janeiro},
+  publisher = {{ABNT}},
+  year      = 2024,
+  langid    = {brazil},
+}
