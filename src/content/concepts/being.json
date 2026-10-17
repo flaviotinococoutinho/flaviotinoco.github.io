@@ -12,10 +12,11 @@
     "en": "What is common to everything that exists, and the very fact of existing; the most general object of ontology."
   },
   "stratum": "philosophy",
+  "category": "entity",
   "domains": [
     "ontology"
   ],
-  "broader": [
-    "ontology"
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q203872"
   ]
 }

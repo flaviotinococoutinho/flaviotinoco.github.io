@@ -13,10 +13,11 @@
   },
   "notation": "f = \\frac{1}{T}",
   "stratum": "theory",
+  "category": "quality",
   "domains": [
     "signal-processing"
   ],
-  "broader": [
-    "signal"
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q11652"
   ]
 }

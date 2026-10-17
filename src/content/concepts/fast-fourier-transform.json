@@ -19,14 +19,21 @@
     "pt-BR": "Família de algoritmos que calculam a transformada discreta de Fourier de N pontos em O(N log N) operações, em vez de O(N²), explorando a fatoração de N.",
     "en": "A family of algorithms that compute the N-point discrete Fourier transform in O(N log N) operations instead of O(N²), by exploiting the factorisation of N."
   },
-  "notation": "X_k = \\sum_{n=0}^{N-1} x_n\\,\\e^{-2\\pi\\i k n / N}",
+  "notation": "T(N) = 2\\,T(N/2) + O(N) = O(N \\log N)",
   "stratum": "formal",
+  "category": "method",
   "domains": [
     "computation",
     "signal-processing"
   ],
-  "broader": [
-    "fourier-transform"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "discrete-fourier-transform"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q623950"
   ],
   "sources": [
     "cooley1965"

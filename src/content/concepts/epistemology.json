@@ -20,7 +20,17 @@
     "en": "The branch of philosophy that investigates the nature, sources, limits and justification of knowledge."
   },
   "stratum": "philosophy",
+  "category": "entity",
   "domains": [
     "epistemology"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "knowledge"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q9471"
   ]
 }

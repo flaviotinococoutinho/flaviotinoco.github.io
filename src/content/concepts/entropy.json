@@ -23,12 +23,26 @@
   },
   "notation": "H(X) = -\\sum_{x} p(x)\\,\\log_2 p(x)",
   "stratum": "theory",
+  "category": "measure",
   "domains": [
     "information-theory",
     "probability"
   ],
   "broader": [
     "information"
+  ],
+  "relations": [
+    {
+      "type": "formalizes",
+      "target": "uncertainty"
+    },
+    {
+      "type": "appliesTo",
+      "target": "hick-hyman-law"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q204570"
   ],
   "sources": [
     "shannon1948",

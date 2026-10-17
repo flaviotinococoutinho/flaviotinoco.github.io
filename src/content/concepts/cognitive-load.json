@@ -12,14 +12,21 @@
     "en": "The amount of working-memory resources a task demands; an interface reduces it by removing irrelevant choices and information."
   },
   "stratum": "value",
+  "category": "quality",
   "domains": [
     "design"
   ],
-  "broader": [
-    "interface"
+  "relations": [
+    {
+      "type": "related",
+      "target": "interface"
+    },
+    {
+      "type": "related",
+      "target": "hick-hyman-law"
+    }
   ],
-  "related": [
-    "hick-hyman-law",
-    "channel-capacity"
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q1107019"
   ]
 }

@@ -13,11 +13,22 @@
   },
   "notation": "\\lambda = \\lim_{n\\to\\infty} \\frac{1}{n} \\sum_{i=0}^{n-1} \\ln \\left\\lvert f'(x_i) \\right\\rvert",
   "stratum": "formal",
+  "category": "measure",
   "domains": [
     "dynamical-systems",
     "mathematics"
   ],
-  "broader": [
-    "deterministic-chaos"
+  "relations": [
+    {
+      "type": "measures",
+      "target": "deterministic-chaos"
+    },
+    {
+      "type": "related",
+      "target": "entropy"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q1238630"
   ]
 }

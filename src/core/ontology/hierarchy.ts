@@ -141,3 +141,75 @@ export const findCycles = <Id extends string>(ids: readonly Id[], broaderOf: (id
   for (const id of sorted) if (!colour.has(id)) visit(id);
   return [...found.values()].sort((a, b) => byCodeUnit(a.join(' '), b.join(' ')));
 };
+
+/** Shortest path (breadth-first, ties by id) from `from` to `to` following `next`; null when unreachable. Includes both ends. */
+export const pathBetween = <Id extends string>(from: Id, to: Id, next: (id: Id) => readonly Id[]): readonly Id[] | null => {
+  const previous = new Map<Id, Id | null>([[from, null]]);
+  let frontier: readonly Id[] = [from];
+  while (frontier.length > 0 && !previous.has(to)) {
+    const following: Id[] = [];
+    for (const id of frontier) {
+      for (const n of [...next(id)].sort(byCodeUnit)) {
+        if (previous.has(n)) continue;
+        previous.set(n, id);
+        following.push(n);
+      }
+    }
+    frontier = following;
+  }
+  if (!previous.has(to)) return null;
+  const path: Id[] = [];
+  for (let at: Id | null = to; at !== null; at = previous.get(at) ?? null) path.unshift(at);
+  return path;
+};
+
+export interface RedundantEdge<Id extends string> {
+  readonly source: Id;
+  readonly target: Id;
+  /** Intermediate nodes of a longer path source → … → target that implies the edge. */
+  readonly via: readonly Id[];
+}
+
+/**
+ * Edges of a DAG that are NOT in its transitive reduction (Aho, Garey &
+ * Ullman, "The transitive reduction of a directed graph", SIAM J. Comput.
+ * 1(2), 1972): u → v is redundant iff v is reachable from u through another
+ * successor w ≠ v. For a DAG the reduction is unique (it is the Hasse diagram
+ * of the partial order), so "no redundant edge" means the stored relation IS
+ * the Hasse diagram. On cyclic input the result is still total (cycles are
+ * reported elsewhere).
+ */
+export const redundantEdges = <Id extends string>(
+  ids: readonly Id[],
+  next: (id: Id) => readonly Id[],
+): readonly RedundantEdge<Id>[] => {
+  const sorted = [...new Set(ids)].sort(byCodeUnit);
+  const out: RedundantEdge<Id>[] = [];
+  for (const u of sorted) {
+    const successors = [...new Set(next(u))].filter((v) => v !== u).sort(byCodeUnit);
+    for (const v of successors) {
+      for (const w of successors) {
+        if (w === v) continue;
+        const path = pathBetween(w, v, (x) => next(x).filter((y) => y !== u));
+        if (path !== null) {
+          out.push({ source: u, target: v, via: path.slice(0, -1) });
+          break;
+        }
+      }
+    }
+  }
+  return out;
+};
+
+/** The transitive reduction of a DAG given by `next` (redundant edges removed), as an adjacency map. */
+export const transitiveReduction = <Id extends string>(
+  ids: readonly Id[],
+  next: (id: Id) => readonly Id[],
+): ReadonlyMap<Id, readonly Id[]> => {
+  const redundant = new Set(redundantEdges(ids, next).map((e) => `${e.source}\u0000${e.target}`));
+  return new Map(
+    [...new Set(ids)]
+      .sort(byCodeUnit)
+      .map((u) => [u, [...new Set(next(u))].filter((v) => !redundant.has(`${u}\u0000${v}`)).sort(byCodeUnit)] as const),
+  );
+};

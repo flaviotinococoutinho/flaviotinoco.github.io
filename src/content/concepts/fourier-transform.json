@@ -13,14 +13,22 @@
   },
   "notation": "\\hat{x}(f) = \\int_{-\\infty}^{\\infty} x(t)\\,\\e^{-2\\pi\\i f t}\\,\\d t",
   "stratum": "formal",
+  "category": "operation",
   "domains": [
     "signal-processing",
     "mathematics"
   ],
-  "broader": [
-    "signal"
+  "relations": [
+    {
+      "type": "formalizes",
+      "target": "frequency"
+    },
+    {
+      "type": "dependsOn",
+      "target": "signal"
+    }
   ],
-  "related": [
-    "frequency"
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q6520159"
   ]
 }

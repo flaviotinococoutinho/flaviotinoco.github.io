@@ -12,10 +12,21 @@
     "en": "A reliable grasp of facts, of things or of ways of doing; in the classical analysis, justified true belief."
   },
   "stratum": "philosophy",
+  "category": "relation",
   "domains": [
     "epistemology"
   ],
-  "broader": [
-    "epistemology"
+  "relations": [
+    {
+      "type": "contrastsWith",
+      "target": "uncertainty"
+    },
+    {
+      "type": "related",
+      "target": "information"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q9081"
   ]
 }

@@ -13,14 +13,26 @@
   },
   "notation": "x_{n+1} = r\\,x_n\\,(1 - x_n)",
   "stratum": "formal",
+  "category": "operation",
   "domains": [
     "dynamical-systems"
   ],
-  "broader": [
-    "model"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "dynamical-system"
+    },
+    {
+      "type": "related",
+      "target": "deterministic-chaos"
+    },
+    {
+      "type": "related",
+      "target": "bifurcation"
+    }
   ],
-  "related": [
-    "deterministic-chaos"
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q587182"
   ],
   "sources": [
     "may1976"

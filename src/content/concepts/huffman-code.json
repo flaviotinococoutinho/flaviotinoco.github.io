@@ -4,32 +4,46 @@
     "en": "huffman-code"
   },
   "prefLabel": {
-    "pt-BR": "Código de Huffman",
-    "en": "Huffman code"
+    "pt-BR": "Codificação de Huffman",
+    "en": "Huffman coding"
   },
   "altLabel": {
     "pt-BR": [
-      "codificação de Huffman"
+      "código de Huffman",
+      "algoritmo de Huffman"
     ],
     "en": [
-      "Huffman coding"
+      "Huffman code",
+      "Huffman algorithm"
     ]
   },
   "definition": {
-    "pt-BR": "Código de prefixo ótimo para uma fonte de probabilidades conhecidas, construído fundindo repetidamente os dois símbolos menos prováveis.",
-    "en": "An optimal prefix code for a source with known probabilities, built by repeatedly merging the two least probable symbols."
+    "pt-BR": "Procedimento que constrói um código de prefixo ótimo para uma fonte de probabilidades conhecidas, fundindo repetidamente os dois símbolos menos prováveis em um só.",
+    "en": "The procedure that builds an optimal prefix code for a source with known probabilities by repeatedly merging the two least probable symbols into one."
   },
   "notation": "H(X) \\le \\bar{L} < H(X) + 1",
   "stratum": "formal",
+  "category": "method",
   "domains": [
     "information-theory",
     "computation"
   ],
-  "broader": [
-    "prefix-code"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "prefix-code"
+    },
+    {
+      "type": "dependsOn",
+      "target": "entropy"
+    },
+    {
+      "type": "appliesTo",
+      "target": "interface"
+    }
   ],
-  "related": [
-    "entropy"
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q2647"
   ],
   "sources": [
     "huffman1952"

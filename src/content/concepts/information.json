@@ -7,18 +7,43 @@
     "pt-BR": "Informação",
     "en": "Information"
   },
+  "altLabel": {
+    "pt-BR": [
+      "quantidade de informação",
+      "autoinformação"
+    ],
+    "en": [
+      "amount of information",
+      "self-information"
+    ]
+  },
   "definition": {
-    "pt-BR": "Redução de incerteza produzida por uma mensagem; na teoria de Shannon, mede-se pela improbabilidade da mensagem escolhida, independentemente de seu significado.",
-    "en": "The reduction of uncertainty brought about by a message; in Shannon’s theory it is measured by the improbability of the message chosen, regardless of its meaning."
+    "pt-BR": "Medida da incerteza que uma mensagem elimina: na teoria de Shannon, o logaritmo do inverso da probabilidade da mensagem escolhida, independentemente de seu significado.",
+    "en": "The measure of the uncertainty a message removes: in Shannon’s theory, the logarithm of the inverse probability of the message chosen, regardless of its meaning."
   },
   "notation": "I(x) = -\\log_2 p(x)",
   "stratum": "theory",
+  "category": "measure",
   "domains": [
     "information-theory"
   ],
-  "related": [
-    "knowledge",
-    "meaning"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "uncertainty"
+    },
+    {
+      "type": "contrastsWith",
+      "target": "meaning"
+    },
+    {
+      "type": "appliesTo",
+      "target": "decision"
+    },
+    {
+      "type": "related",
+      "target": "communication"
+    }
   ],
   "sources": [
     "shannon1948",

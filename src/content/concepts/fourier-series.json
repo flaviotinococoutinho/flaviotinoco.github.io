@@ -13,11 +13,15 @@
   },
   "notation": "x(t) = \\sum_{n=-\\infty}^{\\infty} c_n\\,\\e^{2\\pi\\i n t / T}",
   "stratum": "formal",
+  "category": "operation",
   "domains": [
     "mathematics",
     "signal-processing"
   ],
   "broader": [
     "fourier-transform"
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q179467"
   ]
 }

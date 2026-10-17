@@ -12,11 +12,22 @@
     "en": "A set of premises offered in support of a conclusion; in Toulmin’s model, a claim is articulated with data, warrant, backing, qualifier and rebuttal."
   },
   "stratum": "philosophy",
+  "category": "entity",
   "domains": [
     "logic"
   ],
-  "broader": [
-    "inference"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "inference"
+    },
+    {
+      "type": "appliesTo",
+      "target": "decision"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q186619"
   ],
   "sources": [
     "toulmin1958"

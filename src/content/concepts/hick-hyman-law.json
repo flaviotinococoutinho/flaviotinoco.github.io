@@ -21,16 +21,23 @@
   },
   "notation": "T = a + b\\,\\log_2(n + 1)",
   "stratum": "value",
+  "category": "proposition",
   "domains": [
     "design",
     "information-theory"
   ],
-  "broader": [
-    "decision",
-    "information"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "decision"
+    },
+    {
+      "type": "dependsOn",
+      "target": "information"
+    }
   ],
-  "related": [
-    "entropy"
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q910445"
   ],
   "sources": [
     "hick1952",

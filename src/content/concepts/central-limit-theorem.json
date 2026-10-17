@@ -19,14 +19,25 @@
   },
   "notation": "\\frac{S_n - n\\mu}{\\sigma\\sqrt{n}} \\xrightarrow{d} \\mathcal{N}(0, 1)",
   "stratum": "formal",
+  "category": "proposition",
   "domains": [
     "probability",
     "mathematics"
   ],
-  "broader": [
-    "inference"
+  "relations": [
+    {
+      "type": "formalizes",
+      "target": "noise"
+    },
+    {
+      "type": "related",
+      "target": "inference"
+    }
   ],
-  "related": [
-    "noise"
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q190391"
+  ],
+  "sources": [
+    "cover2006"
   ]
 }

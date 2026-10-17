@@ -120,14 +120,15 @@ export interface Neighbour<Id extends string> {
   readonly mica: Id | null;
 }
 
-/** The k concepts most similar to `a` by Lin (excluding a), ties broken by id. */
+/** The k candidates most similar to `a` by Lin (excluding a and zero similarities), ties broken by id. */
 export const closestByLin = <Id extends string>(
   h: Hierarchy<Id>,
   ic: InformationContent<Id>,
   a: Id,
   k: number,
+  candidates: readonly Id[] = h.ids,
 ): readonly Neighbour<Id>[] =>
-  h.ids
+  candidates
     .filter((b) => b !== a)
     .map((b) => ({ id: b, lin: lin(h, ic, a, b), mica: mostInformativeSubsumer(h, ic, a, b) }))
     .filter((n) => n.lin > 0)
@@ -144,6 +145,18 @@ export const shannonEntropy = (counts: readonly number[]): number => {
     return s - p * Math.log2(p);
   }, 0);
   return Math.max(0, h);
+};
+
+/**
+ * Entropy (bits) of the degree distribution: the Shannon entropy of the
+ * histogram of degrees, a standard summary of a network's heterogeneity
+ * (Solé & Valverde, "Information theory of complex networks", 2004). A regular
+ * graph scores 0; a graph whose nodes all differ in degree scores log₂ n.
+ */
+export const degreeEntropy = (degrees: readonly number[]): number => {
+  const histogram = new Map<number, number>();
+  for (const d of degrees) histogram.set(d, (histogram.get(d) ?? 0) + 1);
+  return shannonEntropy([...histogram.values()]);
 };
 
 /** Frequency table of a categorical sample, keyed in the order of `categories`. */

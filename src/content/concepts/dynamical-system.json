@@ -1,0 +1,30 @@
+{
+  "slug": {
+    "pt-BR": "sistema-dinamico",
+    "en": "dynamical-system"
+  },
+  "prefLabel": {
+    "pt-BR": "Sistema dinâmico",
+    "en": "Dynamical system"
+  },
+  "definition": {
+    "pt-BR": "Espaço de estados com uma regra que determina, para cada estado, o estado seguinte no tempo, seja em passos discretos (uma aplicação iterada), seja continuamente (um fluxo).",
+    "en": "A state space together with a rule that determines, for every state, the state that follows it in time, either in discrete steps (an iterated map) or continuously (a flow)."
+  },
+  "notation": "x_{n+1} = f(x_n)",
+  "stratum": "formal",
+  "category": "entity",
+  "domains": [
+    "dynamical-systems",
+    "mathematics"
+  ],
+  "relations": [
+    {
+      "type": "formalizes",
+      "target": "model"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q638328"
+  ]
+}

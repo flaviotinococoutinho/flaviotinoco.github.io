@@ -13,11 +13,22 @@
   },
   "notation": "R = 1 - \\frac{H(X)}{\\log_2 \\lvert \\mathcal{X} \\rvert}",
   "stratum": "theory",
+  "category": "quality",
   "domains": [
     "information-theory"
   ],
-  "broader": [
-    "entropy"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "entropy"
+    },
+    {
+      "type": "appliesTo",
+      "target": "interface"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q122192"
   ],
   "sources": [
     "shannon1948"

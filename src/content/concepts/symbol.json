@@ -12,11 +12,15 @@
     "en": "A sign related to its object by convention or law, rather than by resemblance (icon) or by physical connection (index)."
   },
   "stratum": "philosophy",
+  "category": "entity",
   "domains": [
     "semiotics"
   ],
   "broader": [
     "sign"
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q80071"
   ],
   "sources": [
     "peirce1931"

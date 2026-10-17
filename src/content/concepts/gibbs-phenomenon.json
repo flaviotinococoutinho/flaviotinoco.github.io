@@ -13,10 +13,17 @@
   },
   "notation": "\\frac{1}{\\pi}\\int_{0}^{\\pi}\\frac{\\sin u}{u}\\,\\d u - \\frac{1}{2}",
   "stratum": "formal",
+  "category": "quality",
   "domains": [
     "mathematics"
   ],
-  "broader": [
-    "fourier-series"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "fourier-series"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q5374"
   ]
 }

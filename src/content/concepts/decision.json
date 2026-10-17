@@ -20,15 +20,22 @@
     "en": "The choice of an action among alternatives under uncertainty; ideally, the one that maximises expected value given the available beliefs."
   },
   "stratum": "value",
+  "category": "process",
   "domains": [
     "product",
     "probability"
   ],
-  "broader": [
-    "inference"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "value"
+    },
+    {
+      "type": "dependsOn",
+      "target": "uncertainty"
+    }
   ],
-  "related": [
-    "value",
-    "information"
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q1331926"
   ]
 }

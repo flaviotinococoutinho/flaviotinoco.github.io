@@ -22,13 +22,17 @@
   },
   "notation": "f_{\\mathrm{a}} = \\left\\lvert f - k f_s \\right\\rvert,\\quad k = \\operatorname{round}(f / f_s)",
   "stratum": "formal",
+  "category": "process",
   "domains": [
     "signal-processing"
   ],
-  "broader": [
-    "sampling-theorem"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "sampling-theorem"
+    }
   ],
-  "related": [
-    "frequency"
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q868732"
   ]
 }

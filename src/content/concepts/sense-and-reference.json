@@ -20,12 +20,16 @@
     "en": "Frege’s distinction between the way an expression presents its object (sense) and the object it designates (reference): “the morning star” and “the evening star” differ in sense but share a reference."
   },
   "stratum": "philosophy",
+  "category": "relation",
   "domains": [
     "semiotics",
     "logic"
   ],
-  "broader": [
-    "meaning"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "meaning"
+    }
   ],
   "sources": [
     "frege1892"

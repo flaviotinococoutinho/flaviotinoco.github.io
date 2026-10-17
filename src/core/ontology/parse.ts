@@ -19,7 +19,8 @@ import { parseCitationKey, parseConceptId, parseSlug, type ConceptId } from '../
 import { LOCALES, type Locale } from '../domain/locale.ts';
 import { parseStratum } from '../domain/strata.ts';
 import { parseDomain, type Domain } from '../domain/facets.ts';
-import type { ConceptEntry, Localized, OntologyError } from './model.ts';
+import type { AuthoredLink, ConceptEntry, Localized, OntologyError } from './model.ts';
+import { parseCategory, parseLinkType } from './vocabulary.ts';
 
 const KEYS = [
   'slug',
@@ -28,13 +29,14 @@ const KEYS = [
   'definition',
   'notation',
   'stratum',
+  'category',
   'domains',
   'broader',
-  'related',
+  'relations',
   'exactMatch',
   'sources',
 ] as const;
-const REQUIRED: readonly string[] = ['slug', 'prefLabel', 'definition', 'stratum', 'domains'];
+const REQUIRED: readonly string[] = ['slug', 'prefLabel', 'definition', 'stratum', 'category', 'domains'];
 
 type Field<T> = Result<T, readonly OntologyError[]>;
 
@@ -96,7 +98,21 @@ const reporter = (id: string) => {
     return ok(v);
   };
 
-  return { fail, text, list, localized, lift, iri };
+  /** One `{ "type": …, "target": … }` object of the `relations` list (exactly these two keys). */
+  const link = (v: unknown, path: string): Field<AuthoredLink> => {
+    if (!isRecord(v)) return fail(path, 'expected an object { "type", "target" }');
+    const errors: OntologyError[] = [];
+    for (const key of Object.keys(v)) {
+      if (key !== 'type' && key !== 'target') errors.push({ kind: 'malformed', id, path: `${path}.${key}`, message: 'unknown key' });
+    }
+    const type = lift(parseLinkType)(v['type'], `${path}.type`);
+    const target = lift(parseConceptId)(v['target'], `${path}.target`);
+    if (!type.ok) errors.push(...type.error);
+    if (!target.ok) errors.push(...target.error);
+    return errors.length > 0 || !type.ok || !target.ok ? err(errors) : ok({ type: type.value, target: target.value });
+  };
+
+  return { fail, text, list, localized, lift, iri, link };
 };
 
 /**
@@ -124,8 +140,10 @@ export const parseConceptEntry = (id: unknown, raw: unknown): Result<ConceptEntr
     return fallback;
   };
   const empty: Localized<readonly string[]> = { 'pt-BR': [], en: [] };
-  const conceptIds = (key: 'broader' | 'related'): readonly ConceptId[] =>
-    key in raw ? take(p.list(raw[key], key, p.lift(parseConceptId)), []) : [];
+  const broader: readonly ConceptId[] =
+    'broader' in raw ? take(p.list(raw['broader'], 'broader', p.lift(parseConceptId)), []) : [];
+  const relations: readonly AuthoredLink[] =
+    'relations' in raw ? take(p.list(raw['relations'], 'relations', p.link), []) : [];
 
   const slug = 'slug' in raw ? take(p.localized(raw['slug'], 'slug', p.lift(parseSlug)), null) : null;
   const prefLabel = 'prefLabel' in raw ? take(p.localized(raw['prefLabel'], 'prefLabel', p.text), null) : null;
@@ -139,17 +157,23 @@ export const parseConceptEntry = (id: unknown, raw: unknown): Result<ConceptEntr
   const definition = 'definition' in raw ? take(p.localized(raw['definition'], 'definition', p.text), null) : null;
   const notation = 'notation' in raw ? take(p.text(raw['notation'], 'notation'), null) : null;
   const stratum = 'stratum' in raw ? take(p.lift(parseStratum)(raw['stratum'], 'stratum'), null) : null;
+  const category = 'category' in raw ? take(p.lift(parseCategory)(raw['category'], 'category'), null) : null;
   const domains: readonly Domain[] =
     'domains' in raw ? take(p.list(raw['domains'], 'domains', p.lift(parseDomain)), []) : [];
   if ('domains' in raw && Array.isArray(raw['domains']) && raw['domains'].length === 0) {
     errors.push({ kind: 'malformed', id: name, path: 'domains', message: 'at least one domain is required' });
   }
-  const broader = conceptIds('broader');
-  const related = conceptIds('related');
   const exactMatch = 'exactMatch' in raw ? take(p.list(raw['exactMatch'], 'exactMatch', p.iri), []) : [];
   const sources = 'sources' in raw ? take(p.list(raw['sources'], 'sources', p.lift(parseCitationKey)), []) : [];
 
-  if (errors.length > 0 || slug === null || prefLabel === null || definition === null || stratum === null) {
+  if (
+    errors.length > 0 ||
+    slug === null ||
+    prefLabel === null ||
+    definition === null ||
+    stratum === null ||
+    category === null
+  ) {
     return err(errors);
   }
   return ok({
@@ -160,9 +184,10 @@ export const parseConceptEntry = (id: unknown, raw: unknown): Result<ConceptEntr
     definition,
     notation,
     stratum,
+    category,
     domains,
     broader,
-    related,
+    relations,
     exactMatch,
     sources,
   });

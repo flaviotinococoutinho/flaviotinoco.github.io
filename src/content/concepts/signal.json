@@ -13,11 +13,18 @@
   },
   "notation": "x(t),\\quad x[n]",
   "stratum": "theory",
+  "category": "entity",
   "domains": [
     "signal-processing"
   ],
   "broader": [
     "sign"
+  ],
+  "relations": [
+    {
+      "type": "partOf",
+      "target": "communication"
+    }
   ],
   "sources": [
     "nyquist1928"

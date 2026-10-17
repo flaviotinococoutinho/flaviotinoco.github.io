@@ -12,10 +12,14 @@
     "en": "An artefact offered to people to solve a problem or meet a need repeatably, and sustained by those who maintain it."
   },
   "stratum": "value",
+  "category": "artifact",
   "domains": [
     "product"
   ],
-  "broader": [
-    "value"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "value"
+    }
   ]
 }

@@ -20,13 +20,23 @@
     "en": "The boundary at which a person and a system exchange signs: what the system shows, what it accepts as action, and how it responds."
   },
   "stratum": "value",
+  "category": "artifact",
   "domains": [
     "design",
     "product",
     "semiotics"
   ],
-  "broader": [
-    "product",
-    "sign"
+  "relations": [
+    {
+      "type": "partOf",
+      "target": "product"
+    },
+    {
+      "type": "dependsOn",
+      "target": "sign"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q47146"
   ]
 }

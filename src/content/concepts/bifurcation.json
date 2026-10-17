@@ -13,15 +13,15 @@
   },
   "notation": "\\delta = \\lim_{n\\to\\infty} \\frac{r_{n} - r_{n-1}}{r_{n+1} - r_{n}}",
   "stratum": "formal",
+  "category": "process",
   "domains": [
     "dynamical-systems"
   ],
-  "broader": [
-    "model"
-  ],
-  "related": [
-    "deterministic-chaos",
-    "logistic-map"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "dynamical-system"
+    }
   ],
   "sources": [
     "feigenbaum1978",

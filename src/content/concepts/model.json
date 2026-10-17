@@ -20,11 +20,15 @@
     "en": "A simplified representation of a system that preserves the relations relevant to a purpose, so that its behaviour can be explained or predicted."
   },
   "stratum": "theory",
+  "category": "entity",
   "domains": [
     "epistemology",
     "mathematics"
   ],
   "broader": [
-    "knowledge"
+    "sign"
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q193946"
   ]
 }

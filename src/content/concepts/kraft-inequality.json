@@ -21,12 +21,19 @@
   },
   "notation": "\\sum_{i} 2^{-\\ell_i} \\le 1",
   "stratum": "formal",
+  "category": "proposition",
   "domains": [
     "information-theory",
     "mathematics"
   ],
-  "broader": [
-    "prefix-code"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "prefix-code"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q371685"
   ],
   "sources": [
     "cover2006"

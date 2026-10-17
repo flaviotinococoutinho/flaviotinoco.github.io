@@ -1,0 +1,44 @@
+{
+  "slug": {
+    "pt-BR": "transformada-discreta-de-fourier",
+    "en": "discrete-fourier-transform"
+  },
+  "prefLabel": {
+    "pt-BR": "Transformada discreta de Fourier",
+    "en": "Discrete Fourier transform"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "DFT"
+    ],
+    "en": [
+      "DFT"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Transformada que representa uma sequência de N amostras por N amplitudes complexas de senoides cujas frequências são múltiplas de 1/N ciclo por amostra; é invertível.",
+    "en": "The transform that represents a sequence of N samples by N complex amplitudes of sinusoids whose frequencies are multiples of 1/N cycles per sample; it is invertible."
+  },
+  "notation": "X_k = \\sum_{n=0}^{N-1} x_n\\,\\e^{-2\\pi\\i k n / N}",
+  "stratum": "formal",
+  "category": "operation",
+  "domains": [
+    "signal-processing",
+    "mathematics"
+  ],
+  "broader": [
+    "fourier-transform"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "sampling"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q2878"
+  ],
+  "sources": [
+    "cooley1965"
+  ]
+}

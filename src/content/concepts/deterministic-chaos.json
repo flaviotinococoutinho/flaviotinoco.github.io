@@ -20,11 +20,19 @@
     "en": "Aperiodic behaviour of a deterministic system with sensitive dependence on initial conditions: tiny errors grow exponentially and make long-term prediction infeasible."
   },
   "stratum": "formal",
+  "category": "quality",
   "domains": [
     "dynamical-systems"
   ],
-  "broader": [
-    "model"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "dynamical-system"
+    },
+    {
+      "type": "contrastsWith",
+      "target": "noise"
+    }
   ],
   "sources": [
     "lorenz1963",

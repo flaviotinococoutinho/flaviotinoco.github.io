@@ -21,15 +21,18 @@
   },
   "notation": "p(y \\mid x)",
   "stratum": "theory",
+  "category": "entity",
   "domains": [
     "information-theory"
   ],
-  "broader": [
-    "model"
+  "relations": [
+    {
+      "type": "partOf",
+      "target": "communication"
+    }
   ],
-  "related": [
-    "noise",
-    "signal"
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q733553"
   ],
   "sources": [
     "shannon1948"

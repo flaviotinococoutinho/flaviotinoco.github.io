@@ -12,6 +12,7 @@
     "en": "The degree to which something serves someone’s ends, net of its costs; in product work, the perceived benefit minus the effort, price and risk of obtaining it."
   },
   "stratum": "value",
+  "category": "quality",
   "domains": [
     "product",
     "design"

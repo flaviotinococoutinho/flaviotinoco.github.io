@@ -1,0 +1,26 @@
+{
+  "slug": {
+    "pt-BR": "incerteza",
+    "en": "uncertainty"
+  },
+  "prefLabel": {
+    "pt-BR": "Incerteza",
+    "en": "Uncertainty"
+  },
+  "definition": {
+    "pt-BR": "Estado de quem não sabe qual, entre várias alternativas possíveis, é o caso; pode ser graduada por probabilidades e diminui à medida que se obtém informação.",
+    "en": "The state of not knowing which of several possible alternatives is the case; it can be graded by probabilities and shrinks as information is obtained."
+  },
+  "stratum": "philosophy",
+  "category": "quality",
+  "domains": [
+    "epistemology",
+    "probability"
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q13649246"
+  ],
+  "sources": [
+    "kent1964"
+  ]
+}

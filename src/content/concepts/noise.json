@@ -12,12 +12,20 @@
     "en": "A random disturbance added to the signal in a channel, which makes the received message uncertain; white Gaussian noise is the canonical model."
   },
   "stratum": "theory",
+  "category": "entity",
   "domains": [
     "signal-processing",
     "information-theory"
   ],
-  "broader": [
-    "signal"
+  "relations": [
+    {
+      "type": "partOf",
+      "target": "channel"
+    },
+    {
+      "type": "contrastsWith",
+      "target": "signal"
+    }
   ],
   "sources": [
     "shannon1948"

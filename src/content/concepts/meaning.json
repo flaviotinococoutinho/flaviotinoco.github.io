@@ -20,11 +20,18 @@
     "en": "What a sign conveys, or lets its interpreter infer; for Saussure, the signified is the conceptual side of the sign."
   },
   "stratum": "philosophy",
+  "category": "entity",
   "domains": [
     "semiotics"
   ],
-  "broader": [
-    "sign"
+  "relations": [
+    {
+      "type": "partOf",
+      "target": "sign"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q183046"
   ],
   "sources": [
     "saussure1916"

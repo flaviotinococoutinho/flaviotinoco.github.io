@@ -13,12 +13,29 @@
   },
   "notation": "C = \\max_{p(x)} I(X;Y)",
   "stratum": "theory",
+  "category": "measure",
   "domains": [
     "information-theory"
   ],
   "broader": [
-    "channel",
-    "mutual-information"
+    "information"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "mutual-information"
+    },
+    {
+      "type": "measures",
+      "target": "channel"
+    },
+    {
+      "type": "appliesTo",
+      "target": "cognitive-load"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q870845"
   ],
   "sources": [
     "shannon1948",

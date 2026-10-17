@@ -1,0 +1,29 @@
+{
+  "slug": {
+    "pt-BR": "amostragem",
+    "en": "sampling"
+  },
+  "prefLabel": {
+    "pt-BR": "Amostragem",
+    "en": "Sampling"
+  },
+  "definition": {
+    "pt-BR": "Registro dos valores de um sinal de tempo contínuo em instantes discretos, em geral igualmente espaçados, para que ele possa ser armazenado e processado como sequência de números.",
+    "en": "Recording the values of a continuous-time signal at discrete instants, usually equally spaced, so that it can be stored and processed as a sequence of numbers."
+  },
+  "notation": "x[n] = x(nT_s)",
+  "stratum": "theory",
+  "category": "process",
+  "domains": [
+    "signal-processing"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "signal"
+    }
+  ],
+  "sources": [
+    "shannon1949"
+  ]
+}

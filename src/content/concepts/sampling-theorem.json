@@ -21,15 +21,23 @@
   },
   "notation": "f_s > 2B",
   "stratum": "formal",
+  "category": "proposition",
   "domains": [
     "signal-processing",
     "mathematics"
   ],
-  "broader": [
-    "fourier-transform"
+  "relations": [
+    {
+      "type": "formalizes",
+      "target": "sampling"
+    },
+    {
+      "type": "dependsOn",
+      "target": "fourier-transform"
+    }
   ],
-  "related": [
-    "channel-capacity"
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q679800"
   ],
   "sources": [
     "whittaker1915",

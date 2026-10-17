@@ -13,14 +13,21 @@
   },
   "notation": "I(X;Y) = H(X) - H(X \\mid Y)",
   "stratum": "theory",
+  "category": "measure",
   "domains": [
     "information-theory"
   ],
   "broader": [
     "information"
   ],
-  "related": [
-    "entropy"
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "entropy"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q252973"
   ],
   "sources": [
     "shannon1948",

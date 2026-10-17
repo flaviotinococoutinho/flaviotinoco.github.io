@@ -22,15 +22,16 @@
     "en": "A code in which no codeword is a prefix of another, so that an encoded sequence can be decoded unambiguously and without waiting for the next symbol."
   },
   "stratum": "formal",
+  "category": "operation",
   "domains": [
     "information-theory",
     "computation"
   ],
   "broader": [
-    "information"
+    "code"
   ],
-  "related": [
-    "redundancy"
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q1278039"
   ],
   "sources": [
     "cover2006"
