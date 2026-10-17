@@ -17,9 +17,9 @@ that consequence computable and, for that reason, checkable by others. Most of t
 stratum: each one makes a theorem or a law tangible, and the reader can vary the parameters to see where the claim holds
 and where its hypotheses stop applying.
 
-In the symbology of the site, the formal is the **triangle**, the 2-simplex: the smallest rigid figure. Three points
-joined pairwise cannot be deformed unless some side changes length. In coordinates, the simplex of dimension $$k$$ is
-the set
+In the symbology of the site, the formal is the **triangle**, the 2-simplex: the simplest rigid polygon. Three points
+joined pairwise cannot be deformed unless some side changes length, whereas a quadrilateral hinged at its vertices can.
+In coordinates, the simplex of dimension $$k$$ is the set
 
 $$
 \Delta^k = \{\, x \in \mathbb{R}^{k+1} \mid x_i \ge 0,\ x_0 + x_1 + \dots + x_k = 1 \,\}
