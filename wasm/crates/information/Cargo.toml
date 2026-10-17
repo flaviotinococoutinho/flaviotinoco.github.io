@@ -1,0 +1,18 @@
+[package]
+name = "kernel-information"
+description = "information.wasm: entropy, Huffman coding, divergences, channel capacity, mutual information, IC-based similarity."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lib]
+name = "information"
+crate-type = ["cdylib"]
+
+[dependencies]
+kernel-core.workspace = true
+libm.workspace = true
+
+[lints]
+workspace = true
