@@ -177,8 +177,11 @@
     display: inline-flex;
   }
 }
-/* The single-key shortcut is off (reader preference, WCAG 2.1.4): do not advertise it. */
-:root[data-shortcut='off'] .tool__key--single {
+/* The single-key shortcut is off (reader preference, WCAG 2.1.4): do not advertise it,
+   neither on the header key caps nor in the palette hint (the field's accessible description). */
+:root[data-shortcut='off'] .tool__key--single,
+:root[data-shortcut='off'] .palette__keys--single,
+:root:not([data-shortcut='off']) .palette__keys--chord {
   display: none;
 }
 @media (width < 48rem) {

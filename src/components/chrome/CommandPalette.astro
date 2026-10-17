@@ -156,8 +156,12 @@ const messages = {
         </li>
       ))}
     </ul>
+    {/* The field's accessible description: it names only the shortcuts that work. With the
+        single-key shortcut turned off (data-shortcut="off", WCAG 2.1.4) CSS swaps the two
+        renderings; display: none removes the hidden one from the description too. */}
     <p id="ft-palette-hint" class="palette__hint">
-      {c('palette.hint')} · {c('search.keys')}
+      {c('palette.hint')} · <span class="palette__keys palette__keys--single">{c('search.keys')}</span>
+      <span class="palette__keys palette__keys--chord">{c('search.keysChord')}</span>
     </p>
   </ft-command-palette>
 </dialog>
