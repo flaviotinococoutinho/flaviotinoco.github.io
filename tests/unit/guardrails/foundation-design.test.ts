@@ -142,15 +142,8 @@ describe('design tokens (DTCG 2025.10 subset → CSS)', () => {
     }
   });
 
-  /*
-   * KNOWN BUG (reported to the integrator as a requested shared change): parseTokens
-   * checks `errors` BEFORE the typography/proportion fields are read (they are read
-   * lazily inside the returned object literal), so an invalid number is silently
-   * replaced by the fallback 0 or 1 and the document is accepted. `it.fails` pins
-   * the current behaviour; once src/core/design/tokens.ts reads those fields before
-   * the check, this test fails and must become a plain `it`.
-   */
-  it.fails('rejects a non-numeric typography value instead of defaulting it to 0', () => {
+  // Regression: scalars must be read before validity is decided (they used to default silently).
+  it('rejects a non-numeric typography value instead of defaulting it to 0', () => {
     const doc = tokenDocument() as Readonly<Record<string, TokenDocument>>;
     const typography = doc['typography'] as Readonly<Record<string, TokenDocument>>;
     const parsed = parseTokens({ ...doc, typography: { ...typography, 'base-min-px': { $value: 'x' } } });

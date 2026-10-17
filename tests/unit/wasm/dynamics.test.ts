@@ -5,8 +5,8 @@ import {
   type DynamicsExports,
   type DynamicsKernel,
   splitSeed,
-} from '../../../src/lib/wasm/dynamics.ts';
-import { KernelError, Status, withArena } from '../../../src/lib/wasm/runtime.ts';
+} from '../../../src/adapters/wasm/dynamics.ts';
+import { KernelError, Status, withArena } from '../../../src/adapters/wasm/runtime.ts';
 import { at, instantiate, mulberry32, sum } from './helpers.ts';
 import {
   cltHistogram,

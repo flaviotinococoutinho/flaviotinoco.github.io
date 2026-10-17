@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-10-13
-- **Scope:** `wasm/**`, `scripts/build-wasm.mjs`, `src/lib/wasm/**`, `src/wasm/`, `tests/unit/wasm/**`
+- **Scope:** `wasm/**`, `scripts/build-wasm.mjs`, `src/adapters/wasm/**`, `src/wasm/`, `tests/unit/wasm/**`
 
 ## Context
 
@@ -174,7 +174,7 @@ PCG32 constants: multiplier `6364136223846793005`, increment `(stream << 1) | 1`
 - **Logistic map** iterates are clamped to `[0, 1]` against rounding; the bifurcation image and the Lyapunov
   curve start from the critical point `x = ½`, which every stable cycle attracts (Singer 1978).
 
-### 5. TypeScript layer (`src/lib/wasm/`)
+### 5. TypeScript layer (`src/adapters/wasm/`)
 
 - `runtime.ts`: `instantiateFromBytes(bytes)` and `instantiateFromUrl(url)` (`instantiateStreaming` when the
   response is `application/wasm`, otherwise `arrayBuffer()`; one promise per URL, evicted on failure); both check
@@ -286,7 +286,7 @@ Deviations from the original specification, with reasons:
 - **`magnitude`/`power_db`** compute `hypot(re, im)` (and `20·log10(|X|/n)`), the same quantities without
   overflow or underflow of `|X|²`.
 - **Location.** docs/arquitetura.md §3 lists the loaders under `src/adapters/wasm/`; this workstream's spec places
-  them in `src/lib/wasm/`. The tree in arquitetura.md should be updated (or the folder moved) when merging.
+  them in `src/adapters/wasm/`. The tree in arquitetura.md should be updated (or the folder moved) when merging.
 
 ## References
 

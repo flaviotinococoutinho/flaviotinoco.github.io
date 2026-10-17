@@ -1,14 +1,14 @@
 /** signal.wasm against analytic results and independent JS references (tests/unit/wasm/reference.ts). */
 import fc from 'fast-check';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { KernelError, Status, withArena } from '../../../src/lib/wasm/runtime.ts';
+import { KernelError, Status, withArena } from '../../../src/adapters/wasm/runtime.ts';
 import {
   createSignalKernel,
   type SignalExports,
   type SignalKernel,
   type Waveform,
   type WindowKind,
-} from '../../../src/lib/wasm/signal.ts';
+} from '../../../src/adapters/wasm/signal.ts';
 import { at, instantiate, maxAbsDiff, mulberry32, sum } from './helpers.ts';
 import { cosineWindow, exactAliasFrequency, naiveDft, sinc, squarePartialSum } from './reference.ts';
 

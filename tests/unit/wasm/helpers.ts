@@ -4,7 +4,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { type CoreExports, instantiateFromBytes } from '../../../src/lib/wasm/runtime.ts';
+import { type CoreExports, instantiateFromBytes } from '../../../src/adapters/wasm/runtime.ts';
 
 export type ModuleName = 'signal' | 'information' | 'dynamics';
 

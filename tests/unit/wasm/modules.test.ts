@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { type CoreExports } from '../../../src/lib/wasm/runtime.ts';
+import { type CoreExports } from '../../../src/adapters/wasm/runtime.ts';
 import { instantiate, type ModuleName, moduleBytes, mulberry32 } from './helpers.ts';
 
 const ABI = ['abi_version', 'arena_alloc', 'arena_reset', 'arena_used'];

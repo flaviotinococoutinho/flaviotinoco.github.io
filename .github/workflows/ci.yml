@@ -109,6 +109,9 @@ jobs:
         run: pnpm check:wasm
       - name: Build, validate and size-check the kernels
         run: node scripts/build-wasm.mjs
+      - run: pnpm install --frozen-lockfile
+      - name: Kernel tests through the TypeScript wrappers (vitest project "wasm")
+        run: pnpm test:wasm
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: wasm
@@ -138,8 +141,9 @@ jobs:
           name: wasm
           path: src/wasm/
       # `pnpm build` would rebuild the kernels (it starts with build:wasm); reuse the artifact instead.
+      # build:site fails on [ERROR] lines: Astro only logs Markdown render failures and exits 0.
       - name: Build the site and the Pagefind index
-        run: pnpm exec astro build && pnpm search:index
+        run: pnpm build:site && pnpm search:index
       - name: Internal links and fragments
         run: pnpm check:links
       - name: Size budgets

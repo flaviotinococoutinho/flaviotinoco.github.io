@@ -46,5 +46,21 @@ export function remarkIntegrity(_options: RemarkIntegrityOptions) {
       parent.children.splice(index, 1, { type: 'text', value: raw } as RootContent);
       return [SKIP, index + 1];
     });
+    reportWarnings(file);
   };
 }
+
+/**
+ * Astro does not print non-fatal vfile messages of Markdown files, so the
+ * advisory lints of earlier stages (abnt:*, reading:*, integrity:*) would be
+ * invisible. As the last remark stage, surface them in the build log with a
+ * stable prefix the CLI and CI can grep.
+ */
+const reportWarnings = (file: VFile): void => {
+  for (const m of file.messages) {
+    if (m.fatal === true) continue;
+    const where = `${file.path}:${m.line ?? 0}:${m.column ?? 0}`;
+    const rule = [m.source, m.ruleId].filter(Boolean).join(':');
+    console.warn(`[content-lint] ${where} ${rule} ${m.reason}`);
+  }
+};

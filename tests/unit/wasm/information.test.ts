@@ -5,8 +5,8 @@ import {
   createInformationKernel,
   type InformationExports,
   type InformationKernel,
-} from '../../../src/lib/wasm/information.ts';
-import { KernelError, Status, withArena } from '../../../src/lib/wasm/runtime.ts';
+} from '../../../src/adapters/wasm/information.ts';
+import { KernelError, Status, withArena } from '../../../src/adapters/wasm/runtime.ts';
 import { at, instantiate, mulberry32 } from './helpers.ts';
 import {
   conditionalEntropy,

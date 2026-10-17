@@ -34,7 +34,12 @@ if (process.env['VITEST_WORKER_ID'] === undefined) {
 
 export default defineConfig({
   test: {
-    include: ['tests/unit/**/*.test.ts'],
+    // Two projects: `unit` needs nothing but Node; `wasm` reads the kernels built by
+    // `pnpm build:wasm` (gitignored), so it runs in the CI job that builds them.
+    projects: [
+      { extends: true, test: { name: 'unit', include: ['tests/unit/**/*.test.ts'], exclude: ['tests/unit/wasm/**'] } },
+      { extends: true, test: { name: 'wasm', include: ['tests/unit/wasm/**/*.test.ts'] } },
+    ],
     environment: 'node',
     setupFiles: ['tests/unit/guardrails/fast-check.setup.ts'],
     env: { FC_SEED: String(seed) },

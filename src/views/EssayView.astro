@@ -92,7 +92,7 @@ const IDS = {
 ---
 
 <BaseLayout locale={locale} title={data.title} description={data.description} alternates={alternates} ogType="article">
-  {meta.hasMath && <MathAssets />}
+  {meta.hasMath && <MathAssets slot="head" />}
   {meta.argument.nodes.length > 0 && <ArgumentGlyphs />}
   <div class="page-grid essay" data-stratum={data.stratum}>
     <ReadingProgress target={IDS.article} />

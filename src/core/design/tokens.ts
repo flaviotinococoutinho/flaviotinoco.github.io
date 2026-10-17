@@ -95,19 +95,23 @@ export const parseTokens = (root: Json): Result<Tokens, readonly string[]> => {
       else errors.push(`easing.${k}: expected four numbers`);
     }
   const measure = get(root, ['typography', 'measure', '$value', 'value']);
+  // Read every scalar BEFORE deciding validity, so a malformed number is reported
+  // instead of silently becoming the fallback value.
+  const type = {
+    baseMinPx: typ('base-min-px'),
+    baseMaxPx: typ('base-max-px'),
+    viewportMinPx: typ('viewport-min-px'),
+    viewportMaxPx: typ('viewport-max-px'),
+    ratioMin: prop('type-ratio-min'),
+    ratioMax: prop('type-ratio-max'),
+    steps: Array.isArray(steps) ? (steps as readonly number[]) : [0],
+  };
+  const leading = { body: typ('leading-body'), heading: typ('leading-heading'), ui: typ('leading-ui') };
   if (errors.length) return err(errors);
   return ok({
     colors,
-    type: {
-      baseMinPx: typ('base-min-px'),
-      baseMaxPx: typ('base-max-px'),
-      viewportMinPx: typ('viewport-min-px'),
-      viewportMaxPx: typ('viewport-max-px'),
-      ratioMin: prop('type-ratio-min'),
-      ratioMax: prop('type-ratio-max'),
-      steps: Array.isArray(steps) ? (steps as readonly number[]) : [0],
-    },
-    leading: { body: typ('leading-body'), heading: typ('leading-heading'), ui: typ('leading-ui') },
+    type,
+    leading,
     measureCh: typeof measure === 'number' ? measure : 66,
     spaceExponents: Array.isArray(exps) ? (exps as readonly number[]) : [0],
     durationsMs: durations,

@@ -25,6 +25,7 @@
  *   rehype (hast)
  *    11. katex           TeX → HTML + MathML with per-file isolated macros
  *                        (shared defaults from src/core/latex/macros.ts)
+ *    12. footnotes-i18n  localises the GFM footnote heading and back-reference labels
  *
  * Invariant (docs/arquitetura.md §Preservação): every stage is injective on the
  * text it touches — the source text is recoverable from the output (plain text
@@ -43,6 +44,7 @@ import { remarkAbnt } from './remark-abnt.ts';
 import { remarkMeta } from './remark-meta.ts';
 import { remarkIntegrity } from './remark-integrity.ts';
 import { rehypeKatexIsolated } from './rehype-katex-isolated.ts';
+import { rehypeFootnotesI18n } from './rehype-footnotes-i18n.ts';
 
 export interface Pipeline {
   readonly remarkPlugins: RemarkPlugins;
@@ -62,5 +64,5 @@ export const createPipeline = (context: PipelineContext): Pipeline => ({
     [remarkMeta, { context }],
     [remarkIntegrity, { context }],
   ],
-  rehypePlugins: [rehypeKatexIsolated],
+  rehypePlugins: [rehypeKatexIsolated, rehypeFootnotesI18n],
 });

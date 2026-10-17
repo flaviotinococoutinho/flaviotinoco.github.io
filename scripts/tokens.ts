@@ -9,7 +9,7 @@ import { compileCss, parseTokens } from '../src/core/design/tokens.ts';
 const SOURCE = new URL('../src/core/design/tokens.json', import.meta.url);
 const TARGET = new URL('../src/styles/tokens.css', import.meta.url);
 
-const parsed = parseTokens(JSON.parse(await readFile(SOURCE, 'utf8')));
+const parsed = parseTokens(JSON.parse(await readFile(SOURCE, 'utf8')) as Parameters<typeof parseTokens>[0]);
 if (!parsed.ok) {
   console.error(`tokens.json is invalid:\n  - ${parsed.error.join('\n  - ')}`);
   process.exit(1);

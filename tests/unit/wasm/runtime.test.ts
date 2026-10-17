@@ -9,7 +9,7 @@ import {
   KernelError,
   Status,
   withArena,
-} from '../../../src/lib/wasm/runtime.ts';
+} from '../../../src/adapters/wasm/runtime.ts';
 import { instantiate, moduleBytes } from './helpers.ts';
 
 /** A minimal valid module that exports `memory` and `abi_version() = 2` (hand-assembled, one section per line). */
