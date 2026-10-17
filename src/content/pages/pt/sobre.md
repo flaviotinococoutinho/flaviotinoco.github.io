@@ -10,7 +10,7 @@ revisions:
 ---
 
 :::aside
-**Sobre este texto.** Esta página foi redigida com assistência de IA (Claude) como demonstração do modelo do site e aguarda revisão do autor. Os trechos marcados com **TODO** dependem de informações que só o autor pode fornecer e não foram preenchidos com suposições.
+**Sobre este texto.** Esta página foi redigida com assistência de um sistema de inteligência artificial (IA), o Claude, como demonstração do modelo do site e aguarda revisão do autor. Os trechos marcados com **TODO** dependem de informações que só o autor pode fornecer e não foram preenchidos com suposições.
 :::
 
 ## A ponte
@@ -41,7 +41,7 @@ Não é preciso ler em ordem. Os ensaios são escritos para permitir vários per
 
 Cada ensaio e laboratório declara quão seguro está o autor e em que tipo de apoio suas afirmações se baseiam. A confiança usa a escala de expressões de probabilidade proposta por Sherman Kent, em que “provável” corresponde a cerca de 75 %, com margem de 12 pontos para mais ou para menos [@kent1964]; o tipo de apoio é prova, evidência empírica, argumento ou especulação. Cada texto também informa sua proveniência: se foi escrito sem assistência, com assistência ou gerado com ajuda de IA, e se o autor já o revisou. Os textos de partida deste site foram gerados com assistência de IA e estão marcados como não revisados até que o autor os revise.
 
-Os ensaios existem em português e em inglês. As duas versões foram escritas para soar naturais em cada língua, não traduzidas palavra por palavra; por isso podem diferir em detalhes de formulação. As citações seguem a ABNT em português e o estilo APA em inglês; detalhes estão no [colofão](../colofao/).
+Os ensaios existem em português e em inglês. As duas versões foram escritas para soar naturais em cada língua, não traduzidas palavra por palavra; por isso podem diferir em detalhes de formulação. As citações seguem, em português, as normas da Associação Brasileira de Normas Técnicas (ABNT) e, em inglês, o estilo da :foreign[American Psychological Association]{lang=en} (APA); detalhes estão no [colofão](../colofao/).
 
 ## O autor
 

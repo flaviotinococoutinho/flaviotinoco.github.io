@@ -10,14 +10,14 @@ revisions:
 ---
 
 :::aside
-**Sobre este texto.** Esta página foi redigida com assistência de IA (Claude) como demonstração do modelo do site e aguarda revisão do autor. Ela descreve o projeto do site; quando uma característica ainda está prevista, e não pronta, isso é dito.
+**Sobre este texto.** Esta página foi redigida com assistência de um sistema de inteligência artificial (IA), o Claude, como demonstração do modelo do site e aguarda revisão do autor. Ela descreve o projeto do site; quando uma característica ainda está prevista, e não pronta, isso é dito.
 :::
 
 ## Tipografia
 
 O texto corrido usa a Literata, uma serifada criada pela TypeTogether, por encomenda do Google, para leitura prolongada no Google Play Books e redesenhada em 2020 como fonte variável, com eixos de peso e de tamanho óptico: em corpos pequenos, o desenho tem menos contraste entre traços grossos e finos; em títulos, mais. A interface usa a Atkinson Hyperlegible Next, e o código, a Atkinson Hyperlegible Mono, ambas lançadas pelo Braille Institute em 2025 a partir da Atkinson Hyperlegible original, desenhada para leitores com baixa visão. Nessas fontes, letras que costumam ser confundidas — como o I maiúsculo, o l minúsculo e o algarismo 1, ou o O e o 0 — recebem formas bem distintas, o que importa em rótulos, números e código.
 
-A coluna de leitura tem 66ch de largura. Bringhurst considera satisfatórias, num texto serifado de coluna única, linhas de 45 a 75 caracteres, com 66 como ideal [@bringhurst2004]; a unidade ch do CSS, porém, é a largura do algarismo zero, e numa fonte proporcional 66ch não correspondem exatamente a 66 caracteres — é uma aproximação. O texto é alinhado à esquerda e nunca justificado. A hifenização é feita pelo navegador, segundo o idioma declarado de cada trecho, e pode ser desligada nas preferências. O TeX hifeniza com o algoritmo de padrões de Liang [@liang1983], descrito no :foreign[TeXbook]{lang=en} [@knuth1984]; aqui, essa tarefa é delegada ao navegador.
+A coluna de leitura tem 66ch de largura. Bringhurst considera satisfatórias, num texto serifado de coluna única, linhas de 45 a 75 caracteres, com 66 como ideal [@bringhurst2004]; a unidade ch das folhas de estilo em cascata (CSS, do inglês :foreign[Cascading Style Sheets]{lang=en}), porém, é a largura do algarismo zero, e numa fonte proporcional 66ch não correspondem exatamente a 66 caracteres — é uma aproximação. O texto é alinhado à esquerda e nunca justificado. A hifenização é feita pelo navegador, segundo o idioma declarado de cada trecho, e pode ser desligada nas preferências. O TeX hifeniza com o algoritmo de padrões de Liang [@liang1983], descrito no :foreign[TeXbook]{lang=en} [@knuth1984]; aqui, essa tarefa é delegada ao navegador.
 
 Estrangeirismos aparecem em itálico e marcados com o idioma de origem, o que também orienta leitores de tela e a hifenização; nomes próprios não são hifenizados; siglas trazem sua expansão. Essa marcação é feita automaticamente, a partir de dicionários, e pode ser corrigida pelo autor em cada texto.
 
@@ -29,11 +29,11 @@ Trata-se de uma escolha de coerência interna, não da afirmação de que φ sej
 
 ## Cor
 
-As cores são definidas como fichas de design, no formato do W3C para :foreign[design tokens]{lang=en}, no espaço de cor OKLCH, e verificadas automaticamente a cada alteração. O verificador exige:
+As cores são definidas como fichas de design, no formato do Consórcio World Wide Web (W3C) para :foreign[design tokens]{lang=en}, no espaço de cor OKLCH, e verificadas automaticamente a cada alteração. O verificador exige:
 
 - que toda cor esteja dentro da gama sRGB;
-- contraste WCAG de pelo menos 7:1 (nível AAA) para o texto principal, o secundário e os links sobre todas as superfícies, e de pelo menos 4,5:1 para o texto discreto;
-- contraste APCA de pelo menos Lc 75 para o texto principal;
+- contraste segundo as Diretrizes de Acessibilidade para Conteúdo Web (WCAG, do inglês :foreign[Web Content Accessibility Guidelines]{lang=en}) de pelo menos 7:1 (nível AAA) para o texto principal, o secundário e os links sobre todas as superfícies, e de pelo menos 4,5:1 para o texto discreto;
+- contraste pelo :foreign[Accessible Perceptual Contrast Algorithm]{lang=en} (APCA) de pelo menos Lc 75 para o texto principal;
 - contraste de pelo menos 3:1 para bordas de controles e para o indicador de foco;
 - no máximo 16:1 entre texto e fundo nos esquemas usuais, para evitar o preto puro sobre o branco puro;
 - que as quatro cores dos estratos continuem distinguíveis entre si sob simulação de protanopia, deuteranopia e tritanopia, pelo modelo de Machado, Oliveira e Fernandes [@machado2009], com diferença mínima CIEDE2000 de 8 (e de 15 para a visão típica), e que sua luminosidade cresça estritamente na ordem dos estratos sob simulação de acromatopsia.
@@ -42,7 +42,7 @@ Essas garantias têm limites que convém declarar. A simulação usa a severidad
 
 ## Acessibilidade
 
-A meta é a conformidade com as WCAG 2.2 no nível AA, com contraste de texto no nível AAA. O site foi projetado com HTML semântico e marcos de navegação, link para pular ao conteúdo, foco sempre visível, operação completa por teclado, idioma declarado nos trechos estrangeiros, fórmulas também em MathML, legível por tecnologias assistivas, respeito à preferência do sistema por movimento reduzido — com controle próprio nas preferências —, hifenização desligável, nenhum significado transmitido só pela cor e conteúdo útil sem JavaScript em todos os elementos interativos. A integração contínua inclui verificações automáticas de acessibilidade nos temas claro e escuro.
+A meta é a conformidade com as WCAG 2.2 no nível AA, com contraste de texto no nível AAA. O site foi projetado com marcação semântica em HTML (do inglês :foreign[HyperText Markup Language]{lang=en}) e marcos de navegação, link para pular ao conteúdo, foco sempre visível, operação completa por teclado, idioma declarado nos trechos estrangeiros, fórmulas também em MathML, legível por tecnologias assistivas, respeito à preferência do sistema por movimento reduzido — com controle próprio nas preferências —, hifenização desligável, nenhum significado transmitido só pela cor e conteúdo útil sem JavaScript em todos os elementos interativos. A integração contínua inclui verificações automáticas de acessibilidade nos temas claro e escuro.
 
 Limitações conhecidas:
 
@@ -77,7 +77,7 @@ Cada ensaio e laboratório declara:
 | Provavelmente não | 30 %, com margem de cerca de 10 pontos |
 | Quase certamente não | 7 %, com margem de cerca de 5 pontos |
 
-Afirmações factuais não triviais vêm acompanhadas de fonte. Citações diretas são exatas, entre aspas, com a página quando ela existe; traduções próprias são indicadas como “tradução nossa”. Em português, as chamadas seguem o sistema autor-:raw[data] da ABNT NBR 10520:2023, e as referências, a ABNT NBR 6023:2025; em inglês, o estilo APA, 7.ª edição. Números e unidades seguem o Sistema Internacional, com espaço entre o número e o símbolo da unidade, como em 10 kHz. Afirmações empíricas são formuladas, sempre que possível, de modo que possam ser testadas e refutadas [@popper1959]; quando a evidência não basta, o texto diz isso.
+Afirmações factuais não triviais vêm acompanhadas de fonte. Citações diretas são exatas, entre aspas, com a página quando ela existe; traduções próprias são indicadas como “tradução nossa”. Em português, as chamadas seguem o sistema autor-:raw[data] da Associação Brasileira de Normas Técnicas (ABNT), na Norma Brasileira (NBR) 10520:2023, e as referências, a ABNT NBR 6023:2025; em inglês, o estilo da :foreign[American Psychological Association]{lang=en} (APA), 7.ª edição. Números e unidades seguem o Sistema Internacional, com espaço entre o número e o símbolo da unidade, como em 10 kHz. Afirmações empíricas são formuladas, sempre que possível, de modo que possam ser testadas e refutadas [@popper1959]; quando a evidência não basta, o texto diz isso.
 
 ## Privacidade
 

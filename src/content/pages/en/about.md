@@ -10,7 +10,7 @@ revisions:
 ---
 
 :::aside
-**About this text.** This page was drafted with AI assistance (Claude) as a demonstration of the site's template and is awaiting review by the author. Passages marked **TODO** depend on information that only the author can provide, and they have not been filled in with guesses.
+**About this text.** This page was drafted with the assistance of an artificial intelligence (AI) system, Claude, as a demonstration of the site's template and is awaiting review by the author. Passages marked **TODO** depend on information that only the author can provide, and they have not been filled in with guesses.
 :::
 
 ## The bridge
@@ -41,7 +41,7 @@ There is no need to read in order. The essays are written to allow several paths
 
 Every essay and lab states how confident the author is and what kind of support its claims rest on. Confidence uses the scale of estimative expressions proposed by Sherman Kent, in which “probable” corresponds to about 75 %, give or take 12 points [@kent1964]; the kind of support is proof, empirical evidence, argument or speculation. Each text also reports its provenance: whether it was written without assistance, with assistance, or generated with AI help, and whether the author has reviewed it. The opening texts of this site were generated with AI assistance and are labelled as unreviewed until the author reviews them.
 
-The essays exist in Portuguese and in English. Both versions were written to read naturally in each language rather than translated word for word, so they may differ in phrasing. Citations follow the Brazilian ABNT standards in Portuguese and APA style in English; the [colophon](../colophon/) has the details.
+The essays exist in Portuguese and in English. Both versions were written to read naturally in each language rather than translated word for word, so they may differ in phrasing. Citations follow, in Portuguese, the standards of the Brazilian Association of Technical Standards (ABNT; from the Portuguese :foreign[Associação Brasileira de Normas Técnicas]{lang=pt-BR}) and, in English, the style of the American Psychological Association (APA); the [colophon](../colophon/) has the details.
 
 ## The author
 

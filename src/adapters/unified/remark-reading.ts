@@ -19,6 +19,7 @@ import type { Root } from 'mdast';
 import type { VFile } from 'vfile';
 import type {} from '@astrojs/markdown-remark';
 import type { PipelineContext } from './context.ts';
+import { fileLineColumn } from './source-lines.ts';
 import { parseLocale, type Locale } from '../../core/domain/locale.ts';
 import type { MdNode } from '../../core/fold/tree.ts';
 import { PAGE_IDS } from '../../core/reading/records.ts';
@@ -44,8 +45,8 @@ export const documentLocale = (file: VFile, stage: string): Locale => {
   return parsed.value;
 };
 
-const where = (d: Diagnostic): string =>
-  d.position === undefined ? '' : `${d.position.start.line}:${d.position.start.column} `;
+const where = (file: VFile, d: Diagnostic): string =>
+  d.position === undefined ? '' : `${fileLineColumn(file, d.position.start.line, d.position.start.column)} `;
 
 /** Reports core diagnostics through vfile; fails once, listing every error. */
 export const reportDiagnostics = (file: VFile, diagnostics: readonly Diagnostic[], stage: string): void => {
@@ -56,7 +57,7 @@ export const reportDiagnostics = (file: VFile, diagnostics: readonly Diagnostic[
   }
   const first = errors[0];
   if (first !== undefined) {
-    const list = errors.map((d) => `  ${where(d)}${d.message} [${d.rule}]`).join('\n');
+    const list = errors.map((d) => `  ${where(file, d)}${d.message} [${d.rule}]`).join('\n');
     file.fail(`${errors.length} error(s) in the ${stage} stage:\n${list}`, first.position, first.rule);
   }
 };

@@ -377,14 +377,17 @@ export function remarkAbnt(options: RemarkAbntOptions) {
       if (kind === undefined) return undefined;
       let text = '';
       const occurrences: Occurrence[] = [];
-      const go = (n: AnyNode): void => {
+      // Nodes rebuilt by earlier stages (citations split text) may lack a position:
+      // report at the nearest positioned ancestor instead of nowhere.
+      const go = (n: AnyNode, near: Position | undefined): void => {
+        const here = n.position ?? near;
         if (isOwnMark(n) && n.name === 'abbr') {
           const value = toString(n);
           const entry = autoAcronyms.get(n) ?? lexiconRuntime?.acronym(value);
           const title = n.attributes?.['title'];
           occurrences.push({
             kind: 'acronym',
-            anchor: anchor(n),
+            anchor: anchor(here),
             start: text.length,
             end: text.length + value.length,
             term: autoAcronyms.get(n)?.term ?? value.normalize('NFC'),
@@ -398,7 +401,7 @@ export function remarkAbnt(options: RemarkAbntOptions) {
             const value = toString(n);
             occurrences.push({
               kind: 'hand-italic',
-              anchor: anchor(n),
+              anchor: anchor(here),
               start: text.length,
               end: text.length + value.length,
               surface: value,
@@ -411,7 +414,7 @@ export function remarkAbnt(options: RemarkAbntOptions) {
             for (const h of homographHits.get(n) ?? []) {
               occurrences.push({
                 kind: 'homograph',
-                anchor: anchor(h.position ?? n.position),
+                anchor: anchor(h.position ?? here),
                 start: text.length + h.start,
                 end: text.length + h.end,
                 surface: n.value.slice(h.start, h.end),
@@ -426,9 +429,9 @@ export function remarkAbnt(options: RemarkAbntOptions) {
           text += n.alt;
           return;
         }
-        if ('children' in n) for (const c of n.children) go(c);
+        if ('children' in n) for (const c of n.children) go(c, here);
       };
-      go(node);
+      go(node, undefined);
       blocks.push({ kind, anchor: anchor(node), text, occurrences });
       return SKIP;
     });
