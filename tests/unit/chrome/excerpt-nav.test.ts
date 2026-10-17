@@ -57,7 +57,7 @@ const wordArb = fc.oneof(
   fc.stringMatching(/^[a-zà-ü]{1,8}[.,;:]?$/),
   fc.constantFrom('&lt;', '&gt;', '&amp;', '<', '>', 'R&D', '<script>', '&#39;', 'a<b', '&nbsp;'),
 );
-const spaceArb = fc.constantFrom(' ', '  ', '\n', '\n\n', '\t', ' ', ' \r\n ');
+const spaceArb = fc.constantFrom(' ', '  ', '\n', '\n\n', '\t', '\u00a0', ' \r\n ');
 const contentArb = fc
   .tuple(fc.boolean(), fc.array(fc.tuple(wordArb, spaceArb), { minLength: 1, maxLength: 80 }), fc.boolean())
   .map(([lead, pairs, trail]) => {
