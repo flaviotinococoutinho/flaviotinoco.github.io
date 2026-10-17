@@ -42,7 +42,7 @@ export type BibDatabase = {
 };
 
 /** The month macros every BibTeX style predefines (btxdoc §4: "jan" … "dec"). */
-export const MONTH_MACROS: Readonly<Record<string, string>> = {
+export const MONTH_MACROS: Readonly<Partial<Record<string, string>>> = {
   jan: 'January',
   feb: 'February',
   mar: 'March',
@@ -106,9 +106,12 @@ export const buildDatabase = (cst: Cst): DatabaseResult => {
         preamble.push(evaluate(node.value));
         break;
       case 'string': {
+        // User macros may shadow the predefined month macros (as in bibtex(1)); redefining a user macro is an error.
         const name = node.field.name.toLowerCase();
-        if (strings.has(name) || MONTH_MACROS[name] !== undefined) {
-          diagnostics.push(error('db:duplicate-macro', `@string "${node.field.name}" is already defined`, node.field.nameSpan));
+        if (strings.has(name)) {
+          diagnostics.push(
+            error('db:duplicate-macro', `@string "${node.field.name}" is already defined`, node.field.nameSpan),
+          );
         } else {
           strings.set(name, evaluate(node.field.value));
         }
@@ -120,7 +123,11 @@ export const buildDatabase = (cst: Cst): DatabaseResult => {
         const first = keys.get(folded);
         if (first !== undefined) {
           diagnostics.push(
-            error('db:duplicate-key', `duplicate key "${node.key}" (first defined at ${formatPoint(first.start)})`, node.keySpan),
+            error(
+              'db:duplicate-key',
+              `duplicate key "${node.key}" (first defined at ${formatPoint(first.start)})`,
+              node.keySpan,
+            ),
           );
           break;
         }
@@ -129,7 +136,9 @@ export const buildDatabase = (cst: Cst): DatabaseResult => {
         for (const f of node.fields) {
           const field = toField(f);
           if (fields.has(field.name)) {
-            diagnostics.push(error('db:duplicate-field', `field "${field.name}" appears twice in "${node.key}"`, f.nameSpan));
+            diagnostics.push(
+              error('db:duplicate-field', `field "${field.name}" appears twice in "${node.key}"`, f.nameSpan),
+            );
             continue;
           }
           fields.set(field.name, field);

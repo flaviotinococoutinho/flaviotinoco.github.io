@@ -13,9 +13,10 @@
  *     are recorded as ITALIC spans; \textbf \textsc \textrm … keep their content;
  *   - case-protecting braces ({NASA}, {F}ourier) are removed but RECORDED as
  *     protected spans, so formatters never re-case them (Patashnik, "BibTeXing",
- *     §4: a brace group at level 1 not starting with "\" protects its case);
+ *     1988, §4: a brace group at level 1 not starting with "\" protects its case);
  *   - TeX spacing: whitespace runs collapse to one space; a control word swallows
- *     the spaces after it (\ss x → ßx), exactly as TeX's tokenizer does.
+ *     the spaces after it (\ss x → ßx), exactly as TeX's tokenizer does
+ *     (D. E. Knuth, "The TeXbook", 1984, ch. 8).
  *
  * Anything else (unknown commands, math $…$) is kept VERBATIM and reported as a
  * warning: no text is ever silently dropped.
@@ -23,7 +24,8 @@
  * The output is Unicode NFC (UAX #15). Composing "accent + letter" naively is NOT
  * NFC: {\'e} would be "e" + U+0301, and {\'\i} would be dotless "ı" + U+0301,
  * which never composes to "í". Both are fixed here, so "Estatística" decoded from
- * BibTeX equals the precomposed string and dictionary/regex matching works.
+ * BibTeX equals the precomposed string and dictionary/regex matching works
+ * (docs/research/unified-latex.md §7).
  */
 
 export type Range = { readonly start: number; readonly end: number };
@@ -45,32 +47,63 @@ export type LatexProblem = {
 
 export type Decoded = { readonly value: MarkedText; readonly problems: readonly LatexProblem[] };
 
+/** Plain text with no marks (NFC-normalised). */
 export const marked = (text: string): MarkedText => ({ text: text.normalize('NFC'), protected: [], italic: [] });
 
 /** Combining marks of the accent commands (Unicode block U+0300–U+036F). */
-const ACCENTS: Readonly<Record<string, string>> = {
-  '`': '̀',
-  "'": '́',
-  '^': '̂',
-  '~': '̃',
-  '=': '̄',
-  u: '̆',
-  '.': '̇',
-  '"': '̈',
-  r: '̊',
-  H: '̋',
-  v: '̌',
-  d: '̣',
-  c: '̧',
-  k: '̨',
-  b: '̱',
-  t: '͡',
+const ACCENTS: Readonly<Partial<Record<string, string>>> = {
+  '`': '\u0300',
+  "'": '\u0301',
+  '^': '\u0302',
+  '~': '\u0303',
+  '=': '\u0304',
+  u: '\u0306',
+  '.': '\u0307',
+  '"': '\u0308',
+  r: '\u030A',
+  H: '\u030B',
+  v: '\u030C',
+  d: '\u0323',
+  c: '\u0327',
+  k: '\u0328',
+  b: '\u0331',
+  t: '\u0361',
+};
+
+/** Spacing forms of the accents, for an accent over nothing (\'{} → ´). */
+const SPACING_ACCENTS: Readonly<Partial<Record<string, string>>> = {
+  '\u0300': '`',
+  '\u0301': '´',
+  '\u0302': '^',
+  '\u0303': '~',
+  '\u0304': '¯',
+  '\u0306': '˘',
+  '\u0307': '˙',
+  '\u0308': '¨',
+  '\u030A': '˚',
+  '\u030B': '˝',
+  '\u030C': 'ˇ',
+  '\u0327': '¸',
+  '\u0328': '˛',
 };
 
 /** Marks rendered above the base letter: a dotless ı/ȷ under them is the dotted i/j. */
-const ABOVE = new Set(['̀', '́', '̂', '̃', '̄', '̆', '̇', '̈', '̊', '̋', '̌', '͡']);
+const ABOVE = new Set([
+  '\u0300',
+  '\u0301',
+  '\u0302',
+  '\u0303',
+  '\u0304',
+  '\u0306',
+  '\u0307',
+  '\u0308',
+  '\u030A',
+  '\u030B',
+  '\u030C',
+  '\u0361',
+]);
 
-const LETTERS: Readonly<Record<string, string>> = {
+const LETTERS: Readonly<Partial<Record<string, string>>> = {
   ss: 'ß',
   SS: 'SS',
   o: 'ø',
@@ -96,7 +129,7 @@ const LETTERS: Readonly<Record<string, string>> = {
 };
 
 /** Control symbols (\ + one non-letter) that stand for a character. */
-const SYMBOLS: Readonly<Record<string, string>> = {
+const SYMBOLS: Readonly<Partial<Record<string, string>>> = {
   '&': '&',
   '%': '%',
   $: '$',
@@ -105,15 +138,14 @@ const SYMBOLS: Readonly<Record<string, string>> = {
   '{': '{',
   '}': '}',
   ' ': ' ',
-  ',': ' ', // thin space → narrow no-break space
-  '-': '­', // discretionary hyphen → soft hyphen (invisible, but not lost)
+  ',': '\u202F', // thin space → narrow no-break space
+  '-': '\u00AD', // discretionary hyphen → soft hyphen (invisible, but not lost)
   '/': '', // italic correction: no character
   '@': '', // spacing factor: no character
-  '\\': ' ', // forced line break inside a field: a space in running text
 };
 
 /** Control words that stand for a fixed string. */
-const WORDS: Readonly<Record<string, string>> = {
+const WORDS: Readonly<Partial<Record<string, string>>> = {
   textendash: '–',
   textemdash: '—',
   ldots: '…',
@@ -168,7 +200,20 @@ const TRANSPARENT_COMMANDS = new Set([
   'text',
 ]);
 const ITALIC_DECLARATIONS = new Set(['em', 'it', 'itshape', 'sl', 'slshape']);
-const NOOP_DECLARATIONS = new Set(['rm', 'upshape', 'normalfont', 'bf', 'bfseries', 'sc', 'scshape', 'tt', 'ttfamily', 'sf', 'sffamily', 'mdseries']);
+const NOOP_DECLARATIONS = new Set([
+  'rm',
+  'upshape',
+  'normalfont',
+  'bf',
+  'bfseries',
+  'sc',
+  'scshape',
+  'tt',
+  'ttfamily',
+  'sf',
+  'sffamily',
+  'mdseries',
+]);
 const VERBATIM_COMMANDS = new Set(['url', 'path']);
 
 const isLetter = (c: string | undefined): boolean => c !== undefined && /[A-Za-z]/.test(c);
@@ -177,7 +222,7 @@ const isTexSpace = (c: string | undefined): boolean => c !== undefined && /[ \t\
 /** Applies a combining mark to the first code point of `s`, fixing dotless i/j. */
 const accent = (s: string, mark: string): string => {
   const cp = s.codePointAt(0);
-  if (cp === undefined) return mark;
+  if (cp === undefined) return SPACING_ACCENTS[mark] ?? mark;
   const first = String.fromCodePoint(cp);
   const rest = s.slice(first.length);
   const base = ABOVE.has(mark) && first === 'ı' ? 'i' : ABOVE.has(mark) && first === 'ȷ' ? 'j' : first;
@@ -190,13 +235,15 @@ const normaliseRanges = (ranges: readonly Range[]): Range[] => {
   const out: Range[] = [];
   for (const r of sorted) {
     const last = out.at(-1);
-    if (last !== undefined && r.start <= last.end) out[out.length - 1] = { start: last.start, end: Math.max(last.end, r.end) };
+    if (last !== undefined && r.start <= last.end)
+      out[out.length - 1] = { start: last.start, end: Math.max(last.end, r.end) };
     else out.push(r);
   }
   return out;
 };
 
-const DOTLESS_BEFORE_MARK = /[ıȷ](?=[̀-ͯ])/gu;
+/** A dotless i/j followed by a combining mark (the non-NFC output of naive decoders). */
+const DOTLESS_BEFORE_MARK = /[ıȷ](?=[\u0300-\u036F])/gu;
 
 /**
  * NFC normalisation that keeps ranges consistent: each slice between range
@@ -218,12 +265,21 @@ const normalise = (text: string, groups: readonly (readonly Range[])[]): { text:
     if (next !== undefined) built += fixed.slice(at, next).normalize('NFC');
   }
   if (built.normalize('NFC') === built) {
-    return { text: built, groups: groups.map((g) => g.map((r) => ({ start: map.get(r.start) ?? 0, end: map.get(r.end) ?? 0 }))) };
+    return {
+      text: built,
+      groups: groups.map((g) => g.map((r) => ({ start: map.get(r.start) ?? 0, end: map.get(r.end) ?? 0 }))),
+    };
   }
   const whole = fixed.normalize('NFC');
   const remap = (o: number): number => Math.min(whole.length, fixed.slice(0, o).normalize('NFC').length);
   return { text: whole, groups: groups.map((g) => g.map((r) => ({ start: remap(r.start), end: remap(r.end) }))) };
 };
+
+/** Normalises plain Unicode input the same way (NFC + dotless-i fix), for fields read without LaTeX decoding. */
+export const toNfc = (s: string): string =>
+  s.replace(DOTLESS_BEFORE_MARK, (c) => (c === 'ı' ? 'i' : 'j')).normalize('NFC');
+
+type Mark = { readonly at: number; readonly pending: boolean };
 
 /** Decodes a raw BibTeX field value (outer delimiters already removed). */
 export const decodeLatex = (raw: string): Decoded => {
@@ -241,8 +297,8 @@ export const decodeLatex = (raw: string): Decoded => {
     out += s;
   };
   /** Position where the next emitted content will start. */
-  const mark = (): { readonly at: number; readonly pending: boolean } => ({ at: out.length, pending });
-  const rangeFrom = (m: { readonly at: number; readonly pending: boolean }): Range => ({
+  const mark = (): Mark => ({ at: out.length, pending });
+  const rangeFrom = (m: Mark): Range => ({
     start: m.pending && out.length > m.at && m.at > 0 ? m.at + 1 : m.at,
     end: out.length,
   });
@@ -305,14 +361,17 @@ export const decodeLatex = (raw: string): Decoded => {
     if (italic) italicRanges.push({ start: base, end: base + m.text.length });
   };
 
-  const command = (italicStack: { italicFrom: { at: number; pending: boolean } | undefined }): void => {
-    // raw[i] === '\\'
+  /**
+   * Interprets the control sequence at raw[i] === '\\'. Returns true when it is
+   * an italic DECLARATION (\em, \it…), whose scope is the rest of the enclosing group.
+   */
+  const command = (): boolean => {
     const start = i;
     i++;
     if (i >= raw.length) {
       emit('\\');
       problems.push({ code: 'latex:unknown-command', message: 'dangling "\\" at the end of the value kept verbatim' });
-      return;
+      return false;
     }
     let name: string;
     let isWord = false;
@@ -334,37 +393,39 @@ export const decodeLatex = (raw: string): Decoded => {
     if (accentMark !== undefined && (!isWord || name.length === 1)) {
       const arg = sub(readArgument());
       emit(accent(arg.text, accentMark));
-      return;
+      return false;
     }
     if (isWord) {
       const letter = LETTERS[name];
       if (letter !== undefined) {
         emit(letter);
-        return;
+        return false;
       }
       const word = WORDS[name];
       if (word !== undefined) {
         emit(word);
-        return;
+        return false;
       }
       if (ITALIC_COMMANDS.has(name) || TRANSPARENT_COMMANDS.has(name)) {
         emitMarked(sub(readArgument()), ITALIC_COMMANDS.has(name));
-        return;
+        return false;
       }
       if (VERBATIM_COMMANDS.has(name)) {
         emit(readArgument());
-        return;
+        return false;
       }
-      if (ITALIC_DECLARATIONS.has(name)) {
-        italicStack.italicFrom ??= mark();
-        return;
-      }
-      if (NOOP_DECLARATIONS.has(name)) return;
+      if (ITALIC_DECLARATIONS.has(name)) return true;
+      if (NOOP_DECLARATIONS.has(name)) return false;
     } else {
+      if (name === '\\') {
+        // A forced line break inside a field is a word space in running text.
+        pending = true;
+        return false;
+      }
       const symbol = SYMBOLS[name];
       if (symbol !== undefined) {
         emit(symbol);
-        return;
+        return false;
       }
     }
     // Unknown: keep the command and its brace arguments verbatim (source spacing included).
@@ -378,11 +439,12 @@ export const decodeLatex = (raw: string): Decoded => {
       emit(raw.slice(start, nameEnd));
       i = nameEnd;
     }
+    return false;
   };
 
   /** Parses a sequence until the closing brace of the current group (or the end). */
   const sequence = (depth: number): void => {
-    const italicStack: { italicFrom: { at: number; pending: boolean } | undefined } = { italicFrom: undefined };
+    let italicFrom: Mark | undefined;
     while (i < raw.length) {
       const c = raw[i] as string;
       if (c === '}') {
@@ -402,7 +464,7 @@ export const decodeLatex = (raw: string): Decoded => {
         continue;
       }
       if (c === '\\') {
-        command(italicStack);
+        if (command()) italicFrom ??= mark();
         continue;
       }
       if (isTexSpace(c)) {
@@ -411,7 +473,7 @@ export const decodeLatex = (raw: string): Decoded => {
         continue;
       }
       if (c === '~') {
-        emit(' ');
+        emit('\u00A0');
         i++;
         continue;
       }
@@ -429,23 +491,15 @@ export const decodeLatex = (raw: string): Decoded => {
         continue;
       }
       if (c === '`') {
-        if (raw[i + 1] === '`') {
-          emit('“');
-          i += 2;
-        } else {
-          emit('‘');
-          i++;
-        }
+        const double = raw[i + 1] === '`';
+        emit(double ? '“' : '‘');
+        i += double ? 2 : 1;
         continue;
       }
       if (c === "'") {
-        if (raw[i + 1] === "'") {
-          emit('”');
-          i += 2;
-        } else {
-          emit('’');
-          i++;
-        }
+        const double = raw[i + 1] === "'";
+        emit(double ? '”' : '’');
+        i += double ? 2 : 1;
         continue;
       }
       if (c === '$') {
@@ -462,7 +516,7 @@ export const decodeLatex = (raw: string): Decoded => {
       emit(ch);
       i += ch.length;
     }
-    if (italicStack.italicFrom !== undefined) italicRanges.push(rangeFrom(italicStack.italicFrom));
+    if (italicFrom !== undefined) italicRanges.push(rangeFrom(italicFrom));
   };
 
   sequence(0);
@@ -490,6 +544,20 @@ export const concatMarked = (parts: readonly MarkedText[], separator = ''): Mark
     for (const r of p.italic) ital.push({ start: base + r.start, end: base + r.end });
   });
   return { text, protected: normaliseRanges(prot), italic: normaliseRanges(ital) };
+};
+
+/** The marked text between two offsets, with its spans clipped and shifted. */
+export const sliceMarked = (m: MarkedText, start: number, end: number = m.text.length): MarkedText => {
+  const clip = (rs: readonly Range[]): Range[] =>
+    normaliseRanges(rs.map((r) => ({ start: Math.max(r.start, start) - start, end: Math.min(r.end, end) - start })));
+  return { text: m.text.slice(start, end), protected: clip(m.protected), italic: clip(m.italic) };
+};
+
+/** Removes leading and trailing whitespace, keeping the spans aligned. */
+export const trimMarked = (m: MarkedText): MarkedText => {
+  const start = m.text.length - m.text.trimStart().length;
+  const end = m.text.trimEnd().length;
+  return start === 0 && end === m.text.length ? m : sliceMarked(m, start, Math.max(start, end));
 };
 
 /** Applies `f` (e.g. upper-casing) to the text OUTSIDE protected spans only. */

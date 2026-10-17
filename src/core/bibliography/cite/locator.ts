@@ -2,10 +2,11 @@
  * Locators of a citation: "p. 12", "pp. 12–15", "cap. 3", "§ 4" (pure parser).
  *
  * Follows Pandoc's citation suffix convention (Pandoc User's Guide, "Citation
- * syntax"): after the key, a comma introduces an optional locator — a label (in
- * Portuguese or English, abbreviated or not) and a value (numbers or roman
- * numerals, ranges with -, -- or –, lists with ","); a bare number is a page. What
- * does not parse as a locator stays a verbatim suffix ("grifo nosso").
+ * syntax"; citeproc locator labels): after the key, an optional locator — a
+ * label (Portuguese or English, abbreviated or not, or the symbols § and ¶) and
+ * a value (numbers, decimal section numbers or roman numerals, ranges with -,
+ * -- or –, lists with ","); a bare number after a comma is a page. What does not
+ * parse as a locator stays a verbatim suffix ("grifo nosso").
  */
 
 export type LocatorLabel =
@@ -32,7 +33,7 @@ export type Locator = {
   readonly symbol?: '§' | '¶';
 };
 
-const LABELS: Readonly<Record<string, LocatorLabel>> = {
+const LABELS: Readonly<Partial<Record<string, LocatorLabel>>> = {
   p: 'page',
   pp: 'page',
   pg: 'page',
@@ -107,36 +108,38 @@ const LABELS: Readonly<Record<string, LocatorLabel>> = {
   slides: 'slide',
 };
 
-/** Labelled values may be roman numerals (cap. V, p. xi); bare values must be numeric. */
-const VALUE = String.raw`(?:\d+[a-z]?|[ivxlcdm]+|[IVXLCDM]+|[eE]\d+)`;
+/** Labelled values may be roman numerals (cap. V, p. xi) or decimal sections (seção 3.2); bare values are numeric. */
+const VALUE = String.raw`(?:\d+(?:\.\d+)*[a-z]?|[ivxlcdm]+|[IVXLCDM]+|[eE]\d+)`;
 const BARE = String.raw`(?:\d+[a-z]?|[eE]\d+)`;
 const range = (v: string): string => String.raw`${v}(?:\s*(?:--?|–|—)\s*${v})?`;
 const list = (v: string): string => String.raw`${range(v)}(?:\s*,\s*(?=\d)${range(v)})*`;
 const END = String.raw`(?=$|[\s,;.)])`;
-const LABELLED = new RegExp(String.raw`^\s*(?:(§§?|¶¶?)\s*|([\p{L}]+)(?:\.\s*|\s+))(${list(VALUE)})${END}`, 'u');
-const UNLABELLED = new RegExp(String.raw`^\s*()()(${list(BARE)})${END}`, 'u');
+const LABELLED = new RegExp(String.raw`^(?:(§§?|¶¶?)\s*|(\p{L}+)(?:\.\s*|\s+))(${list(VALUE)})${END}`, 'u');
+const UNLABELLED = new RegExp(String.raw`^()()(${list(BARE)})${END}`, 'u');
 
 export type ParsedSuffix = { readonly locator?: Locator; readonly rest: string };
 
-const values = (list: string): LocatorValue[] =>
-  list.split(/\s*,\s*/u).map((item) => {
+const values = (text: string): LocatorValue[] =>
+  text.split(/\s*,\s*/u).map((item) => {
     const m = /^(.+?)\s*(?:--?|–|—)\s*(.+)$/u.exec(item);
     return m === null ? { first: item.trim() } : { first: (m[1] as string).trim(), last: (m[2] as string).trim() };
   });
 
 /**
- * Parses the text after a citation key. The suffix must start with "," to
- * carry a locator (Pandoc rule); the remainder after the locator is kept as a
- * verbatim suffix.
+ * Parses the text after a citation key. A labelled locator may follow directly
+ * or after a comma ("@k, p. 3", "@k p. 3"); a bare number is a page only after a
+ * comma (Pandoc), or anywhere when `bare` is set (the bracket of a narrative
+ * citation, "@k [33]"). The remainder after the locator is kept verbatim.
  */
-export const parseSuffix = (suffix: string): ParsedSuffix => {
-  const m = /^\s*,\s*/u.exec(suffix);
-  if (m === null) return { rest: suffix };
-  const body = suffix.slice(m[0].length);
-  const loc = LABELLED.exec(body) ?? UNLABELLED.exec(body);
+export const parseSuffix = (suffix: string, options: { readonly bare?: boolean } = {}): ParsedSuffix => {
+  const lead = /^\s*(,?)\s*/u.exec(suffix);
+  const skipped = lead?.[0].length ?? 0;
+  const comma = lead?.[1] === ',';
+  const body = suffix.slice(skipped);
+  const loc = LABELLED.exec(body) ?? (comma || options.bare === true ? UNLABELLED.exec(body) : null);
   if (loc === null) return { rest: suffix };
-  const symbol = loc[1] === '' ? undefined : loc[1];
-  const word = loc[2] === '' ? undefined : loc[2];
+  const symbol = loc[1] === '' || loc[1] === undefined ? undefined : loc[1];
+  const word = loc[2] === '' || loc[2] === undefined ? undefined : loc[2];
   let label: LocatorLabel = 'page';
   if (word !== undefined) {
     const known = LABELS[word.toLowerCase()];

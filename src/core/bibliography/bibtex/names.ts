@@ -2,16 +2,25 @@
  * BibTeX name lists → structured names (pure, total).
  *
  * Implements the name grammar of bibtex(1) (O. Patashnik, "BibTeXing", 1988, §4;
- * N. Markey, "Tame the BeaST", 2009, §11):
+ * N. Markey, "Tame the BeaST", 2009, §11; bibtex.web, procedures
+ * `von_token_found` and `von_name_ends_and_last_name_starts_stuff`):
  *
- *   list   = name { "and" name } [ "and" "others" ]        ("and" at brace level 0)
+ *   list   = name { "and" name } [ "and" "others" ]        ("and" at brace level 0, any case)
  *   name   = First von Last | von Last "," First | von Last "," Jr "," First
  *
- * The "von" part is the run of words that begins with a lower-case letter (the
- * case of a word is that of its first letter at brace level 0; a special character
- * {\'E} counts by its letter; a word with no such letter is caseless = not
- * lower-case). A name that is a single brace group, e.g. {World Wide Web
- * Consortium}, is a corporate author. "and others" sets the et al. flag.
+ * The "von" part ends at the LAST word, before the final one, that begins with a
+ * lower-case letter (the case of a word is that of its first letter at brace
+ * level 0; a special character {\'E} counts by its letter; other brace groups are
+ * skipped; a word without such a letter is caseless). In the comma-free form it
+ * starts at the first lower-case word; in the comma forms it exists only when the
+ * first word is lower-case (see splitCommas). Without a von part, words tied to
+ * the last one (`Brinch~Hansen`) belong to the Last part. A name that is a single brace group, e.g.
+ * {World Wide Web Consortium}, is a corporate author. "and others" sets the
+ * et al. flag.
+ *
+ * One deliberate deviation: case is judged on Unicode letters (\p{L}), as biber
+ * does, not on ASCII bytes only as bibtex(1) does — otherwise "Émile" would be a
+ * lower-case word because "É" is not in A–Z.
  *
  * For ABNT, lower-case particles (da, de, do, das, dos, e, van, von…) are DROPPING
  * particles: SILVA, João da (NBR 6023:2025 §8.1.1); the formatter decides where to
@@ -39,21 +48,34 @@ export type NameList = {
   readonly others: boolean;
 };
 
+export const EMPTY_NAMES: NameList = { names: [], others: false };
+
 export type NameProblem =
-  | { readonly severity: 'error'; readonly code: 'name:empty' | 'name:too-many-commas' | 'name:misplaced-others'; readonly message: string }
+  | {
+      readonly severity: 'error';
+      readonly code: 'name:empty' | 'name:too-many-commas' | 'name:misplaced-others';
+      readonly message: string;
+    }
   | { readonly severity: 'warning'; readonly code: LatexProblem['code']; readonly message: string };
 
 export type NamesResult = { readonly value: NameList; readonly problems: readonly NameProblem[] };
 
-type Item = { readonly kind: 'word'; readonly raw: string } | { readonly kind: 'comma' };
+/** A word of a name, and whether a tie (~) joins it to the previous word. */
+type Word = { readonly kind: 'word'; readonly raw: string; readonly tied: boolean };
+type Item = Word | { readonly kind: 'comma' };
 
 /** Splits raw text into words and commas at brace level 0 (whitespace and ~ separate words). */
 const items = (raw: string): Item[] => {
   const out: Item[] = [];
   let depth = 0;
   let word = '';
+  let tie = false;
+  let sawTie = false;
   const flush = (): void => {
-    if (word !== '') out.push({ kind: 'word', raw: word });
+    if (word !== '') {
+      out.push({ kind: 'word', raw: word, tied: sawTie });
+      sawTie = false;
+    }
     word = '';
   };
   for (const c of raw) {
@@ -61,12 +83,18 @@ const items = (raw: string): Item[] => {
     if (c === '}') depth = Math.max(0, depth - 1);
     if (depth === 0 && (/\s/u.test(c) || c === '~')) {
       flush();
+      if (c === '~') tie = true;
       continue;
     }
     if (depth === 0 && c === ',') {
       flush();
       out.push({ kind: 'comma' });
+      tie = false;
       continue;
+    }
+    if (word === '') {
+      sawTie = tie;
+      tie = false;
     }
     word += c;
   }
@@ -76,6 +104,9 @@ const items = (raw: string): Item[] => {
 
 const isLowerLetter = (c: string): boolean => c !== c.toUpperCase() && c === c.toLowerCase();
 const isLetter = (c: string): boolean => /\p{L}/u.test(c);
+
+const caseOfLetter = (letter: string | undefined): 'lower' | 'upper' | undefined =>
+  letter === undefined ? undefined : isLowerLetter(letter) ? 'lower' : 'upper';
 
 /**
  * Case of a word by bibtex's rule: first letter at brace level 0; a special
@@ -96,19 +127,17 @@ const caseOf = (word: string): 'lower' | 'upper' | undefined => {
         }
       }
       if (word[i + 1] === '\\') {
-        const decoded = decodeLatex(word.slice(i, j + 1)).value.text;
-        const letter = [...decoded].find(isLetter);
-        if (letter !== undefined) return isLowerLetter(letter) ? 'lower' : 'upper';
+        const letter = [...decodeLatex(word.slice(i, j + 1)).value.text].find(isLetter);
+        if (letter !== undefined) return caseOfLetter(letter);
       }
       i = j;
       continue;
     }
     if (c === '\\') {
-      // A bare control sequence at level 0 (e.g. \'e or \v{S}): decode the rest.
-      const letter = [...decodeLatex(word.slice(i)).value.text].find(isLetter);
-      return letter === undefined ? undefined : isLowerLetter(letter) ? 'lower' : 'upper';
+      // A bare control sequence at level 0 (e.g. \'e or \v{S}): decode the rest of the word.
+      return caseOfLetter([...decodeLatex(word.slice(i)).value.text].find(isLetter));
     }
-    if (isLetter(c)) return isLowerLetter(c) ? 'lower' : 'upper';
+    if (isLetter(c)) return caseOfLetter(c);
   }
   return undefined;
 };
@@ -126,106 +155,135 @@ const isWholeGroup = (word: string): boolean => {
   return true;
 };
 
+/**
+ * Index (exclusive) where von ends inside words[from..lastEnd): one past the last
+ * lower-case word with index < lastEnd - 1, or `from` when there is none.
+ */
+const vonEnd = (words: readonly Word[], from: number, lastEnd: number): number => {
+  for (let k = lastEnd - 1; k > from; k--) {
+    if (caseOf((words[k - 1] as Word).raw) === 'lower') return k;
+  }
+  return from;
+};
+
+type Parts = {
+  readonly first: readonly Word[];
+  readonly von: readonly Word[];
+  readonly last: readonly Word[];
+  readonly jr: readonly Word[];
+};
+
+/** "First von Last" (no commas). */
+const splitNoComma = (w: readonly Word[]): Parts => {
+  const n = w.length;
+  let vonStart = -1;
+  for (let k = 0; k < n - 1; k++) {
+    if (caseOf((w[k] as Word).raw) === 'lower') {
+      vonStart = k;
+      break;
+    }
+  }
+  if (vonStart !== -1) {
+    const end = vonEnd(w, vonStart, n);
+    return { first: w.slice(0, vonStart), von: w.slice(vonStart, end), last: w.slice(end), jr: [] };
+  }
+  // No von: the Last part is the final word plus any words tied to it (Per Brinch~Hansen).
+  let lastStart = n - 1;
+  while (lastStart > 0 && (w[lastStart] as Word).tied) lastStart--;
+  return { first: w.slice(0, lastStart), von: [], last: w.slice(lastStart), jr: [] };
+};
+
+/**
+ * "von Last, First" and "von Last, Jr, First". The von part exists only when the
+ * FIRST word is lower-case (biber, @retorquere/bibtex-parser): "De la Fontaine,
+ * Jean" keeps "De la Fontaine" as the surname, as ABNT expects for capitalised
+ * particles (NBR 6023 §8.1.1.3: DE LUCCA, Gabriella; LA TORRE, Massimo).
+ */
+const splitCommas = (parts: readonly (readonly Word[])[]): Parts => {
+  const before = parts[0] ?? [];
+  const startsLower = before.length > 1 && caseOf((before[0] as Word).raw) === 'lower';
+  const end = startsLower ? vonEnd(before, 0, before.length) : 0;
+  return {
+    von: before.slice(0, end),
+    last: before.slice(end),
+    jr: parts.length === 3 ? (parts[1] ?? []) : [],
+    first: (parts.length === 3 ? parts[2] : parts[1]) ?? [],
+  };
+};
+
 export const parseNames = (raw: string): NamesResult => {
   const problems: NameProblem[] = [];
-  const decode = (words: readonly string[]): MarkedText | undefined => {
+  const decode = (words: readonly Word[]): MarkedText | undefined => {
     if (words.length === 0) return undefined;
-    const r = decodeLatex(words.join(' '));
+    // Words keep their separator: a tie (~) stays a no-break space inside the part.
+    const r = decodeLatex(words.map((w, k) => (k > 0 && w.tied ? `~${w.raw}` : k > 0 ? ` ${w.raw}` : w.raw)).join(''));
     for (const p of r.problems) problems.push({ severity: 'warning', code: p.code, message: p.message });
-    return r.value;
+    return r.value.text === '' ? undefined : r.value;
   };
 
-  // Split the item stream into names on the word "and" (case-insensitive).
+  // Split the item stream into names on the word "and" (case-insensitive, brace level 0).
   const groups: Item[][] = [[]];
   for (const item of items(raw)) {
     if (item.kind === 'word' && item.raw.toLowerCase() === 'and') groups.push([]);
     else (groups.at(-1) as Item[]).push(item);
   }
-  if (groups.length === 1 && groups[0]?.length === 0) return { value: { names: [], others: false }, problems };
+  if (groups.length === 1 && groups[0]?.length === 0) return { value: EMPTY_NAMES, problems };
 
   const names: Name[] = [];
   let others = false;
   groups.forEach((group, k) => {
-    const words = group.flatMap((it) => (it.kind === 'word' ? [it.raw] : []));
+    const words = group.filter((it): it is Word => it.kind === 'word');
+    const text = words.map((w) => w.raw).join(' ');
     if (words.length === 0) {
       problems.push({ severity: 'error', code: 'name:empty', message: `empty name at position ${k + 1} of "${raw}"` });
       return;
     }
-    if (words.length === 1 && words[0] === 'others' && !group.some((it) => it.kind === 'comma')) {
-      if (k === groups.length - 1) others = true;
-      else problems.push({ severity: 'error', code: 'name:misplaced-others', message: '"and others" must end the name list' });
+    if (words.length === 1 && words[0]?.raw === 'others' && !group.some((it) => it.kind === 'comma')) {
+      if (k === groups.length - 1 && k > 0) others = true;
+      else
+        problems.push({
+          severity: 'error',
+          code: 'name:misplaced-others',
+          message: '"and others" must end the name list',
+        });
       return;
     }
     // Parts separated by commas.
-    const parts: string[][] = [[]];
+    const parts: Word[][] = [[]];
     for (const it of group) {
       if (it.kind === 'comma') parts.push([]);
-      else (parts.at(-1) as string[]).push(it.raw);
+      else (parts.at(-1) as Word[]).push(it);
     }
     if (parts.length > 3) {
       problems.push({
         severity: 'error',
         code: 'name:too-many-commas',
-        message: `name "${words.join(' ')}" has ${parts.length - 1} commas (at most 2: "von Last, Jr, First")`,
+        message: `name "${text}" has ${parts.length - 1} commas (at most 2: "von Last, Jr, First")`,
       });
       return;
     }
-    if (parts.length === 1 && words.length === 1 && isWholeGroup(words[0] as string)) {
-      const name = decode([(words[0] as string).slice(1, -1)]);
+    const single = words[0] as Word;
+    if (parts.length === 1 && words.length === 1 && isWholeGroup(single.raw)) {
+      const name = decode([{ ...single, raw: single.raw.slice(1, -1) }]);
       if (name !== undefined) names.push({ kind: 'corporate', name });
+      else problems.push({ severity: 'error', code: 'name:empty', message: `empty corporate name in "${raw}"` });
       return;
     }
-    let first: string[] = [];
-    let von: string[] = [];
-    let last: string[] = [];
-    let jr: string[] = [];
-    if (parts.length === 1) {
-      const w = parts[0] as string[];
-      const n = w.length;
-      let vs = -1;
-      let ve = -1;
-      for (let j = 0; j < n - 1; j++) {
-        if (caseOf(w[j] as string) === 'lower') {
-          if (vs === -1) vs = j;
-          ve = j;
-        }
-      }
-      if (vs === -1) {
-        first = w.slice(0, n - 1);
-        last = w.slice(n - 1);
-      } else {
-        first = w.slice(0, vs);
-        von = w.slice(vs, ve + 1);
-        last = w.slice(ve + 1);
-      }
-    } else {
-      const before = parts[0] as string[];
-      if (parts.length === 2) first = parts[1] as string[];
-      else {
-        jr = parts[1] as string[];
-        first = parts[2] as string[];
-      }
-      let ve = -1;
-      if (before.length > 1 && caseOf(before[0] as string) === 'lower') {
-        for (let j = 0; j < before.length - 1; j++) if (caseOf(before[j] as string) === 'lower') ve = j;
-      }
-      von = before.slice(0, ve + 1);
-      last = before.slice(ve + 1);
-      if (last.length === 0) {
-        problems.push({ severity: 'error', code: 'name:empty', message: `name "${words.join(' ')}" has no last name` });
-        return;
-      }
+    const split = parts.length === 1 ? splitNoComma(parts[0] as Word[]) : splitCommas(parts);
+    const family = decode(split.last);
+    if (family === undefined) {
+      problems.push({ severity: 'error', code: 'name:empty', message: `name "${text}" has no last name` });
+      return;
     }
-    const family = decode(last) as MarkedText;
-    const given = decode(first);
-    const particle = decode(von);
-    const suffix = decode(jr);
+    const given = decode(split.first);
+    const particle = decode(split.von);
+    const suffix = decode(split.jr);
     names.push({
       kind: 'person',
       family,
-      ...(given !== undefined && given.text !== '' ? { given } : {}),
+      ...(given !== undefined ? { given } : {}),
       ...(particle !== undefined ? { particle } : {}),
-      ...(suffix !== undefined && suffix.text !== '' ? { suffix } : {}),
+      ...(suffix !== undefined ? { suffix } : {}),
     });
   });
   return { value: { names, others }, problems };

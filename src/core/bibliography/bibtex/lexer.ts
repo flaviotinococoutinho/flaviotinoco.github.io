@@ -17,18 +17,7 @@
 import { error, lineIndex, spanOf, type Diagnostic, type LineIndex, type Span } from './source.ts';
 
 export type TokenKind =
-  | 'junk'
-  | 'at'
-  | 'name'
-  | 'number'
-  | 'open'
-  | 'close'
-  | 'comma'
-  | 'equals'
-  | 'hash'
-  | 'braced'
-  | 'quoted'
-  | 'eof';
+  'junk' | 'at' | 'name' | 'number' | 'open' | 'close' | 'comma' | 'equals' | 'hash' | 'braced' | 'quoted' | 'eof';
 
 export type Token = {
   readonly kind: TokenKind;
@@ -142,15 +131,18 @@ export const tokenize = (source: string): LexResult => {
         break;
       }
       case 'comment-body': {
-        const r =
-          closer === '}' ? scanBalanced(i, 1, () => false) : scanBalanced(i, 0, (ch) => ch === ')');
+        const r = closer === '}' ? scanBalanced(i, 1, () => false) : scanBalanced(i, 0, (ch) => ch === ')');
         push('braced', source.slice(i, r.end), i, r.end);
         if (r.ok) {
           closeEntry(r.end, false);
           i = r.end + 1;
         } else {
           diagnostics.push(
-            error('lex:unterminated-braces', '@comment is not closed (unbalanced braces)', span(entryOpen, entryOpen + 1)),
+            error(
+              'lex:unterminated-braces',
+              '@comment is not closed (unbalanced braces)',
+              span(entryOpen, entryOpen + 1),
+            ),
           );
           closeEntry(r.end, true);
           i = r.end;
@@ -169,7 +161,11 @@ export const tokenize = (source: string): LexResult => {
         }
         if (c === '@') {
           diagnostics.push(
-            error('lex:unclosed-entry', `entry is not closed with "${closer}" before the next "@"`, span(entryOpen, entryOpen + 1)),
+            error(
+              'lex:unclosed-entry',
+              `entry is not closed with "${closer}" before the next "@"`,
+              span(entryOpen, entryOpen + 1),
+            ),
           );
           closeEntry(i, true);
           break;
@@ -219,7 +215,11 @@ export const tokenize = (source: string): LexResult => {
   }
   if (mode === 'body' || mode === 'comment-body') {
     diagnostics.push(
-      error('lex:unclosed-entry', `entry is not closed with "${closer}" at end of file`, span(entryOpen, entryOpen + 1)),
+      error(
+        'lex:unclosed-entry',
+        `entry is not closed with "${closer}" at end of file`,
+        span(entryOpen, entryOpen + 1),
+      ),
     );
     closeEntry(source.length, true);
   }

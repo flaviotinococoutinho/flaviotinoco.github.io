@@ -17,9 +17,9 @@
  * parser never throws: on an unexpected token it records a diagnostic and
  * re-synchronises at the next "," or at the end of the entry.
  */
-import type { Token } from './lexer.ts';
-import { tokenize } from './lexer.ts';
-import { error, type Diagnostic, type Span } from './source.ts';
+import { absurd } from '../../algebra/match.ts';
+import { tokenize, type Token } from './lexer.ts';
+import { error, type Diagnostic, type DiagnosticCode, type Span } from './source.ts';
 
 export type CstPiece =
   | { readonly kind: 'braced'; readonly raw: string; readonly span: Span }
@@ -70,7 +70,7 @@ export const parseCst = (source: string): CstResult => {
     if (t.kind !== 'eof') p++;
     return t;
   };
-  const report = (code: Parameters<typeof error>[0], message: string, at: Token): void => {
+  const report = (code: DiagnosticCode, message: string, at: Token): void => {
     // A synthetic token marks a place the lexer already reported.
     if (!at.synthetic) diagnostics.push(error(code, message, at.span));
   };
@@ -81,19 +81,16 @@ export const parseCst = (source: string): CstResult => {
 
   const parsePiece = (): CstPiece | undefined => {
     const t = peek();
-    switch (t.kind) {
-      case 'braced':
-      case 'quoted':
-      case 'number':
-        p++;
-        return { kind: t.kind, raw: t.text, span: t.span };
-      case 'name':
-        p++;
-        return { kind: 'macro', name: t.text, span: t.span };
-      default:
-        report('parse:expected-value', `expected a value ({…}, "…", number or macro) but found ${describe(t)}`, t);
-        return undefined;
+    if (t.kind === 'braced' || t.kind === 'quoted' || t.kind === 'number') {
+      p++;
+      return { kind: t.kind, raw: t.text, span: t.span };
     }
+    if (t.kind === 'name') {
+      p++;
+      return { kind: 'macro', name: t.text, span: t.span };
+    }
+    report('parse:expected-value', `expected a value ({…}, "…", number or macro) but found ${describe(t)}`, t);
+    return undefined;
   };
 
   const parseValue = (): CstValue | undefined => {
@@ -215,6 +212,11 @@ export const parseCst = (source: string): CstResult => {
     }
     p++;
     if (peek().kind !== 'open') {
+      // `@comment` followed by free text is a comment line (biber, btparse): not an error.
+      if (typeTok.text.toLowerCase() === 'comment') {
+        nodes.push({ kind: 'comment', raw: '', span: join(t.span, typeTok.span) });
+        continue;
+      }
       report('parse:expected-open', `expected "{" or "(" after "@${typeTok.text}"`, typeTok);
       continue;
     }
@@ -236,7 +238,15 @@ const describe = (t: Token): string => {
       return t.synthetic ? 'the end of the entry' : `"${t.text}"`;
     case 'junk':
       return 'text';
-    default:
+    case 'at':
+    case 'name':
+    case 'number':
+    case 'open':
+    case 'comma':
+    case 'equals':
+    case 'hash':
       return `"${t.text}"`;
+    default:
+      return absurd(t.kind);
   }
 };
