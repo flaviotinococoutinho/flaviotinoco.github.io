@@ -1,11 +1,127 @@
 ---
-/** STUB view — replaced by the owning workstream (content). */
+/**
+ * Standing pages of the site (about, colophon): one Markdown entry per locale
+ * in src/content/pages/{pt,en}/, linked across languages by translationKey.
+ *
+ * The route kind *is* the translation key ('about' | 'colophon'), so the page
+ * has no slug parameter; the entry's slug only names the file. The body goes
+ * through the same Markdown pipeline as the essays and is rendered as .prose
+ * inside the reading grid, with the latest revision date in the header and
+ * the full revision history (newest first) in a disclosure at the end.
+ */
+import { render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import MathAssets from '../components/MathAssets.astro';
 import type { Locale } from '../core/domain/locale.ts';
-export interface Props { readonly locale: Locale; readonly pageKey: 'about' | 'colophon'; }
-const { locale } = Astro.props;
+import content from '../core/i18n/catalogs/content.ts';
+import { formatDate, useTranslations } from '../adapters/astro/i18n.ts';
+import { alternatesByKey, pages } from '../adapters/astro/content.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly pageKey: 'about' | 'colophon';
+}
+
+const { locale, pageKey } = Astro.props;
+const t = useTranslations(content, locale);
+
+const entry = (await pages(locale)).find((e) => e.data.translationKey === pageKey);
+if (entry === undefined) {
+  throw new Error(`[PageView] missing src/content/pages entry with translationKey "${pageKey}" for ${locale}`);
+}
+const { Content, remarkPluginFrontmatter } = await render(entry);
+const hasMath = (remarkPluginFrontmatter as Readonly<Record<string, unknown>>)['hasMath'] === true;
+const alternates = await alternatesByKey('pages', pageKey, () => ({ kind: pageKey }));
+
+/** Newest first: the frontmatter keeps the author's order, which need not be chronological. */
+const revisions = [...entry.data.revisions].sort((a, b) => b.date.valueOf() - a.date.valueOf());
+const latest = revisions[0];
+const isoDate = (date: Date): string => date.toISOString().slice(0, 10);
+
+/** The catalog message wraps the date; split it so the date can be a <time> element. */
+const DATE_SLOT = '\u0000';
+const [revisedBefore = '', revisedAfter = ''] = t('page.lastRevised', { date: DATE_SLOT }).split(DATE_SLOT);
 ---
 
-<BaseLayout locale={locale} title="PageView" description="Placeholder page rendered by a view stub until its workstream lands." alternates={{}} noindex>
-  <div class="page-grid"><h1>PageView</h1></div>
+<BaseLayout locale={locale} title={entry.data.title} description={entry.data.description} alternates={alternates}>
+  {hasMath && <MathAssets slot="head" />}
+  <article class="page-grid page" aria-labelledby="page-title" data-page={pageKey}>
+    <header class="page__head">
+      <h1 id="page-title" class="page__title">
+        {entry.data.title}
+      </h1>
+      {latest && (
+        <p class="page__revised meta">
+          {revisedBefore}
+          <time datetime={isoDate(latest.date)}>{formatDate(locale, latest.date)}</time>
+          {revisedAfter}
+        </p>
+      )}
+    </header>
+
+    <div class="prose page__body" lang={entry.data.lang}>
+      <Content />
+    </div>
+
+    {revisions.length > 0 && (
+      <footer class="page__foot" data-pagefind-ignore>
+        <details class="page__revisions">
+          <summary class="ui">{t('page.revisions')}</summary>
+          <p class="meta">{t('page.revisions.hint')}</p>
+          <ol class="page__revision-list" role="list">
+            {revisions.map((r) => (
+              <li>
+                <time datetime={isoDate(r.date)}>{formatDate(locale, r.date)}</time>
+                <span class="page__revision-note">{r.note}</span>
+              </li>
+            ))}
+          </ol>
+        </details>
+      </footer>
+    )}
+  </article>
 </BaseLayout>
+
+<style>
+  .page__head {
+    margin-block: var(--space-3) var(--space-2);
+  }
+  .page__title {
+    margin-block-end: var(--space-n1);
+  }
+  .page__revised {
+    color: var(--ink-muted);
+    font-size: var(--step-n1);
+  }
+  .page__foot {
+    margin-block: var(--space-3) var(--space-4);
+    padding-block-start: var(--space-1);
+    border-block-start: 1px solid var(--rule);
+    font-size: var(--step-n1);
+  }
+  .page__revisions > summary {
+    cursor: pointer;
+    color: var(--ink-muted);
+  }
+  .page__revisions > p {
+    margin-block: var(--space-n1);
+    color: var(--ink-muted);
+  }
+  .page__revision-list {
+    display: grid;
+    gap: var(--space-n2);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  .page__revision-list li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-n1);
+  }
+  .page__revision-list time {
+    font-family: var(--font-ui);
+    font-variant-numeric: tabular-nums lining-nums;
+    color: var(--ink-muted);
+  }
+</style>
