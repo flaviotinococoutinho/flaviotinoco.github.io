@@ -5,10 +5,12 @@ import {
   checkCatalog,
   checkStrata,
   checkTranslations,
+  contentEntry,
   placeholders,
   sortIssues,
   type ContentEntry,
 } from '../../../scripts/lib/i18n.ts';
+import { readFrontmatter } from '../../../scripts/lib/frontmatter.ts';
 import { STRATA } from '../../../src/core/domain/strata.ts';
 import { LOCALES } from '../../../src/core/domain/locale.ts';
 
@@ -137,14 +139,24 @@ describe('checkTranslations', () => {
     ]);
   });
 
-  it('warns when a published work is translated only by a draft (drafts are not built)', () => {
+  // Review guardrails#3: this was a warning, so a published essay shipped untranslated with CI green.
+  it('fails when a published work is translated only by a draft (drafts are not built)', () => {
     const issues = checkTranslations([
       entry({ file: 'pt/w.md', translationKey: 'w', slug: 'w' }),
       entry({ file: 'en/w.md', folderLocale: 'en', lang: 'en', translationKey: 'w', slug: 'w', draft: true }),
     ]);
     expect(issues.map((i) => `${i.severity} ${i.where}: ${i.message}`)).toEqual([
-      'warning pt/w.md: the en counterpart of translationKey "w" is still a draft: the published page has no translation yet',
+      'error pt/w.md: the en counterpart of translationKey "w" is a draft, so this published page would ship without its translation (publish both versions, or neither)',
     ]);
+  });
+
+  it('accepts a work that is a draft in every locale (nothing of it is built)', () => {
+    expect(
+      checkTranslations([
+        entry({ file: 'pt/d.md', translationKey: 'd', slug: 'd', draft: true }),
+        entry({ file: 'en/d.md', folderLocale: 'en', lang: 'en', translationKey: 'd', slug: 'd', draft: true }),
+      ]),
+    ).toEqual([]);
   });
 
   it('reports a missing counterpart at the published version, not at a draft', () => {
@@ -155,6 +167,58 @@ describe('checkTranslations', () => {
     expect(issues.map((i) => `${i.severity} ${i.where}: ${i.message}`)).toContain(
       'error pt/b-published.md: no en counterpart with translationKey "v" in essays',
     );
+  });
+});
+
+describe('contentEntry (frontmatter → entry, with the schema types)', () => {
+  const fromSource = (source: string) => {
+    const fm = readFrontmatter(source);
+    if (!fm.ok) throw new Error(fm.error);
+    return contentEntry('essays', 'essays/en/entropy.md', 'en', fm.value);
+  };
+
+  it('reads the identity fields as Astro will see them (draft: True is a draft)', () => {
+    expect(fromSource('---\nlang: en\ntranslationKey:\n  entropy\nslug: entropy\ndraft: True\n---\n')).toEqual({
+      ok: true,
+      value: {
+        collection: 'essays',
+        file: 'essays/en/entropy.md',
+        folderLocale: 'en',
+        lang: 'en',
+        translationKey: 'entropy',
+        slug: 'entropy',
+        stratum: undefined,
+        draft: true,
+      },
+    });
+    expect(fromSource('---\nlang: en\ntranslationKey: entropy\n---\n')).toMatchObject({
+      ok: true,
+      value: { draft: false },
+    });
+  });
+
+  it('reports values of another type as unsupported forms, never as missing fields', () => {
+    expect(fromSource('---\nlang: en\ntranslationKey: [entropy]\nslug: 2026-01-05\ndraft: yes\n---\n')).toEqual({
+      ok: false,
+      error: [
+        {
+          severity: 'error',
+          where: 'essays/en/entropy.md',
+          message: '`translationKey` has an unsupported frontmatter form: expected a string, found a sequence',
+        },
+        {
+          severity: 'error',
+          where: 'essays/en/entropy.md',
+          message: '`slug` has an unsupported frontmatter form: expected a string, found a timestamp',
+        },
+        {
+          severity: 'error',
+          where: 'essays/en/entropy.md',
+          message:
+            '`draft` has an unsupported frontmatter form: expected a boolean (true or false), found a string ("yes")',
+        },
+      ],
+    });
   });
 });
 

@@ -6,13 +6,17 @@
  * Catalogs  — `defineMessages` already proves key parity at compile time; at
  *             run time we also reject empty strings and placeholder drift
  *             ("{year}" in pt-BR but "{ano}" in en would print a raw brace).
- * Content   — every translatable entry (essays, labs, pages) exists in both
- *             locales under the same translationKey; the folder agrees with
- *             `lang`; no two entries collide on (collection, locale, slug).
+ * Content   — every published translatable entry (essays, labs, pages) has a
+ *             published counterpart in the other locale under the same
+ *             translationKey (a work that is a draft in every locale only
+ *             warns); the folder agrees with `lang`; no two entries collide on
+ *             (collection, locale, slug).
  * Strata    — the four strata exist exactly once in each locale.
  */
 import { LOCALES, type Locale } from '../../src/core/domain/locale.ts';
 import { STRATA } from '../../src/core/domain/strata.ts';
+import { err, ok, type Result } from '../../src/core/algebra/result.ts';
+import { booleanField, stringField, type Field, type Frontmatter } from './frontmatter.ts';
 import { byCodeUnit } from './order.ts';
 
 export type Severity = 'error' | 'warning';
@@ -94,6 +98,41 @@ export interface ContentEntry {
   readonly draft: boolean;
 }
 
+/**
+ * The entry of a content file, from its frontmatter as Astro parsed it. The
+ * identity fields must have the types of the content schema (src/content.config.ts:
+ * strings, `draft` a boolean); a value of another type is reported as an
+ * unsupported form — never as a missing field — and the entry is left out, so
+ * no parity rule runs on a misread value.
+ */
+export const contentEntry = (
+  collection: string,
+  file: string,
+  folderLocale: Locale | undefined,
+  fm: Frontmatter,
+): Result<ContentEntry, readonly Issue[]> => {
+  const problems: Issue[] = [];
+  const read = <T>(key: string, f: Field<T>, expected: string): T | undefined => {
+    if (f.kind === 'unsupported')
+      problems.push(
+        error(file, `\`${key}\` has an unsupported frontmatter form: expected ${expected}, found ${f.found}`),
+      );
+    return f.kind === 'value' ? f.value : undefined;
+  };
+  const string = (key: string): string | undefined => read(key, stringField(fm, key), 'a string');
+  const entry: ContentEntry = {
+    collection,
+    file,
+    folderLocale,
+    lang: string('lang'),
+    translationKey: string('translationKey'),
+    slug: string('slug'),
+    stratum: string('stratum'),
+    draft: read('draft', booleanField(fm, 'draft'), 'a boolean (true or false)') ?? false,
+  };
+  return problems.length > 0 ? err(problems) : ok(entry);
+};
+
 const checkLocation = (e: ContentEntry): readonly Issue[] => {
   if (e.folderLocale === undefined) return [error(e.file, 'content must live under a pt/ or en/ folder')];
   if (e.lang === undefined) return [error(e.file, 'missing `lang` in frontmatter')];
@@ -139,22 +178,20 @@ export const checkTranslations = (entries: readonly ContentEntry[]): readonly Is
         );
       }
       // Drafts are not built (src/adapters/astro/content.ts), so a work whose every
-      // version is a draft only warns; a PUBLISHED work without a counterpart is an error.
+      // version is a draft only warns. A PUBLISHED work needs a published counterpart:
+      // none at all, or only drafts, means the page ships untranslated — an error (ADR 0002 §6).
       const published = members.filter((m) => !m.draft);
+      const first = published[0];
       if (inLocale.length === 0) {
         const message = `no ${locale} counterpart with translationKey "${key}" in ${sample.collection}`;
-        const first = published[0];
         issues.push(first === undefined ? warning(sample.file, `${message} (draft)`) : error(first.file, message));
-      } else if (inLocale.every((m) => m.draft)) {
-        const first = published[0];
-        if (first !== undefined) {
-          issues.push(
-            warning(
-              first.file,
-              `the ${locale} counterpart of translationKey "${key}" is still a draft: the published page has no translation yet`,
-            ),
-          );
-        }
+      } else if (first !== undefined && inLocale.every((m) => m.draft)) {
+        issues.push(
+          error(
+            first.file,
+            `the ${locale} counterpart of translationKey "${key}" is a draft, so this published page would ship without its translation (publish both versions, or neither)`,
+          ),
+        );
       }
     }
   }

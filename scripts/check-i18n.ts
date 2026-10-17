@@ -5,9 +5,11 @@
  *
  * 1. Every message catalog in src/core/i18n/catalogs/*.ts: same keys in both
  *    locales, no empty message, identical {placeholders}.
- * 2. Every translatable entry (essays, labs, pages) has a counterpart in the
- *    other locale with the same translationKey (drafts only warn); folders
- *    agree with `lang`; no slug collides within a collection and locale.
+ * 2. Every published translatable entry (essays, labs, pages) has a published
+ *    counterpart in the other locale with the same translationKey (a work that
+ *    is a draft in every locale only warns); folders agree with `lang`; no slug
+ *    collides within a collection and locale.
+ *    Frontmatter is parsed exactly as Astro parses it (scripts/lib/frontmatter.ts).
  * 3. The four strata exist exactly once per locale.
  * Rules: scripts/lib/i18n.ts (pure, unit-tested).
  */
@@ -15,12 +17,13 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { argument, listFiles } from './lib/fs.ts';
-import { readFrontmatter, scalar } from './lib/frontmatter.ts';
+import { readFrontmatter } from './lib/frontmatter.ts';
 import {
   LOCALE_FOLDERS,
   checkCatalog,
   checkStrata,
   checkTranslations,
+  contentEntry,
   sortIssues,
   type ContentEntry,
   type Issue,
@@ -72,16 +75,9 @@ for (const collection of COLLECTIONS) {
       continue;
     }
     const folder = file.split('/')[0] ?? '';
-    entries.push({
-      collection,
-      file: where,
-      folderLocale: file.includes('/') ? LOCALE_FOLDERS[folder] : undefined,
-      lang: scalar(fm.value, 'lang'),
-      translationKey: scalar(fm.value, 'translationKey'),
-      slug: scalar(fm.value, 'slug'),
-      stratum: scalar(fm.value, 'stratum'),
-      draft: scalar(fm.value, 'draft') === 'true',
-    });
+    const entry = contentEntry(collection, where, file.includes('/') ? LOCALE_FOLDERS[folder] : undefined, fm.value);
+    if (entry.ok) entries.push(entry.value);
+    else issues.push(...entry.error);
   }
 }
 issues.push(...checkTranslations(entries), ...checkStrata(entries, display(path.join(contentDir, 'strata'))));

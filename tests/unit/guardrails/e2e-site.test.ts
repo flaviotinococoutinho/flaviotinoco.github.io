@@ -1,10 +1,18 @@
 /**
  * Pure helpers of the e2e suite (tests/e2e/support/site.ts): which pages are
- * tested is decided by the sitemap, so these must neither drop nor invent pages.
+ * tested is decided by the sitemap and dist's HTML files, so these must neither
+ * drop nor invent pages.
  */
 import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
-import { expectedLocale, localeHomes, pagePath, sitePages, sitemapLocations } from '../../../tests/e2e/support/site.ts';
+import {
+  distPagePath,
+  expectedLocale,
+  localeHomes,
+  pagePath,
+  sitePages,
+  sitemapLocations,
+} from '../../../tests/e2e/support/site.ts';
 import { normaliseBase, type SiteCoordinates } from '../../../scripts/lib/site.ts';
 
 const coords: SiteCoordinates = { origin: 'https://example.test', base: '/base/' };
@@ -41,6 +49,33 @@ describe('sitemap reading', () => {
       coords,
     );
     expect(localeHomes(pages).map((p) => p.path)).toEqual(['en/', 'pt/']);
+  });
+
+  it('maps dist HTML files to page paths', () => {
+    expect(distPagePath('index.html')).toBe('');
+    expect(distPagePath('pt/index.html')).toBe('pt/');
+    expect(distPagePath('pt/ensaios/x/index.html')).toBe('pt/ensaios/x/');
+    expect(distPagePath('google1234.html')).toBe('google1234.html');
+    expect(distPagePath('pt\\sobre\\index.html')).toBe('pt/sobre/');
+    expect(distPagePath('sitemap-0.xml')).toBeUndefined();
+  });
+
+  // Regression (review guardrails#6): pages were taken from the sitemap only, so an HTML page
+  // the sitemap leaves out was never audited.
+  it('adds every HTML page of dist that the sitemap leaves out, except the root and the 404 page', () => {
+    const pages = sitePages([urlset(['https://example.test/base/pt/'])], coords, [
+      'index.html',
+      '404.html',
+      'pt/index.html',
+      'pt/rascunho/index.html',
+      'en/index.html',
+    ]);
+    expect(pages).toEqual([
+      { path: 'en/', locale: 'en' },
+      { path: 'pt/', locale: 'pt-BR' },
+      { path: 'pt/rascunho/', locale: 'pt-BR' },
+    ]);
+    expect(sitePages([urlset(['https://example.test/base/'])], coords)).toEqual([]);
   });
 
   const segment = fc.stringMatching(/^[a-z0-9-]{1,12}$/);

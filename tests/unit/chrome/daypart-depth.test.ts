@@ -1,3 +1,4 @@
+import { runInNewContext } from 'node:vm';
 import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
 import {
@@ -12,7 +13,7 @@ import { DEPTHS, depthOffset, parseDepth, progressToken, viewProgress } from '..
 describe('daypart', () => {
   it('follows the documented table', () => {
     const expected = ['night', 'night', 'night', 'night', 'night', 'night', 'dawn', 'dawn', 'dawn', 'dawn'];
-    expected.push(...Array(7).fill('day'), ...Array(4).fill('dusk'), ...Array(3).fill('night'));
+    expected.push(...Array<string>(7).fill('day'), ...Array<string>(4).fill('dusk'), ...Array<string>(3).fill('night'));
     expect(Array.from({ length: 24 }, (_, h) => daypartOf(h))).toEqual(expected);
   });
 
@@ -36,9 +37,10 @@ describe('daypart', () => {
   });
 
   it('compiles to an expression equal to the function', () => {
-    // The compiled artefact itself is evaluated, exactly as the pre-paint script embeds it.
-    const f = new Function('h', `return ${daypartExpression('h')};`) as (h: number) => string;
-    for (let h = 0; h < 24; h++) expect(f(h)).toBe(daypartOf(h));
+    // The compiled artefact itself is evaluated, exactly as the pre-paint script embeds it
+    // (in a fresh V8 context, so it can only see the variable it is given).
+    const expression = daypartExpression('h');
+    for (let h = 0; h < 24; h++) expect(runInNewContext(expression, { h })).toBe(daypartOf(h));
   });
 
   it('boundaries are strictly increasing within a day', () => {
@@ -55,21 +57,24 @@ describe('depth mapping', () => {
     for (const bad of ['4', '-4', '1.5', '', 'x', ' ', '01', null, undefined]) expect(parseDepth(bad)).toBeNull();
   });
 
-  test.prop([fc.double({ min: -1e5, max: 1e5, noNaN: true }), fc.double({ min: 0, max: 1e5, noNaN: true }), fc.double({ min: 1, max: 1e5, noNaN: true })])(
-    'progress stays in [0, 1]',
-    (top, height, vh) => {
-      const p = viewProgress(top, height, vh);
-      expect(p).toBeGreaterThanOrEqual(0);
-      expect(p).toBeLessThanOrEqual(1);
-    },
-  );
+  test.prop([
+    fc.double({ min: -1e5, max: 1e5, noNaN: true }),
+    fc.double({ min: 0, max: 1e5, noNaN: true }),
+    fc.double({ min: 1, max: 1e5, noNaN: true }),
+  ])('progress stays in [0, 1]', (top, height, vh) => {
+    const p = viewProgress(top, height, vh);
+    expect(p).toBeGreaterThanOrEqual(0);
+    expect(p).toBeLessThanOrEqual(1);
+  });
 
-  test.prop([fc.double({ min: -1e4, max: 1e4, noNaN: true }), fc.double({ min: 0, max: 1e4, noNaN: true }), fc.double({ min: 1, max: 1e4, noNaN: true }), fc.double({ min: 0, max: 1e3, noNaN: true })])(
-    'progress is monotone in scroll (top decreases as the page scrolls down)',
-    (top, height, vh, scroll) => {
-      expect(viewProgress(top - scroll, height, vh)).toBeGreaterThanOrEqual(viewProgress(top, height, vh));
-    },
-  );
+  test.prop([
+    fc.double({ min: -1e4, max: 1e4, noNaN: true }),
+    fc.double({ min: 0, max: 1e4, noNaN: true }),
+    fc.double({ min: 1, max: 1e4, noNaN: true }),
+    fc.double({ min: 0, max: 1e3, noNaN: true }),
+  ])('progress is monotone in scroll (top decreases as the page scrolls down)', (top, height, vh, scroll) => {
+    expect(viewProgress(top - scroll, height, vh)).toBeGreaterThanOrEqual(viewProgress(top, height, vh));
+  });
 
   it('matches the cover range end points and centre', () => {
     const vh = 800;
@@ -84,14 +89,15 @@ describe('depth mapping', () => {
     expect(viewProgress(0, 0, 0)).toBe(0.5);
   });
 
-  test.prop([fc.double({ min: 0, max: 1, noNaN: true }), fc.constantFrom(...DEPTHS), fc.double({ min: 0, max: 100, noNaN: true })])(
-    'offset is antisymmetric about the centre and vanishes without motion',
-    (p, d, unit) => {
-      expect(depthOffset(p, d, unit, 0) === 0).toBe(true);
-      expect(depthOffset(p, d, unit, 1) + depthOffset(1 - p, d, unit, 1)).toBeCloseTo(0, 9);
-      expect(depthOffset(0.5, d, unit, 1) === 0).toBe(true);
-    },
-  );
+  test.prop([
+    fc.double({ min: 0, max: 1, noNaN: true }),
+    fc.constantFrom(...DEPTHS),
+    fc.double({ min: 0, max: 100, noNaN: true }),
+  ])('offset is antisymmetric about the centre and vanishes without motion', (p, d, unit) => {
+    expect(depthOffset(p, d, unit, 0) === 0).toBe(true);
+    expect(depthOffset(p, d, unit, 1) + depthOffset(1 - p, d, unit, 1)).toBeCloseTo(0, 9);
+    expect(depthOffset(0.5, d, unit, 1) === 0).toBe(true);
+  });
 
   it('formats progress tokens with fixed precision', () => {
     expect(progressToken(0.123456)).toBe('0.123');

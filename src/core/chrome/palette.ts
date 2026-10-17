@@ -7,6 +7,15 @@
  * The first option is selected automatically whenever a non-empty query has
  * results ("list autocomplete with automatic selection"), so Enter follows it.
  *
+ * Results arrive in two waves for one query: quick navigation at once, then
+ * the full-text hits appended after them (asynchronously, ≥ one debounce
+ * later). The second wave must not undo what the reader did in between, so
+ * the state remembers whether the reader has chosen an option (arrow keys or
+ * pointer) since the query last changed. `query` forgets the choice; `results`
+ * keeps a chosen option while it is still listed, and only otherwise selects
+ * automatically. The shell guarantees that a re-render for the same query only
+ * appends options, so a kept index still names the same option.
+ *
  *   ArrowDown  next option, wrapping to the first
  *   ArrowUp    previous option, wrapping to the last
  *   Enter      follow the active option
@@ -24,20 +33,22 @@ export interface PaletteState {
   readonly count: number;
   /** Index of the active option, or -1 for none. Invariant: -1 ≤ active < count. */
   readonly active: number;
+  /** The reader moved the active option (keys, pointer) since the query last changed. Invariant: chosen ⇒ active ≥ 0. */
+  readonly chosen: boolean;
 }
 
 export type PaletteKey = 'ArrowDown' | 'ArrowUp' | 'Enter' | 'Escape';
 
 export type PaletteEvent =
+  /** The text of the field changed: a new query (the reader's choice is forgotten). */
   | { readonly type: 'query'; readonly query: string }
+  /** The list was (re)rendered for the current query with `count` options. */
   | { readonly type: 'results'; readonly count: number }
   | { readonly type: 'key'; readonly key: PaletteKey }
   | { readonly type: 'point'; readonly index: number };
 
 export type PaletteEffect =
-  | { readonly kind: 'none' }
-  | { readonly kind: 'follow'; readonly index: number }
-  | { readonly kind: 'close' };
+  { readonly kind: 'none' } | { readonly kind: 'follow'; readonly index: number } | { readonly kind: 'close' };
 
 export interface PaletteStep {
   readonly state: PaletteState;
@@ -46,7 +57,7 @@ export interface PaletteStep {
   readonly handled: boolean;
 }
 
-export const INITIAL_PALETTE: PaletteState = { query: '', count: 0, active: -1 };
+export const INITIAL_PALETTE: PaletteState = { query: '', count: 0, active: -1, chosen: false };
 
 const NONE: PaletteEffect = { kind: 'none' };
 
@@ -66,29 +77,38 @@ export const stepPalette = (state: PaletteState, event: PaletteEvent): PaletteSt
   switch (event.type) {
     case 'query':
       return {
-        state: { query: event.query, count: state.count, active: autoActive(event.query, state.count) },
+        state: { query: event.query, count: state.count, active: autoActive(event.query, state.count), chosen: false },
         effect: NONE,
         handled: false,
       };
     case 'results': {
       const count = sanitiseCount(event.count);
-      return { state: { ...state, count, active: autoActive(state.query, count) }, effect: NONE, handled: false };
+      const keep = state.chosen && state.active < count;
+      return {
+        state: { ...state, count, active: keep ? state.active : autoActive(state.query, count), chosen: keep },
+        effect: NONE,
+        handled: false,
+      };
     }
     case 'point':
       return Number.isInteger(event.index) && event.index >= 0 && event.index < state.count
-        ? { state: { ...state, active: event.index }, effect: NONE, handled: false }
+        ? { state: { ...state, active: event.index, chosen: true }, effect: NONE, handled: false }
         : { state, effect: NONE, handled: false };
     case 'key':
       switch (event.key) {
         case 'ArrowDown':
           return state.count === 0
             ? { state, effect: NONE, handled: true }
-            : { state: { ...state, active: mod(state.active + 1, state.count) }, effect: NONE, handled: true };
+            : {
+                state: { ...state, active: mod(state.active + 1, state.count), chosen: true },
+                effect: NONE,
+                handled: true,
+              };
         case 'ArrowUp':
           return state.count === 0
             ? { state, effect: NONE, handled: true }
             : {
-                state: { ...state, active: state.active <= 0 ? state.count - 1 : state.active - 1 },
+                state: { ...state, active: state.active <= 0 ? state.count - 1 : state.active - 1, chosen: true },
                 effect: NONE,
                 handled: true,
               };
@@ -125,7 +145,10 @@ export interface Rankable {
   readonly keywords?: string;
 }
 
-const tokens = (s: string): readonly string[] => foldForSearch(s).split(/[^\p{L}\p{N}]+/u).filter((t) => t.length > 0);
+const tokens = (s: string): readonly string[] =>
+  foldForSearch(s)
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((t) => t.length > 0);
 
 /**
  * Score of one item for a query: every query token must occur (conjunctive);
@@ -139,7 +162,13 @@ export const scoreItem = (item: Rankable, query: string): number => {
   const words = tokens(`${item.label} ${item.keywords ?? ''}`);
   let total = 0;
   for (const t of q) {
-    const s = label.startsWith(t) ? 3 : words.some((w) => w.startsWith(t)) ? 2 : words.some((w) => w.includes(t)) ? 1 : 0;
+    const s = label.startsWith(t)
+      ? 3
+      : words.some((w) => w.startsWith(t))
+        ? 2
+        : words.some((w) => w.includes(t))
+          ? 1
+          : 0;
     if (s === 0) return 0;
     total += s;
   }

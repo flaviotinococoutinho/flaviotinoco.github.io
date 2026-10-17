@@ -11,10 +11,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Least privilege (ADR 0005): the workflow grants only read access to the code; each job
+# states what it needs, so a job added later inherits nothing more.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # One deployment at a time; never cancel one that is already running (a cancelled
 # deploy can leave Pages half-published). Queued runs wait their turn.
@@ -88,6 +88,10 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    # actions/deploy-pages: write to Pages, and an OIDC token proving where the deployment comes from.
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

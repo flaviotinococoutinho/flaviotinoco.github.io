@@ -16,6 +16,7 @@ export default defineMessages({
 
     'search.open': 'Buscar',
     'search.keys': 'Atalhos: / ou Ctrl/⌘ K',
+    'search.keysChord': 'Atalho: Ctrl/⌘ K',
     'search.kbdSlash': '/',
     'search.kbdMod': 'Ctrl/⌘ K',
 
@@ -142,6 +143,7 @@ export default defineMessages({
 
     'search.open': 'Search',
     'search.keys': 'Shortcuts: / or Ctrl/⌘ K',
+    'search.keysChord': 'Shortcut: Ctrl/⌘ K',
     'search.kbdSlash': '/',
     'search.kbdMod': 'Ctrl/⌘ K',
 

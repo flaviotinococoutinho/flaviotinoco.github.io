@@ -94,7 +94,9 @@ export const parsePreferenceValue = <K extends PreferenceKey>(
 ): Result<PreferenceValue<K>, string> =>
   isPreferenceValue(key, v)
     ? ok(v)
-    : err(`preference "${key}": unknown value ${JSON.stringify(v) ?? String(v)} (expected ${PREFERENCE_DOMAINS[key].join(' | ')})`);
+    : err(
+        `preference "${key}": unknown value ${JSON.stringify(v) ?? String(v)} (expected ${PREFERENCE_DOMAINS[key].join(' | ')})`,
+      );
 
 const isRecord = (v: unknown): v is Readonly<Record<string, unknown>> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -169,12 +171,13 @@ export const decodePreferences = (raw: string | null): Preferences => {
  * except the default (whose absence lets CSS media queries decide).
  * This table is the allow-list compiled into the pre-paint script.
  */
-export const ATTRIBUTE_VALUES: { readonly [K in PreferenceKey]: readonly PreferenceValue<K>[] } = /* @__PURE__ */ Object.fromEntries(
-  PREFERENCE_KEYS.map((key) => [
-    key,
-    (PREFERENCE_DOMAINS[key] as readonly string[]).filter((v) => v !== DEFAULT_PREFERENCES[key]),
-  ]),
-) as unknown as { readonly [K in PreferenceKey]: readonly PreferenceValue<K>[] };
+export const ATTRIBUTE_VALUES: { readonly [K in PreferenceKey]: readonly PreferenceValue<K>[] } =
+  /* @__PURE__ */ Object.fromEntries(
+    PREFERENCE_KEYS.map((key) => [
+      key,
+      (PREFERENCE_DOMAINS[key] as readonly string[]).filter((v) => v !== DEFAULT_PREFERENCES[key]),
+    ]),
+  ) as unknown as { readonly [K in PreferenceKey]: readonly PreferenceValue<K>[] };
 
 export type AttributeName = `data-${PreferenceKey}`;
 
@@ -188,8 +191,10 @@ export const preferenceAttributes = (prefs: Preferences): readonly (readonly [At
 /** Catalog key naming one option's label: `prefs.<key>.<value>` (see src/core/i18n/catalogs/chrome.ts). */
 export type PreferenceOptionMessage = { [K in PreferenceKey]: `prefs.${K}.${PreferenceValue<K>}` }[PreferenceKey];
 
-export const preferenceOptionMessage = <K extends PreferenceKey>(key: K, value: PreferenceValue<K>): PreferenceOptionMessage =>
-  `prefs.${key}.${value}` as PreferenceOptionMessage;
+export const preferenceOptionMessage = <K extends PreferenceKey>(
+  key: K,
+  value: PreferenceValue<K>,
+): PreferenceOptionMessage => `prefs.${key}.${value}` as PreferenceOptionMessage;
 
 /** True when the set equals the defaults (nothing stored, nothing applied). */
 export const isDefault = (prefs: Preferences): boolean =>

@@ -98,10 +98,39 @@ export const srcsetUrls = (srcset: string): readonly string[] => {
   return urls.filter((url) => url.length > 0);
 };
 
-/** URL of a <meta http-equiv="refresh" content="0; url=…">, if any. */
+const isAsciiWhitespace = (c: string | undefined): boolean =>
+  c === ' ' || c === '\t' || c === '\n' || c === '\r' || c === '\f';
+
+/**
+ * URL of a <meta http-equiv="refresh"> content, following HTML's "shared
+ * declarative refresh steps": a time (digits, then digits and dots), then — only
+ * after ";", "," or whitespace — an optional "url=" and the URL, which may be
+ * quoted (up to the closing quote). A time alone ("10") refreshes the page
+ * itself: no URL, so nothing to check.
+ */
 export const refreshUrl = (content: string): string | undefined => {
-  const m = /^\s*\d+(?:\.\d*)?\s*[;,]?\s*(?:url\s*=\s*)?(['"]?)(.+?)\1\s*$/i.exec(content);
-  return m?.[2];
+  let i = 0;
+  while (isAsciiWhitespace(content[i])) i += 1;
+  const digits = /^\d*/.exec(content.slice(i))?.[0] ?? '';
+  if (digits === '' && content[i] !== '.') return undefined;
+  i += digits.length;
+  while (/[\d.]/.test(content[i] ?? '')) i += 1;
+  if (i >= content.length) return undefined;
+  const separator = content[i];
+  if (separator !== ';' && separator !== ',' && !isAsciiWhitespace(separator)) return undefined;
+  while (isAsciiWhitespace(content[i])) i += 1;
+  if (content[i] === ';' || content[i] === ',') i += 1;
+  while (isAsciiWhitespace(content[i])) i += 1;
+  let rest = content.slice(i);
+  const prefix = /^url[\t\n\f\r ]*=[\t\n\f\r ]*/i.exec(rest);
+  if (prefix !== null) rest = rest.slice(prefix[0].length);
+  const quote = rest[0];
+  if (quote === '"' || quote === "'") {
+    const end = rest.indexOf(quote, 1);
+    rest = end === -1 ? rest.slice(1) : rest.slice(1, end);
+  }
+  const url = rest.trim();
+  return url === '' ? undefined : url;
 };
 
 export const referencesOfTags = (tags: readonly Tag[]): readonly Reference[] => {
@@ -131,16 +160,69 @@ export const referencesOfTags = (tags: readonly Tag[]): readonly Reference[] => 
   return refs;
 };
 
-/** url(…) and @import references of a stylesheet (data: URIs and fragment-only URLs excluded). */
+/**
+ * url(…) and @import references of a stylesheet (data: URIs and fragment-only
+ * URLs excluded). A small tokenizer in the spirit of CSS Syntax 3 §4: comments
+ * and string tokens are skipped as wholes, so "url(…)" written inside a string
+ * (content: "url(x)") or a comment is text, not a reference, and a "/*" inside
+ * a string does not start a comment. A string right after url( or @import is
+ * the URL.
+ */
 export const cssReferences = (css: string): readonly Reference[] => {
   const refs: Reference[] = [];
-  const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, '');
-  for (const m of withoutComments.matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^)\s]*))\s*\)/gi)) {
-    const url = (m[1] ?? m[2] ?? m[3] ?? '').trim();
-    if (url !== '' && !url.startsWith('data:') && !url.startsWith('#')) refs.push({ url, via: 'css url()' });
-  }
-  for (const m of withoutComments.matchAll(/@import\s+(?:"([^"]*)"|'([^']*)')/gi)) {
-    refs.push({ url: m[1] ?? m[2] ?? '', via: 'css @import' });
+  const add = (url: string, via: string): void => {
+    const u = url.trim();
+    if (u !== '' && !u.startsWith('data:') && !u.startsWith('#')) refs.push({ url: u, via });
+  };
+  /** The string token starting at `at` (a quote): its value and the index after it. */
+  const string = (at: number): { readonly value: string; readonly end: number } => {
+    const quote = css[at];
+    let value = '';
+    let i = at + 1;
+    while (i < css.length && css[i] !== quote && css[i] !== '\n') {
+      if (css[i] === '\\' && i + 1 < css.length) {
+        value += css[i + 1] === '\n' ? '' : (css[i + 1] ?? '');
+        i += 2;
+      } else {
+        value += css[i] ?? '';
+        i += 1;
+      }
+    }
+    return { value, end: i + 1 };
+  };
+  const skipSpaces = (from: number): number => {
+    let i = from;
+    while (isAsciiWhitespace(css[i])) i += 1;
+    return i;
+  };
+  let i = 0;
+  while (i < css.length) {
+    const c = css[i];
+    if (c === '/' && css[i + 1] === '*') {
+      const end = css.indexOf('*/', i + 2);
+      i = end === -1 ? css.length : end + 2;
+    } else if (c === '"' || c === "'") {
+      i = string(i).end;
+    } else if (/^url\(/i.test(css.slice(i, i + 4)) && !/[\w-]/.test(css[i - 1] ?? '')) {
+      const at = skipSpaces(i + 4);
+      if (css[at] === '"' || css[at] === "'") {
+        const s = string(at);
+        add(s.value, 'css url()');
+        i = s.end;
+      } else {
+        const close = css.indexOf(')', at);
+        const end = close === -1 ? css.length : close;
+        add(css.slice(at, end), 'css url()');
+        i = end + 1;
+      }
+    } else if (/^@import/i.test(css.slice(i, i + 7))) {
+      const at = skipSpaces(i + 7);
+      if (css[at] === '"' || css[at] === "'") {
+        const s = string(at);
+        add(s.value, 'css @import');
+        i = s.end;
+      } else i = at;
+    } else i += 1;
   }
   return refs;
 };
@@ -173,6 +255,9 @@ export type Resolution =
   | { readonly kind: 'external' }
   | { readonly kind: 'invalid' }
   | { readonly kind: 'internal'; readonly pathname: string; readonly fragment: string | null };
+
+/** A URL written with a scheme or as scheme-relative ("//host/…"), as opposed to a path. */
+export const isAbsoluteUrl = (raw: string): boolean => /^\s*(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(raw);
 
 const IGNORED_SCHEMES = new Set(['data:', 'blob:', 'javascript:', 'mailto:', 'tel:', 'sms:', 'about:', 'urn:']);
 
@@ -216,6 +301,15 @@ export interface SiteSnapshot {
 
 export interface LinkReport {
   readonly issues: readonly LinkIssue[];
+  /**
+   * Absolute URLs on the site's origin but outside its base path. On a project
+   * site (GitHub Pages: owner.github.io/<repo>/) the origin is shared with the
+   * owner's user site and every other project, so such a URL names another
+   * site — not checked, but listed, because a canonical or og:url that forgot
+   * the base path looks the same. Root-relative and relative references that
+   * leave the base are still errors (they are base-path bugs).
+   */
+  readonly warnings: readonly LinkIssue[];
   /** Number of internal references checked. */
   readonly checked: number;
   readonly external: number;
@@ -245,10 +339,11 @@ export const checkLinks = (site: SiteSnapshot, coords: SiteCoordinates): LinkRep
   };
 
   const issues = new Map<string, LinkIssue>();
+  const warnings = new Map<string, LinkIssue>();
   let checked = 0;
   let external = 0;
-  const report = (source: string, ref: Reference, reason: string): void => {
-    issues.set(`${source}\u0000${ref.url}\u0000${reason}`, { source, url: ref.url, via: ref.via, reason });
+  const report = (source: string, ref: Reference, reason: string, into = issues): void => {
+    into.set(`${source}\u0000${ref.url}\u0000${reason}`, { source, url: ref.url, via: ref.via, reason });
   };
 
   const verify = (source: string, documentUrl: URL, ref: Reference): void => {
@@ -265,8 +360,18 @@ export const checkLinks = (site: SiteSnapshot, coords: SiteCoordinates): LinkRep
       case 'internal':
         break;
     }
-    checked += 1;
     const target = distTargetOf(r.pathname, coords.base);
+    if (target.kind === 'outside-base' && isAbsoluteUrl(ref.url)) {
+      external += 1;
+      report(
+        source,
+        ref,
+        `another site on the shared origin (outside the base path ${target.base}); not checked`,
+        warnings,
+      );
+      return;
+    }
+    checked += 1;
     if (target.kind === 'outside-base') {
       report(source, ref, `outside the base path ${target.base} (prefix links with import.meta.env.BASE_URL)`);
       return;
@@ -309,8 +414,9 @@ export const checkLinks = (site: SiteSnapshot, coords: SiteCoordinates): LinkRep
     for (const ref of xmlReferences(xml)) verify(path, url, ref);
   }
 
-  const sorted = [...issues.values()].sort(
-    (a, b) => byCodeUnit(a.source, b.source) || byCodeUnit(a.url, b.url) || byCodeUnit(a.reason, b.reason),
-  );
-  return { issues: sorted, checked, external };
+  const sort = (list: Iterable<LinkIssue>): readonly LinkIssue[] =>
+    [...list].sort(
+      (a, b) => byCodeUnit(a.source, b.source) || byCodeUnit(a.url, b.url) || byCodeUnit(a.reason, b.reason),
+    );
+  return { issues: sort(issues.values()), warnings: sort(warnings.values()), checked, external };
 };

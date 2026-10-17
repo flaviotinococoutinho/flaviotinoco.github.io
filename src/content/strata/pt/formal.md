@@ -17,8 +17,9 @@ consequência calculável e, por isso, verificável por terceiros. Boa parte dos
 estrato: cada um torna tangível um teorema ou uma lei, e o leitor pode variar os parâmetros para ver onde a afirmação se
 sustenta e onde as hipóteses deixam de valer.
 
-Na simbologia do site, o formal é o **triângulo**, o 2-simplexo: a menor figura rígida. Três pontos ligados dois a dois
-não se deformam sem que algum lado mude de comprimento. Em coordenadas, o simplexo de dimensão $$k$$ é o conjunto
+Na simbologia do site, o formal é o **triângulo**, o 2-simplexo: o polígono rígido mais simples. Três pontos ligados
+dois a dois não se deformam sem que algum lado mude de comprimento, ao passo que um quadrilátero articulado nos vértices
+pode se deformar. Em coordenadas, o simplexo de dimensão $$k$$ é o conjunto
 
 $$
 \Delta^k = \{\, x \in \mathbb{R}^{k+1} \mid x_i \ge 0,\ x_0 + x_1 + \dots + x_k = 1 \,\}

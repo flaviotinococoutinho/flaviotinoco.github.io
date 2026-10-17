@@ -28,9 +28,21 @@ const TAG = 'ft-palette-trigger';
 
 const singleKeyEnabled = (): boolean => document.documentElement.getAttribute('data-shortcut') !== 'off';
 
-const isEditable = (target: EventTarget | null): boolean =>
-  target instanceof HTMLElement &&
-  (target.isContentEditable || target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])') !== null);
+const EDITABLE = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])';
+
+/**
+ * Whether the keystroke is typed into an editable element. This listener sits
+ * on the document, where event.target has been retargeted to the outermost
+ * shadow host (DOM Standard, "retarget"), so a field inside another island's
+ * shadow tree would look like a plain <div>. The composed path still lists the
+ * real target and its ancestors in every open shadow tree; any of them being
+ * editable means the reader is typing. (A closed shadow tree hides its path by
+ * design; such a component must stop propagation of the keys it consumes.)
+ */
+const isTyping = (event: Event): boolean =>
+  event
+    .composedPath()
+    .some((node) => node instanceof HTMLElement && (node.isContentEditable || node.matches(EDITABLE)));
 
 class FtPaletteTrigger extends HTMLElement {
   #abort: AbortController | null = null;
@@ -70,7 +82,7 @@ class FtPaletteTrigger extends HTMLElement {
           metaKey: event.metaKey,
           altKey: event.altKey,
           isComposing: event.isComposing,
-          editableTarget: isEditable(event.target),
+          editableTarget: isTyping(event),
           defaultPrevented: event.defaultPrevented,
           singleKey: singleKeyEnabled(),
         };

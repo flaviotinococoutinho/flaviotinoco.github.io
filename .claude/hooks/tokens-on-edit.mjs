@@ -12,14 +12,38 @@
  * the transcript); 2 = the edit is kept but stderr is fed back to Claude, so a
  * token edit that breaks generation or the palette checks is fixed right away.
  *
- * Plain JavaScript on purpose: a hook must start on any supported Node (≥ 22.12)
- * without type stripping, and .claude/ is outside the TypeScript project.
+ * Plain JavaScript on purpose: .claude/ is outside the TypeScript project, and
+ * the hook itself needs no type stripping. The scripts it runs do
+ * (`node scripts/tokens.ts`): type stripping is on by default from Node 22.18,
+ * the minimum in package.json `engines` (24 recommended, see .nvmrc).
  */
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 import path from 'node:path';
 
-const ROOT = path.resolve(import.meta.dirname, '..', '..');
-const SOURCE = path.join(ROOT, 'src', 'core', 'design', 'tokens.json');
+/**
+ * A path with every symbolic link resolved. Node starts this module from its real
+ * path, so ROOT is canonical, while the payload's file_path and cwd come as the
+ * session sees them (macOS /tmp → /private/tmp, a symlinked ~/code): comparing
+ * the spellings would silently skip the regeneration. A file that does not exist
+ * resolves through its directory.
+ * @param {string} file
+ * @returns {string}
+ */
+const canonical = (file) => {
+  try {
+    return fs.realpathSync.native(file);
+  } catch {
+    try {
+      return path.join(fs.realpathSync.native(path.dirname(file)), path.basename(file));
+    } catch {
+      return path.resolve(file);
+    }
+  }
+};
+
+const ROOT = canonical(path.resolve(import.meta.dirname, '..', '..'));
+const SOURCE = canonical(path.join(ROOT, 'src', 'core', 'design', 'tokens.json'));
 
 /** @returns {Promise<string>} */
 const readStdin = async () => {
@@ -61,7 +85,7 @@ const run = (script) => {
 };
 
 const file = editedFile(await readStdin());
-if (file === undefined || file !== SOURCE) process.exit(0);
+if (file === undefined || canonical(file) !== SOURCE) process.exit(0);
 
 const tokens = run('tokens.ts');
 if (!tokens.ok) {

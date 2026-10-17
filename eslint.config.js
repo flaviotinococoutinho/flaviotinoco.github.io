@@ -6,7 +6,8 @@
  *                   no Astro, no clock or randomness, no throw, no imports from
  *                   outside src/core. Enforced below by "purity" and "boundaries".
  *   src/islands/**  browser shell: must not reach into the build-time Markdown
- *                   pipeline (src/adapters/unified/**) nor Node built-ins.
+ *                   pipeline (src/adapters/unified/**) nor Node built-ins — also not
+ *                   through import() or a computed relative path.
  *   everything else imperative shell (adapters, views, pages, scripts, tests).
  *
  * Rule sets: typescript-eslint `recommendedTypeChecked` (project service) for
@@ -57,10 +58,17 @@ const tsRecommendedRules = Object.assign({}, ...tseslint.configs.recommended.map
  *
  * A relative specifier is resolved against the importing file and compared
  * with project-relative prefixes, so "../../adapters/x.ts" is caught at any
- * depth (no-restricted-imports only sees the string). Options:
+ * depth (no-restricted-imports only sees the string). Every form of import is
+ * checked: declarations, re-exports, dynamic import() and `import('…').T` types.
+ * Options:
  *   allow:  if non-empty, every relative import must resolve inside one of these prefixes;
- *   forbid: relative imports must not resolve inside any of these prefixes.
- * Bare specifiers (packages) are left to no-restricted-imports.
+ *   forbid: relative imports must not resolve inside any of these prefixes;
+ *   bare:   [{ regex, message }] for bare specifiers (packages, node:, astro:) in the two
+ *           forms ESLint's no-restricted-imports does not inspect — import() expressions and
+ *           TypeScript import types; static imports and re-exports stay with no-restricted-imports.
+ * An import() whose specifier is computed is checked through its static prefix: a bare
+ * prefix ("node:" + x) against `bare`; a relative prefix ("../" + x) cannot be resolved,
+ * so it is reported — the layers would otherwise be one template literal away.
  */
 const importBoundaries = {
   meta: {
@@ -73,6 +81,15 @@ const importBoundaries = {
           allow: { type: 'array', items: { type: 'string' } },
           forbid: { type: 'array', items: { type: 'string' } },
           layer: { type: 'string' },
+          bare: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: { regex: { type: 'string' }, message: { type: 'string' } },
+              required: ['regex', 'message'],
+              additionalProperties: false,
+            },
+          },
         },
         additionalProperties: false,
       },
@@ -80,10 +97,14 @@ const importBoundaries = {
     messages: {
       outside: '{{layer}} must only import from {{allowed}}; "{{source}}" resolves to "{{target}}".',
       forbidden: '{{layer}} must not import from {{prefix}}; "{{source}}" resolves to "{{target}}".',
+      bare: '{{message}} ("{{source}}")',
+      computed:
+        '{{layer}}: an import() with a computed relative path ("{{source}}…") cannot be checked against the layers; use a literal specifier or import.meta.glob.',
     },
   },
   create(context) {
-    const [{ allow = [], forbid = [], layer = 'This layer' } = {}] = context.options;
+    const [{ allow = [], forbid = [], layer = 'This layer', bare = [] } = {}] = context.options;
+    const barePatterns = bare.map(({ regex, message }) => ({ pattern: new RegExp(regex), message }));
     const dir = path.dirname(context.physicalFilename);
     const check = (node, source) => {
       if (typeof source !== 'string' || !source.startsWith('.')) return;
@@ -95,14 +116,40 @@ const importBoundaries = {
       if (hit !== undefined)
         context.report({ node, messageId: 'forbidden', data: { layer, prefix: hit, source, target } });
     };
+    const checkBare = (node, source) => {
+      if (typeof source !== 'string' || source === '' || source.startsWith('.') || source.startsWith('/')) return;
+      const hit = barePatterns.find(({ pattern }) => pattern.test(source));
+      if (hit !== undefined) context.report({ node, messageId: 'bare', data: { message: hit.message, source } });
+    };
     const literal = (node) => (node?.type === 'Literal' ? node.value : undefined);
     return {
       ImportDeclaration: (node) => check(node.source, node.source.value),
       ExportNamedDeclaration: (node) => node.source && check(node.source, node.source.value),
       ExportAllDeclaration: (node) => check(node.source, node.source.value),
-      ImportExpression: (node) => check(node.source, literal(node.source)),
+      ImportExpression: (node) => {
+        const source = node.source;
+        if (source.type !== 'TemplateLiteral') {
+          check(source, literal(source));
+          checkBare(source, literal(source));
+          return;
+        }
+        const head = source.quasis[0]?.value.cooked ?? '';
+        if (source.expressions.length === 0) {
+          check(source, head);
+          checkBare(source, head);
+        } else if (head.startsWith('.')) {
+          context.report({ node: source, messageId: 'computed', data: { layer, source: head } });
+        } else checkBare(source, head);
+      },
       // `import('../x.ts').T` in type positions is still a dependency edge.
-      TSImportType: (node) => check(node, literal(node.argument?.literal) ?? literal(node.argument)),
+      TSImportType: (node) => {
+        // typescript-eslint 8 names the specifier `source` (a string Literal) and deprecates
+        // `argument` (a TSLiteralType), which older parsers still produce.
+        const source =
+          'source' in node ? literal(node.source) : (literal(node.argument?.literal) ?? literal(node.argument));
+        check(node, source);
+        checkBare(node, source);
+      },
     };
   },
 };
@@ -142,16 +189,26 @@ const restrictedCoreGlobals = [
   '__filename',
 ].map((name) => ({ name, message: `\`${name}\` ${IMPURE_GLOBAL}` }));
 
+/** Modules the core must never load, in any form of import (bare specifiers). */
+const CORE_FORBIDDEN_MODULES = [
+  {
+    regex:
+      '^(astro($|[:/])|@astrojs/|node:|vite($|/)|fs($|/)|path($|/)|url$|os$|child_process$|crypto$|http2?$|https$|process$|module$|worker_threads$)',
+    message: 'The functional core is pure: no Astro, Vite or Node I/O modules (docs/arquitetura.md §2.1).',
+  },
+];
+
+/** Node built-ins do not exist in the browser, where islands run. */
+const ISLAND_FORBIDDEN_MODULES = [
+  { regex: '^(node:|fs$|path$)', message: 'Islands run in the browser: Node built-ins are unavailable.' },
+];
+
 const corePurity = {
   'no-restricted-imports': [
     'error',
     {
       patterns: [
-        {
-          regex:
-            '^(astro($|[:/])|@astrojs/|node:|vite($|/)|fs($|/)|path($|/)|url$|os$|child_process$|crypto$|http2?$|https$|process$|module$|worker_threads$)',
-          message: 'The functional core is pure: no Astro, Vite or Node I/O modules (docs/arquitetura.md §2.1).',
-        },
+        ...CORE_FORBIDDEN_MODULES,
         {
           regex: '(^|/)(adapters|islands)(/|$)',
           message: 'The core must not depend on the shell (src/adapters, src/islands).',
@@ -179,15 +236,17 @@ const corePurity = {
       selector: 'MetaProperty[meta.name="import"][property.name="meta"]',
       message: '`import.meta` exposes the build environment; the core receives configuration as arguments.',
     },
+    {
+      selector: 'ImportExpression',
+      message: 'Dynamic import() loads code at run time (asynchronous I/O); the functional core imports statically.',
+    },
   ],
   'functional/no-throw-statements': 'error',
   'no-param-reassign': ['error', { props: true }],
-  // Unions are closed sets: every case is listed and the default is `absurd(x)`.
-  '@typescript-eslint/switch-exhaustiveness-check': [
-    'error',
-    { considerDefaultExhaustiveForUnions: false, requireDefaultForNonUnion: true },
-  ],
 };
+
+/** Every script extension: a .js or .mjs file in src/core is still core code. */
+const CORE_SCRIPTS = 'src/core/**/*.{ts,mts,cts,js,mjs,cjs}';
 
 /* ------------------------------------------------------------------------- */
 /* Config.                                                                     */
@@ -281,24 +340,38 @@ export default defineConfig([
     languageOptions: { globals: { ...globals.browser } },
   },
 
-  // FUNCTIONAL CORE — purity and layering.
+  // FUNCTIONAL CORE — purity and layering, whatever the file extension.
   {
     name: 'project/core-purity',
-    files: ['src/core/**/*.ts'],
+    files: [CORE_SCRIPTS],
     plugins: { functional, local },
     rules: {
       ...corePurity,
-      'local/import-boundaries': ['error', { layer: 'src/core', allow: ['src/core/'] }],
+      'local/import-boundaries': ['error', { layer: 'src/core', allow: ['src/core/'], bare: CORE_FORBIDDEN_MODULES }],
+    },
+  },
+  {
+    // Unions are closed sets: every case is listed and the default is `absurd(x)` (needs types).
+    name: 'project/core-exhaustiveness',
+    files: ['src/core/**/*.{ts,mts,cts}'],
+    rules: {
+      '@typescript-eslint/switch-exhaustiveness-check': [
+        'error',
+        { considerDefaultExhaustiveForUnions: false, requireDefaultForNonUnion: true },
+      ],
     },
   },
 
   // ISLANDS — browser shell: no build-time pipeline, no Node built-ins.
   {
     name: 'project/islands-layering',
-    files: ['src/islands/**/*.ts'],
+    files: ['src/islands/**/*.{ts,mts,cts,js,mjs,cjs}'],
     plugins: { local },
     rules: {
-      'local/import-boundaries': ['error', { layer: 'src/islands', forbid: ['src/adapters/unified/'] }],
+      'local/import-boundaries': [
+        'error',
+        { layer: 'src/islands', forbid: ['src/adapters/unified/'], bare: ISLAND_FORBIDDEN_MODULES },
+      ],
       'no-restricted-imports': [
         'error',
         {
@@ -307,7 +380,7 @@ export default defineConfig([
               regex: '(^|/)adapters/unified(/|$)',
               message: 'Islands run in the browser: the Markdown pipeline is build-time only.',
             },
-            { regex: '^(node:|fs$|path$)', message: 'Islands run in the browser: Node built-ins are unavailable.' },
+            ...ISLAND_FORBIDDEN_MODULES,
           ],
         },
       ],

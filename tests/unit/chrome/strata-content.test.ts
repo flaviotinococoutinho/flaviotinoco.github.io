@@ -80,19 +80,22 @@ describe('strata content', () => {
     expect(n).toBeLessThanOrEqual(300);
   });
 
-  it.each(docs.map((d) => [`${d.folder}/${d.file}`, d] as const))('%s uses no directive and only $$ math', (_name, d) => {
-    // Both extensions are syntax extensions (micromark): parsing alone yields their nodes.
-    const tree = unified()
-      .use(remarkParse)
-      .use(remarkMath, { singleDollarTextMath: false })
-      .use(remarkDirective)
-      .parse(d.body);
-    const kinds = new Set<string>();
-    visit(tree, (node) => {
-      kinds.add(node.type);
-    });
-    expect([...kinds].filter((k) => k.endsWith('Directive'))).toEqual([]);
-    // Every "$" of the prose belongs to a $$…$$ formula.
-    expect(d.body.replace(/\$\$[\s\S]*?\$\$/g, '')).not.toContain('$');
-  });
+  it.each(docs.map((d) => [`${d.folder}/${d.file}`, d] as const))(
+    '%s uses no directive and only $$ math',
+    (_name, d) => {
+      // Both extensions are syntax extensions (micromark): parsing alone yields their nodes.
+      const tree = unified()
+        .use(remarkParse)
+        .use(remarkMath, { singleDollarTextMath: false })
+        .use(remarkDirective)
+        .parse(d.body);
+      const kinds = new Set<string>();
+      visit(tree, (node) => {
+        kinds.add(node.type);
+      });
+      expect([...kinds].filter((k) => k.endsWith('Directive'))).toEqual([]);
+      // Every "$" of the prose belongs to a $$…$$ formula.
+      expect(d.body.replace(/\$\$[\s\S]*?\$\$/g, '')).not.toContain('$');
+    },
+  );
 });

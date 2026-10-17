@@ -82,10 +82,13 @@ describe('strict parser rejects what it does not know', () => {
 });
 
 describe('lenient decoder is total', () => {
-  test.prop([fc.oneof(fc.string(), fc.json(), fc.constant(null))])('never throws, always yields valid preferences', (raw) => {
-    const p = decodePreferences(raw);
-    for (const k of PREFERENCE_KEYS) expect(PREFERENCE_DOMAINS[k]).toContain(p[k]);
-  });
+  test.prop([fc.oneof(fc.string(), fc.json(), fc.constant(null))])(
+    'never throws, always yields valid preferences',
+    (raw) => {
+      const p = decodePreferences(raw);
+      for (const k of PREFERENCE_KEYS) expect(PREFERENCE_DOMAINS[k]).toContain(p[k]);
+    },
+  );
 
   it('keeps valid keys and drops invalid ones independently', () => {
     expect(decodePreferences('{"theme":"dark","contrast":"ultra","cvd":"tritanopia"}')).toEqual({

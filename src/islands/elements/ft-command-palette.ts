@@ -15,14 +15,23 @@
  * works and a polite status explains why there are no text results.
  *
  * Pure logic lives in the core: keyboard state machine and ranking
- * (src/core/chrome/palette.ts) and excerpt sanitising (excerpt.ts — only <mark>
- * survives, rendered with DOM APIs, never innerHTML).
+ * (src/core/chrome/palette.ts) and excerpts (excerpt.ts — rebuilt from the
+ * page's raw text and the matched word indices, because Pagefind's own excerpt
+ * string cannot be decoded back to the text; rendered with DOM APIs as text
+ * nodes and <mark>, never innerHTML).
  *
  * Messages arrive from the server catalog as JSON in data-messages
  * ({ zero, one, other, indexMissing, text }), so no UI text is hard-coded here.
  */
-import { INITIAL_PALETTE, inLocale, rankQuickNav, stepPalette, toPaletteKey, type PaletteState } from '../../core/chrome/palette.ts';
-import { sanitiseExcerpt, type ExcerptSegment } from '../../core/chrome/excerpt.ts';
+import {
+  INITIAL_PALETTE,
+  inLocale,
+  rankQuickNav,
+  stepPalette,
+  toPaletteKey,
+  type PaletteState,
+} from '../../core/chrome/palette.ts';
+import { excerptFromContent, sanitiseExcerpt, type ExcerptSegment } from '../../core/chrome/excerpt.ts';
 import { format } from '../../core/i18n/messages.ts';
 
 const TAG = 'ft-command-palette';
@@ -49,14 +58,17 @@ type Messages = Readonly<Record<MessageKey, string>>;
 
 const MESSAGE_KEYS: readonly MessageKey[] = ['zero', 'one', 'other', 'indexMissing', 'text'];
 
+const parseJson = (raw: string | undefined): unknown => {
+  try {
+    return JSON.parse(raw ?? 'null') as unknown;
+  } catch {
+    return null;
+  }
+};
+
 /** Total: missing or malformed entries fall back to the key itself (visible, never silent). */
 const parseMessages = (raw: string | undefined): Messages => {
-  let source: unknown = null;
-  try {
-    source = JSON.parse(raw ?? 'null');
-  } catch {
-    source = null;
-  }
+  const source = parseJson(raw);
   const record = typeof source === 'object' && source !== null ? (source as Record<string, unknown>) : {};
   return Object.fromEntries(
     MESSAGE_KEYS.map((k) => [k, typeof record[k] === 'string' ? record[k] : k]),
@@ -66,9 +78,27 @@ const parseMessages = (raw: string | undefined): Messages => {
 /** Minimal structural type of the Pagefind 1.x client API that we use. */
 interface PagefindData {
   readonly url: string;
-  readonly excerpt: string;
+  /** Raw indexed text of the page. */
+  readonly content?: unknown;
+  /** Indices of the matched words in content.split(/[\r\n\s]+/g). */
+  readonly locations?: unknown;
+  /** HTML excerpt (only < and > escaped): a fallback, see core/chrome/excerpt.ts. */
+  readonly excerpt?: unknown;
   readonly meta?: { readonly title?: string };
 }
+
+/** The excerpt of a result: from the raw text when Pagefind provides it, else from its excerpt string. */
+const excerptOf = (d: PagefindData): readonly ExcerptSegment[] | null => {
+  const { content, locations, excerpt } = d;
+  if (
+    typeof content === 'string' &&
+    Array.isArray(locations) &&
+    locations.every((l): l is number => typeof l === 'number')
+  )
+    return excerptFromContent(content, locations);
+  return typeof excerpt === 'string' ? sanitiseExcerpt(excerpt) : null;
+};
+
 interface Pagefind {
   options(options: Readonly<Record<string, unknown>>): Promise<void>;
   debouncedSearch(
@@ -195,7 +225,8 @@ class FtCommandPalette extends HTMLElement {
     const query = this.#input?.value ?? '';
     const quick = rankQuickNav(this.#quick, query);
     const id = ++this.#searchId;
-    this.#render(quick, query);
+    this.#state = stepPalette(this.#state, { type: 'query', query }).state;
+    this.#render(quick);
     if (query.trim().length < MIN_QUERY_LENGTH) {
       this.#announce('');
       return;
@@ -212,7 +243,9 @@ class FtCommandPalette extends HTMLElement {
     }
     const response = await pf.debouncedSearch(query, {}, DEBOUNCE_MS).catch(() => null);
     if (response === null || id !== this.#searchId) return;
-    const data = await Promise.all(response.results.slice(0, MAX_TEXT_RESULTS * 2).map((r) => r.data().catch(() => null)));
+    const data = await Promise.all(
+      response.results.slice(0, MAX_TEXT_RESULTS * 2).map((r) => r.data().catch(() => null)),
+    );
     if (id !== this.#searchId) return;
 
     // Pagefind already loads the index of the page's <html lang>; the prefix check makes the
@@ -237,18 +270,24 @@ class FtCommandPalette extends HTMLElement {
         lang: null,
         glyph: page?.glyph ?? 'form-essay',
         stratum: page?.stratum ?? null,
-        excerpt: sanitiseExcerpt(d.excerpt),
+        excerpt: excerptOf(d),
       });
     }
+    // Same query, so the quick-navigation options keep their indices and the text hits are
+    // appended after them: an option the reader chose meanwhile stays active (core model).
     const items = [...quick, ...text];
-    this.#render(items, query);
+    this.#render(items);
     this.#announce(this.#countMessage(items.length, query));
   }
 
   #countMessage(n: number, query: string): string {
     const lang = document.documentElement.lang || undefined;
     const template =
-      n === 0 ? this.#messages.zero : new Intl.PluralRules(lang).select(n) === 'one' ? this.#messages.one : this.#messages.other;
+      n === 0
+        ? this.#messages.zero
+        : new Intl.PluralRules(lang).select(n) === 'one'
+          ? this.#messages.one
+          : this.#messages.other;
     return format(template, { n: new Intl.NumberFormat(lang).format(n), query: query.trim() });
   }
 
@@ -256,12 +295,12 @@ class FtCommandPalette extends HTMLElement {
     if (this.#status !== null && this.#status.textContent !== text) this.#status.textContent = text;
   }
 
-  #render(items: readonly Item[], query: string): void {
+  /** Renders the options for the current query (#query has already stepped the `query` event). */
+  #render(items: readonly Item[]): void {
     const list = this.#list;
     if (list === null) return;
     this.#items = items;
-    const afterQuery = stepPalette(this.#state, { type: 'query', query }).state;
-    this.#state = stepPalette(afterQuery, { type: 'results', count: items.length }).state;
+    this.#state = stepPalette(this.#state, { type: 'results', count: items.length }).state;
     list.replaceChildren(
       ...items.map((item, index) => {
         // The link itself is the option (ARIA in HTML allows role=option on a[href]): an

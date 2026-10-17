@@ -4,7 +4,7 @@
  */
 import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -94,6 +94,39 @@ describe('check-i18n', () => {
     expect(r.code).toBe(0);
     expect(r.out).toContain('content entries: essays 3, labs 2, pages 2, strata 8');
     expect(r.out).toContain('no en counterpart with translationKey "draft-only" in essays (draft)');
+  });
+
+  // Review guardrails#2: frontmatter is read as Astro reads it (YAML 1.2 core schema).
+  const withEntropy = (enFrontmatter: string): readonly string[] => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'ft-i18n-'));
+    temporary.push(dir);
+    cpSync(path.join(FIXTURES, 'i18n/ok/content'), dir, { recursive: true });
+    const essay = (frontmatter: string): string => `---\ntitle: Entropia\n${frontmatter}\n---\n\nTexto.\n`;
+    writeFileSync(
+      path.join(dir, 'essays/pt/entropia-2.md'),
+      essay('lang: pt-BR\ntranslationKey: entropy-2\nslug: entropia-2'),
+    );
+    writeFileSync(path.join(dir, 'essays/en/entropy-2.md'), essay(`lang: en\n${enFrontmatter}\nslug: entropy-2`));
+    return ['--catalogs', path.join(FIXTURES, 'i18n/ok/catalogs'), '--content', dir];
+  };
+
+  it('reads frontmatter as Astro does: a continued scalar is a value, draft: True is a draft', () => {
+    const multiline = run('check-i18n.ts', withEntropy('translationKey:\n  entropy-2'));
+    expect(multiline.out).not.toContain('missing `translationKey`');
+    expect(multiline.code).toBe(0);
+    // …and a published page whose only translation is that draft fails (review guardrails#3).
+    const draft = run('check-i18n.ts', withEntropy('translationKey: entropy-2\ndraft: True'));
+    expect(draft.code).toBe(1);
+    expect(draft.out).toContain('the en counterpart of translationKey "entropy-2" is a draft');
+  });
+
+  it('reports an unsupported frontmatter form instead of a missing field', () => {
+    const r = run('check-i18n.ts', withEntropy('translationKey: [entropy-2]'));
+    expect(r.code).toBe(1);
+    expect(r.out).toContain(
+      '`translationKey` has an unsupported frontmatter form: expected a string, found a sequence',
+    );
+    expect(r.out).not.toContain('missing `translationKey`');
   });
 
   it('fails on every class of parity error', () => {
