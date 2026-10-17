@@ -35,9 +35,7 @@ export type PaletteEvent =
   | { readonly type: 'point'; readonly index: number };
 
 export type PaletteEffect =
-  | { readonly kind: 'none' }
-  | { readonly kind: 'follow'; readonly index: number }
-  | { readonly kind: 'close' };
+  { readonly kind: 'none' } | { readonly kind: 'follow'; readonly index: number } | { readonly kind: 'close' };
 
 export interface PaletteStep {
   readonly state: PaletteState;
@@ -125,7 +123,10 @@ export interface Rankable {
   readonly keywords?: string;
 }
 
-const tokens = (s: string): readonly string[] => foldForSearch(s).split(/[^\p{L}\p{N}]+/u).filter((t) => t.length > 0);
+const tokens = (s: string): readonly string[] =>
+  foldForSearch(s)
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((t) => t.length > 0);
 
 /**
  * Score of one item for a query: every query token must occur (conjunctive);
@@ -139,7 +140,13 @@ export const scoreItem = (item: Rankable, query: string): number => {
   const words = tokens(`${item.label} ${item.keywords ?? ''}`);
   let total = 0;
   for (const t of q) {
-    const s = label.startsWith(t) ? 3 : words.some((w) => w.startsWith(t)) ? 2 : words.some((w) => w.includes(t)) ? 1 : 0;
+    const s = label.startsWith(t)
+      ? 3
+      : words.some((w) => w.startsWith(t))
+        ? 2
+        : words.some((w) => w.includes(t))
+          ? 1
+          : 0;
     if (s === 0) return 0;
     total += s;
   }

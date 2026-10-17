@@ -72,36 +72,40 @@ const pageTitle = `${columns.map((col) => col.title).join(' · ')} · ${siteName
     <header class="site-header ui" data-pagefind-ignore="all">
       <div class="site-header__bar">
         <a class="wordmark" href={asset('')}>
-          <svg class="wordmark__mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#simplex-3"></use></svg>
+          <svg class="wordmark__mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+            <use href="#simplex-3"></use>
+          </svg>
           <span class="wordmark__name">{siteName}</span>
         </a>
       </div>
     </header>
     <main id="content" class="page-grid not-found">
-      <svg class="not-found__mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#simplex-0"></use></svg>
+      <svg class="not-found__mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+        <use href="#simplex-0"></use>
+      </svg>
       <h1 class="not-found__heading">
-        {columns.map((col) => <span lang={col.locale}>{col.title}</span>)}
+        {columns.map((col) => (
+          <span lang={col.locale}>{col.title}</span>
+        ))}
       </h1>
       <div class="not-found__columns">
-        {
-          columns.map((col) => (
-            <section lang={col.locale} aria-labelledby={`not-found-${col.locale}`}>
-              <h2 class="not-found__title" id={`not-found-${col.locale}`}>
-                {col.language}
-              </h2>
-              <p class="not-found__body">{col.body}</p>
-              <ul class="not-found__links" role="list">
-                {col.links.map((l) => (
-                  <li>
-                    <a href={l.href} hreflang={col.locale}>
-                      {l.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))
-        }
+        {columns.map((col) => (
+          <section lang={col.locale} aria-labelledby={`not-found-${col.locale}`}>
+            <h2 class="not-found__title" id={`not-found-${col.locale}`}>
+              {col.language}
+            </h2>
+            <p class="not-found__body">{col.body}</p>
+            <ul class="not-found__links" role="list">
+              {col.links.map((l) => (
+                <li>
+                  <a href={l.href} hreflang={col.locale}>
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </div>
     </main>
   </body>

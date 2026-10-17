@@ -21,7 +21,14 @@
  * Messages arrive from the server catalog as JSON in data-messages
  * ({ zero, one, other, indexMissing, text }), so no UI text is hard-coded here.
  */
-import { INITIAL_PALETTE, inLocale, rankQuickNav, stepPalette, toPaletteKey, type PaletteState } from '../../core/chrome/palette.ts';
+import {
+  INITIAL_PALETTE,
+  inLocale,
+  rankQuickNav,
+  stepPalette,
+  toPaletteKey,
+  type PaletteState,
+} from '../../core/chrome/palette.ts';
 import { sanitiseExcerpt, type ExcerptSegment } from '../../core/chrome/excerpt.ts';
 import { format } from '../../core/i18n/messages.ts';
 
@@ -49,14 +56,17 @@ type Messages = Readonly<Record<MessageKey, string>>;
 
 const MESSAGE_KEYS: readonly MessageKey[] = ['zero', 'one', 'other', 'indexMissing', 'text'];
 
+const parseJson = (raw: string | undefined): unknown => {
+  try {
+    return JSON.parse(raw ?? 'null') as unknown;
+  } catch {
+    return null;
+  }
+};
+
 /** Total: missing or malformed entries fall back to the key itself (visible, never silent). */
 const parseMessages = (raw: string | undefined): Messages => {
-  let source: unknown = null;
-  try {
-    source = JSON.parse(raw ?? 'null');
-  } catch {
-    source = null;
-  }
+  const source = parseJson(raw);
   const record = typeof source === 'object' && source !== null ? (source as Record<string, unknown>) : {};
   return Object.fromEntries(
     MESSAGE_KEYS.map((k) => [k, typeof record[k] === 'string' ? record[k] : k]),
@@ -212,7 +222,9 @@ class FtCommandPalette extends HTMLElement {
     }
     const response = await pf.debouncedSearch(query, {}, DEBOUNCE_MS).catch(() => null);
     if (response === null || id !== this.#searchId) return;
-    const data = await Promise.all(response.results.slice(0, MAX_TEXT_RESULTS * 2).map((r) => r.data().catch(() => null)));
+    const data = await Promise.all(
+      response.results.slice(0, MAX_TEXT_RESULTS * 2).map((r) => r.data().catch(() => null)),
+    );
     if (id !== this.#searchId) return;
 
     // Pagefind already loads the index of the page's <html lang>; the prefix check makes the
@@ -248,7 +260,11 @@ class FtCommandPalette extends HTMLElement {
   #countMessage(n: number, query: string): string {
     const lang = document.documentElement.lang || undefined;
     const template =
-      n === 0 ? this.#messages.zero : new Intl.PluralRules(lang).select(n) === 'one' ? this.#messages.one : this.#messages.other;
+      n === 0
+        ? this.#messages.zero
+        : new Intl.PluralRules(lang).select(n) === 'one'
+          ? this.#messages.one
+          : this.#messages.other;
     return format(template, { n: new Intl.NumberFormat(lang).format(n), query: query.trim() });
   }
 

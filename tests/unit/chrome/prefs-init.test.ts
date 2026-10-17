@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { runInNewContext } from 'node:vm';
 import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
 import {
@@ -34,8 +35,9 @@ const run = (stored: string | null, hour = 12, storageThrows = false): Map<strin
       return hour;
     }
   };
-  // Evaluating the exact shipped string (not a re-implementation) is the point of this test.
-  new Function('document', 'localStorage', 'Date', PREFS_INIT_SCRIPT)(document, localStorage, FakeDate);
+  // Evaluating the exact shipped string (not a re-implementation) is the point of this test; a fresh
+  // V8 context gives it exactly these globals and nothing else of the test's environment.
+  runInNewContext(PREFS_INIT_SCRIPT, { document, localStorage, Date: FakeDate });
   return attrs;
 };
 

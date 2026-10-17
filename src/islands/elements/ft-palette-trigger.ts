@@ -30,7 +30,8 @@ const singleKeyEnabled = (): boolean => document.documentElement.getAttribute('d
 
 const isEditable = (target: EventTarget | null): boolean =>
   target instanceof HTMLElement &&
-  (target.isContentEditable || target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])') !== null);
+  (target.isContentEditable ||
+    target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])') !== null);
 
 class FtPaletteTrigger extends HTMLElement {
   #abort: AbortController | null = null;

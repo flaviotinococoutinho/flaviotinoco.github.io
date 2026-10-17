@@ -49,33 +49,37 @@ const nav = [
 <header class="site-header ui" data-pagefind-ignore="all">
   <div class="site-header__bar">
     <a class="wordmark" href={home} aria-current={currentness(path, home, true) ?? undefined}>
-      <svg class="wordmark__mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#simplex-3"></use></svg>
+      <svg class="wordmark__mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+        <use href="#simplex-3"></use>
+      </svg>
       <span class="wordmark__name">{t('site.name')}</span>
     </a>
 
     <ft-nav-menu class="site-nav">
       <button type="button" class="tool site-nav__toggle" aria-expanded="false" aria-controls="site-nav-list" hidden>
-        <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#ui-menu"></use></svg>
+        <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+          <use href="#ui-menu"></use>
+        </svg>
         <span class="tool__label">{c('header.menu')}</span>
       </button>
       <nav class="site-nav__nav" aria-label={t('nav.label')}>
         <ul class="site-nav__list" id="site-nav-list" role="list">
-          {
-            nav.map((item) => (
-              <li>
-                <a class="site-nav__link" href={item.href} aria-current={item.current ?? undefined}>
-                  {item.label}
-                </a>
-              </li>
-            ))
-          }
+          {nav.map((item) => (
+            <li>
+              <a class="site-nav__link" href={item.href} aria-current={item.current ?? undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))}
         </ul>
       </nav>
     </ft-nav-menu>
 
     <div class="site-tools">
       <a class="tool lang-switch" href={sw.href} hreflang={sw.locale} lang={sw.locale}>
-        <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#ui-language"></use></svg>
+        <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+          <use href="#ui-language"></use>
+        </svg>
         <span class="tool__label">{tOther('lang.name')}</span>
         {!sw.isTranslation && <span class="visually-hidden">{cOther('lang.otherHome')}</span>}
       </a>
@@ -87,15 +91,20 @@ const nav = [
           aria-controls="ft-palette"
           aria-keyshortcuts={PALETTE_KEYSHORTCUTS}
         >
-          <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#ui-search"></use></svg>
+          <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+            <use href="#ui-search"></use>
+          </svg>
           <span class="tool__label">{c('search.open')}</span>
-          <span class="tool__keys" aria-hidden="true"
-            ><kbd class="tool__key--single">{c('search.kbdSlash')}</kbd><kbd>{c('search.kbdMod')}</kbd></span
-          >
+          <span class="tool__keys" aria-hidden="true">
+            <kbd class="tool__key--single">{c('search.kbdSlash')}</kbd>
+            <kbd>{c('search.kbdMod')}</kbd>
+          </span>
         </button>
       </ft-palette-trigger>
       <button type="button" class="tool tool--prefs tool-slot--js" popovertarget="ft-prefs" aria-haspopup="dialog">
-        <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#ui-prefs"></use></svg>
+        <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+          <use href="#ui-prefs"></use>
+        </svg>
         <span class="tool__label">{c('prefs.open')}</span>
       </button>
     </div>

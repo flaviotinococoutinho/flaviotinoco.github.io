@@ -16,7 +16,9 @@ import { isPaletteShortcut, type KeyChord } from '../../../src/core/chrome/short
 const eventArb: fc.Arbitrary<PaletteEvent> = fc.oneof(
   fc.string({ maxLength: 6 }).map((query): PaletteEvent => ({ type: 'query', query })),
   fc.integer({ min: -3, max: 12 }).map((count): PaletteEvent => ({ type: 'results', count })),
-  fc.constantFrom('ArrowDown', 'ArrowUp', 'Enter', 'Escape' as const).map((key): PaletteEvent => ({ type: 'key', key })),
+  fc
+    .constantFrom('ArrowDown', 'ArrowUp', 'Enter', 'Escape' as const)
+    .map((key): PaletteEvent => ({ type: 'key', key })),
   fc.integer({ min: -2, max: 12 }).map((index): PaletteEvent => ({ type: 'point', index })),
 );
 
@@ -66,9 +68,15 @@ describe('palette keyboard model (APG combobox + listbox)', () => {
   });
 
   it('selects the first result automatically for a non-empty query', () => {
-    const s = run([{ type: 'query', query: 'ent' }, { type: 'results', count: 4 }]);
+    const s = run([
+      { type: 'query', query: 'ent' },
+      { type: 'results', count: 4 },
+    ]);
     expect(s.active).toBe(0);
-    const empty = run([{ type: 'query', query: '  ' }, { type: 'results', count: 4 }]);
+    const empty = run([
+      { type: 'query', query: '  ' },
+      { type: 'results', count: 4 },
+    ]);
     expect(empty.active).toBe(-1);
   });
 
@@ -128,22 +136,22 @@ describe('quick navigation ranking', () => {
     expect(rankQuickNav(items, 'grafo lab')).toEqual([]);
   });
 
-  test.prop([fc.array(fc.record({ label: fc.string(), keywords: fc.string() }), { maxLength: 12 }), fc.string({ maxLength: 8 })])(
-    'returns a stable sub-sequence-by-score of matching items',
-    (list, q) => {
-      const ranked = rankQuickNav(list, q);
-      for (const item of ranked) expect(list).toContain(item);
-      for (let i = 1; i < ranked.length; i++) {
-        const a = ranked[i - 1];
-        const b = ranked[i];
-        if (a === undefined || b === undefined) continue;
-        const sa = scoreItem(a, q);
-        const sb = scoreItem(b, q);
-        expect(sa).toBeGreaterThanOrEqual(sb);
-        if (sa === sb && foldForSearch(q).trim() !== '') expect(list.indexOf(a)).toBeLessThanOrEqual(list.indexOf(b));
-      }
-    },
-  );
+  test.prop([
+    fc.array(fc.record({ label: fc.string(), keywords: fc.string() }), { maxLength: 12 }),
+    fc.string({ maxLength: 8 }),
+  ])('returns a stable sub-sequence-by-score of matching items', (list, q) => {
+    const ranked = rankQuickNav(list, q);
+    for (const item of ranked) expect(list).toContain(item);
+    for (let i = 1; i < ranked.length; i++) {
+      const a = ranked[i - 1];
+      const b = ranked[i];
+      if (a === undefined || b === undefined) continue;
+      const sa = scoreItem(a, q);
+      const sb = scoreItem(b, q);
+      expect(sa).toBeGreaterThanOrEqual(sb);
+      if (sa === sb && foldForSearch(q).trim() !== '') expect(list.indexOf(a)).toBeLessThanOrEqual(list.indexOf(b));
+    }
+  });
 
   it('filters by locale prefix', () => {
     expect(inLocale('/base/pt/ensaios/x/', '/base/pt/')).toBe(true);

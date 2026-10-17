@@ -37,15 +37,13 @@ const feeds = LOCALES.map((l) => ({
   <div class="site-footer__inner">
     <nav class="site-footer__strata" aria-label={c('footer.strata')}>
       <ol class="site-footer__path" role="list">
-        {
-          STRATA.map((s) => (
-            <li>
-              <a href={href({ kind: 'stratum', stratum: s }, locale)}>
-                <StratumMark stratum={s} locale={locale} size="s" />
-              </a>
-            </li>
-          ))
-        }
+        {STRATA.map((s) => (
+          <li>
+            <a href={href({ kind: 'stratum', stratum: s }, locale)}>
+              <StratumMark stratum={s} locale={locale} size="s" />
+            </a>
+          </li>
+        ))}
       </ol>
     </nav>
 
@@ -53,33 +51,45 @@ const feeds = LOCALES.map((l) => ({
       <div class="site-footer__group">
         <h2 class="site-footer__heading">{c('footer.pages')}</h2>
         <ul role="list">
-          <li><a href={href({ kind: 'about' }, locale)}>{t('nav.about')}</a></li>
-          <li><a href={href({ kind: 'colophon' }, locale)}>{t('nav.colophon')}</a></li>
-          <li><a href={SOURCE} rel="external">{t('footer.source')}</a></li>
+          <li>
+            <a href={href({ kind: 'about' }, locale)}>{t('nav.about')}</a>
+          </li>
+          <li>
+            <a href={href({ kind: 'colophon' }, locale)}>{t('nav.colophon')}</a>
+          </li>
+          <li>
+            <a href={SOURCE} rel="external">
+              {t('footer.source')}
+            </a>
+          </li>
         </ul>
       </div>
       <div class="site-footer__group">
         <h2 class="site-footer__heading">{c('footer.data')}</h2>
         <ul role="list">
-          {
-            feeds.map((f) => (
-              <li>
-                <a href={f.href} type="application/rss+xml" hreflang={f.locale}>
-                  <svg class="site-footer__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
-                    <use href="#ui-feed" />
-                  </svg>
-                  {t('footer.feed')} · <span lang={f.locale}>{f.label}</span>
-                </a>
-              </li>
-            ))
-          }
-          <li><a href={asset('ontology.jsonld')} type="application/ld+json">{c('footer.ontologyData')}</a></li>
+          {feeds.map((f) => (
+            <li>
+              <a href={f.href} type="application/rss+xml" hreflang={f.locale}>
+                <svg class="site-footer__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                  <use href="#ui-feed" />
+                </svg>
+                {t('footer.feed')} · <span lang={f.locale}>{f.label}</span>
+              </a>
+            </li>
+          ))}
+          <li>
+            <a href={asset('ontology.jsonld')} type="application/ld+json">
+              {c('footer.ontologyData')}
+            </a>
+          </li>
         </ul>
       </div>
     </nav>
 
     <p class="site-footer__copyright">
-      <svg class="site-footer__mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#simplex-3"></use></svg>
+      <svg class="site-footer__mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+        <use href="#simplex-3"></use>
+      </svg>
       {t('footer.copyright', { year })}
     </p>
   </div>

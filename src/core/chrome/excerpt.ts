@@ -43,7 +43,10 @@ export const decodeEntities = (s: string): string =>
 
 /** Escapes text for HTML (the inverse direction, used by tests and fixtures). */
 export const escapeHtml = (s: string): string =>
-  s.replace(/[&<>"']/g, (c) => `&${({ '&': 'amp', '<': 'lt', '>': 'gt', '"': 'quot', "'": '#39' } as const)[c as '&']};`);
+  s.replace(
+    /[&<>"']/g,
+    (c) => `&${({ '&': 'amp', '<': 'lt', '>': 'gt', '"': 'quot', "'": '#39' } as const)[c as '&']};`,
+  );
 
 // A start or end tag (or comment / doctype). Anything that is not a tag is text.
 const TAG = /<(\/?)([a-zA-Z][a-zA-Z0-9-]*)\b[^<>]*>|<!--[\s\S]*?-->|<![^<>]*>/g;

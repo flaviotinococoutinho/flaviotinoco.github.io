@@ -19,7 +19,8 @@ const canonical = (segments: readonly ExcerptSegment[]): readonly ExcerptSegment
   for (const s of segments) {
     if (s.text.length === 0) continue;
     const prev = out[out.length - 1];
-    if (prev !== undefined && prev.marked === s.marked) out[out.length - 1] = { text: prev.text + s.text, marked: s.marked };
+    if (prev !== undefined && prev.marked === s.marked)
+      out[out.length - 1] = { text: prev.text + s.text, marked: s.marked };
     else out.push(s);
   }
   return out;
