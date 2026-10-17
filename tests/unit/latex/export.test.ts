@@ -105,7 +105,7 @@ describe('preamble', () => {
     expect(ptTex).toContain(
       '\\title{Amostragem \\& informação: 100\\% \\textquotedbl{}sinal\\textquotedbl{}\\\\[0.5ex]\\large Um ensaio de teste}',
     );
-    expect(ptTex).toContain('\\author{Flavio Tinoco}');
+    expect(ptTex).toContain('\\author{Flávio Tinoco}');
     expect(ptTex).toContain('\\date{14 de março de 2026}');
     expect(enTex).toContain('\\date{October 1, 2026}');
     expect(ptTex).toContain(

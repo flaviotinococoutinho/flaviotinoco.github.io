@@ -45,7 +45,7 @@ The essays exist in Portuguese and in English. Both versions were written to rea
 
 ## The author
 
-This site is maintained by Flavio Tinoco.
+This site is maintained by Flávio Tinoco.
 
 **TODO (author):** a short introduction in the first person — background, field of work, and the interests that motivate the site.
 

@@ -45,7 +45,7 @@ Os ensaios existem em português e em inglês. As duas versões foram escritas p
 
 ## O autor
 
-Este site é mantido por Flavio Tinoco.
+Este site é mantido por Flávio Tinoco.
 
 **TODO (autor):** apresentação breve, na primeira pessoa — formação, área de atuação e interesses que motivam o site.
 

@@ -3,7 +3,7 @@ import { defineMessages } from '../messages.ts';
 /** Site-wide chrome: identity, navigation, accessibility landmarks. */
 export default defineMessages({
   'pt-BR': {
-    'site.name': 'Flavio Tinoco',
+    'site.name': 'Flávio Tinoco',
     'site.tagline': 'Da questão ao produto: filosofia, teoria, formalismo e valor.',
     'site.description':
       'Ensaios, laboratórios interativos e mapas conceituais que atravessam filosofia, teoria da informação, sistemas formais e produto.',
@@ -28,7 +28,7 @@ export default defineMessages({
     'form.lab': 'Laboratório',
     'form.concept': 'Conceito',
     'form.map': 'Mapa',
-    'footer.copyright': '© {year} Flavio Tinoco',
+    'footer.copyright': '© {year} Flávio Tinoco',
     'footer.source': 'Código-fonte',
     'footer.feed': 'Feed RSS',
     'date.published': 'Publicado em {date}',
@@ -38,7 +38,7 @@ export default defineMessages({
     'notFound.body': 'O endereço não corresponde a nenhum nó do mapa. Volte ao início ou procure pelo conceito.',
   },
   en: {
-    'site.name': 'Flavio Tinoco',
+    'site.name': 'Flávio Tinoco',
     'site.tagline': 'From question to product: philosophy, theory, formalism and value.',
     'site.description':
       'Essays, interactive labs and concept maps across philosophy, information theory, formal systems and product.',
@@ -63,7 +63,7 @@ export default defineMessages({
     'form.lab': 'Lab',
     'form.concept': 'Concept',
     'form.map': 'Map',
-    'footer.copyright': '© {year} Flavio Tinoco',
+    'footer.copyright': '© {year} Flávio Tinoco',
     'footer.source': 'Source code',
     'footer.feed': 'RSS feed',
     'date.published': 'Published {date}',

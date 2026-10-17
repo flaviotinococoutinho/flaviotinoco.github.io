@@ -130,7 +130,7 @@ export default defineMessages({
     'footer.ontologyData': 'Ontologia (JSON-LD)',
     'footer.strata': 'Os quatro estratos',
 
-    'feed.title': 'Flavio Tinoco: ensaios e laboratórios',
+    'feed.title': 'Flávio Tinoco: ensaios e laboratórios',
     'feed.description': 'Ensaios e laboratórios interativos publicados em português.',
 
     'notFound.body': 'Este endereço não corresponde a nenhuma página. Talvez tenha mudado de lugar.',
@@ -256,7 +256,7 @@ export default defineMessages({
     'footer.ontologyData': 'Ontology (JSON-LD)',
     'footer.strata': 'The four strata',
 
-    'feed.title': 'Flavio Tinoco: essays and labs',
+    'feed.title': 'Flávio Tinoco: essays and labs',
     'feed.description': 'Essays and interactive labs published in English.',
 
     'notFound.body': 'This address matches no page. It may have moved.',
