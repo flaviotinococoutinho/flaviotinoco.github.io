@@ -4,7 +4,7 @@
  * KaTeX limitation on inline \tag turned into a build error.
  */
 import { describe, expect, it } from 'vitest';
-import { failure, frontmatter, html, mdast } from './helpers.ts';
+import { failure, frontmatter, html, mdast, NBSP } from './helpers.ts';
 
 describe('labelled display equations', () => {
   it('removes \\label, appends \\tag{n}, keeps the original TeX in data-tex and the id through KaTeX', () => {
@@ -15,7 +15,7 @@ describe('labelled display equations', () => {
     expect(raw).toContain('a^2 + b^2 = c^2 \n\\tag{1}</code>');
     const rendered = html(md).html;
     expect(rendered).toMatch(
-      /^<div class="equation" id="eq-pitagoras" data-label="eq:pitagoras" data-tex="[^"]*"><span class="katex-display">/,
+      /^<div class="equation" id="eq-pitagoras" data-label="eq:pitagoras" data-tex="[^"]*" tabindex="0" role="group" aria-label="Equação\u00a0\(1\)"><span class="katex-display">/,
     );
     expect(rendered).toContain('<annotation encoding="application/x-tex">a^2 + b^2 = c^2 \n\\tag{1}</annotation>');
     expect(rendered).toContain('<span class="katex-tag">');
@@ -41,7 +41,8 @@ describe('labelled display equations', () => {
   it('ignores \\label in TeX comments and after an escaped backslash', () => {
     const out = html('$$\nx % \\label{eq:no}\n$$\n\n$$\na \\\\label{eq:no}\n$$', 'pt-BR', { katex: false }).html;
     expect(out).not.toContain('\\tag');
-    expect(out).not.toContain('class="equation"');
+    expect(out).not.toContain('data-label');
+    expect(out).not.toContain(' id="');
   });
 
   it('warns when a \\tag contains markup that references would show verbatim', () => {
@@ -55,7 +56,9 @@ describe("KaTeX's own equation counter", () => {
     const md = '$$\n\\begin{align}a &= b \\\\ c &= d\\end{align}\n$$';
     const out = html(md).html;
     expect(out).not.toContain('eqn-num');
-    expect(out).toContain('<div class="equation" data-tex="\\begin{align}a &#x26;= b \\\\ c &#x26;= d\\end{align}">');
+    expect(out).toContain(
+      '<div class="equation" data-tex="\\begin{align}a &#x26;= b \\\\ c &#x26;= d\\end{align}" tabindex="0" role="group" aria-label="Equação">',
+    );
     expect(out).toContain('\\begin{align*}a &#x26;= b \\\\ c &#x26;= d\\end{align*}</annotation>');
   });
 
@@ -70,7 +73,27 @@ describe("KaTeX's own equation counter", () => {
   it('leaves environments KaTeX does not number untouched', () => {
     const md = '$$\n\\begin{aligned}a &= b\\end{aligned}\n$$';
     expect(html(md, 'pt-BR', { katex: false }).html).toBe(
-      '<pre><code class="language-math math-display">\\begin{aligned}a &#x26;= b\\end{aligned}</code></pre>',
+      '<div class="equation" data-tex="\\begin{aligned}a &#x26;= b\\end{aligned}" tabindex="0" role="group" aria-label="Equação">' +
+        '<pre><code class="language-math math-display">\\begin{aligned}a &#x26;= b\\end{aligned}</code></pre></div>',
+    );
+  });
+});
+
+describe('scroll boxes (a long display scrolls; WCAG 2.1.1 keyboard access)', () => {
+  it('puts every display in a focusable, named div.equation: numbered, unnumbered and ```math fences', () => {
+    const md = '$$\nx \\label{eq:x}\n$$\n\n$$\ny \\tag{A}\n$$\n\n$$\nz\n$$\n\n```math\nw\n```';
+    const label = (lang: 'pt-BR' | 'en'): readonly string[] =>
+      [...html(md, lang, { katex: false }).html.matchAll(/<div class="equation"[^>]*>/g)].map((m) => m[0]);
+    expect(label('pt-BR')).toEqual([
+      `<div class="equation" id="eq-x" data-label="eq:x" data-tex="x \\label{eq:x}" tabindex="0" role="group" aria-label="Equação${NBSP}(1)">`,
+      `<div class="equation" data-tex="y \\tag{A}" tabindex="0" role="group" aria-label="Equação${NBSP}(A)">`,
+      '<div class="equation" data-tex="z" tabindex="0" role="group" aria-label="Equação">',
+      '<div class="equation" tabindex="0" role="group" aria-label="Equação">',
+    ]);
+    expect(label('en')[0]).toContain(`aria-label="Equation${NBSP}(1)"`);
+    // The fence's content is untouched (opaque to this stage) and KaTeX still renders it.
+    expect(html(md).html).toContain(
+      '<div class="equation" tabindex="0" role="group" aria-label="Equação"><span class="katex-display">',
     );
   });
 });

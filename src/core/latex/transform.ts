@@ -22,13 +22,14 @@
  * classes; author text is never altered.
  */
 import type { Properties } from 'hast';
-import type { Link, Nodes, Paragraph, Parent, PhrasingContent, Root, RootContent, Table } from 'mdast';
+import type { Code, Link, Nodes, Paragraph, Parent, PhrasingContent, Root, RootContent, Table } from 'mdast';
 import type { Position } from 'unist';
 import { parseLabel, type Label } from '../domain/identifiers.ts';
 import type { Locale } from '../domain/locale.ts';
 import {
   captionLabel,
   envName,
+  equationName,
   eqrefText,
   message,
   proofOfTemplate,
@@ -396,13 +397,17 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     // rehype-katex ≥ 7 also renders ```math fences (class language-math, which
     // Shiki is told to skip): they need the KaTeX stylesheet, but their content
     // stays opaque to this stage (no \label, no \ref there; see docs/guia-latex.md).
-    if (node.type === 'code' && node.lang === 'math') hasMath = true;
+    if (node.type === 'code' && node.lang === 'math') {
+      hasMath = true;
+      localized = true;
+    }
     if (isOpaque(node)) return;
     if (node.type === 'containerDirective' && !isClaimed(node)) {
       if (isEnvKind(node.name)) registerEnv(node, node.name);
       else if (node.name === FIGURE_DIRECTIVE) registerFigure(node);
     } else if (node.type === 'math') {
       hasMath = true;
+      localized = true; // the scroll box is named from the catalog (see scrollBox)
       registerDisplayMath(node);
     } else if (node.type === 'inlineMath') {
       hasMath = true;
@@ -519,20 +524,43 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
       return mathRefText(ref.command, number);
     });
 
+  /**
+   * A box that scrolls horizontally when its content is wider than the column (a long
+   * display, a wide table) must be reachable from the keyboard — WCAG 2.1.1, axe rule
+   * scrollable-region-focusable — so it is focusable and, being a tab stop, named:
+   * `tabindex="0"`, `role="group"` and a label (WAI-ARIA APG, "scrollable region").
+   */
+  const scrollBox = (name: Properties): Properties => ({ tabIndex: 0, role: 'group', ...name });
+
+  /** "Equação (3)" for a numbered display (the author's \tag included), else "Equação". */
+  const equationLabel = (number: string | undefined): string =>
+    number === undefined ? equationName(locale) : (refText(locale, { type: 'equation', number }) ?? '');
+
+  /**
+   * Every display goes in a div.equation — its horizontal scroll container (latex.css) —
+   * whether or not its TeX changes; the formula itself is left as written unless numbered
+   * or referencing (then the original is kept in data-tex).
+   */
   const renderDisplayMath = (node: DisplayMath): RootContent => {
     const item = equations.get(node);
     // Only this layer numbers equations: KaTeX's own counter is switched off (see starAutoNumbered).
     const body = starAutoNumbered(item === undefined ? node.value : item.tex);
     const tagged = item === undefined || item.explicitTag ? body : appendTag(body, item.number);
     const tex = resolveMath(tagged, node);
-    if (tex === node.value) return node;
     const properties: Properties = {
       className: ['equation'],
       ...(item === undefined ? {} : { id: item.id, dataLabel: item.label }),
       dataTex: node.value,
+      ...scrollBox({ ariaLabel: equationLabel(item?.number ?? findTag(node.value)?.text) }),
     };
-    return latexBlock('equation', 'div', properties, [withMathValue(node, tex)]);
+    return latexBlock('equation', 'div', properties, [tex === node.value ? node : withMathValue(node, tex)]);
   };
+
+  /** A ```math fence renders as a display too (rehype-katex); its content stays opaque here. */
+  const renderMathFence = (node: Code): RootContent =>
+    latexBlock('equation', 'div', { className: ['equation'], ...scrollBox({ ariaLabel: equationLabel(undefined) }) }, [
+      node,
+    ]);
 
   const renderInlineMath = (node: InlineMath): RootContent => {
     if (hasLabel(node.value)) return node;
@@ -648,7 +676,13 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
         ...mapped,
         data: { ...mapped.data, hProperties: { ...mapped.data?.hProperties, ariaLabelledBy: [item.captionId] } },
       };
-      return table;
+      // The table scrolls in its own box, so the caption above and the source below stay in place.
+      return latexBlock(
+        'table-scroll',
+        'div',
+        { className: ['figure__scroll'], ...scrollBox({ ariaLabelledBy: [item.captionId] }) },
+        [table],
+      );
     });
     const sourceParagraph: Paragraph[] =
       item.source === undefined
@@ -690,6 +724,7 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
    * (Not a case analysis over the closed mdast union, hence no switch.)
    */
   function mapNode(node: Nodes, inLink: boolean): Nodes {
+    if (node.type === 'code' && node.lang === 'math') return renderMathFence(node);
     if (isOpaque(node)) return node;
     if (node.type === 'containerDirective') {
       const env = envs.get(node);

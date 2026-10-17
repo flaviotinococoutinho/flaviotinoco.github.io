@@ -41,6 +41,12 @@ A entropia :eqref[eq:entropia] é máxima para a distribuição uniforme.
 - A fórmula fica dentro de `<div class="equation" id="eq-entropia" data-label="eq:entropia" data-tex="…">`.
   O `id` sobrevive ao KaTeX e o atributo `data-tex` guarda o **TeX original**, com o `\label` (preservação de
   informação: nada do que o autor escreveu se perde).
+- **Todo** bloco de matemática (rotulado ou não, e também ` ```math `) fica num `div.equation`, que é a caixa de
+  rolagem horizontal de uma fórmula mais larga que a coluna. Por isso ela é focalizável e tem nome:
+  `tabindex="0" role="group" aria-label="Equação (1)"` (ou só “Equação”, sem número): quem usa teclado alcança a
+  rolagem (WCAG 2.1.1). O número rola junto com a fórmula e nunca a cobre: com espaço, a fórmula fica centrada e o
+  número à direita; sem espaço, a fórmula se desloca para a esquerda; numa coluna estreita, a linha inteira
+  (fórmula e número) rola dentro da caixa.
 - O KaTeX numera sozinho `equation`, `align`, `gather` e `alignat` não estrelados, com um contador próprio que
   não conhece os rótulos. O estágio troca esses ambientes pelas formas estreladas (`align*` …) antes de entregar a
   fórmula ao KaTeX: o único número visível é o do site. Para várias linhas com **um** número, use
@@ -171,7 +177,9 @@ depois de uma, no mesmo nível. Num texto sem contêineres, uma linha só de doi
   é uma linha do catálogo e vale para o site e para a exportação.
 - HTML: um único `<figcaption>` (acima) e a fonte num `<p class="figure__source">` dentro do `<figure>`. Para
   `kind="table"`, o corpo deve ser uma tabela GFM; ela recebe `aria-labelledby` apontando para a legenda, para que
-  a tecnologia assistiva anuncie “Tabela 1 – …” ao entrar na tabela. As regras visuais seguem o IBGE / `booktabs`:
+  a tecnologia assistiva anuncie “Tabela 1 – …” ao entrar na tabela. A tabela rola horizontalmente na própria
+  caixa, `<div class="figure__scroll" tabindex="0" role="group" aria-labelledby="…__caption">`, de modo que legenda
+  e fonte ficam no lugar e o teclado alcança a rolagem; as células não partem palavras. As regras visuais seguem o IBGE / `booktabs`:
   sem linhas verticais, fio forte acima e abaixo, fio fino sob o cabeçalho.
 - Sem `title` = erro (a NBR exige designação, número e título); `kind` desconhecido = erro; `kind="table"` sem
   tabela = erro; sem `source` = **aviso** (a fonte é obrigatória, mesmo para produção própria: “Elaborado pelo
@@ -206,7 +214,17 @@ depois de uma, no mesmo nível. Num texto sem contêineres, uma linha só de doi
   </section>
 </section>
 
-<div class="equation" id="eq-sinc" data-label="eq:sinc" data-tex="x(t) = … \label{eq:sinc}">(KaTeX)</div>
+<div
+  class="equation"
+  id="eq-sinc"
+  data-label="eq:sinc"
+  data-tex="x(t) = … \label{eq:sinc}"
+  tabindex="0"
+  role="group"
+  aria-label="Equação (2)"
+>
+  (KaTeX)
+</div>
 
 <figure class="figure figure--chart" id="fig-dobramento" data-label="fig:dobramento">
   <figcaption class="figure__caption" id="fig-dobramento__caption">

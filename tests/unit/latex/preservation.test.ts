@@ -27,13 +27,28 @@ const hasContainer = (node: Nodes): boolean =>
   node.type === 'containerDirective' ||
   ('children' in node && (node.children as readonly Nodes[]).some((child) => hasContainer(child)));
 
+const isDisplay = (node: Nodes): boolean => node.type === 'math' || (node.type === 'code' && node.lang === 'math');
+const hasDisplay = (node: Nodes): boolean =>
+  isDisplay(node) || ('children' in node && (node.children as readonly Nodes[]).some((child) => hasDisplay(child)));
+
+/** The output without the scroll boxes the stage puts around every display (div.equation). */
+const unwrapDisplays = (node: Nodes): Nodes => {
+  const [only] = 'children' in node ? (node.children as readonly Nodes[]) : [];
+  if (node.type === 'latexBlock' && node.role === 'equation' && only !== undefined && isDisplay(only)) return only;
+  return 'children' in node
+    ? ({ ...node, children: (node.children as readonly Nodes[]).map(unwrapDisplays) } as Nodes)
+    : node;
+};
+
 describe('documents without LaTeX-layer constructs', () => {
   const unchanged = (s: string): void => {
     fc.pre(!OURS.test(s) && !LATEX_IN_MATH.test(s));
     const tree = parse(s);
     fc.pre(!hasContainer(tree));
     const result = transformLatex(tree, { locale: 'pt-BR', source: s });
-    expect(result.tree).toBe(tree);
+    // Only structure is added: a scroll box around each display; everything else is the input itself.
+    if (hasDisplay(tree)) expect(unwrapDisplays(result.tree)).toEqual(tree);
+    else expect(result.tree).toBe(tree);
     expect(toString(result.tree)).toBe(toString(tree));
     expect(result.diagnostics).toEqual([]);
   };
@@ -213,7 +228,8 @@ const prop = (node: Nodes, key: string): unknown =>
   (node.data as { hProperties?: Record<string, unknown> } | undefined)?.hProperties?.[key];
 const isGenerated = (node: Nodes): boolean =>
   node.type === 'latexInline' ||
-  node.type === 'latexBlock' ||
+  // A table's scroll box wraps author content only.
+  (node.type === 'latexBlock' && node.role !== 'table-scroll') ||
   (node.type === 'link' && classes(node).includes('xref')) ||
   (node.type === 'paragraph' && (classes(node).includes('env__head') || classes(node).includes('figure__source')));
 
