@@ -278,22 +278,35 @@
 }
 
 @media (width < 48rem) {
+  /* One row on phones from 360 px: wordmark, menu toggle and the three tools fit with room
+     to spare (≈ 10 px at 360 px in Literata), so neither the web-font swap nor the upgrade of
+     the menu wraps the bar — a wrap would push the whole page down (layout shift). Narrower
+     screens wrap with either font, so nothing moves there either. */
   .site-header__bar {
-    gap: var(--space-n2);
+    gap: var(--space-n3);
   }
-  .site-nav__toggle:not([hidden]) {
+  .wordmark {
+    font-size: var(--step-0);
+  }
+  .site-tools {
+    gap: 0;
+  }
+  /* The disclosure is collapsed from the first paint whenever JavaScript runs: the
+     pre-paint script sets data-js before the body is parsed, so nothing moves when
+     <ft-nav-menu> upgrades (no layout shift). The toggle is a .tool-slot--js, hidden
+     without JavaScript, where the list simply stays visible on its own row. */
+  .site-nav__toggle {
     display: inline-flex;
   }
-  /* Without the island the list stays visible on its own row (no-JS fallback). */
-  ft-nav-menu:not([data-ready]) {
+  :root:not([data-js]) ft-nav-menu {
     order: 3;
     flex-basis: 100%;
     margin-inline-start: 0;
   }
-  ft-nav-menu[data-ready] .site-nav__nav {
+  :root[data-js] ft-nav-menu .site-nav__nav {
     display: none;
   }
-  ft-nav-menu[data-ready] .site-nav__toggle[aria-expanded='true'] + .site-nav__nav {
+  :root[data-js] ft-nav-menu .site-nav__toggle[aria-expanded='true'] + .site-nav__nav {
     display: block;
     position: absolute;
     inset-inline: 0;
@@ -303,10 +316,10 @@
     border-block-end: 1px solid var(--rule-strong);
     box-shadow: 0 var(--space-n2) var(--space-1) color-mix(in oklch, var(--ink) 10%, transparent);
   }
-  ft-nav-menu[data-ready] .site-nav__list {
+  :root[data-js] ft-nav-menu .site-nav__list {
     flex-direction: column;
   }
-  ft-nav-menu[data-ready] .site-nav__link {
+  :root[data-js] ft-nav-menu .site-nav__link {
     font-size: var(--step-0);
   }
 }

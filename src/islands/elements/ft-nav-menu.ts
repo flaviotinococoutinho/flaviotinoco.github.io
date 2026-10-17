@@ -2,15 +2,19 @@
  * <ft-nav-menu> — disclosure for the primary navigation on narrow screens
  * (WAI-ARIA APG "Disclosure (Show/Hide)" pattern, navigation-menu variant).
  *
- * Server HTML: a hidden toggle button followed by a <nav> whose list is always
- * visible — the no-JS fallback is simply the visible navigation. On upgrade the
- * element reveals the button and sets [data-ready]; CSS then collapses the list
- * below the narrow breakpoint until aria-expanded="true". Escape and a click
- * outside close it; focus returns to the toggle on Escape.
+ * Server HTML: a toggle button followed by a <nav>. Below the narrow breakpoint
+ * CSS decides the layout before the first paint from the pre-paint script's
+ * data-js attribute: with JavaScript the list is collapsed and the toggle shown
+ * from the start, so the upgrade moves nothing (no layout shift); without it
+ * the toggle (a .tool-slot--js) is hidden and the list stays visible — the
+ * no-JS fallback is simply the visible navigation. This element only adds the
+ * behaviour: aria-expanded="true" shows the list; Escape and a click outside
+ * close it; focus returns to the toggle on Escape. [data-ready] marks the
+ * upgrade (for tests); styles do not depend on it.
  *
  * Expected structure:
  *   <ft-nav-menu>
- *     <button aria-expanded="false" aria-controls="ID" hidden>…</button>
+ *     <button aria-expanded="false" aria-controls="ID">…</button>
  *     <nav><ul id="ID">…</ul></nav>
  *   </ft-nav-menu>
  */
