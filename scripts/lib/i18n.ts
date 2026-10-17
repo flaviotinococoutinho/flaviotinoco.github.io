@@ -13,6 +13,8 @@
  */
 import { LOCALES, type Locale } from '../../src/core/domain/locale.ts';
 import { STRATA } from '../../src/core/domain/strata.ts';
+import { err, ok, type Result } from '../../src/core/algebra/result.ts';
+import { booleanField, stringField, type Field, type Frontmatter } from './frontmatter.ts';
 import { byCodeUnit } from './order.ts';
 
 export type Severity = 'error' | 'warning';
@@ -93,6 +95,41 @@ export interface ContentEntry {
   readonly stratum: string | undefined;
   readonly draft: boolean;
 }
+
+/**
+ * The entry of a content file, from its frontmatter as Astro parsed it. The
+ * identity fields must have the types of the content schema (src/content.config.ts:
+ * strings, `draft` a boolean); a value of another type is reported as an
+ * unsupported form — never as a missing field — and the entry is left out, so
+ * no parity rule runs on a misread value.
+ */
+export const contentEntry = (
+  collection: string,
+  file: string,
+  folderLocale: Locale | undefined,
+  fm: Frontmatter,
+): Result<ContentEntry, readonly Issue[]> => {
+  const problems: Issue[] = [];
+  const read = <T>(key: string, f: Field<T>, expected: string): T | undefined => {
+    if (f.kind === 'unsupported')
+      problems.push(
+        error(file, `\`${key}\` has an unsupported frontmatter form: expected ${expected}, found ${f.found}`),
+      );
+    return f.kind === 'value' ? f.value : undefined;
+  };
+  const string = (key: string): string | undefined => read(key, stringField(fm, key), 'a string');
+  const entry: ContentEntry = {
+    collection,
+    file,
+    folderLocale,
+    lang: string('lang'),
+    translationKey: string('translationKey'),
+    slug: string('slug'),
+    stratum: string('stratum'),
+    draft: read('draft', booleanField(fm, 'draft'), 'a boolean (true or false)') ?? false,
+  };
+  return problems.length > 0 ? err(problems) : ok(entry);
+};
 
 const checkLocation = (e: ContentEntry): readonly Issue[] => {
   if (e.folderLocale === undefined) return [error(e.file, 'content must live under a pt/ or en/ folder')];
