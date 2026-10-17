@@ -9,10 +9,15 @@
  * Every control is a native radio group (fieldset + legend + labels). A change
  * is applied instantly to <html> data-* attributes, persisted to localStorage
  * (PREFS_STORAGE_KEY, canonical JSON from the pure codec) and announced
- * politely ("Theme: Dark."). "Reset" restores system defaults. Once this module
- * has loaded (the panel was opened at least once), changes made in another tab
- * arrive through the `storage` event and are mirrored here; other tabs pick up
- * the new values on their next page load (pre-paint script).
+ * politely ("Theme: Dark."). "Reset" restores system defaults.
+ *
+ * Storage is the single source of truth, and the page and the form always show
+ * the same values. The pre-paint script applies the stored values at load;
+ * when the panel is first opened, this module applies them again before the
+ * form mirrors them, because another tab may have changed them since this page
+ * loaded (otherwise the panel would show a value the page does not use, and
+ * picking it would fire no change). From then on, changes made in another tab
+ * arrive through the `storage` event and are applied and mirrored here.
  *
  * Other code can react through the `ft:prefs-change` event dispatched on
  * document (detail: the Preferences object). The always-loaded islands
@@ -78,6 +83,7 @@ class FtPreferences extends HTMLElement {
     const { signal } = this.#abort;
 
     this.#prefs = read();
+    apply(this.#prefs);
     this.#sync(form);
 
     form.addEventListener(
