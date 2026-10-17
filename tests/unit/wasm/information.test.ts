@@ -101,7 +101,10 @@ describe('entropy (Shannon 1948)', () => {
     for (const seed of [11, 12, 13]) {
       const data = randomBytes(2000, seed, 3 + seed);
       const pairs = new Uint32Array(1 << 16);
-      for (let i = 1; i < data.length; i++) pairs[at(data, i - 1) * 256 + at(data, i)] += 1;
+      for (let i = 1; i < data.length; i++) {
+        const pair = at(data, i - 1) * 256 + at(data, i);
+        pairs[pair] = at(pairs, pair) + 1;
+      }
       const f2 = kernel.entropyCounts(pairs) - kernel.entropyBytes(data.subarray(0, -1));
       expect(kernel.conditionalEntropyBytes(data)).toBeCloseTo(f2, 12);
     }
