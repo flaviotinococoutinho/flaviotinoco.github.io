@@ -205,7 +205,8 @@ class FtCommandPalette extends HTMLElement {
     const query = this.#input?.value ?? '';
     const quick = rankQuickNav(this.#quick, query);
     const id = ++this.#searchId;
-    this.#render(quick, query);
+    this.#state = stepPalette(this.#state, { type: 'query', query }).state;
+    this.#render(quick);
     if (query.trim().length < MIN_QUERY_LENGTH) {
       this.#announce('');
       return;
@@ -252,8 +253,10 @@ class FtCommandPalette extends HTMLElement {
         excerpt: sanitiseExcerpt(d.excerpt),
       });
     }
+    // Same query, so the quick-navigation options keep their indices and the text hits are
+    // appended after them: an option the reader chose meanwhile stays active (core model).
     const items = [...quick, ...text];
-    this.#render(items, query);
+    this.#render(items);
     this.#announce(this.#countMessage(items.length, query));
   }
 
@@ -272,12 +275,12 @@ class FtCommandPalette extends HTMLElement {
     if (this.#status !== null && this.#status.textContent !== text) this.#status.textContent = text;
   }
 
-  #render(items: readonly Item[], query: string): void {
+  /** Renders the options for the current query (#query has already stepped the `query` event). */
+  #render(items: readonly Item[]): void {
     const list = this.#list;
     if (list === null) return;
     this.#items = items;
-    const afterQuery = stepPalette(this.#state, { type: 'query', query }).state;
-    this.#state = stepPalette(afterQuery, { type: 'results', count: items.length }).state;
+    this.#state = stepPalette(this.#state, { type: 'results', count: items.length }).state;
     list.replaceChildren(
       ...items.map((item, index) => {
         // The link itself is the option (ARIA in HTML allows role=option on a[href]): an

@@ -28,14 +28,81 @@ const run = (events: readonly PaletteEvent[]): PaletteState =>
 const stateArb: fc.Arbitrary<PaletteState> = fc.array(eventArb, { maxLength: 30 }).map(run);
 
 describe('palette keyboard model (APG combobox + listbox)', () => {
-  test.prop([fc.array(eventArb, { maxLength: 60 })])('invariant: -1 ≤ active < count', (events) => {
-    let s = INITIAL_PALETTE;
-    for (const e of events) {
-      s = stepPalette(s, e).state;
-      expect(s.active).toBeGreaterThanOrEqual(-1);
-      expect(s.active).toBeLessThan(Math.max(s.count, 0) || 1);
-      if (s.count === 0) expect(s.active).toBe(-1);
-    }
+  test.prop([fc.array(eventArb, { maxLength: 60 })])(
+    'invariant: -1 ≤ active < count, chosen ⇒ active ≥ 0',
+    (events) => {
+      let s = INITIAL_PALETTE;
+      for (const e of events) {
+        s = stepPalette(s, e).state;
+        expect(s.active).toBeGreaterThanOrEqual(-1);
+        expect(s.active).toBeLessThan(Math.max(s.count, 0) || 1);
+        if (s.count === 0) expect(s.active).toBe(-1);
+        if (s.chosen) expect(s.active).toBeGreaterThanOrEqual(0);
+      }
+    },
+  );
+
+  // Regression (review chrome#0): full-text hits arrive ≥ 144 ms after the keystroke and are
+  // appended to the quick-navigation options; they used to reset the selection to the first
+  // option, so Enter opened a page the reader had not chosen.
+  test.prop([
+    stateArb,
+    fc.string({ minLength: 1, maxLength: 6 }),
+    fc.integer({ min: 1, max: 8 }),
+    fc.array(fc.constantFrom('ArrowDown', 'ArrowUp' as const), { minLength: 1, maxLength: 12 }),
+    fc.integer({ min: 0, max: 8 }),
+  ])(
+    'results for the same query keep the option the reader chose (query → arrows → results)',
+    (start, query, quickCount, keys, appended) => {
+      let s = stepPalette(start, { type: 'query', query }).state;
+      s = stepPalette(s, { type: 'results', count: quickCount }).state;
+      for (const key of keys) s = stepPalette(s, { type: 'key', key }).state;
+      const chosen = s.active;
+      const after = stepPalette(s, { type: 'results', count: quickCount + appended }).state;
+      expect(after.active).toBe(chosen);
+      expect(stepPalette(after, { type: 'key', key: 'Enter' }).effect).toEqual({ kind: 'follow', index: chosen });
+    },
+  );
+
+  test.prop([
+    stateArb,
+    fc.string({ minLength: 1, maxLength: 6 }).filter((q) => q.trim() !== ''),
+    fc.integer({ min: 1, max: 8 }),
+  ])('a new query forgets the choice and selects its first result', (start, query, count) => {
+    const moved = stepPalette(stepPalette(start, { type: 'results', count }).state, { type: 'key', key: 'ArrowUp' });
+    const s = stepPalette(stepPalette(moved.state, { type: 'query', query }).state, { type: 'results', count }).state;
+    expect(s).toEqual({ query, count, active: 0, chosen: false });
+  });
+
+  it('falls back to automatic selection when the chosen option is no longer listed', () => {
+    const s = run([
+      { type: 'query', query: 'ent' },
+      { type: 'results', count: 5 },
+      { type: 'key', key: 'ArrowUp' },
+    ]);
+    expect(s).toEqual({ query: 'ent', count: 5, active: 4, chosen: true });
+    expect(stepPalette(s, { type: 'results', count: 3 }).state).toEqual({
+      query: 'ent',
+      count: 3,
+      active: 0,
+      chosen: false,
+    });
+    expect(stepPalette(s, { type: 'results', count: 0 }).state).toEqual({
+      query: 'ent',
+      count: 0,
+      active: -1,
+      chosen: false,
+    });
+  });
+
+  it('a pointer choice is kept like a keyboard one', () => {
+    const s = run([
+      { type: 'query', query: 'ent' },
+      { type: 'results', count: 3 },
+      { type: 'point', index: 2 },
+      { type: 'results', count: 7 },
+    ]);
+    expect(s).toEqual({ query: 'ent', count: 7, active: 2, chosen: true });
   });
 
   test.prop([stateArb])('ArrowDown then ArrowUp returns to an active option', (s) => {
@@ -81,13 +148,13 @@ describe('palette keyboard model (APG combobox + listbox)', () => {
   });
 
   it('ArrowUp from no selection goes to the last option; ArrowDown to the first', () => {
-    const s: PaletteState = { query: '', count: 5, active: -1 };
+    const s: PaletteState = { query: '', count: 5, active: -1, chosen: false };
     expect(stepPalette(s, { type: 'key', key: 'ArrowUp' }).state.active).toBe(4);
     expect(stepPalette(s, { type: 'key', key: 'ArrowDown' }).state.active).toBe(0);
   });
 
   it('pointer moves the active option only within range', () => {
-    const s: PaletteState = { query: 'a', count: 3, active: 0 };
+    const s: PaletteState = { query: 'a', count: 3, active: 0, chosen: false };
     expect(stepPalette(s, { type: 'point', index: 2 }).state.active).toBe(2);
     expect(stepPalette(s, { type: 'point', index: 3 }).state.active).toBe(0);
     expect(stepPalette(s, { type: 'point', index: -1 }).state.active).toBe(0);
