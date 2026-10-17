@@ -1,0 +1,129 @@
+---
+/**
+ * Command palette dialog (opened by <ft-palette-trigger> in the header).
+ *
+ * Static content = quick navigation (home, sections, the four strata, the
+ * other language) rendered as ordinary links: it is what the reader sees
+ * before <ft-command-palette> upgrades, and the data the element ranks.
+ * Each link carries data-label / data-kind / data-keywords for ranking.
+ * The element is INSIDE the dialog on purpose: its module (and Pagefind) load
+ * only when the dialog is first opened.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import { STRATA, STRATUM_SPECS } from '../../core/domain/strata.ts';
+import common from '../../core/i18n/catalogs/common.ts';
+import chrome from '../../core/i18n/catalogs/chrome.ts';
+import { href, useTranslations } from '../../adapters/astro/i18n.ts';
+import type { LanguageSwitch } from '../../core/chrome/nav.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly languageSwitch: LanguageSwitch;
+}
+
+const { locale, languageSwitch: sw } = Astro.props;
+const t = useTranslations(common, locale);
+const c = useTranslations(chrome, locale);
+const other = useTranslations(common, sw.locale);
+
+interface Entry {
+  readonly label: string;
+  readonly href: string;
+  readonly kind: string;
+  readonly keywords: string;
+  readonly glyph: string;
+  readonly stratum?: string;
+  readonly hreflang?: Locale;
+}
+
+const page = c('palette.kind.page');
+const section = c('palette.kind.section');
+const entries: readonly Entry[] = [
+  { label: c('palette.home'), href: href({ kind: 'home' }, locale), kind: page, keywords: `${t('site.name')} ${t('nav.home')}`, glyph: 'simplex-3' },
+  { label: t('nav.essays'), href: href({ kind: 'essays' }, locale), kind: section, keywords: t('form.essay'), glyph: 'form-essay' },
+  { label: t('nav.labs'), href: href({ kind: 'labs' }, locale), kind: section, keywords: t('form.lab'), glyph: 'form-lab' },
+  { label: t('nav.ontology'), href: href({ kind: 'ontology' }, locale), kind: section, keywords: `${t('form.concept')} ${t('form.map')}`, glyph: 'form-map' },
+  ...STRATA.map(
+    (s): Entry => ({
+      label: t(`strata.${s}`),
+      href: href({ kind: 'stratum', stratum: s }, locale),
+      kind: c('palette.kind.stratum'),
+      keywords: `${t('strata.label')} ${c(`simplex.${STRATUM_SPECS[s].simplex}`)}`,
+      glyph: STRATUM_SPECS[s].glyph,
+      stratum: s,
+    }),
+  ),
+  { label: t('nav.about'), href: href({ kind: 'about' }, locale), kind: page, keywords: '', glyph: 'form-note' },
+  { label: t('nav.colophon'), href: href({ kind: 'colophon' }, locale), kind: page, keywords: '', glyph: 'form-note' },
+  {
+    label: sw.isTranslation ? c('palette.otherLanguage') : c('palette.otherHome'),
+    href: sw.href,
+    kind: c('palette.kind.language'),
+    keywords: `${other('lang.name')} ${other('lang.switch')}`,
+    glyph: 'ui-language',
+    hreflang: sw.locale,
+  },
+];
+
+const messages = {
+  zero: c('palette.results.zero'),
+  one: c('palette.results.one'),
+  other: c('palette.results.other'),
+  indexMissing: c('palette.indexMissing'),
+  text: c('palette.kind.text'),
+};
+---
+
+<dialog id="ft-palette" class="palette ui" aria-labelledby="ft-palette-title" closedby="any">
+  <ft-command-palette class="palette__body" data-messages={JSON.stringify(messages)} data-locale-prefix={href({ kind: 'home' }, locale)}>
+    <h2 id="ft-palette-title" class="visually-hidden">{c('palette.title')}</h2>
+    <div class="palette__field">
+      <svg class="palette__field-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#ui-search"></use></svg>
+      <label for="ft-palette-input" class="visually-hidden">{c('palette.label')}</label>
+      <input
+        id="ft-palette-input"
+        class="palette__input"
+        type="search"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        enterkeyhint="go"
+        placeholder={c('palette.placeholder')}
+        aria-describedby="ft-palette-hint"
+        autofocus
+      />
+      <form method="dialog" class="palette__close-form">
+        <button type="submit" class="tool palette__close">
+          <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#ui-close"></use></svg>
+          <span class="visually-hidden">{c('palette.close')}</span>
+        </button>
+      </form>
+    </div>
+    <p class="palette__status" role="status"></p>
+    <ul class="palette__list" id="ft-palette-list" role="list" aria-label={c('palette.list')}>
+      {
+        entries.map((e) => (
+          <li class="palette__item" data-stratum={e.stratum}>
+            <a
+              class="palette__link"
+              href={e.href}
+              hreflang={e.hreflang}
+              data-label={e.label}
+              data-kind={e.kind}
+              data-keywords={e.keywords}
+              data-glyph={e.glyph}
+              data-stratum={e.stratum}
+            >
+              <svg class="palette__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                <use href={`#${e.glyph}`} />
+              </svg>
+              <span class="palette__label">{e.label}</span>
+              <span class="palette__kind">{e.kind}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <p id="ft-palette-hint" class="palette__hint">{c('palette.hint')} · {c('search.keys')}</p>
+  </ft-command-palette>
+</dialog>

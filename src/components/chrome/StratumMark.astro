@@ -1,0 +1,37 @@
+---
+/**
+ * StratumMark — the one way the site shows a stratum: simplex glyph + localised
+ * label, tinted with the stratum's colour token. Colour is never the only
+ * carrier: the glyph's shape (k-simplex) and the label always accompany it, and
+ * the label stays in the accessibility tree even when visually hidden.
+ *
+ * Public API (other workstreams):
+ *   <StratumMark stratum="formal" locale="pt-BR" size="s|m|l|xl" label="visible|hidden" />
+ * HTML: <span class="stratum-mark" data-stratum="formal" data-size="m">
+ *         <svg class="stratum-mark__glyph" aria-hidden="true"><use href="#simplex-2"/></svg>
+ *         <span class="stratum-mark__label">Formal</span></span>
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import { STRATUM_SPECS, type Stratum } from '../../core/domain/strata.ts';
+import common from '../../core/i18n/catalogs/common.ts';
+import { useTranslations } from '../../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly stratum: Stratum;
+  readonly locale: Locale;
+  readonly size?: 's' | 'm' | 'l' | 'xl';
+  readonly label?: 'visible' | 'hidden';
+  readonly class?: string;
+}
+
+const { stratum, locale, size = 'm', label = 'visible', class: className } = Astro.props;
+const t = useTranslations(common, locale);
+const spec = STRATUM_SPECS[stratum];
+---
+
+<span class:list={['stratum-mark', className]} data-stratum={stratum} data-size={size}>
+  <svg class="stratum-mark__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+    <use href={`#${spec.glyph}`}></use>
+  </svg>
+  <span class:list={['stratum-mark__label', { 'visually-hidden': label === 'hidden' }]}>{t(`strata.${stratum}`)}</span>
+</span>
