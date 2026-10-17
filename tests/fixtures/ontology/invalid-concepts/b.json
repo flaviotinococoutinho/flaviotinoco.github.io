@@ -1,0 +1,9 @@
+{
+  "slug": { "pt-BR": "b", "en": "b" },
+  "prefLabel": { "pt-BR": "B", "en": "B" },
+  "definition": { "pt-BR": "Definição de B.", "en": "Definition of B." },
+  "stratum": "philosophy",
+  "category": "proposition",
+  "domains": ["logic"],
+  "broader": ["a"]
+}
