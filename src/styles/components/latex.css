@@ -1,1 +1,188 @@
-/* Component styles: latex workstream. Wrapped in the components cascade layer by global.css. */
+/*
+ * Component styles: latex workstream. Wrapped in the components cascade layer by global.css.
+ *
+ * Markup produced by src/core/latex/transform.ts (see docs/guia-latex.md):
+ *   section.env.env--<kind>.env--<style>  > p.env__head + body
+ *   figure.figure.figure--<kind>          > figcaption.figure__caption + body + p.figure__source
+ *   div.equation                          > KaTeX display (labelled or rewritten equations)
+ *   a.xref.xref--<kind>                   cross-reference
+ *
+ * Theorem styles follow amsthm (M. Downes, B. Beeton, "Using the amsthm
+ * package", AMS, §4 "Theorem styles"):
+ *   plain       bold upright head, italic body     theorem, lemma, proposition, corollary, conjecture, axiom
+ *   definition  bold upright head, upright body    definition, example
+ *   remark      italic head, upright body          remark
+ *   proof       italic head, upright body, ∎ flush right at the end (Halmos tombstone)
+ * Like amsthm, the head is run in: "Teorema 2 (Título). Texto…".
+ *
+ * KaTeX's own stylesheet (MathAssets.astro) is NOT layered, so it wins over
+ * every layer for the properties it declares; the rules below only add
+ * properties KaTeX leaves unset (overflow, spacing of our wrappers).
+ */
+
+/* ── environments ─────────────────────────────────────────────────────────── */
+
+.env {
+  display: flow-root; /* contains the floated tombstone */
+  margin-block: var(--space-1);
+}
+.env .env {
+  margin-block: var(--space-0);
+}
+.env > * + * {
+  margin-block-start: var(--space-n1);
+}
+
+/* Run-in head: the head and the first paragraph share the first line. */
+.env__head,
+.env__head + p {
+  display: inline;
+}
+.env__head {
+  margin-inline-end: var(--space-n2);
+  font-style: normal;
+}
+.env__name,
+.env__number {
+  font-weight: 700;
+}
+.env__title {
+  font-weight: normal;
+}
+
+/* plain: italic body; \emph inside it toggles back to upright, as in LaTeX. */
+.env--plain {
+  font-style: italic;
+}
+.env--plain > :not(.env, .env__head) :is(em, i, cite, dfn) {
+  font-style: normal;
+}
+
+/* definition, remark and proof: upright body. */
+.env--definition,
+.env--remark,
+.env--proof {
+  font-style: normal;
+}
+
+/* remark and proof: italic, normal-weight head. */
+.env--remark > .env__head,
+.env--proof > .env__head {
+  font-style: italic;
+}
+.env--remark > .env__head :is(.env__name, .env__number),
+.env--proof > .env__head .env__name {
+  font-weight: normal;
+}
+
+/* ∎ at the end of the last line, flush right (amsthm \qedhere behaviour). */
+.qed {
+  float: inline-end;
+  margin-inline-start: var(--space-0);
+  font-style: normal;
+}
+.qed-line {
+  min-block-size: 1lh;
+}
+
+/* ── equations ────────────────────────────────────────────────────────────── */
+
+/*
+ * ABNT NBR 14724:2024 §5.7: numbers in arabic numerals, in parentheses,
+ * right-aligned — KaTeX's \tag does exactly that. Long displays scroll
+ * horizontally instead of widening the page (KaTeX docs, "Browser support").
+ */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: var(--space-n4);
+}
+
+/* ── figures and tables (ABNT NBR 14724:2024 §5.8–5.9) ────────────────────── */
+
+.figure {
+  margin-block: var(--space-1);
+}
+.figure > * + * {
+  margin-block-start: var(--space-n2);
+}
+
+/* Designation, number, dash and title ABOVE the illustration. */
+.figure__caption {
+  font-size: var(--step-n1);
+  text-align: start;
+}
+.figure__label {
+  font-weight: 700;
+}
+
+/* Source BELOW, smaller (NBR 14724 §5.8: "Fonte"). */
+.figure__source {
+  font-family: var(--font-ui);
+  font-size: var(--step-n2);
+  line-height: var(--leading-ui);
+  color: var(--ink-muted);
+}
+
+.figure img {
+  margin-inline: auto;
+}
+
+/*
+ * Tables in the IBGE/ABNT manner (Normas de apresentação tabular, 1993), the
+ * same rules as booktabs: no vertical lines, a strong rule above and below,
+ * a thin rule under the header.
+ */
+.figure--table {
+  overflow-x: auto;
+}
+.figure--table table {
+  border-collapse: collapse;
+  border-block: 2px solid var(--rule-strong);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.figure--table thead th {
+  border-block-end: 1px solid var(--rule-strong);
+  font-weight: 700;
+}
+.figure--table :is(th, td) {
+  padding-block: var(--space-n3);
+  padding-inline: var(--space-n1);
+  vertical-align: baseline;
+}
+
+/* ── cross-references ─────────────────────────────────────────────────────── */
+
+.xref {
+  font-variant-numeric: lining-nums;
+}
+
+/* Where a reference lands: a brief highlight (instant when motion is off). */
+:is(.env, .figure, .equation):target {
+  background-color: var(--mark);
+  transition: background-color calc(var(--duration-5) * var(--motion)) var(--ease-standard);
+}
+
+@media (forced-colors: active) {
+  :is(.env, .figure, .equation):target {
+    outline: 2px solid Highlight;
+    outline-offset: var(--space-n3);
+  }
+}
+
+@media print {
+  .equation,
+  .katex-display {
+    break-inside: avoid;
+    overflow: visible;
+  }
+  .figure--table {
+    overflow: visible;
+  }
+  :is(.env, .figure, .equation):target {
+    background-color: transparent;
+  }
+}
