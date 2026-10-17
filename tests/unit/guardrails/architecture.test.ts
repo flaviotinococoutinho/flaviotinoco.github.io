@@ -45,6 +45,28 @@ describe('functional core purity (src/core/**)', () => {
     ['randomness', `export const r = (): number => Math.random();`, 'no-restricted-properties'],
     ['the clock', `export const n = (): number => Date.now();`, 'no-restricted-properties'],
     ['the clock (new Date())', `export const d = (): Date => new Date();`, 'no-restricted-syntax'],
+    // Regressions (review guardrails#1): no-restricted-imports does not inspect import() or import types.
+    [
+      'I/O modules through import()',
+      `export const f = async (): Promise<unknown> => (await import('node:fs')).readFileSync;`,
+      'no-restricted-syntax',
+    ],
+    [
+      'I/O modules through import() (named by the boundary rule)',
+      `export const f = async (): Promise<unknown> => (await import('node:fs')).readFileSync;`,
+      'local/import-boundaries',
+    ],
+    [
+      'Astro modules through import()',
+      `export const g = (): Promise<unknown> => import('astro:content');`,
+      'no-restricted-syntax',
+    ],
+    [
+      'any import(), even of core modules (loading code is I/O)',
+      `export const p = (): Promise<unknown> => import('./pipe.ts');`,
+      'no-restricted-syntax',
+    ],
+    ['Node types through an import type', `export type S = import('node:fs').Stats;`, 'local/import-boundaries'],
     ['import.meta', `export const u = (): string => import.meta.url;`, 'no-restricted-syntax'],
     ['throw', `export const f = (): never => {\n  throw new Error('x');\n};`, 'functional/no-throw-statements'],
     ['mutating inputs', `export const f = (o: { x: number }): void => {\n  o.x = 1;\n};`, 'no-param-reassign'],
@@ -55,6 +77,14 @@ describe('functional core purity (src/core/**)', () => {
     ],
   ])('rejects %s', async (_label, code, rule) => {
     expect(await rulesHit(code, core)).toContain(rule);
+  });
+
+  it.each([
+    ['src/core/algebra/evil.js', 'export const r = () => Math.random();\n', 'no-restricted-properties'],
+    ['src/core/algebra/evil.mjs', "import fs from 'node:fs';\nexport const f = fs;\n", 'no-restricted-imports'],
+    ['src/core/algebra/evil.cjs', 'module.exports = () => console.log(1);\n', 'no-restricted-globals'],
+  ])('applies to every script extension: %s', async (file, code, rule) => {
+    expect(await rulesHit(code, file)).toContain(rule);
   });
 
   it('accepts pure code: deterministic values, Result, local mutation, absurd()', async () => {
@@ -90,6 +120,29 @@ describe('layering of the browser shell (src/islands/**)', () => {
       'local/import-boundaries',
       'no-restricted-imports',
     ]);
+  });
+
+  it.each([
+    ['Node built-ins through import()', `export const f = (): Promise<unknown> => import('node:fs');\n`],
+    [
+      'the pipeline through a computed relative import()',
+      `export const f = (n: string): Promise<unknown> => import(\`../adapters/unified/\${n}.ts\`);\n`,
+    ],
+    [
+      'the pipeline through a literal import()',
+      `export const f = (): Promise<unknown> => import('../adapters/unified/pipeline.ts');\n`,
+    ],
+    [
+      'Node built-ins through a computed import()',
+      `export const f = (m: string): Promise<unknown> => import(\`node:\${m}\`);\n`,
+    ],
+  ])('rejects %s', async (_label, code) => {
+    expect(await rulesHit(code, 'src/islands/registry.ts')).toContain('local/import-boundaries');
+  });
+
+  it('allows a run-time URL import() (Pagefind, served next to the site)', async () => {
+    const code = `const BASE: string = '/';\nexport const f = (): Promise<unknown> => import(/* @vite-ignore */ \`\${BASE}pagefind/pagefind.js\`);\n`;
+    expect(await rulesHit(code, 'src/islands/registry.ts')).toEqual([]);
   });
 
   it('allows the same import in the shell', async () => {
