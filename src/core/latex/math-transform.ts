@@ -146,8 +146,127 @@ export const mathRefText = (command: MathRefCommand, number: string): string =>
  * Display environments that already establish their own equation context in
  * LaTeX and therefore cannot be nested inside `equation` (amsmath, §3).
  */
-const OUTER_ENVIRONMENT = /^\s*\\begin\{(?:equation|align|gather|multline|flalign|alignat)\*?\}/;
-export const isOuterEnvironment = (tex: string): boolean => OUTER_ENVIRONMENT.test(tex);
+const OUTER_ENVIRONMENTS = new Set(['equation', 'align', 'gather', 'multline', 'flalign', 'alignat']);
+
+/** amsmath environments that number every row (the others number the whole display once). */
+const ROW_NUMBERED = new Set(['align', 'gather', 'flalign', 'alignat']);
+
+const isBlank = (token: TexToken | undefined): boolean => token?.kind === 'space' || token?.kind === 'comment';
+
+/** Index of the first token that is not white space, a comment or (with `labels`) a `\label{…}` call. */
+const skipLead = (tokens: readonly TexToken[], labels: boolean): number => {
+  let i = 0;
+  while (i < tokens.length) {
+    const token = tokens[i];
+    if (isBlank(token)) i += 1;
+    else if (labels && token !== undefined && commandName(token) === 'label') {
+      const arg = readArgument(tokens, i);
+      if (arg === undefined) return i;
+      i = arg.end;
+    } else return i;
+  }
+  return i;
+};
+
+/** The outer environment the formula consists of — `{ name, starred }` — or undefined. */
+const outerEnvironment = (
+  tokens: readonly TexToken[],
+  at: number,
+): { readonly name: string; readonly starred: boolean; readonly end: number } | undefined => {
+  const token = tokens[at];
+  if (token === undefined || commandName(token) !== 'begin') return undefined;
+  const arg = readArgument(tokens, at);
+  const raw = arg?.content.trim() ?? '';
+  const name = raw.endsWith('*') ? raw.slice(0, -1) : raw;
+  return arg !== undefined && OUTER_ENVIRONMENTS.has(name)
+    ? { name, starred: raw.endsWith('*'), end: arg.end }
+    : undefined;
+};
+
+/**
+ * True when the formula IS an outer environment, possibly after white space, comments and
+ * `\label{…}` calls (`\label{eq:a}\n\begin{align}…` is one: wrapping it in `equation` would nest
+ * display structures, an amsmath error).
+ */
+export const isOuterEnvironment = (tex: string): boolean => {
+  const tokens = tokenize(tex);
+  return outerEnvironment(tokens, skipLead(tokens, true)) !== undefined;
+};
+
+/**
+ * Moves `\label{…}` calls written before an outer environment to just after its `\begin{…}` (and
+ * the column count of `alignat`), where amsmath expects them; the first row then carries them.
+ */
+export const hoistLeadingLabels = (tex: string): string => {
+  const tokens = tokenize(tex);
+  const start = skipLead(tokens, true);
+  const env = outerEnvironment(tokens, start);
+  if (env === undefined) return tex;
+  const labels: string[] = [];
+  const lead: TexToken[] = [];
+  for (let i = 0; i < start;) {
+    const token = tokens[i];
+    if (token === undefined) break;
+    const arg = commandName(token) === 'label' ? readArgument(tokens, i) : undefined;
+    if (arg === undefined) {
+      lead.push(token);
+      i += 1;
+    } else {
+      labels.push(print(tokens.slice(i, arg.end)));
+      i = arg.end;
+    }
+  }
+  if (labels.length === 0) return tex;
+  // alignat's mandatory column count follows \begin{alignat}.
+  const columns = env.name === 'alignat' ? readArgument(tokens, env.end - 1) : undefined;
+  const after = columns?.end ?? env.end;
+  return print(lead) + print(tokens.slice(start, after)) + labels.join('') + print(tokens.slice(after));
+};
+
+const NUMBER_CONTROL = new Set(['label', 'tag', 'notag', 'nonumber']);
+
+/**
+ * Makes LaTeX number a labelled (or tagged) display the way the site does — once. The site shows
+ * one number per labelled display (`\tag{n}` for the whole formula), while amsmath's `align`,
+ * `gather`, `flalign` and `alignat` number EVERY row: there, each row without `\label`, `\tag`,
+ * `\notag` or `\nonumber` gets `\notag`. A starred outer environment that carries a label loses
+ * its star (amsmath would not number it, and `\eqref` would show another equation's number).
+ * Other formulas are returned unchanged.
+ */
+export const numberOnce = (tex: string): string => {
+  const tokens = tokenize(tex);
+  const start = skipLead(tokens, true);
+  const env = outerEnvironment(tokens, start);
+  if (env === undefined) return tex;
+  const out: string[] = [print(tokens.slice(0, start)), `\\begin{${env.name}}`];
+  let braces = 0;
+  let nesting = 0;
+  let row = false;
+  let i = env.end;
+  for (; i < tokens.length; i += 1) {
+    const token = tokens[i];
+    if (token === undefined) break;
+    const name = commandName(token);
+    if (token.kind === 'open') braces += 1;
+    else if (token.kind === 'close') braces -= 1;
+    else if (name === 'begin') nesting += 1;
+    else if (name === 'end' && nesting > 0) nesting -= 1;
+    else if (name === 'end') {
+      const arg = readArgument(tokens, i);
+      if (arg === undefined) break;
+      if (ROW_NUMBERED.has(env.name) && !row) out.push(' \\notag');
+      out.push(`\\end{${env.name}}`, print(tokens.slice(arg.end)));
+      return out.join('');
+    }
+    if (NUMBER_CONTROL.has(name)) row = true;
+    if (name === '\\' && braces === 0 && nesting === 0) {
+      if (ROW_NUMBERED.has(env.name) && !row) out.push(' \\notag');
+      row = false;
+    }
+    out.push(token.text);
+  }
+  return tex; // no matching \end: leave the author's formula alone
+};
 
 /**
  * Environments that KaTeX (≥ 0.13, verified on 0.19) numbers on its own with

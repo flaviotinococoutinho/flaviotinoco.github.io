@@ -41,6 +41,12 @@ A entropia :eqref[eq:entropia] é máxima para a distribuição uniforme.
 - A fórmula fica dentro de `<div class="equation" id="eq-entropia" data-label="eq:entropia" data-tex="…">`.
   O `id` sobrevive ao KaTeX e o atributo `data-tex` guarda o **TeX original**, com o `\label` (preservação de
   informação: nada do que o autor escreveu se perde).
+- **Todo** bloco de matemática (rotulado ou não, e também ` ```math `) fica num `div.equation`, que é a caixa de
+  rolagem horizontal de uma fórmula mais larga que a coluna. Por isso ela é focalizável e tem nome:
+  `tabindex="0" role="group" aria-label="Equação (1)"` (ou só “Equação”, sem número): quem usa teclado alcança a
+  rolagem (WCAG 2.1.1). O número rola junto com a fórmula e nunca a cobre: com espaço, a fórmula fica centrada e o
+  número à direita; sem espaço, a fórmula se desloca para a esquerda; numa coluna estreita, a linha inteira
+  (fórmula e número) rola dentro da caixa.
 - O KaTeX numera sozinho `equation`, `align`, `gather` e `alignat` não estrelados, com um contador próprio que
   não conhece os rótulos. O estágio troca esses ambientes pelas formas estreladas (`align*` …) antes de entregar a
   fórmula ao KaTeX: o único número visível é o do site. Para várias linhas com **um** número, use
@@ -89,6 +95,10 @@ Pela fórmula de interpolação :eqref[eq:sinc], segue o resultado.
 - A demonstração termina com o símbolo ∎ (a “lápide” de Halmos), alinhado à direita na última linha. O símbolo é
   `aria-hidden`; leitores de tela ouvem, em vez dele, o texto oculto “Fim da demonstração.” / “End of proof.”.
 - A cabeça é “corrida” (run-in), como no `amsthm`: “**Teorema 2** (Nyquist–Shannon). _Um sinal…_”.
+- O texto de um atributo (`title="…"`, e `source="…"` nas figuras) recebe a mesma pontuação tipográfica que o
+  SmartyPants do Astro dá ao corpo, que nunca vê atributos: `"` e `'` viram aspas curvas, `--` vira travessão (—),
+  `...` vira reticências (…). O texto original fica em `data-title` / `data-source` (preservação de informação).
+  Para uma meia-risca (–), como em “Nyquist–Shannon”, digite o próprio caractere, como no corpo.
 
 ### 2.1 Aninhamento: mais dois-pontos por fora
 
@@ -108,6 +118,11 @@ Demonstração.
 Com cercas iguais (`:::theorem` … `:::proof` … `:::` … `:::`), o primeiro `:::` encerra o próprio teorema e o
 segundo sobra como texto. O estágio detecta essa linha órfã e falha com a mensagem
 `stray ":::" line … the OUTER fence needs more colons`. Três níveis: `:::::`, `::::`, `:::`.
+
+A verificação vale só onde um contêiner pode ter sido fechado cedo: dentro de uma diretiva de contêiner ou
+depois de uma, no mesmo nível. Num texto sem contêineres, uma linha só de dois-pontos (“Placar final:” seguido de
+`:::`) é prosa e fica como está. Para manter uma linha `:::` como texto mesmo depois de um contêiner, escape-a:
+`\:::` (a verificação lê a fonte, onde a barra ainda está).
 
 ## 3. Referências cruzadas
 
@@ -131,6 +146,10 @@ segundo sobra como texto. O estágio detecta essa linha órfã e falha com a men
 - O nome e o número são unidos por espaço não separável (como `Teorema~\ref{…}`): a linha nunca quebra entre
   “Teorema” e “2”.
 - `:ref` **sem colchetes** (“a nota:ref”, “3:eqref”) é prosa e permanece intacto.
+- Dentro de um link do autor (`[veja :ref[thm:a] aqui](https://…)`), a referência mostra o mesmo texto, mas como
+  `<span class="xref xref--theorem" data-label="thm:a">`, sem link próprio: o HTML não admite `<a>` dentro de
+  `<a>`, e o navegador cortaria o link do autor no ponto do aninhamento. Na exportação, ela vira `\ref*{…}` (a
+  forma sem link do `hyperref`).
 
 ## 4. Ilustrações e tabelas (ABNT NBR 14724:2024, 5.8–5.9)
 
@@ -162,7 +181,9 @@ segundo sobra como texto. O estágio detecta essa linha órfã e falha com a men
   é uma linha do catálogo e vale para o site e para a exportação.
 - HTML: um único `<figcaption>` (acima) e a fonte num `<p class="figure__source">` dentro do `<figure>`. Para
   `kind="table"`, o corpo deve ser uma tabela GFM; ela recebe `aria-labelledby` apontando para a legenda, para que
-  a tecnologia assistiva anuncie “Tabela 1 – …” ao entrar na tabela. As regras visuais seguem o IBGE / `booktabs`:
+  a tecnologia assistiva anuncie “Tabela 1 – …” ao entrar na tabela. A tabela rola horizontalmente na própria
+  caixa, `<div class="figure__scroll" tabindex="0" role="group" aria-labelledby="…__caption">`, de modo que legenda
+  e fonte ficam no lugar e o teclado alcança a rolagem; as células não partem palavras. As regras visuais seguem o IBGE / `booktabs`:
   sem linhas verticais, fio forte acima e abaixo, fio fino sob o cabeçalho.
 - Sem `title` = erro (a NBR exige designação, número e título); `kind` desconhecido = erro; `kind="table"` sem
   tabela = erro; sem `source` = **aviso** (a fonte é obrigatória, mesmo para produção própria: “Elaborado pelo
@@ -197,7 +218,17 @@ segundo sobra como texto. O estágio detecta essa linha órfã e falha com a men
   </section>
 </section>
 
-<div class="equation" id="eq-sinc" data-label="eq:sinc" data-tex="x(t) = … \label{eq:sinc}">(KaTeX)</div>
+<div
+  class="equation"
+  id="eq-sinc"
+  data-label="eq:sinc"
+  data-tex="x(t) = … \label{eq:sinc}"
+  tabindex="0"
+  role="group"
+  aria-label="Equação (2)"
+>
+  (KaTeX)
+</div>
 
 <figure class="figure figure--chart" id="fig-dobramento" data-label="fig:dobramento">
   <figcaption class="figure__caption" id="fig-dobramento__caption">
@@ -221,7 +252,10 @@ O estágio exporta, em `remarkPluginFrontmatter`:
 
 - `hasMath: boolean` — o documento tem algo que o KaTeX vai desenhar (`$$…$$` ou ` ```math `);
 - `crossrefs: { label, id, type, kind, number?, title? }[]` — a tabela de rótulos em ordem de definição (útil
-  para listas de ilustrações e de tabelas, NBR 14724 4.2.1.9–4.2.1.11).
+  para listas de ilustrações e de tabelas, NBR 14724 4.2.1.9–4.2.1.11). O `title` é o texto que o leitor vê na
+  cabeça ou na legenda, já resolvido: `:ref[lem:a]` vira “Lema 1”; a matemática fica como `$$TeX$$` (com
+  `\ref` resolvido), para a lista mostrá-la como escrita ou desenhá-la de novo; diretivas de prosa (“10:30”) ficam
+  como na fonte; chamadas de nota de rodapé são omitidas.
 
 As views carregam o CSS e as fontes do KaTeX **só** quando há matemática:
 
@@ -242,9 +276,12 @@ elementos do KaTeX.
 
 ## 7. Exportação para LaTeX (`src/core/latex/export.ts`)
 
-`exportLatex(árvore, metadados, opções)` é uma função pura que recebe a mdast **antes** dos estágios do site
-(`remark-parse` + `remark-gfm` + `remark-math` com `singleDollarTextMath: false` + `remark-directive`) e devolve um
-documento `.tex` completo e os avisos do que o papel não representa. `parseExportMeta(frontmatter)` converte o
+`exportLatex(árvore, metadados, opções)` é uma função pura que recebe a mdast que o estágio `latex` do site recebe
+— a análise do Astro (`remark-parse` + `remark-gfm` + `remark-smartypants`, isto é, `smartypants: true`) +
+`remark-math` com `singleDollarTextMath: false` + `remark-directive` — e devolve um documento `.tex` completo e os
+avisos do que o papel não representa. Quem chama monta essa árvore com o `createMarkdownProcessor` de
+`@astrojs/markdown-remark` e um plugin que captura a árvore (é o que faz `siteTree` em `tests/unit/latex/helpers.ts`):
+assim o corpo chega com a mesma pontuação tipográfica do site. `parseExportMeta(frontmatter)` converte o
 frontmatter (título, subtítulo, data `published`, resumo, palavras-chave, macros) e lista todos os problemas.
 
 | Markdown                                     | LaTeX                                                                                      |
@@ -267,13 +304,32 @@ frontmatter (título, subtítulo, data `published`, resumo, palavras-chave, macr
 
 - Os caracteres especiais (`# $ % & ~ _ ^ \ { }`, e também `< > | "`) são escapados fora da matemática; a
   operação é inversível (`unescapeTex ∘ escapeTex = id`, testado com fast-check).
+- **O PDF imprime o que o site mostra.** O TeX reinterpreta parte do ASCII: `--` vira meia-risca, `---`
+  travessão, `,,` vira „, `<<` vira «, e `'`/`` ` `` viram aspas curvas. O escape quebra essas ligaduras com `\/`
+  (`-\/-`; `{}` não basta no LuaTeX, e `\kern0pt` vazaria para o título do PDF) e imprime `'` e `` ` `` retos
+  (`\textquotesingle`, `\textasciigrave`). Como o corpo já chega com a pontuação do SmartyPants, o resultado é o
+  mesmo texto do site; um teste de propriedade compara os dois, e o verificador estático rejeita qualquer ligadura
+  ou aspa crua no texto. Verificado com pdfLaTeX e LuaLaTeX (TeX Live 2023).
+- **Nada vai para onde o LaTeX perde ou recusa.** Código numa nota de rodapé é guardado com `SaveVerbatim`
+  (fancyvrb) logo após `\begin{document}` e impresso na nota com `\UseVerbatim` (um ambiente verbatim não pode
+  estar no argumento de um comando). Uma nota numa célula de tabela ou numa figura vira `\footnotemark` no lugar e
+  `\footnotetext` depois da tabela ou do flutuante (lá dentro o texto da nota se perde). Uma nota de margem dentro
+  de uma nota, tabela ou figura — ou uma nota dentro de outra — fica no texto, entre parênteses, com aviso.
+- **A numeração das equações é a do site.** Um bloco rotulado tem um número: nas linhas de um `align`, `gather`,
+  `flalign` ou `alignat` rotulado, as que não têm `\label`, `\tag`, `\notag` ou `\nonumber` recebem `\notag`
+  (o amsmath numeraria todas, e as referências seguintes mudariam); um ambiente estrelado com rótulo perde a
+  estrela. Um `\label` escrito antes de `\begin{align}` vai para dentro dele, em vez de o bloco ser embrulhado em
+  `equation` (aninhamento proibido pelo amsmath).
+- Uma referência dentro de um link usa `\ref*` (sem link próprio).
 - As macros do site entram no preâmbulo por `\ftmacro`, que preserva o significado em modo texto de nomes que o
   LaTeX já usa (`\H`, `\i`, `\d`).
 - Rótulos e chaves de citação inválidos nunca chegam ao TeX (viram texto literal, com aviso).
 - `pdflatex` não está disponível na integração contínua: os testes comparam instantâneos
   (`tests/unit/latex/__snapshots__/*.tex`) e passam cada saída por um verificador estático
-  (`tests/unit/latex/tex-lint.ts`): ambientes e chaves balanceados, matemática fechada, nenhum `# _ ^ &` solto e
-  nenhum `%` engolindo texto.
+  (`tests/unit/latex/tex-lint.ts`): ambientes e chaves balanceados, matemática fechada, nenhum `# _ ^ &` solto,
+  nenhum `%` engolindo texto, nenhuma ligadura ou aspa crua no texto, nenhum bloco de destaque dentro de outro,
+  nenhum verbatim em argumento, nenhuma nota em tabela, flutuante ou outra nota, nenhuma nota de margem fora do
+  parágrafo externo e nenhum link dentro do texto de `\href`.
 
 ## 8. Diagnósticos
 
@@ -291,7 +347,7 @@ frontmatter (título, subtítulo, data `published`, resumo, palavras-chave, macr
 | `invalid-kind`      | erro      | `kind` de figura desconhecido                                      |
 | `missing-title`     | erro      | figura sem título                                                  |
 | `missing-table`     | erro      | `kind="table"` sem tabela GFM                                      |
-| `stray-fence`       | erro      | linha `:::` órfã (aninhamento com cercas iguais)                   |
+| `stray-fence`       | erro      | linha `:::` órfã após ou dentro de contêiner (escape: `\:::`)      |
 | `missing-source`    | aviso     | figura sem `source`                                                |
 | `eqref-target`      | aviso     | `:eqref` para algo que não é equação (use `:ref`)                  |
 | `complex-tag`       | aviso     | `\tag{…}` com marcação TeX (as referências a mostram literalmente) |

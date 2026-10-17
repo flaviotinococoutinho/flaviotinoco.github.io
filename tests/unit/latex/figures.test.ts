@@ -46,6 +46,16 @@ describe('figures', () => {
     expect(out).toContain('id="figure_1"');
   });
 
+  it("gives title and source attributes the body's punctuation, keeping the author's text in data-*", () => {
+    const { html: out } = html(':::figure{title="O \'dobramento\'..." source="Autor\'s -- 2026"}\n![x](x.png)\n:::');
+    expect(out).toContain(
+      '<span class="figure__title" data-title="O &#x27;dobramento&#x27;...">O ‘dobramento’…</span>',
+    );
+    expect(out).toContain(
+      '<p class="figure__source" data-source="Autor&#x27;s -- 2026"><span class="figure__source-label">Fonte:</span> Autor’s — 2026</p>',
+    );
+  });
+
   it('localises designation and source (en)', () => {
     const { html: out } = html(figure('frame', 'fig:q'), 'en');
     expect(out).toContain(`<span class="figure__label">Box${NBSP}1</span> – `);
@@ -61,7 +71,10 @@ describe('tables', () => {
     expect(out).toContain(
       `<figcaption class="figure__caption" id="tab-t__caption"><span class="figure__label">Table${NBSP}1</span> – `,
     );
-    expect(out).toContain('<table aria-labelledby="tab-t__caption">');
+    // The table scrolls in its own box, named by the caption and reachable by keyboard (WCAG 2.1.1).
+    expect(out).toContain(
+      '<div class="figure__scroll" tabindex="0" role="group" aria-labelledby="tab-t__caption"><table aria-labelledby="tab-t__caption">',
+    );
     expect(out).toContain('<span class="figure__source-label">Source:</span> Own work.');
     expect(out.match(/<figcaption/g)).toHaveLength(1);
   });

@@ -19,6 +19,24 @@ describe('frontmatter exports', () => {
     ]);
   });
 
+  it('exports titles as the reader sees them: references resolved, math as $$TeX$$, prose directives verbatim', () => {
+    const { file } = mdast(
+      ':::lemma{#lem:a}\nL.\n:::\n\n' +
+        ':::theorem[Usa :ref[lem:a] e $$x^2 + \\ref{lem:a}$$ às 10:30]{#thm:b}\nT.\n:::\n\n' +
+        ':::figure[Curva *do* :eqref[eq:c]]{#fig:c source="S."}\n![c](c.png)\n:::\n\n$$\nc \\label{eq:c}\n$$',
+    );
+    const titles = (frontmatter(file)['crossrefs'] as readonly { label: string; title?: string }[]).map((c) => [
+      c.label,
+      c.title,
+    ]);
+    expect(titles).toEqual([
+      ['lem:a', undefined],
+      ['thm:b', `Usa Lema${NBSP}1 e $$x^2 + \\text{1}$$ às 10:30`],
+      ['fig:c', 'Curva do (1)'],
+      ['eq:c', undefined],
+    ]);
+  });
+
   it('warns (once) when the document has no lang but needs localised text, and falls back to pt-BR', () => {
     const { file, tree } = mdast(':::theorem\nT.\n:::', null);
     expect(file.messages.map((m) => m.ruleId)).toEqual(['missing-lang']);

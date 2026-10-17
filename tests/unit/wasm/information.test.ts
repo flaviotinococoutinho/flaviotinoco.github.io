@@ -5,6 +5,7 @@ import {
   createInformationKernel,
   type InformationExports,
   type InformationKernel,
+  textBytes,
 } from '../../../src/adapters/wasm/information.ts';
 import { KernelError, Status, withArena } from '../../../src/adapters/wasm/runtime.ts';
 import { at, instantiate, mulberry32 } from './helpers.ts';
@@ -92,6 +93,36 @@ describe('entropy (Shannon 1948)', () => {
     }
     expect(kernel.conditionalEntropyBytes(Uint8Array.of(9))).toBe(0);
     expect(kernel.conditionalEntropyBytes('')).toBe(0);
+  });
+
+  it("conditional entropy is Shannon's F_2 = H(X_{n−1}, X_n) − H(X_{n−1}) (1948, §7, Theorem 6)", () => {
+    // Theorem 6: F_N = N·G_N − (N−1)·G_{N−1}; for N = 2 the block entropy of the overlapping
+    // bigrams minus the entropy of their first symbols, estimated on the same len − 1 positions.
+    for (const seed of [11, 12, 13]) {
+      const data = randomBytes(2000, seed, 3 + seed);
+      const pairs = new Uint32Array(1 << 16);
+      for (let i = 1; i < data.length; i++) {
+        const pair = at(data, i - 1) * 256 + at(data, i);
+        pairs[pair] = at(pairs, pair) + 1;
+      }
+      const f2 = kernel.entropyCounts(pairs) - kernel.entropyBytes(data.subarray(0, -1));
+      expect(kernel.conditionalEntropyBytes(data)).toBeCloseTo(f2, 12);
+    }
+  });
+
+  it('measures a string as the UTF-8 bytes of its NFC form (canonically equivalent text, equal statistics)', () => {
+    const nfc = 'Ação, coração e informação.'.normalize('NFC');
+    const nfd = nfc.normalize('NFD');
+    expect(nfd).not.toBe(nfc);
+    expect(Array.from(textBytes(nfd))).toEqual(Array.from(new TextEncoder().encode(nfc)));
+    expect(kernel.histogram(nfd)).toEqual(kernel.histogram(nfc));
+    expect(kernel.entropyBytes(nfd)).toBe(kernel.entropyBytes(nfc));
+    expect(kernel.conditionalEntropyBytes(nfd)).toBe(kernel.conditionalEntropyBytes(nfc));
+    expect(kernel.huffmanLengths(kernel.histogram(nfd))).toEqual(kernel.huffmanLengths(kernel.histogram(nfc)));
+    // Bytes are measured verbatim: the decomposed UTF-8 really is a different source.
+    expect(kernel.entropyBytes(new TextEncoder().encode(nfd))).not.toBe(kernel.entropyBytes(nfc));
+    // A lone surrogate has no UTF-8 form and is measured as U+FFFD, as TextEncoder writes it.
+    expect(Array.from(textBytes('a\uD800b'))).toEqual([0x61, 0xef, 0xbf, 0xbd, 0x62]);
   });
 
   it('conditional entropy releases its 256 KiB bigram table', () => {
@@ -199,6 +230,35 @@ describe('divergences (Kullback & Leibler 1951; Lin 1991)', () => {
     expect(() => kernel.klDivergence([1], [1, 2])).toThrow(RangeError);
   });
 
+  it('accept finite entries whose sum overflows (normalised after an exact power-of-two rescaling)', () => {
+    // Σ = 2e308 overflows a double, yet P = Q = (½, ½).
+    expect(kernel.klDivergence([1e308, 1e308], [1, 1])).toBe(0);
+    expect(kernel.jsDivergence([1e308, 1e308], [1, 1])).toBe(0);
+    expect(kernel.klDivergence([1e308, 1e308], [3, 1])).toBeCloseTo(klDivergence([1, 1], [3, 1]), 14);
+    // Scaling by a power of two is exact, so the result is bit-for-bit the unscaled one.
+    const big = 2 ** 1013; // 1000 · 2^1013 < Number.MAX_VALUE < 30 · 1000 · 2^1013
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 1, max: 30 }).chain((n) => fc.tuple(weights(n, n), weights(n, n))),
+        ([p, q]) => {
+          const scaled = p.map((x) => x * big);
+          expect(kernel.jsDivergence(scaled, q)).toBe(kernel.jsDivergence(p, q));
+          expect(
+            kernel.klDivergence(
+              scaled,
+              q.map((x) => x + 1),
+            ),
+          ).toBe(
+            kernel.klDivergence(
+              p,
+              q.map((x) => x + 1),
+            ),
+          );
+        },
+      ),
+    );
+  });
+
   it('JS ∈ [0, 1] bits, symmetric, 1 for disjoint supports and matches the reference', () => {
     expect(kernel.jsDivergence([1, 0], [0, 1])).toBe(1);
     expect(kernel.jsDivergence([3, 1], [3, 1])).toBe(0);
@@ -275,6 +335,19 @@ describe('mutual information (Shannon 1948)', () => {
       expect(mi).toBeLessThanOrEqual(entropyOfCounts(rowSums) + 1e-12);
       expect(mi).toBeGreaterThanOrEqual(0);
     }
+  });
+
+  it('accepts finite entries whose total overflows (1 bit for a scaled 2 × 2 identity)', () => {
+    expect(kernel.mutualInformation([1e308, 0, 0, 1e308], 2, 2)).toBe(1);
+    expect(kernel.mutualInformation([1e308, 1e308, 1e308, 1e308], 2, 2)).toBeCloseTo(0, 14);
+    const joint = [3, 1, 4, 1, 5, 9];
+    expect(
+      kernel.mutualInformation(
+        joint.map((x) => x * 2 ** 1020),
+        2,
+        3,
+      ),
+    ).toBe(kernel.mutualInformation(joint, 2, 3));
   });
 
   it('is 0 for an empty or all-zero matrix and NaN for negative entries', () => {

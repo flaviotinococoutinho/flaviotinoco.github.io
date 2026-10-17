@@ -15,20 +15,41 @@ import { fc, test } from '@fast-check/vitest';
 import type { Nodes, Root } from 'mdast';
 import { toString } from 'mdast-util-to-string';
 import { directiveLabelSource, plainText } from '../../../src/core/latex/nodes.ts';
+import { smartPunctuation } from '../../../src/core/latex/smart-punctuation.ts';
 import { transformLatex } from '../../../src/core/latex/transform.ts';
 import { parse } from './helpers.ts';
 
 const OURS =
   /:(?:definition|theorem|lemma|proposition|corollary|conjecture|axiom|example|remark|proof|figure|ref|eqref)\b/;
 const LATEX_IN_MATH = /\\(?:label|ref|eqref|begin)/;
-const FENCE_LINE = /^\s*:{2,}/m;
+
+/** Whether the tree has a container directive (after one, a ":::" line is a stray fence: an error, not prose). */
+const hasContainer = (node: Nodes): boolean =>
+  node.type === 'containerDirective' ||
+  ('children' in node && (node.children as readonly Nodes[]).some((child) => hasContainer(child)));
+
+const isDisplay = (node: Nodes): boolean => node.type === 'math' || (node.type === 'code' && node.lang === 'math');
+const hasDisplay = (node: Nodes): boolean =>
+  isDisplay(node) || ('children' in node && (node.children as readonly Nodes[]).some((child) => hasDisplay(child)));
+
+/** The output without the scroll boxes the stage puts around every display (div.equation). */
+const unwrapDisplays = (node: Nodes): Nodes => {
+  const [only] = 'children' in node ? (node.children as readonly Nodes[]) : [];
+  if (node.type === 'latexBlock' && node.role === 'equation' && only !== undefined && isDisplay(only)) return only;
+  return 'children' in node
+    ? ({ ...node, children: (node.children as readonly Nodes[]).map(unwrapDisplays) } as Nodes)
+    : node;
+};
 
 describe('documents without LaTeX-layer constructs', () => {
   const unchanged = (s: string): void => {
-    fc.pre(!OURS.test(s) && !LATEX_IN_MATH.test(s) && !FENCE_LINE.test(s));
+    fc.pre(!OURS.test(s) && !LATEX_IN_MATH.test(s));
     const tree = parse(s);
+    fc.pre(!hasContainer(tree));
     const result = transformLatex(tree, { locale: 'pt-BR', source: s });
-    expect(result.tree).toBe(tree);
+    // Only structure is added: a scroll box around each display; everything else is the input itself.
+    if (hasDisplay(tree)) expect(unwrapDisplays(result.tree)).toEqual(tree);
+    else expect(result.tree).toBe(tree);
     expect(toString(result.tree)).toBe(toString(tree));
     expect(result.diagnostics).toEqual([]);
   };
@@ -46,6 +67,9 @@ describe('documents without LaTeX-layer constructs', () => {
             '\n',
             '\n\n',
             ':',
+            ':::',
+            '\\:::',
+            '::::',
             '10:30',
             'nota:',
             '[',
@@ -73,7 +97,14 @@ describe('documents without LaTeX-layer constructs', () => {
 
 type Ref = { readonly kind: 'ref' | 'eqref' | 'math'; readonly pick: number };
 type Block =
-  | { readonly t: 'p'; readonly text: string; readonly refs: readonly Ref[]; readonly math: string | undefined }
+  | {
+      readonly t: 'p';
+      readonly text: string;
+      readonly refs: readonly Ref[];
+      readonly math: string | undefined;
+      /** Text and references inside an author link (references there must not become links). */
+      readonly linked: boolean;
+    }
   | {
       readonly t: 'env';
       readonly kind: string;
@@ -86,6 +117,10 @@ type Block =
 
 const word = fc.stringMatching(/^[a-zà-úç]{1,8}$/);
 const sentence = fc.array(word, { minLength: 1, maxLength: 6 }).map((ws) => `${ws.join(' ')}.`);
+/** Attribute text (title="…", source="…") with the ASCII punctuation the stage makes typographic. */
+const attributeText = fc
+  .array(fc.oneof(word, fc.constantFrom(' -- ', '... ', " d'água", " 'ok'", ' x--y')), { minLength: 1, maxLength: 6 })
+  .map((parts) => `${parts.join(' ').trim()}.`);
 const tex = fc.stringMatching(/^[a-z0-9+=^ ]{1,12}$/).map((s) => s.trim() || 'x');
 const ref: fc.Arbitrary<Ref> = fc.record({ kind: fc.constantFrom('ref', 'eqref', 'math'), pick: fc.nat() });
 
@@ -95,6 +130,7 @@ const block: fc.Arbitrary<Block> = fc.oneof(
     text: sentence,
     refs: fc.array(ref, { maxLength: 3 }),
     math: fc.option(tex, { nil: undefined }),
+    linked: fc.boolean(),
   }),
   fc.record({
     t: fc.constant('env' as const),
@@ -111,15 +147,15 @@ const block: fc.Arbitrary<Block> = fc.oneof(
       'proof',
     ),
     labelled: fc.boolean(),
-    title: fc.option(sentence, { nil: undefined }),
+    title: fc.option(attributeText, { nil: undefined }),
     body: fc.array(sentence, { minLength: 1, maxLength: 2 }),
   }),
   fc.record({ t: fc.constant('eq' as const), tex, labelled: fc.boolean() }),
   fc.record({
     t: fc.constant('fig' as const),
     kind: fc.constantFrom('figure', 'chart', 'frame', 'table'),
-    title: sentence,
-    source: sentence,
+    title: attributeText,
+    source: attributeText,
   }),
 );
 
@@ -164,7 +200,8 @@ const render = (blocks: readonly Block[]): Doc => {
                 if (r.kind === 'eqref' && target.equation) return ` :eqref[${target.label}]`;
                 return ` :ref[${target.label}]`;
               });
-        return `${b.text}${refs.join('')}${b.math === undefined ? '' : ` $$${b.math}$$`} fim.`;
+        const prose = `${b.text}${refs.join('')}`;
+        return `${b.linked ? `[${prose}](https://example.org/)` : prose}${b.math === undefined ? '' : ` $$${b.math}$$`} fim.`;
       }
       case 'env': {
         // A proof's title replaces its name (amsthm); other titles are a parenthesised note.
@@ -196,7 +233,8 @@ const prop = (node: Nodes, key: string): unknown =>
   (node.data as { hProperties?: Record<string, unknown> } | undefined)?.hProperties?.[key];
 const isGenerated = (node: Nodes): boolean =>
   node.type === 'latexInline' ||
-  node.type === 'latexBlock' ||
+  // A table's scroll box wraps author content only.
+  (node.type === 'latexBlock' && node.role !== 'table-scroll') ||
   (node.type === 'link' && classes(node).includes('xref')) ||
   (node.type === 'paragraph' && (classes(node).includes('env__head') || classes(node).includes('figure__source')));
 
@@ -235,7 +273,8 @@ const outputView = (tree: Root): View => {
       for (const m of tex.matchAll(/\\eqref\{([^}]*)\}/g)) view.refs.push(m[1] ?? '');
       return;
     }
-    if (node.type === 'link' && classes(node).includes('xref') && !inGenerated)
+    // A reference is a link.xref, or a span.xref (latexInline) inside the author's own link.
+    if ((node.type === 'link' || node.type === 'latexInline') && classes(node).includes('xref') && !inGenerated)
       view.refs.push(String(prop(node, 'dataLabel')));
     if (node.type === 'text' && !inGenerated) view.texts.push(node.value);
     if (node.type === 'math' || node.type === 'inlineMath') view.math.push(node.value);
@@ -246,14 +285,29 @@ const outputView = (tree: Root): View => {
   return view;
 };
 
+/**
+ * The text of each node with the class, with an attribute's original recovered: the stage gives
+ * attribute text typographic punctuation and keeps the author's text in data-title / data-source.
+ */
 const collectByClass = (tree: Root, className: string): string[] => {
   const out: string[] = [];
   const walk = (node: Nodes): void => {
-    if (classes(node).includes(className)) out.push(plainText(node));
+    const original = prop(node, 'dataTitle') ?? prop(node, 'dataSource');
+    const shown = plainText(node);
+    if (classes(node).includes(className))
+      out.push(typeof original === 'string' ? shown.replace(smartPunctuation(original), original) : shown);
     if ('children' in node) for (const child of node.children as readonly Nodes[]) walk(child);
   };
   walk(tree);
   return out;
+};
+
+/** Links inside links: invalid HTML, which a parser repairs by cutting the outer link short. */
+const nestedLinks = (node: Nodes, inLink = false): number => {
+  const isLink = node.type === 'link' || node.type === 'linkReference';
+  const own = isLink && inLink ? 1 : 0;
+  if (!('children' in node)) return own;
+  return (node.children as readonly Nodes[]).reduce((n, child) => n + nestedLinks(child, inLink || isLink), own);
 };
 
 describe('documents with environments, equations, figures and references', () => {
@@ -269,6 +323,7 @@ describe('documents with environments, equations, figures and references', () =>
     expect(after.texts).toEqual(before.texts);
     expect(after.math).toEqual(before.math);
     expect(after.refs).toEqual(before.refs);
+    expect(nestedLinks(result.tree)).toBe(0);
     // Attribute values (titles, sources) are recoverable from the generated structure.
     expect(
       [...collectByClass(result.tree, 'env__title'), ...collectByClass(result.tree, 'figure__title')].sort(),

@@ -31,7 +31,11 @@ export type LatexRole =
   | 'figure-title'
   | 'figure-source-label'
   | 'equation'
-  | 'math-source';
+  /** The horizontal scroll box of a table inside :::figure{kind="table"}. */
+  | 'table-scroll'
+  | 'math-source'
+  /** A resolved reference inside the author's own link (a span: links cannot nest). */
+  | 'xref';
 
 interface LatexData extends Data {
   hName: string;

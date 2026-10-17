@@ -91,12 +91,36 @@ describe('tex escape codec', () => {
     expect(unescapeTex(escapeTex(s))).toBe(s);
   });
 
-  test.prop([fc.string({ maxLength: 200 })], { numRuns: 1000 })('leaves no bare special character', (s) => {
-    // After removing the escape sequences themselves, no TeX special may remain.
-    const residue = escapeTex(s)
-      .replace(/\\text[a-z]+\{\}/g, '')
-      .replace(/\\[{}#$%&_]/g, '');
-    expect(residue).not.toMatch(/[\\{}#$%&_~^]/);
+  test.prop([fc.string({ maxLength: 200 })], { numRuns: 1000 })(
+    'leaves no bare special character, quote or input ligature',
+    (s) => {
+      // After removing the escape sequences themselves, no TeX special, no character that TeX's fonts
+      // print as something else (' ` "), and no ligature (-- ,,) may remain.
+      // (An escape is a glyph of its own: it stands as "X", so it separates what it sits between.)
+      const residue = escapeTex(s)
+        .replace(/\\text[a-z]+\{\}/g, 'X')
+        .replace(/\\[{}#$%&_]/g, 'X')
+        .replaceAll('\\/', ' ');
+      expect(residue).not.toMatch(/[\\{}#$%&_~^'`"]|--|,,/);
+      expect(escapeTex(s)).not.toMatch(/\\textless\{\}\\textless|\\textgreater\{\}\\textgreater/);
+    },
+  );
+
+  test.prop(
+    [fc.array(fc.constantFrom('-', ',', '<', '>', "'", '`', '"', 'a', ' ', '/', '{', '}', '\\'), { maxLength: 30 })],
+    {
+      numRuns: 1000,
+    },
+  )('unescape ∘ escape = id on ligature-dense text', (parts) => {
+    const s = parts.join('');
+    expect(unescapeTex(escapeTex(s))).toBe(s);
+  });
+
+  it('breaks TeX input ligatures and keeps straight quotes straight (the PDF prints what the site shows)', () => {
+    expect(escapeTex("a -- b --- c ,, d ' e ` f << g")).toBe(
+      'a -\\/- b -\\/-\\/- c ,\\/, d \\textquotesingle{} e \\textasciigrave{} f \\textless{}\\/\\textless{} g',
+    );
+    expect(escapeTex('“aspas” — e–traço, d’água…')).toBe('“aspas” — e–traço, d’água…');
   });
 
   it('escapes the ten LaTeX specials and the babel-active quote', () => {

@@ -3,7 +3,7 @@
  * localisation, proof heads and the QED tombstone.
  */
 import { describe, expect, it } from 'vitest';
-import { failure, html, NBSP } from './helpers.ts';
+import { failure, html, NBSP, site } from './helpers.ts';
 
 describe('numbering', () => {
   it('numbers every numbered kind with ONE shared counter, in document order (\\newtheorem{lemma}[theorem])', () => {
@@ -171,6 +171,24 @@ describe('proofs', () => {
     const message = failure(() => html(md));
     expect(message).toMatch(/stray ":::" line/);
     expect(message).toMatch(/OUTER fence needs more colons/);
+    // The same mistake as a separate paragraph, and inside an outer container.
+    expect(failure(() => html(':::theorem\nT.\n:::\n\n:::'))).toMatch(/stray ":::" line/);
+    expect(failure(() => html('::::theorem\nT.\n\n:::\n\n::::'))).toMatch(/stray ":::" line/);
+  });
+
+  it('keeps colon-only lines as prose outside containers, or when escaped', () => {
+    // No container precedes or encloses them: nothing can have been closed early.
+    for (const md of ['Razão\n\n::::\n\nfim', 'Placar final:\n:::', ':::\n\nTexto.', '> Citação\n> :::']) {
+      const { html: out, file } = html(md);
+      expect(file.messages).toEqual([]);
+      expect(out).toMatch(/:{3,}/);
+    }
+    // A backslash keeps the line as text even right after a container (the escape hatch).
+    for (const md of ['Antes.\n\n\\:::\n\nDepois.', ':::theorem\nT.\n:::\n\n\\:::', ':::remark\nR.\n\n:\\::\n:::']) {
+      const { html: out, file } = html(md);
+      expect(file.messages).toEqual([]);
+      expect(out).toContain(':::');
+    }
   });
 
   it('uses the right pt-BR contraction for each statement kind', () => {
@@ -195,6 +213,26 @@ describe('proofs', () => {
   it('puts the tombstone on its own line when the proof does not end with a paragraph', () => {
     const { html: out } = html(':::proof\nTexto.\n\n$$\nx\n$$\n:::', 'pt-BR', { katex: false });
     expect(out).toMatch(/<p class="qed-line"><span class="qed">/);
+  });
+});
+
+describe('attribute text (title="…") reads like the body around it', () => {
+  it("gets the punctuation SmartyPants gives the body, with the author's text kept in data-title", async () => {
+    const { html: out } = await site(
+      '::::theorem{#thm:amostragem title="amostragem--reconstrução"}\n"aspas" -- e travessão\n::::',
+    );
+    expect(out).toContain(
+      '<span class="env__title" data-title="amostragem--reconstrução">(amostragem—reconstrução)</span>',
+    );
+    expect(out).toContain('<p>“aspas” — e travessão</p>');
+    const proof = html(':::proof{title="Esboço d\'après Shannon"}\nQ.\n:::').html;
+    expect(proof).toContain(
+      '<span class="env__title" data-title="Esboço d&#x27;après Shannon">Esboço d’après Shannon</span>',
+    );
+    // Unchanged text needs no copy.
+    expect(html(':::theorem{title="Nyquist–Shannon"}\nT.\n:::').html).toContain(
+      '<span class="env__title">(Nyquist–Shannon)</span>',
+    );
   });
 });
 

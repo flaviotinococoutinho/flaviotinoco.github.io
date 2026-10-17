@@ -5,7 +5,9 @@ import {
   extractLabels,
   findRefs,
   findTag,
+  hoistLeadingLabels,
   isOuterEnvironment,
+  numberOnce,
   replaceRefs,
   starAutoNumbered,
 } from '../../../src/core/latex/math-transform.ts';
@@ -46,6 +48,45 @@ describe('tags', () => {
   it('detects environments that cannot nest inside equation', () => {
     expect(isOuterEnvironment('\\begin{align}a&=b\\end{align}')).toBe(true);
     expect(isOuterEnvironment('\\begin{aligned}a&=b\\end{aligned}')).toBe(false);
+    // Also after white space, comments and \label calls (not only at the start of the string).
+    expect(isOuterEnvironment('\n\\label{eq:a} % nota\n\\begin{gather*}a\\end{gather*}')).toBe(true);
+    expect(isOuterEnvironment('x \\begin{align}a\\end{align}')).toBe(false);
+  });
+
+  it('moves \\label calls written before an outer environment into its first row', () => {
+    expect(hoistLeadingLabels('\\label{eq:a}\n\\begin{align}a &= b\\end{align}')).toBe(
+      '\n\\begin{align}\\label{eq:a}a &= b\\end{align}',
+    );
+    expect(hoistLeadingLabels('\\label{eq:a}\\begin{alignat}{2}a &= b\\end{alignat}')).toBe(
+      '\\begin{alignat}{2}\\label{eq:a}a &= b\\end{alignat}',
+    );
+    expect(hoistLeadingLabels('x = y \\label{eq:a}')).toBe('x = y \\label{eq:a}');
+  });
+});
+
+describe('numberOnce (the site numbers a labelled display once)', () => {
+  it('adds \\notag to the rows of a row-numbered environment that carry no label or tag', () => {
+    expect(numberOnce('\\begin{align} a &= b \\label{eq:a}\\\\ c &= d \\end{align}')).toBe(
+      '\\begin{align} a &= b \\label{eq:a}\\\\ c &= d  \\notag\\end{align}',
+    );
+    expect(numberOnce('\\begin{gather} a \\\\[2pt] b \\tag{X} \\\\ c \\nonumber \\end{gather}')).toBe(
+      '\\begin{gather} a  \\notag\\\\[2pt] b \\tag{X} \\\\ c \\nonumber \\end{gather}',
+    );
+  });
+
+  it('leaves rows of nested environments and braces alone, and unstars a labelled starred environment', () => {
+    expect(
+      numberOnce(
+        '\\begin{align*} a &= \\begin{cases} 1 \\\\ 2 \\end{cases} \\label{eq:a} \\\\ {b \\\\ c} \\end{align*}',
+      ),
+    ).toBe(
+      '\\begin{align} a &= \\begin{cases} 1 \\\\ 2 \\end{cases} \\label{eq:a} \\\\ {b \\\\ c}  \\notag\\end{align}',
+    );
+    expect(numberOnce('\\begin{equation*} x \\label{eq:x} \\end{equation*}')).toBe(
+      '\\begin{equation} x \\label{eq:x} \\end{equation}',
+    );
+    expect(numberOnce('x \\label{eq:x}')).toBe('x \\label{eq:x}');
+    expect(numberOnce('\\begin{align} a \\label{eq:a}')).toBe('\\begin{align} a \\label{eq:a}');
   });
 });
 

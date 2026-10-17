@@ -88,7 +88,10 @@ export interface LabelEntry {
   /** HTML id (see label-codec.ts). */
   readonly id: string;
   readonly target: Target;
-  /** Plain-text title, when the item has one (environment note or figure title). */
+  /**
+   * Reading text of the title as rendered, when the item has one (environment note or figure
+   * title): references resolved ("Lema 1"), inline math as `$$TeX$$` (see transform.ts, titleText).
+   */
   readonly title?: string;
   readonly position?: Position;
 }

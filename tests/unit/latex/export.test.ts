@@ -13,7 +13,7 @@ import type { Nodes, Root } from 'mdast';
 import { exportLatex, parseExportMeta, toLatex, type ExportMeta } from '../../../src/core/latex/export.ts';
 import { MACROS } from '../../../src/core/latex/macros.ts';
 import { escapeTex, unescapeTex } from '../../../src/core/latex/tex-escape.ts';
-import { fixture, parse } from './helpers.ts';
+import { fixture, parse, site, siteTree } from './helpers.ts';
 import { lintDocument, lintTex, split } from './tex-lint.ts';
 
 const pt: ExportMeta = {
@@ -26,10 +26,17 @@ const pt: ExportMeta = {
 };
 const en: ExportMeta = { lang: 'en', title: 'Sampling and aliasing', date: '2026-10-01' };
 
-const exported = (name: string, meta: ExportMeta) => {
+/** A fixture exported from the tree the site's latex stage receives (GFM + SmartyPants + math + directives). */
+const exportFixture = async (name: string, meta: ExportMeta) => {
   const markdown = fixture(name);
-  return exportLatex(parse(markdown), meta, { source: markdown });
+  return exportLatex(await siteTree(markdown), meta, { source: markdown });
 };
+const fixtures = {
+  pt: await exportFixture('ensaio.md', pt),
+  en: await exportFixture('essay.md', en),
+};
+const exported = (name: 'ensaio.md' | 'essay.md', _meta: ExportMeta) =>
+  name === 'ensaio.md' ? fixtures.pt : fixtures.en;
 
 const paragraph = (text: string): Root => ({
   type: 'root',
@@ -336,6 +343,18 @@ describe('robustness', () => {
     expect(tex).toContain('::folha\\{a=1\\}');
   });
 
+  it('uses non-linking \\ref* inside a link (a PDF link cannot contain another one)', () => {
+    const { tex } = run(
+      ':::theorem{#thm:a}\nT.\n:::\n\n$$\nx \\label{eq:a}\n$$\n\n' +
+        '[veja :ref[thm:a], :eqref[eq:a] e $$\\eqref{eq:a}$$](https://example.org) e :ref[thm:a].',
+    );
+    expect(tex).toContain(
+      '\\href{https://example.org}{veja Teorema~\\ref*{thm:a}, \\textup{(\\ref*{eq:a})} e $\\textup{(\\ref*{eq:a})}$} ' +
+        'e Teorema~\\ref{thm:a}.',
+    );
+    expect(lintDocument(tex)).toEqual([]);
+  });
+
   it('ends an inline formula with a comment on its own line', () => {
     const { tex } = run('Ver $$x % nota$$ aqui.');
     expect(tex).toContain('$x % nota\n$');
@@ -355,6 +374,163 @@ describe('robustness', () => {
   it('is a pure function of its inputs (toLatex = exportLatex(…).tex)', () => {
     const md = fixture('ensaio.md');
     expect(toLatex(parse(md), pt, { source: md })).toBe(exportLatex(parse(md), pt, { source: md }).tex);
+  });
+});
+
+describe('content LaTeX would lose or reject', () => {
+  const meta: ExportMeta = { lang: 'pt-BR', title: 'T' };
+  const run = (markdown: string) => exportLatex(parse(markdown), meta, { source: markdown });
+
+  it('the static check flags each placement pdfLaTeX/LuaLaTeX reject or lose (verified with TeX Live 2023)', () => {
+    const problems = (tex: string): readonly string[] => lintTex(tex).map((p) => p.message);
+    expect(problems('x\\footnote{V:\n\\begin{verbatim}\na\n\\end{verbatim}}')).toEqual([
+      'verbatim environment inside the argument of \\footnote',
+    ]);
+    expect(problems('\\begin{tabular}{ll}\nx\\footnote{n} & 2 \\\\\n\\end{tabular}')).toEqual([
+      '\\footnote inside a tabular or float (its text is lost)',
+    ]);
+    expect(problems('a\\footnote{b \\marginpar{c}}')).toEqual([
+      '\\marginpar inside a footnote, tabular or float (not in outer par mode)',
+    ]);
+    expect(problems('a\\footnote{b\\footnote{c}}')).toEqual(['\\footnote inside a footnote (its text is lost)']);
+    expect(problems('\\begin{equation}\n\\begin{align}a&=b\\end{align}\n\\end{equation}')).toEqual([
+      'display environment align nested in another display',
+    ]);
+    expect(problems('\\href{u}{a \\ref{x}} \\href{u}{a \\ref*{x}}')).toEqual([
+      '\\ref inside the text of an \\href (nested links)',
+    ]);
+    expect(problems('a -- b ,, \' ` " c')).toEqual([
+      '-- in text mode (a TeX input ligature)',
+      ',, in text mode (a TeX input ligature)',
+      "bare ' in text mode (it does not print as itself)",
+      'bare ` in text mode (it does not print as itself)',
+      'bare " in text mode (it does not print as itself)',
+    ]);
+  });
+
+  it('code in a footnote: saved with SaveVerbatim at the start, typeset with \\UseVerbatim', () => {
+    const { tex } = run(
+      'Texto com nota.[^1]\n\n[^1]: Veja:\n\n    ```js\n    const x = 1; // \\end{verbatim}\n    ```\n',
+    );
+    expect(tex).toContain(
+      '\\begin{document}\n% Code used inside footnotes (fancyvrb SaveVerbatim: verbatim cannot sit in a command argument).\n' +
+        '% language: js\n\\begin{SaveVerbatim}{ftcode1}\nconst x = 1; // \\end{verbatim}\n\\end{SaveVerbatim}\n\\maketitle',
+    );
+    expect(tex).toContain('Texto com nota.\\footnote{Veja:\n\n\\par\\UseVerbatim{ftcode1}}');
+    expect(lintDocument(tex)).toEqual([]);
+  });
+
+  it('a note in a table cell or a figure: \\footnotemark in place, \\footnotetext after the tabular/float', () => {
+    const table = run('| a | b |\n|---|---|\n| x :sidenote[nota um] | y[^n] |\n\n[^n]: nota dois\n');
+    expect(table.tex).toContain('x\\protect\\footnotemark & y\\protect\\footnotemark \\\\');
+    expect(table.tex).toContain(
+      '\\end{tabular}\n\\end{center}\n\\addtocounter{footnote}{-1}\\footnotetext{nota um}\n\\stepcounter{footnote}\\footnotetext{nota dois}',
+    );
+    expect(lintDocument(table.tex)).toEqual([]);
+    const figure = run(':::figure{#tab:t kind="table" title="T" source="S."}\n| a |\n|---|\n| x :sidenote[n] |\n:::');
+    expect(figure.tex).toContain('\\end{table}\n\\footnotetext{n}');
+    expect(lintDocument(figure.tex)).toEqual([]);
+  });
+
+  it('a margin note inside a footnote, table or figure (or a note in a note) stays in the text, in parentheses', () => {
+    const { tex, warnings } = run(
+      'Texto :sidenote[com :marginnote[margem] e :sidenote[outra]] fim.\n\n| a |\n|---|\n| x :marginnote[m] |\n',
+    );
+    expect(tex).toContain('Texto\\footnote{com (margem) e (outra)} fim.');
+    expect(tex).toContain('x (m) \\\\');
+    expect(warnings.map((w) => w.message)).toEqual([
+      ':marginnote inside a footnote cannot be a note in LaTeX; exported in parentheses',
+      ':sidenote inside a footnote cannot be a note in LaTeX; exported in parentheses',
+      ':marginnote inside a table or figure cannot be a note in LaTeX; exported in parentheses',
+    ]);
+    expect(lintDocument(tex)).toEqual([]);
+  });
+
+  it('a \\label written before an outer environment moves inside it (no equation around align)', () => {
+    const { tex } = run('$$\n\\label{eq:a}\n\\begin{align}a &= b\\\\ c &= d\\end{align}\n$$\n\nVer :eqref[eq:a].');
+    expect(tex).toContain('\\begin{align}\\label{eq:a}a &= b\\\\ c &= d \\notag\\end{align}');
+    expect(tex).not.toContain('\\begin{equation}');
+    expect(lintDocument(tex)).toEqual([]);
+  });
+});
+
+/**
+ * amsmath's numbering of a document's displays, as LaTeX would do it, by label: `equation` and
+ * `multline` take one number, `align`, `gather`, `flalign` and `alignat` one per row unless the row
+ * has \notag/\nonumber; \tag{x} shows x; starred environments take none.
+ */
+const amsmathNumbers = (tex: string): Readonly<Record<string, string>> => {
+  const numbers: Record<string, string> = {};
+  let counter = 0;
+  for (const m of tex.matchAll(
+    /\\begin\{(equation|multline|align|gather|flalign|alignat)(\*?)\}([\s\S]*?)\\end\{\1\2\}/g,
+  )) {
+    const [, env = '', star = '', body = ''] = m;
+    const rows = ['align', 'gather', 'flalign', 'alignat'].includes(env) ? body.split(/\\\\(?![a-zA-Z])/) : [body];
+    for (const row of rows) {
+      const tag = /\\tag\*?\{([^}]*)\}/.exec(row)?.[1];
+      const number = star === '*' || /\\(?:notag|nonumber)\b/.test(row) ? undefined : (tag ?? String((counter += 1)));
+      for (const l of row.matchAll(/\\label\{([^}]*)\}/g)) if (number !== undefined) numbers[l[1] ?? ''] = number;
+    }
+  }
+  return numbers;
+};
+
+describe('equation numbers: the site and the .tex agree (ABNT NBR 14724 §5.7: only labelled displays)', () => {
+  const documents = [
+    '$$\n\\begin{align} a &= b \\label{eq:a}\\\\ c &= d \\end{align}\n$$\n\n$$\ne = f \\label{eq:b}\n$$\n\n:eqref[eq:b] :eqref[eq:a]',
+    '$$\n\\label{eq:a}\n\\begin{gather} a \\\\ b \\\\ c \\end{gather}\n$$\n\n$$\n\\begin{align*} x &= y \\label{eq:b} \\end{align*}\n$$\n\n$$\n\\begin{align} p \\\\ q \\end{align}\n$$\n\n$$\nz \\tag{A} \\label{eq:c}\n$$\n\n$$\nw \\label{eq:d}\n$$',
+    '$$\n\\begin{alignat}{2} a &= b &\\quad c &= d \\label{eq:a} \\\\ e &= f & g &= h \\end{alignat}\n$$\n\n$$\n\\begin{gather} a \\\\ b \\label{eq:b} \\end{gather}\n$$\n\n$$\n\\begin{equation} c \\label{eq:c} \\end{equation}\n$$',
+  ];
+
+  it.each(documents.map((d, i) => [i, d] as const))('document %i', async (_, markdown) => {
+    const { frontmatter } = await site(markdown);
+    const siteNumbers = Object.fromEntries(
+      (frontmatter['crossrefs'] as readonly { label: string; number: string }[]).map((c) => [c.label, c.number]),
+    );
+    const { tex } = exportLatex(await siteTree(markdown), { lang: 'pt-BR', title: 'T' }, { source: markdown });
+    expect(amsmathNumbers(tex)).toEqual(siteNumbers);
+    expect(lintDocument(tex)).toEqual([]);
+  });
+});
+
+describe('punctuation: the PDF prints what the site shows', () => {
+  const meta: ExportMeta = { lang: 'pt-BR', title: 'T' };
+  const body = (tex: string): string => {
+    const { body: b } = split(tex);
+    return b.slice(b.indexOf('\\maketitle\n\n') + '\\maketitle\n\n'.length, b.lastIndexOf('\n\n\\end{document}'));
+  };
+  const word = fc.constantFrom('Nyquist', 'água', 'd', 's', '80s', 'e', 'cf');
+  const mark = fc.constantFrom(' ', ' ', '"', "'", '--', '---', '----', '...', ',,', ',', '.', '-', '(', ')', '?');
+  const prose = fc
+    .array(fc.oneof(word, mark), { minLength: 1, maxLength: 16 })
+    .map((parts) => `Texto ${parts.join('')} fim.`);
+
+  test.prop([prose], { numRuns: 150 })(
+    'every character of the site text reaches the PDF unchanged (no ligature, no quote reinterpreted)',
+    async (markdown) => {
+      const tex = toLatex(await siteTree(markdown), meta, { source: markdown });
+      // The static check proves TeX prints each escaped character as itself…
+      expect(lintTex(body(tex))).toEqual([]);
+      // …so the PDF text is the unescaped source, which must be the text the site shows.
+      const shown = (await site(markdown)).html
+        .replace(/<[^>]*>/g, '')
+        .replace(/&#x22;/g, '"')
+        .replace(/&#x26;/g, '&')
+        .trim();
+      expect(unescapeTex(body(tex))).toBe(shown);
+    },
+  );
+
+  it('attributes get the same punctuation as the body, on the site and in the .tex', async () => {
+    const markdown =
+      ':::theorem{#thm:a title="Nyquist--Shannon\'s"}\n"Aspas" -- e d\'água.\n:::\n\n' +
+      ':::figure{#fig:f title="O \'dobramento\'..." source="Autor\'s -- 2026"}\n![x](x.png)\n:::';
+    const { tex } = exportLatex(await siteTree(markdown), meta, { source: markdown });
+    expect(tex).toContain('\\begin{theorem}[{Nyquist—Shannon’s}]');
+    expect(tex).toContain('“Aspas” — e d’água.');
+    expect(tex).toContain('\\caption{O ‘dobramento’…}');
+    expect(tex).toContain('\\ftsource{Autor’s — 2026}');
   });
 });
 

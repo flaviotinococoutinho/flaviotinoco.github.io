@@ -5,6 +5,7 @@
  * (file.data.astro.frontmatter) set up the way Astro does it.
  */
 import { readFileSync } from 'node:fs';
+import { createMarkdownProcessor } from '@astrojs/markdown-remark';
 import type { Root } from 'mdast';
 import rehypeStringify from 'rehype-stringify';
 import remarkDirective from 'remark-directive';
@@ -14,7 +15,8 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
-import type { PipelineContext } from '../../../src/adapters/unified/context.ts';
+import { loadPipelineContext, type PipelineContext } from '../../../src/adapters/unified/context.ts';
+import { createPipeline } from '../../../src/adapters/unified/pipeline.ts';
 import { rehypeKatexIsolated } from '../../../src/adapters/unified/rehype-katex-isolated.ts';
 import { remarkIntegrity } from '../../../src/adapters/unified/remark-integrity.ts';
 import { remarkLatex } from '../../../src/adapters/unified/remark-latex.ts';
@@ -75,6 +77,77 @@ export const html = (
   const out = processor.processSync(file);
   return { html: String(out), file: out };
 };
+
+type SiteProcessor = Awaited<ReturnType<typeof createMarkdownProcessor>>;
+let siteProcessor: Promise<SiteProcessor> | undefined;
+
+/**
+ * The site's own Markdown processor: Astro's (GFM, SmartyPants, remark-rehype, rehype-raw,
+ * heading ids) with EVERY stage of createPipeline in its production order and the real
+ * build context (lexicons from lexicon/*.tsv). What a content entry renders to.
+ */
+const siteMarkdown = (): Promise<SiteProcessor> =>
+  (siteProcessor ??= loadPipelineContext(new URL('../../../', import.meta.url), '/').then((context) => {
+    const pipeline = createPipeline(context);
+    return createMarkdownProcessor({
+      remarkPlugins: [...pipeline.remarkPlugins],
+      rehypePlugins: [...pipeline.rehypePlugins],
+      syntaxHighlight: false,
+      gfm: true,
+      smartypants: true,
+    });
+  }));
+
+/** HTML and exported frontmatter of a document rendered by the full site pipeline (rejects on a build error). */
+export const site = async (
+  markdown: string,
+  lang: Locale = 'pt-BR',
+): Promise<{ readonly html: string; readonly frontmatter: Readonly<Record<string, unknown>> }> => {
+  const rendered = await (await siteMarkdown()).render(markdown, { frontmatter: { lang } });
+  return { html: rendered.code, frontmatter: rendered.metadata.frontmatter };
+};
+
+let siteTreeProcessor: Promise<SiteProcessor> | undefined;
+
+/**
+ * The mdast exactly as the site's latex stage receives it — Astro's parse with GFM and SmartyPants,
+ * then remark-math and remark-directive — which is the input src/core/latex/export.ts expects.
+ */
+export const siteTree = async (markdown: string): Promise<Root> => {
+  const capture = () => (tree: Root, file: VFile) => {
+    const frontmatter = ((file.data.astro ??= {}).frontmatter ??= {}) as Record<string, unknown>;
+    frontmatter['__tree'] = structuredClone(tree);
+  };
+  siteTreeProcessor ??= createMarkdownProcessor({
+    remarkPlugins: [[remarkMath, { singleDollarTextMath: false }], remarkDirective, capture],
+    syntaxHighlight: false,
+    gfm: true,
+    smartypants: true,
+  });
+  const { metadata } = await (await siteTreeProcessor).render(markdown, { frontmatter: {} });
+  return metadata.frontmatter['__tree'] as Root;
+};
+
+let smartypantsProcessor: Promise<SiteProcessor> | undefined;
+
+/** The text the site's SmartyPants (Astro: remark-smartypants, default options) makes of a one-line paragraph. */
+export const smartypants = async (text: string): Promise<string> => {
+  smartypantsProcessor ??= createMarkdownProcessor({ syntaxHighlight: false, gfm: true, smartypants: true });
+  const { code } = await (await smartypantsProcessor).render(text);
+  const inner = /^<p>([\s\S]*)<\/p>$/.exec(code.trim())?.[1];
+  if (inner === undefined) throw new Error(`not a single paragraph: ${code}`);
+  return inner
+    .replace(/<[^>]*>/g, '')
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCodePoint(Number.parseInt(hex, 16)))
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&');
+};
+
+/** Every `id="…"` of an HTML string, in order. */
+export const htmlIds = (html: string): readonly string[] =>
+  [...html.matchAll(/\sid="([^"]*)"/g)].map((m) => m[1] ?? '');
 
 /** Frontmatter exported by the stages. */
 export const frontmatter = (file: VFile): Record<string, unknown> => file.data.astro?.frontmatter ?? {};

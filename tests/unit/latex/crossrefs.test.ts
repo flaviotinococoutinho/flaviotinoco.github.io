@@ -3,7 +3,7 @@
  * localisation, unknown and duplicate labels, label → id mapping.
  */
 import { describe, expect, it } from 'vitest';
-import { failure, html, mdast, NBSP } from './helpers.ts';
+import { failure, html, mdast, NBSP, site } from './helpers.ts';
 
 describe('resolution', () => {
   it('resolves forward and backward references, in prose and in math', () => {
@@ -60,6 +60,27 @@ describe('resolution', () => {
   it('leaves bracket-less ":ref" prose to the integrity stage (restored verbatim)', () => {
     const { html: out } = html('Ver a nota:ref e a razão 3:eqref.');
     expect(out).toBe('<p>Ver a nota:ref e a razão 3:eqref.</p>');
+  });
+
+  it('renders a reference inside the author’s link as a span, so links never nest', async () => {
+    const theorem = ':::theorem{#thm:a}\nT.\n:::\n\n';
+    const span = `<span class="xref xref--theorem" data-label="thm:a">Teorema${NBSP}1</span>`;
+    const { html: out } = html(`${theorem}[veja :ref[thm:a] aqui](https://example.org)`);
+    expect(out).toContain(`<p><a href="https://example.org">veja ${span} aqui</a></p>`);
+    const reference = html(
+      `${theorem}[veja :eqref[eq:a]][def]\n\n[def]: https://example.org\n\n$$\nx \\label{eq:a}\n$$`,
+      'pt-BR',
+      {
+        katex: false,
+      },
+    ).html;
+    expect(reference).toContain(
+      '<a href="https://example.org">veja <span class="xref xref--equation" data-label="eq:a">(1)</span></a>',
+    );
+    // Through Astro's processor (rehype-raw reparses the HTML): the author's link keeps every word.
+    const page = (await site(`${theorem}[veja :ref[thm:a] aqui](https://example.org) e :ref[thm:a].`)).html;
+    expect(page).toContain(`<a href="https://example.org">veja ${span} aqui</a> e <a href="#thm-a" class="xref`);
+    expect(page.match(/<a /g)).toHaveLength(2);
   });
 
   it('never touches inline code, code blocks or link URLs', () => {
