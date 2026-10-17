@@ -1,9 +1,16 @@
 /** signal.wasm against analytic results and independent JS references (tests/unit/wasm/reference.ts). */
+import fc from 'fast-check';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { KernelError, Status, withArena } from '../../../src/lib/wasm/runtime.ts';
-import { createSignalKernel, type SignalExports, type SignalKernel } from '../../../src/lib/wasm/signal.ts';
+import {
+  createSignalKernel,
+  type SignalExports,
+  type SignalKernel,
+  type Waveform,
+  type WindowKind,
+} from '../../../src/lib/wasm/signal.ts';
 import { at, instantiate, maxAbsDiff, mulberry32, sum } from './helpers.ts';
-import { cosineWindow, naiveDft, sinc, squarePartialSum } from './reference.ts';
+import { cosineWindow, exactAliasFrequency, naiveDft, sinc, squarePartialSum } from './reference.ts';
 
 let kernel: SignalKernel;
 let raw: SignalExports;
@@ -111,6 +118,23 @@ describe('spectra', () => {
     expect(() => kernel.powerDb([1], [1], NaN)).toThrow(RangeError);
   });
 
+  it('powerDb is relative to a unit DC level: a unit-amplitude real sinusoid reads −6.02 dB in bins k and N − k', () => {
+    const n = 64;
+    const dc = kernel.fft(new Float64Array(n).fill(1));
+    expect(at(kernel.powerDb(dc.re, dc.im), 0)).toBeCloseTo(0, 12);
+    const complexExp = kernel.fft(
+      Float64Array.from({ length: n }, (_, t) => Math.cos((2 * Math.PI * 3 * t) / n)),
+      Float64Array.from({ length: n }, (_, t) => Math.sin((2 * Math.PI * 3 * t) / n)),
+    );
+    expect(at(kernel.powerDb(complexExp.re, complexExp.im), 3)).toBeCloseTo(0, 12);
+    const sine = kernel.fft(Float64Array.from({ length: n }, (_, t) => Math.sin((2 * Math.PI * 5 * t) / n)));
+    const db = kernel.powerDb(sine.re, sine.im);
+    const half = 20 * Math.log10(0.5); // −6.0206 dB
+    expect(at(db, 5)).toBeCloseTo(half, 12);
+    expect(at(db, n - 5)).toBeCloseTo(half, 12);
+    expect(at(db, 4)).toBe(-120);
+  });
+
   it('spectral entropy is 1 for white spectra and 0 for a single line', () => {
     expect(kernel.spectralEntropy(new Float64Array(64).fill(3))).toBeCloseTo(1, 12);
     const line = new Float64Array(64);
@@ -142,6 +166,16 @@ describe('windows (Harris 1978)', () => {
       expect(at(w, 0)).toBeCloseTo(a0 - a1 + a2 - a3, 15);
     }
     expect(Array.from(kernel.window(kind, 1))).toEqual([1]);
+  });
+
+  it('rejects window names outside WindowKind (untyped attribute input) instead of defaulting to rectangular', () => {
+    for (const name of ['kaiser', 'Hann', '', 'toString', 'constructor', '__proto__', 'hasOwnProperty']) {
+      expect(() => kernel.window(name as WindowKind, 6), name).toThrow(RangeError);
+    }
+    for (const value of [undefined, null, 0, 1, {}]) {
+      expect(() => kernel.window(value as unknown as WindowKind, 6)).toThrow(RangeError);
+    }
+    expect(() => kernel.window('kaiser' as WindowKind, 6)).toThrow(/unknown window "kaiser"; expected one of/);
   });
 
   it('Hann has a unit midpoint and zero endpoints', () => {
@@ -219,6 +253,11 @@ describe('Fourier partial sums and the Gibbs phenomenon', () => {
 
   it('zero harmonics is silence; invalid kinds and counts are rejected', () => {
     expect(Array.from(kernel.fourierSeries('triangle', 0, 4))).toEqual([0, 0, 0, 0]);
+    // Unknown names must not fall back to kind 0 (the square wave).
+    for (const name of ['sine', 'Square', '', 'toString', 'valueOf', '__proto__']) {
+      expect(() => kernel.fourierSeries(name as Waveform, 3, 4), name).toThrow(RangeError);
+    }
+    expect(() => kernel.fourierSeries(undefined as unknown as Waveform, 3, 4)).toThrow(RangeError);
     expect(() => kernel.fourierSeries('square', 70_000, 4)).toThrow(KernelError);
     withArena(raw, (arena) => {
       const out = arena.alloc('f64', 4);
@@ -249,6 +288,32 @@ describe('sampling and reconstruction (Whittaker 1915; Shannon 1949)', () => {
     expect(kernel.aliasFrequency(13, 10)).toBe(3);
     expect(kernel.aliasFrequency(0.7, 1)).toBeCloseTo(0.3, 15);
     expect(kernel.aliasFrequency(1, 0)).toBeNaN();
+    expect(kernel.aliasFrequency(1, -10)).toBeNaN();
+    expect(kernel.aliasFrequency(Infinity, 10)).toBeNaN();
+  });
+
+  it('folds exactly for any finite frequency (no rounding of f/fs, no overflow of fs·round(f/fs))', () => {
+    // 10^20 ≡ 1 (mod 3); 10^17 ≡ 5 (mod 7) → 2: the literal |f − fs·round(f/fs)| gave 0 for both.
+    expect(kernel.aliasFrequency(1e20, 3)).toBe(1);
+    expect(kernel.aliasFrequency(1e17, 7)).toBe(2);
+    expect(kernel.aliasFrequency(123456789012345680, 0.3)).toBe(exactAliasFrequency(123456789012345680, 0.3));
+    expect(kernel.aliasFrequency(123456789012345680, 0.3)).toBeCloseTo(0.031181, 6);
+    // Formerly +Infinity.
+    const folded = kernel.aliasFrequency(1e308, 1e-10);
+    expect(folded).toBe(exactAliasFrequency(1e308, 1e-10));
+    expect(folded).toBeGreaterThanOrEqual(0);
+    expect(folded).toBeLessThanOrEqual(0.5e-10);
+    fc.assert(
+      fc.property(
+        fc.double({ noNaN: true, noDefaultInfinity: true }),
+        fc.double({ min: Number.MIN_VALUE, max: Number.MAX_VALUE, noNaN: true }),
+        (f, fs) => {
+          const got = kernel.aliasFrequency(f, fs);
+          expect(got).toBe(exactAliasFrequency(f, fs));
+          expect(got).toBeLessThanOrEqual(fs / 2 + Number.MIN_VALUE);
+        },
+      ),
+    );
   });
 
   it('samples t_k = k/fs < duration', () => {

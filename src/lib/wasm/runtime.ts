@@ -200,6 +200,11 @@ export class Arena {
   /** Allocates `length` uninitialised elements of `type` (naturally aligned). */
   alloc<K extends ElementType>(type: K, length: number): ArenaBuffer<K> {
     this.memory();
+    // An unknown type would index to `undefined` (or an `Object.prototype` member) and surface as a
+    // misleading out-of-memory error; reject it up front.
+    if (!Object.hasOwn(ELEMENT_BYTES, type)) {
+      throw new RangeError(`unknown element type ${String(type)}`);
+    }
     if (!Number.isSafeInteger(length) || length < 0) throw new RangeError(`invalid length ${length}`);
     const size = ELEMENT_BYTES[type];
     const bytes = length * size;

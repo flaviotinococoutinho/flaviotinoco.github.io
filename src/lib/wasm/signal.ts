@@ -1,7 +1,9 @@
 /**
  * Typed wrapper for `signal.wasm`: Fourier analysis, windows, Fourier partial sums (Gibbs
  * phenomenon), sampling and reconstruction. Methods copy their inputs into the kernel arena and
- * return fresh arrays; invalid arguments throw `RangeError`, kernel failures {@link KernelError}.
+ * return fresh arrays; invalid arguments (including window or waveform names outside {@link WindowKind}
+ * and {@link Waveform}, which may arrive untyped from HTML attributes) throw `RangeError`, kernel
+ * failures {@link KernelError}.
  */
 import { assertFinite, assertU32, check, type CoreExports, KernelError, Status, withArena } from './runtime.ts';
 
@@ -16,7 +18,7 @@ export interface SignalExports extends CoreExports {
   readonly ifft: (re: number, im: number, n: number) => number;
   /** `out[k] = sqrt(re[k]² + im[k]²)` (Oppenheim & Schafer 2010). */
   readonly magnitude: (re: number, im: number, out: number, n: number) => number;
-  /** `out[k] = max(10·log10(|X_k|²/n²), floorDb)` in dB (Oppenheim & Schafer 2010). */
+  /** `out[k] = max(10·log10(|X_k|²/n²), floorDb)` in dB re a unit DC level (Oppenheim & Schafer 2010). */
   readonly power_db: (re: number, im: number, out: number, n: number, floorDb: number) => number;
   /** Symmetric window of `kind` 0–4 (rectangular, Hann, Hamming, Blackman, Blackman–Harris; Harris 1978). */
   readonly window: (kind: number, out: number, n: number) => number;
@@ -61,7 +63,7 @@ export interface SignalExports extends CoreExports {
     nOut: number,
     tEnd: number,
   ) => number;
-  /** Folded frequency `|f − fs·round(f/fs)|` in Hz (Nyquist 1928); `NaN` unless `fs > 0`. */
+  /** Folded frequency `|f − fs·round(f/fs)|` in Hz, computed exactly (Nyquist 1928); `NaN` unless `fs > 0`. */
   readonly alias_frequency: (f: number, fs: number) => number;
   /** Normalised spectral entropy of `p_k = mag_k²/Σ mag²`, in `[0, 1]` (Shannon 1948); `NaN` for a bad pointer. */
   readonly spectral_entropy: (mag: number, n: number) => number;
@@ -82,6 +84,19 @@ const WINDOW_IDS: Readonly<Record<WindowKind, number>> = {
 };
 
 const WAVEFORM_IDS: Readonly<Record<Waveform, number>> = { square: 0, sawtooth: 1, triangle: 2 };
+
+/**
+ * The kernel id of `name` in `table`. Names reach the wrappers untyped at run time (e.g. from
+ * `data-*` attributes): an unknown name would index to `undefined` (or to an `Object.prototype`
+ * member such as `toString`), which WebAssembly converts to `0` — silently the rectangular window or
+ * the square wave — so it is rejected here instead.
+ */
+function kindId<K extends string>(what: string, table: Readonly<Record<K, number>>, name: unknown): number {
+  // `hasOwn` proves `name` is one of the table's own keys, i.e. a `K`.
+  if (typeof name === 'string' && Object.hasOwn(table, name)) return table[name as K];
+  const shown = typeof name === 'string' ? JSON.stringify(name) : `of type ${typeof name}`;
+  throw new RangeError(`unknown ${what} ${shown}; expected one of ${Object.keys(table).join(', ')}`);
+}
 
 /** A complex signal or spectrum as two parallel arrays. */
 export interface Complex {
@@ -119,14 +134,17 @@ export interface SignalKernel {
   /** Magnitude spectrum `|X_k| = sqrt(re_k² + im_k²)` (Oppenheim & Schafer 2010). */
   readonly magnitude: (re: ArrayLike<number>, im: ArrayLike<number>) => Float64Array;
   /**
-   * Power spectrum in dB relative to a full-scale sinusoid: `10·log10(|X_k|²/N²)`, clamped below at
-   * `floorDb` (default −120 dB); zero bins map to `floorDb` (Oppenheim & Schafer 2010).
+   * Power spectrum in dB, `10·log10(|X_k|²/N²)`, clamped below at `floorDb` (default −120 dB); zero
+   * bins map to `floorDb` (Oppenheim & Schafer 2010). The 0 dB reference is a unit-amplitude DC level
+   * (or complex exponential), `|X_k| = N`; a unit-amplitude real sinusoid splits between bins `k` and
+   * `N − k` (`|X_k| = N/2`) and reads `20·log10(½) ≈ −6.02 dB` in each.
    */
   readonly powerDb: (re: ArrayLike<number>, im: ArrayLike<number>, floorDb?: number) => Float64Array;
   /**
    * Symmetric window `w[k]`, `k = 0..n−1`, denominator `n − 1` (Harris 1978): Hann `0.5 − 0.5cos`,
    * Hamming `0.54 − 0.46cos`, Blackman `0.42 − 0.5cos + 0.08cos2`, 4-term Blackman–Harris
-   * `0.35875 − 0.48829cos + 0.14128cos2 − 0.01168cos3` of `2πk/(n−1)`; `n = 1` gives `[1]`.
+   * `0.35875 − 0.48829cos + 0.14128cos2 − 0.01168cos3` of `2πk/(n−1)`; `n = 1` gives `[1]`. An
+   * unknown `kind` throws `RangeError`.
    */
   readonly window: (kind: WindowKind, n: number) => Float64Array;
   /** Elementwise product `a[i]·b[i]`, e.g. applying a window before an FFT (Harris 1978). */
@@ -136,7 +154,7 @@ export interface SignalKernel {
    * `4/π Σ sin(kx)/k` over the first `harmonics` odd `k`; sawtooth `2/π Σ_{k≤H} (−1)^{k+1} sin(kx)/k`;
    * triangle `8/π² Σ (−1)^{(k−1)/2} sin(kx)/k²` over odd `k`. With `sigma`, each term is multiplied by
    * the Lanczos factor `sinc(k/(M+1))` (`M` = highest harmonic; Lanczos 1956), which reduces the Gibbs
-   * overshoot from ≈ 8.95 % to ≈ 1.19 % of the jump.
+   * overshoot from ≈ 8.95 % to ≈ 1.19 % of the jump. An unknown `kind` throws `RangeError`.
    */
   readonly fourierSeries: (
     kind: Waveform,
@@ -167,7 +185,11 @@ export interface SignalKernel {
     tEnd: number,
     nOut: number,
   ) => Float64Array;
-  /** Apparent frequency of `f` sampled at `fs`: `|f − fs·round(f/fs)|` ∈ `[0, fs/2]` (Nyquist 1928; Shannon 1949). */
+  /**
+   * Apparent frequency of `f` sampled at `fs`: the distance `|f − fs·round(f/fs)|` ∈ `[0, fs/2]` from `f`
+   * to the nearest multiple of `fs`, in the units of `fs` (Nyquist 1928; Shannon 1949). Computed exactly
+   * as `min(r, fs − r)` with `r = |f| mod fs`, so it holds for any finite `f`; `NaN` unless `fs > 0`.
+   */
   readonly aliasFrequency: (f: number, fs: number) => number;
   /**
    * Normalised spectral entropy `−Σ p_k ln p_k / ln N` of `p_k = |X_k|²/Σ|X|²`, in `[0, 1]`
@@ -232,10 +254,11 @@ export function createSignalKernel(exports: SignalExports): SignalKernel {
     },
 
     window: (kind, n) => {
+      const id = kindId('window', WINDOW_IDS, kind);
       assertU32('n', n, 1);
       return withArena(k, (arena) => {
         const out = arena.alloc('f64', n);
-        check('window', k.window(WINDOW_IDS[kind], out.ptr, n));
+        check('window', k.window(id, out.ptr, n));
         return out.read();
       });
     },
@@ -243,13 +266,14 @@ export function createSignalKernel(exports: SignalExports): SignalKernel {
     multiply: (a, b) => binary('multiply', a, b),
 
     fourierSeries: (kind, harmonics, n, options = {}) => {
+      const id = kindId('waveform', WAVEFORM_IDS, kind);
       const { sigma = false, cycles = 1 } = options;
       assertU32('harmonics', harmonics);
       assertU32('n', n, 1);
       assertFinite('cycles', cycles);
       return withArena(k, (arena) => {
         const out = arena.alloc('f64', n);
-        check('fourier_series', k.fourier_series(WAVEFORM_IDS[kind], harmonics, sigma ? 1 : 0, out.ptr, n, cycles));
+        check('fourier_series', k.fourier_series(id, harmonics, sigma ? 1 : 0, out.ptr, n, cycles));
         return out.read();
       });
     },

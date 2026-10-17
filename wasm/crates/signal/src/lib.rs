@@ -66,8 +66,10 @@ pub extern "C" fn magnitude(re: u32, im: u32, out: u32, n: u32) -> i32 {
     })())
 }
 
-/// `out[k] = max(10·log10(|X_k|²/n²), floor_db)` (power relative to a full-scale
-/// sinusoid; zero bins map to `floor_db`). `floor_db` must be finite (`-4` otherwise).
+/// `out[k] = max(10·log10(|X_k|²/n²), floor_db)`: power relative to a unit-amplitude DC
+/// component (or complex exponential), which reads 0 dB; a unit-amplitude real sinusoid on
+/// bin `k` splits into bins `k` and `n − k` (`|X_k| = n/2`) and reads −6.02 dB in each.
+/// Zero bins map to `floor_db`, which must be finite (`-4` otherwise).
 #[unsafe(no_mangle)]
 pub extern "C" fn power_db(re: u32, im: u32, out: u32, n: u32, floor_db: f64) -> i32 {
     status((|| {
@@ -272,8 +274,8 @@ pub extern "C" fn reconstruct_sinc(
     })())
 }
 
-/// Folded (aliased) frequency `|f − fs·round(f/fs)| ∈ [0, fs/2]`; `NaN` unless
-/// `fs > 0` and both arguments are finite.
+/// Folded (aliased) frequency `|f − fs·round(f/fs)| ∈ [0, fs/2]`, computed exactly as
+/// `min(r, fs − r)` with `r = |f| mod fs`; `NaN` unless `fs > 0` and both arguments are finite.
 #[unsafe(no_mangle)]
 pub extern "C" fn alias_frequency(f: f64, fs: f64) -> f64 {
     sampling::alias_frequency(f, fs)

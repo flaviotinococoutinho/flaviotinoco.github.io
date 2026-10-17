@@ -52,6 +52,41 @@ export function sinc(u: number): number {
   return u === 0 ? 1 : Math.sin(Math.PI * u) / (Math.PI * u);
 }
 
+/** A finite double as the exact product `m · 2^e` of integers (IEEE 754 binary64 fields). */
+function binary64(x: number): { m: bigint; e: number } {
+  const view = new DataView(new ArrayBuffer(8));
+  view.setFloat64(0, x);
+  const bits = view.getBigUint64(0);
+  const sign = bits >> 63n === 1n ? -1n : 1n;
+  const biased = Number((bits >> 52n) & 0x7ffn);
+  const fraction = bits & ((1n << 52n) - 1n);
+  return biased === 0
+    ? { m: sign * fraction, e: -1074 }
+    : { m: sign * (fraction | (1n << 52n)), e: biased - 1075 };
+}
+
+/**
+ * Exact folded frequency: the distance from `f` to the nearest integer multiple of `fs`, computed with
+ * arbitrary-precision integers on the exact binary values of `f` and `fs` (finite, `fs > 0`). The exact
+ * result is always a double (`|f| mod fs` is; `fs − r` is for `r ≥ fs/2`), so it is returned without rounding.
+ */
+export function exactAliasFrequency(f: number, fs: number): number {
+  const a = binary64(Math.abs(f));
+  const b = binary64(fs);
+  const e = Math.min(a.e, b.e);
+  const big = a.m << BigInt(a.e - e);
+  const step = b.m << BigInt(b.e - e);
+  const r = big % step;
+  let d = r < step - r ? r : step - r;
+  let exponent = e;
+  while (d !== 0n && (d & 1n) === 0n) {
+    d >>= 1n;
+    exponent++;
+  }
+  if (d >= 1n << 53n) throw new RangeError('folded frequency is not a double (reference bug)');
+  return Number(d) * 2 ** exponent;
+}
+
 /** Shannon entropy in bits of a count vector. */
 export function entropyOfCounts(counts: ArrayLike<number>): number {
   let total = 0;

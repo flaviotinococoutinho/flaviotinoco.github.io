@@ -2,6 +2,10 @@
  * Typed wrapper for `information.wasm`: entropy, source coding, divergences, channel capacity,
  * mutual information and information-content–based similarity. All quantities are in bits unless
  * stated otherwise. Invalid arguments throw `RangeError`, kernel failures {@link KernelError}.
+ *
+ * Text inputs: a string is measured as the UTF-8 bytes of its NFC form (see {@link textBytes}), so
+ * canonically equivalent spellings of pt-BR text (`ç` as U+00E7 or as `c` + U+0327) give the same
+ * statistics. Pass a `Uint8Array` to measure other bytes verbatim.
  */
 import { assertU32, assertU32Array, check, type CoreExports, KernelError, Status, withArena } from './runtime.ts';
 
@@ -20,7 +24,7 @@ export interface InformationExports extends CoreExports {
   readonly conditional_entropy_bytes: (data: number, len: number) => number;
   /** Huffman (1952) code lengths (`u32`) for `k ≤ 4096` counts; returns the expected length in bits/symbol. */
   readonly huffman_lengths: (counts: number, k: number, lengthsOut: number) => number;
-  /** `D(P‖Q)` in bits of two `f64` vectors, normalised internally (Kullback & Leibler 1951). */
+  /** `D(P‖Q)` in bits of two finite, non-negative `f64` vectors, normalised internally (Kullback & Leibler 1951). */
   readonly kl_divergence: (p: number, q: number, k: number) => number;
   /** Jensen–Shannon divergence in bits, in `[0, 1]` (Lin 1991). */
   readonly js_divergence: (p: number, q: number, k: number) => number;
@@ -49,19 +53,29 @@ export interface HuffmanCode {
   readonly expectedLength: number;
 }
 
-/** Ergonomic interface to `information.wasm`. Byte inputs may be strings (encoded as UTF-8). */
+/**
+ * Ergonomic interface to `information.wasm`. Byte inputs may be strings, measured as the UTF-8 bytes of
+ * their NFC normalisation ({@link textBytes}).
+ */
 export interface InformationKernel {
   /** The raw exports (for advanced, allocation-free use). */
   readonly exports: InformationExports;
-  /** Byte histogram: 256 counts `c_b = #{i : data_i = b}`, the empirical source statistics of Shannon (1948). */
+  /**
+   * Byte histogram: 256 counts `c_b = #{i : data_i = b}`, the empirical source statistics of Shannon (1948).
+   * Strings are measured as {@link textBytes}.
+   */
   readonly histogram: (data: Uint8Array | string) => Uint32Array;
   /** Shannon entropy `H = −Σ (c_i/N) log2(c_i/N)` in bits of a count vector (Shannon 1948); `0` if empty. */
   readonly entropyCounts: (counts: ArrayLike<number>) => number;
-  /** Order-0 entropy of a byte string in bits/symbol (Shannon 1948); `0` for empty input. */
+  /**
+   * Order-0 entropy `−Σ_b p_b log2 p_b` of a byte string in bits/byte (Shannon 1948); `0` for empty input.
+   * Strings are measured as {@link textBytes}.
+   */
   readonly entropyBytes: (data: Uint8Array | string) => number;
   /**
-   * Conditional entropy `H(X_n | X_{n−1}) = −Σ p(a,b) log2 p(b|a)` in bits/symbol, estimated from
-   * overlapping bigrams (Shannon 1948, §7 "Markoff processes"); `0` for fewer than two bytes.
+   * Conditional entropy `H(X_n | X_{n−1}) = −Σ p(a,b) log2 p(b|a)` in bits/byte, estimated from
+   * overlapping bigrams: Shannon's `F_N` for `N = 2` (Shannon 1948, §7 "The entropy of an information
+   * source", Theorem 6); `0` for fewer than two bytes. Strings are measured as {@link textBytes}.
    */
   readonly conditionalEntropyBytes: (data: Uint8Array | string) => number;
   /**
@@ -71,10 +85,14 @@ export interface InformationKernel {
   readonly huffmanLengths: (counts: ArrayLike<number>) => HuffmanCode;
   /**
    * Kullback–Leibler divergence `D(P‖Q) = Σ P_i log2(P_i/Q_i)` in bits (Kullback & Leibler 1951);
-   * inputs are normalised; `+∞` if some `P_i > 0` has `Q_i = 0`; `NaN` for negative entries or zero mass.
+   * inputs are normalised (any finite entries: sums beyond `Number.MAX_VALUE` are fine); `+∞` if some
+   * `P_i > 0` has `Q_i = 0`; `NaN` for negative or non-finite entries or zero mass.
    */
   readonly klDivergence: (p: ArrayLike<number>, q: ArrayLike<number>) => number;
-  /** Jensen–Shannon divergence `½D(P‖M) + ½D(Q‖M)`, `M = (P+Q)/2`, in bits, bounded in `[0, 1]` (Lin 1991). */
+  /**
+   * Jensen–Shannon divergence `½D(P‖M) + ½D(Q‖M)`, `M = (P+Q)/2`, in bits, bounded in `[0, 1]` (Lin 1991);
+   * same input rules as {@link InformationKernel.klDivergence}.
+   */
   readonly jsDivergence: (p: ArrayLike<number>, q: ArrayLike<number>) => number;
   /** Binary entropy `H2(p) = −p log2 p − (1−p) log2(1−p)` in bits; `p` clamped to `[0, 1]` (Shannon 1948). */
   readonly binaryEntropy: (p: number) => number;
@@ -84,7 +102,9 @@ export interface InformationKernel {
   readonly becCapacity: (e: number) => number;
   /**
    * Mutual information `I(X;Y) = Σ p(x,y) log2(p(x,y)/(p(x)p(y)))` in bits from a row-major
-   * `rows × cols` joint count/probability matrix, normalised internally (Shannon 1948).
+   * `rows × cols` joint count/probability matrix of finite, non-negative entries, normalised internally
+   * (sums beyond `Number.MAX_VALUE` are fine); `0` for an all-zero matrix, `NaN` for invalid entries
+   * (Shannon 1948).
    */
   readonly mutualInformation: (joint: ArrayLike<number>, rows: number, cols: number) => number;
   /**
@@ -100,8 +120,19 @@ export interface InformationKernel {
 
 const encoder = new TextEncoder();
 
+/**
+ * The bytes a string is measured as: UTF-8 (RFC 3629) of its Unicode Normalization Form C (UAX #15),
+ * the form the site normalises text to at its boundaries (docs/arquitetura.md §2.4). Canonically equivalent
+ * strings therefore have identical statistics: `'ação'` typed precomposed or with combining marks (as
+ * some keyboards and macOS file names produce) gives the same bytes. Lone surrogates, which UTF-8
+ * cannot encode, become U+FFFD (`EF BF BD`), as in the WHATWG Encoding Standard's `TextEncoder`.
+ */
+export function textBytes(text: string): Uint8Array {
+  return encoder.encode(text.normalize('NFC'));
+}
+
 function bytes(data: Uint8Array | string): Uint8Array {
-  return typeof data === 'string' ? encoder.encode(data) : data;
+  return typeof data === 'string' ? textBytes(data) : data;
 }
 
 function checkProbabilities(name: string, p: ArrayLike<number>, q: ArrayLike<number>): void {

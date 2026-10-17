@@ -73,9 +73,11 @@ pub fn magnitude(re: &[f64], im: &[f64], out: &mut [f64]) {
     }
 }
 
-/// Power spectrum in decibels relative to a full-scale sinusoid of the transform length:
-/// `out[k] = max(10·log10(|X_k|² / N²), floor_db)` with `N = out.len()`, evaluated as
-/// `20·log10(hypot(re, im) / N)` (same value, no overflow of `|X|²`).
+/// Power spectrum in decibels: `out[k] = max(10·log10(|X_k|² / N²), floor_db)` with
+/// `N = out.len()`, evaluated as `20·log10(hypot(re, im) / N)` (same value, no overflow of
+/// `|X|²`). The 0 dB reference is a unit-amplitude DC component (or complex exponential,
+/// `|X_k| = N`); a unit-amplitude real sinusoid splits its energy between bins `k` and
+/// `N − k` (`|X_k| = N/2`) and so reads `20·log10(1/2) ≈ −6.02 dB` in each.
 ///
 /// Zero (and NaN) bins map to `floor_db`.
 pub fn power_db(re: &[f64], im: &[f64], out: &mut [f64], floor_db: f64) {
@@ -196,13 +198,33 @@ mod tests {
     }
 
     #[test]
-    fn power_db_is_zero_for_full_scale_and_clamped() {
-        // A unit impulse in bin 0 of size N=4 → |X|² / N² = 16/16 → 0 dB.
+    fn power_db_reference_and_clamping() {
+        // |X_0| = N (a unit DC level) → |X|² / N² = 16/16 → 0 dB; |X_2| = N/2 → −6.02 dB.
         let mut out = [0.0; 4];
         power_db(&[4.0, 0.0, 2.0, 0.0], &[0.0; 4], &mut out, -100.0);
         assert!((out[0]).abs() < 1e-12);
         assert_eq!(out[1], -100.0);
         assert!((out[2] - 10.0 * (0.25_f64).log10()).abs() < 1e-12);
+    }
+
+    #[test]
+    fn power_db_of_unit_dc_and_unit_sinusoid() {
+        const N: usize = 64;
+        let mut out = [0.0; N];
+        // Unit DC level: 0 dB in bin 0.
+        let (mut re, mut im) = ([1.0; N], [0.0; N]);
+        fft(&mut re, &mut im, false).unwrap();
+        power_db(&re, &im, &mut out, -300.0);
+        assert!(out[0].abs() < 1e-12, "{}", out[0]);
+        // Unit-amplitude real sinusoid on bin 5: −6.02 dB in bins 5 and N − 5.
+        let mut re: [f64; N] = core::array::from_fn(|t| (TAU * 5.0 * t as f64 / N as f64).sin());
+        let mut im = [0.0; N];
+        fft(&mut re, &mut im, false).unwrap();
+        power_db(&re, &im, &mut out, -300.0);
+        let half = 20.0 * 0.5_f64.log10();
+        assert!((out[5] - half).abs() < 1e-12, "{}", out[5]);
+        assert!((out[N - 5] - half).abs() < 1e-12, "{}", out[N - 5]);
+        assert!(out[4] < -250.0);
     }
 
     #[test]

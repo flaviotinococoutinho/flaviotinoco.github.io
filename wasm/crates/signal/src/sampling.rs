@@ -66,14 +66,60 @@ pub fn reconstruct_sinc(samples: &[f64], fs: f64, t0: f64, t_end: f64, out: &mut
     }
 }
 
-/// Apparent (folded) frequency of a sinusoid of frequency `f` sampled at `fs`:
-/// `|f − fs·round(f/fs)|`, in `[0, fs/2]`. Returns `NaN` unless `fs > 0` and both are finite.
+/// Apparent (folded) frequency of a sinusoid of frequency `f` sampled at `fs`: the
+/// distance `|f − fs·round(f/fs)|` from `f` to the nearest multiple of `fs`, in
+/// `[0, fs/2]`. Returns `NaN` unless `fs > 0` and both are finite.
+///
+/// Evaluated exactly as `min(r, fs − r)` with `r = |f| mod fs` ([`rem_exact`]); `fs − r` is
+/// exact when `r ≥ fs/2` (Sterbenz lemma), so the result is the correctly folded frequency
+/// for every input. (The literal formula is not: `f/fs` rounds, so `f = 1e20, fs = 3` would
+/// fold to 0 instead of 1, and `fs·round(f/fs)` can overflow.)
 #[must_use]
 pub fn alias_frequency(f: f64, fs: f64) -> f64 {
     if !(f.is_finite() && fs.is_finite() && fs > 0.0) {
         return f64::NAN;
     }
-    libm::fabs(f - fs * libm::round(f / fs))
+    let r = rem_exact(libm::fabs(f), fs);
+    r.min(fs - r)
+}
+
+/// `x mod y` for finite `x ≥ 0` and finite `y > 0`, exactly (IEEE 754 `fmod`/`remainder`
+/// results are always representable). Long division on the integer significands: with
+/// `x = mx·2^ex'` and `y = my·2^ey'`, the remainder is `((mx·2^(ex'−ey')) mod my)·2^ey'`,
+/// reduced 11 bits at a time so that `r << 11 < 2^64`. Same result as `libm::fmod`, without
+/// its 128-bit arithmetic (about 2 KiB of wasm).
+fn rem_exact(x: f64, y: f64) -> f64 {
+    /// `(significand, biased exponent)` with `value = significand · 2^(exponent − 1075)`.
+    fn split(v: f64) -> (u64, i32) {
+        let bits = v.to_bits();
+        let biased = ((bits >> 52) & 0x7ff) as i32;
+        let fraction = bits & ((1 << 52) - 1);
+        if biased == 0 {
+            (fraction, 1) // subnormal: no implicit bit, exponent of the smallest normal
+        } else {
+            (fraction | (1 << 52), biased)
+        }
+    }
+    if x < y {
+        return x;
+    }
+    let (mx, ex) = split(x);
+    let (my, ey) = split(y); // my ≥ 1 because y > 0
+    let mut r = mx % my;
+    let mut shift = ex - ey; // ≥ 0 because x ≥ y
+    while shift > 0 {
+        let s = shift.min(11);
+        r = (r << s) % my; // r < my ≤ 2^53, so r << 11 < 2^64
+        shift -= s;
+    }
+    // r·2^(ey − 1075) is a double (r < my, same scale as y): r as f64 is exact (r < 2^53)
+    // and so is the product with the power of two 2^(ey − 1075) ∈ [2^−1074, 2^971].
+    let scale = if ey > 52 {
+        f64::from_bits(((ey - 52) as u64) << 52)
+    } else {
+        f64::from_bits(1 << (ey - 1))
+    };
+    r as f64 * scale
 }
 
 #[cfg(test)]
@@ -87,8 +133,47 @@ mod tests {
         assert_eq!(alias_frequency(10.0, 10.0), 0.0);
         assert_eq!(alias_frequency(-13.0, 10.0), 3.0);
         assert_eq!(alias_frequency(5.0, 10.0), 5.0);
+        assert_eq!(alias_frequency(15.0, 10.0), 5.0);
+        assert_eq!(alias_frequency(-0.0, 10.0), 0.0);
         assert!(alias_frequency(1.0, 0.0).is_nan());
+        assert!(alias_frequency(1.0, -10.0).is_nan());
         assert!(alias_frequency(f64::NAN, 10.0).is_nan());
+        assert!(alias_frequency(f64::INFINITY, 10.0).is_nan());
+        assert!(alias_frequency(1.0, f64::INFINITY).is_nan());
+    }
+
+    #[test]
+    fn aliasing_is_exact_for_huge_frequencies() {
+        // 1e20 and 1e17 are exact doubles: 1e20 ≡ 1 (mod 3), 1e17 ≡ 5 (mod 7) → 7 − 5 = 2.
+        assert_eq!(alias_frequency(1e20, 3.0), 1.0);
+        assert_eq!(alias_frequency(-1e20, 3.0), 1.0);
+        assert_eq!(alias_frequency(1e17, 7.0), 2.0);
+        // 2^60 ≡ (−1)^60 = 1 (mod 3).
+        assert_eq!(alias_frequency(1_152_921_504_606_846_976.0, 3.0), 1.0);
+        // No overflow of fs·round(f/fs): the result stays in [0, fs/2].
+        let a = alias_frequency(f64::MAX, 1e-10);
+        assert!((0.0..=0.5e-10).contains(&a), "{a}");
+        let b = alias_frequency(1e308, 1e-300);
+        assert!((0.0..=0.5e-300).contains(&b), "{b}");
+        // Tiny (subnormal) sampling rates are folded exactly too.
+        let tiny = f64::from_bits(3); // 3·2^−1074
+        assert_eq!(alias_frequency(f64::from_bits(7), tiny), f64::from_bits(1));
+    }
+
+    #[test]
+    fn aliasing_matches_integer_arithmetic() {
+        // For integer f < 2^53 and integer fs the folded frequency is an exact integer.
+        let mut state = 0x2545_f491_4f6c_dd1d_u64;
+        for _ in 0..10_000 {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            let f = state >> 11; // < 2^53
+            let fs = (state % 1_000_003) + 1;
+            let r = f % fs;
+            let expected = r.min(fs - r) as f64;
+            assert_eq!(alias_frequency(f as f64, fs as f64), expected, "{f} {fs}");
+        }
     }
 
     #[test]

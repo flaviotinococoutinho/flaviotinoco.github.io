@@ -103,36 +103,73 @@ pub fn bec_capacity(e: f64) -> f64 {
     }
 }
 
-/// Sum of a non-negative, finite vector, or `None` if any entry is invalid.
-fn mass(v: &[f64]) -> Option<f64> {
-    let mut s = 0.0;
-    for &x in v {
-        if !(x.is_finite() && x >= 0.0) {
-            return None;
+/// A non-negative, finite vector viewed through an exact power-of-two rescaling
+/// `x ↦ x·2^−exp` that brings its largest entry into `[0.5, 1)`. Sums of the rescaled
+/// entries are then at most the vector's length, so they can neither overflow (a vector
+/// of finite entries such as `[1e308, 1e308]` is valid input) nor underflow to zero for a
+/// vector of subnormal entries. Scaling by `2^−exp` is exact for every entry within a
+/// factor `2^1021` of the largest (smaller ones may lose low bits, as their normalised
+/// values `x / Σ x` would anyway), and rounding commutes with it, so where the plain sum
+/// does not overflow the normalised entries equal `x / Σ x` bit for bit.
+#[derive(Clone, Copy)]
+struct Scaled {
+    exp: i32,
+    /// `Σ x·2^−exp` (`0` for zero mass).
+    sum: f64,
+}
+
+impl Scaled {
+    /// `None` if an entry is negative or not finite.
+    fn of(v: &[f64]) -> Option<Self> {
+        let mut max = 0.0_f64;
+        for &x in v {
+            if !(x.is_finite() && x >= 0.0) {
+                return None;
+            }
+            max = max.max(x);
         }
-        s += x;
+        let exp = if max > 0.0 { libm::frexp(max).1 } else { 0 };
+        let sum = v.iter().map(|&x| libm::scalbn(x, -exp)).sum();
+        Some(Self { exp, sum })
     }
-    s.is_finite().then_some(s)
+
+    /// The entry rescaled by `2^−exp` (exact unless it falls below the normal range).
+    fn scaled(self, x: f64) -> f64 {
+        libm::scalbn(x, -self.exp)
+    }
+
+    /// The normalised entry `x / Σ v`.
+    fn prob(self, x: f64) -> f64 {
+        self.scaled(x) / self.sum
+    }
+}
+
+/// The two vectors of a divergence, validated and rescaled; `Err(value)` holds the
+/// result for degenerate input (`NaN`, or `0` for empty vectors).
+fn divergence_inputs(p: &[f64], q: &[f64]) -> Result<(Scaled, Scaled), f64> {
+    if p.len() != q.len() {
+        return Err(f64::NAN);
+    }
+    if p.is_empty() {
+        return Err(0.0);
+    }
+    match (Scaled::of(p), Scaled::of(q)) {
+        (Some(sp), Some(sq)) if sp.sum > 0.0 && sq.sum > 0.0 => Ok((sp, sq)),
+        _ => Err(f64::NAN),
+    }
 }
 
 /// Kullback–Leibler divergence `D(P‖Q) = Σ P_i log2(P_i/Q_i)` in bits, where `P`, `Q`
-/// are `p`, `q` normalised to unit sum. `+∞` when some `P_i > 0` has `Q_i = 0`; `0` for
-/// empty input; `NaN` if the lengths differ, an entry is negative or not finite, or a
-/// vector has zero mass. Clamped at `0` to absorb rounding.
+/// are `p`, `q` normalised to unit sum (any finite entries: the sums are formed after an
+/// exact power-of-two rescaling, so they cannot overflow). `+∞` when some `P_i > 0` has
+/// `Q_i = 0`; `0` for empty input; `NaN` if the lengths differ, an entry is negative or
+/// not finite, or a vector has zero mass. Clamped at `0` to absorb rounding.
 #[must_use]
 pub fn kl_divergence(p: &[f64], q: &[f64]) -> f64 {
-    if p.len() != q.len() {
-        return f64::NAN;
-    }
-    if p.is_empty() {
-        return 0.0;
-    }
-    let (Some(sp), Some(sq)) = (mass(p), mass(q)) else {
-        return f64::NAN;
+    let (sp, sq) = match divergence_inputs(p, q) {
+        Ok(s) => s,
+        Err(v) => return v,
     };
-    if sp == 0.0 || sq == 0.0 {
-        return f64::NAN;
-    }
     let mut d = 0.0;
     for (&pi, &qi) in p.iter().zip(q) {
         if pi == 0.0 {
@@ -141,7 +178,7 @@ pub fn kl_divergence(p: &[f64], q: &[f64]) -> f64 {
         if qi == 0.0 {
             return f64::INFINITY;
         }
-        let (pi, qi) = (pi / sp, qi / sq);
+        let (pi, qi) = (sp.prob(pi), sq.prob(qi));
         // A subnormal entry can round to 0 when normalised: its term is 0·log 0 = 0.
         if pi > 0.0 {
             d += pi * (libm::log2(pi) - libm::log2(qi));
@@ -154,21 +191,13 @@ pub fn kl_divergence(p: &[f64], q: &[f64]) -> f64 {
 /// `[0, 1]`. Same input rules and degenerate values as [`kl_divergence`] (never `+∞`).
 #[must_use]
 pub fn js_divergence(p: &[f64], q: &[f64]) -> f64 {
-    if p.len() != q.len() {
-        return f64::NAN;
-    }
-    if p.is_empty() {
-        return 0.0;
-    }
-    let (Some(sp), Some(sq)) = (mass(p), mass(q)) else {
-        return f64::NAN;
+    let (sp, sq) = match divergence_inputs(p, q) {
+        Ok(s) => s,
+        Err(v) => return v,
     };
-    if sp == 0.0 || sq == 0.0 {
-        return f64::NAN;
-    }
     let mut js = 0.0;
     for (&pi, &qi) in p.iter().zip(q) {
-        let (pi, qi) = (pi / sp, qi / sq);
+        let (pi, qi) = (sp.prob(pi), sq.prob(qi));
         let m = 0.5 * (pi + qi);
         if pi > 0.0 {
             js += 0.5 * pi * (libm::log2(pi) - libm::log2(m));
@@ -181,35 +210,39 @@ pub fn js_divergence(p: &[f64], q: &[f64]) -> f64 {
 }
 
 /// Mutual information `I(X;Y) = Σ p(x,y) log2(p(x,y)/(p(x)p(y)))` in bits from a
-/// row-major `rows × cols` joint count/probability matrix (normalised internally).
-/// `col_sums` is scratch of length `cols`. Returns `0` for an empty or all-zero matrix,
-/// `NaN` for negative/non-finite entries or inconsistent sizes. Clamped at `0`.
+/// row-major `rows × cols` joint count/probability matrix (normalised internally, after
+/// the same exact power-of-two rescaling as [`kl_divergence`], so finite entries cannot
+/// overflow the row, column or total sums). `col_sums` is scratch of length `cols`.
+/// Returns `0` for an empty or all-zero matrix, `NaN` for negative/non-finite entries or
+/// inconsistent sizes. Clamped at `0`.
 #[must_use]
 pub fn mutual_information(joint: &[f64], rows: usize, cols: usize, col_sums: &mut [f64]) -> f64 {
     if rows.checked_mul(cols) != Some(joint.len()) || col_sums.len() != cols {
         return f64::NAN;
     }
-    let Some(total) = mass(joint) else {
+    let Some(scale) = Scaled::of(joint) else {
         return f64::NAN;
     };
+    let total = scale.sum;
     if total == 0.0 {
         return 0.0;
     }
     col_sums.fill(0.0);
     for row in joint.chunks_exact(cols) {
         for (c, &v) in col_sums.iter_mut().zip(row) {
-            *c += v;
+            *c += scale.scaled(v);
         }
     }
     let log_total = libm::log2(total);
     let mut mi = 0.0;
     for row in joint.chunks_exact(cols) {
-        let row_sum: f64 = row.iter().sum();
+        let row_sum: f64 = row.iter().map(|&v| scale.scaled(v)).sum();
         if row_sum == 0.0 {
             continue;
         }
         let log_row = libm::log2(row_sum);
         for (&v, &c) in row.iter().zip(col_sums.iter()) {
+            let v = scale.scaled(v);
             if v > 0.0 {
                 mi += (v / total) * (libm::log2(v) + log_total - log_row - libm::log2(c));
             }
@@ -282,6 +315,45 @@ mod tests {
         assert!(kl_divergence(&[-1.0, 2.0], &[0.5, 0.5]).is_nan());
         assert!(kl_divergence(&[0.0, 0.0], &[0.5, 0.5]).is_nan());
         assert_eq!(kl_divergence(&[], &[]), 0.0);
+        assert!(kl_divergence(&[1.0], &[1.0, 2.0]).is_nan());
+        assert!(js_divergence(&[1.0, f64::INFINITY], &[1.0, 1.0]).is_nan());
+        assert!(js_divergence(&[1.0, 1.0], &[0.0, 0.0]).is_nan());
+    }
+
+    #[test]
+    fn divergences_accept_sums_beyond_f64_max() {
+        // Σ p = 2e308 overflows, yet P = Q = (½, ½).
+        let huge = [1e308, 1e308];
+        assert_eq!(kl_divergence(&huge, &[1.0, 1.0]), 0.0);
+        assert_eq!(js_divergence(&huge, &[1.0, 1.0]), 0.0);
+        assert_eq!(kl_divergence(&[f64::MAX; 3], &[f64::MAX; 3]), 0.0);
+        let p = [0.1, 0.4, 0.5];
+        let q = [0.8, 0.15, 0.05];
+        let big_p = p.map(|x| x * 1e308);
+        let big_q = q.map(|x| x * 1.5e308);
+        assert!((kl_divergence(&big_p, &big_q) - kl_divergence(&p, &q)).abs() < 1e-12);
+        assert!((js_divergence(&big_p, &big_q) - js_divergence(&p, &q)).abs() < 1e-12);
+        assert_eq!(js_divergence(&[f64::MAX, 0.0], &[0.0, f64::MAX]), 1.0);
+        assert_eq!(kl_divergence(&[f64::MAX, 1.0], &[f64::MAX, 0.0]), f64::INFINITY);
+    }
+
+    #[test]
+    fn divergences_are_invariant_under_power_of_two_scaling() {
+        // Exact rescaling: identical bits for every scale that keeps entries normal.
+        let p = [0.1, 0.4, 0.0, 0.5, 3.0];
+        let q = [0.8, 0.15, 0.3, 0.05, 1.0];
+        let (kl, js) = (kl_divergence(&p, &q), js_divergence(&p, &q));
+        for k in [-1000, -300, -1, 1, 7, 300, 1000, 1019] {
+            let s = libm::scalbn(1.0, k);
+            let (ps, qs) = (p.map(|x| x * s), q.map(|x| x * s));
+            assert_eq!(kl_divergence(&ps, &q), kl, "k = {k}");
+            assert_eq!(kl_divergence(&p, &qs), kl, "k = {k}");
+            assert_eq!(js_divergence(&ps, &qs), js, "k = {k}");
+        }
+        // Subnormal vectors are normalised without loss.
+        let tiny = [f64::from_bits(1), f64::from_bits(3)];
+        assert_eq!(kl_divergence(&tiny, &[0.25, 0.75]), 0.0);
+        assert_eq!(js_divergence(&tiny, &[1.0, 3.0]), 0.0);
     }
 
     #[test]
@@ -300,5 +372,27 @@ mod tests {
             .collect();
         assert!(mutual_information(&indep, 4, 4, &mut scratch) < 1e-12);
         assert_eq!(mutual_information(&[0.0; 16], 4, 4, &mut scratch), 0.0);
+        assert!(mutual_information(&[1.0, -1.0, 0.0, 1.0], 2, 2, &mut scratch[..2]).is_nan());
+        assert!(mutual_information(&[1.0; 4], 2, 2, &mut scratch).is_nan()); // scratch length
+    }
+
+    #[test]
+    fn mutual_information_accepts_sums_beyond_f64_max() {
+        let mut scratch = vec![0.0; 2];
+        // Total, row and column sums all overflow f64 without rescaling.
+        assert_eq!(
+            mutual_information(&[1e308, 0.0, 0.0, 1e308], 2, 2, &mut scratch),
+            1.0
+        );
+        assert_eq!(mutual_information(&[f64::MAX; 4], 2, 2, &mut scratch), 0.0);
+        let joint = [0.3, 0.1, 0.2, 0.4];
+        let mi = mutual_information(&joint, 2, 2, &mut scratch);
+        for k in [-1000, -1, 3, 1000, 1021] {
+            let s = libm::scalbn(1.0, k);
+            let scaled = joint.map(|x| x * s);
+            assert_eq!(mutual_information(&scaled, 2, 2, &mut scratch), mi, "k = {k}");
+        }
+        let big = joint.map(|x| x * 1.7e308);
+        assert!((mutual_information(&big, 2, 2, &mut scratch) - mi).abs() < 1e-12);
     }
 }
