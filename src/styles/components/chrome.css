@@ -462,6 +462,12 @@
   font-size: var(--step-n2);
 }
 @media (forced-colors: active) {
+  /* The field shows focus with a box-shadow underline, which forced colours removes:
+     draw an outline in the system highlight instead (WCAG 2.4.7 Focus Visible). */
+  .palette__input:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
   .palette__link[aria-selected='true'] {
     outline: 2px solid Highlight;
     outline-offset: -2px;
