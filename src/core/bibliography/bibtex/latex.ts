@@ -170,6 +170,10 @@ const WORDS: Readonly<Partial<Record<string, string>>> = {
   textordmasculine: 'º',
   textordfeminine: 'ª',
   textbackslash: '\\',
+  // textcomp: the only way to write an UNBALANCED brace in a .bib value, since
+  // BibTeX counts braces even after a backslash (Patashnik, "BibTeXing", §4).
+  textbraceleft: '{',
+  textbraceright: '}',
   textasciitilde: '~',
   textasciicircum: '^',
   textunderscore: '_',

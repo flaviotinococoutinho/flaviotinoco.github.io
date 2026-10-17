@@ -87,3 +87,24 @@ export const buildBibliography = (
 /** "bibliography/main.bib:12:5: error: … [model:missing-field]" — the conventional compiler format. */
 export const formatDiagnostic = (d: LocatedDiagnostic): string =>
   `${d.source}:${formatPoint(d.span.start)}: ${d.severity}: ${d.message} [${d.code}]`;
+
+// ---------------------------------------------------------------------------
+// Public API for the other parts of the site (views, feeds, JSON-LD).
+// ---------------------------------------------------------------------------
+
+export type { Reference, CalendarDate } from './model/reference.ts';
+export type { CitationStyle, CitationMode } from './style/style.ts';
+export type { Inline } from './render/inline.ts';
+export { toHtml, toPlainText } from './render/inline.ts';
+export { abnt, abntStyle } from './style/abnt.ts';
+export { apa } from './style/apa.ts';
+export { STYLES, styleFor } from './style/styles.ts';
+export {
+  SITE_AUTHOR,
+  citeSelf,
+  type SelfCitation,
+  type SelfCitationOptions,
+  type SiteAuthor,
+  type SiteWork,
+} from './self.ts';
+export { SCHEMA_CONTEXT, schemaCitations, toSchemaOrg, type JsonValue, type SchemaNode } from './schema-org.ts';

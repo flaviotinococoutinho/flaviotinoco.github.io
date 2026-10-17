@@ -152,7 +152,18 @@ export const titleParts = (
   return [...inLang(options.lang, content)];
 };
 
+/** The DOI as printed: the doi.org resolver followed by the DOI exactly as registered (NBR 6023 REF-37, APA §9.34). */
 export const doiUrl = (doi: string): string => `https://doi.org/${doi}`;
+
+/**
+ * The DOI as a link target. DOI suffixes may contain characters that are not
+ * URL code points (SICI-style DOIs such as 10.1175/1520-0469(1963)020<0130:DNF>2.0.CO;2);
+ * the DOI Handbook §2.5.2.4 and RFC 3986 §2.1 require them percent-encoded in a
+ * URL. encodeURI covers everything but "#" and "?", which would start a fragment
+ * or a query; the printed form (doiUrl) keeps the DOI legible.
+ */
+export const doiHref = (doi: string): string =>
+  `https://doi.org/${encodeURI(doi).replace(/#/gu, '%23').replace(/\?/gu, '%3F')}`;
 
 export const isoDate = (year: number, month?: number, day?: number): string =>
   [

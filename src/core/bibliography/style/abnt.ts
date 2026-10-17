@@ -46,6 +46,7 @@ import { inLang, latin, link, text, time, title, toPlainText, type Inline } from
 import {
   NBSP,
   block,
+  doiHref,
   doiUrl,
   foreign,
   fromMarked,
@@ -221,7 +222,7 @@ const directNames = (list: NameList): string => {
 
 /** Tail shared by every type: DOI, availability and access, note (NBR 6023 §6.6, REF-37). */
 const tail = (ref: Reference): readonly (Block | undefined)[] => [
-  ref.doi === undefined ? undefined : block(text('DOI: '), link(doiUrl(ref.doi), [text(doiUrl(ref.doi))])),
+  ref.doi === undefined ? undefined : block(text('DOI: '), link(doiHref(ref.doi), [text(doiUrl(ref.doi))])),
   ref.url === undefined ? undefined : block(text('Disponível em: '), link(ref.url, [text(ref.url)])),
   ref.accessed === undefined ? undefined : block(text('Acesso em: '), calendar(ref.accessed)),
   ref.note === undefined ? undefined : block(fromMarked(ref.note)),

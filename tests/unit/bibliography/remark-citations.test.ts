@@ -162,6 +162,21 @@ describe('reference list and metadata', () => {
     expect(toString(last)).toBe('(Shannon, 1948, p.\u00A0379)');
     expect(r.frontmatter['citations']).toEqual(['shannon1948']);
   });
+
+  it('renders a narrative epigraph source and fails on an unknown key there', () => {
+    const r = render(':::epigraph{source="@shannon1948 [p. 379, tradu\u00E7\u00E3o nossa]"}\nCita\u00E7\u00E3o.\n:::');
+    const directive = r.mdast.children[0] as RootContent & { children: RootContent[] };
+    expect(toString(directive.children.at(-1) as RootContent)).toBe(
+      'Shannon (1948, p.\u00A0379, tradu\u00E7\u00E3o nossa)',
+    );
+    expect(() => render(':::epigraph{source="@shanon1948 [p. 379]"}\nCita\u00E7\u00E3o.\n:::')).toThrow(
+      /unknown citation key: @shanon1948 \(1:1\)/u,
+    );
+    // An attribute that is not only a citation stays the author's text for the reading stage.
+    expect(render(':::epigraph{source="carta a @fulano"}\nCita\u00E7\u00E3o.\n:::').frontmatter['citations']).toEqual(
+      [],
+    );
+  });
 });
 
 // ---------------------------------------------------------------- injectivity

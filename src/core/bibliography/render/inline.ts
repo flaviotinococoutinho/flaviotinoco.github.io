@@ -49,6 +49,14 @@ export const link = (href: string, children: readonly Inline[], id?: string): In
   id === undefined ? { kind: 'link', href, children } : { kind: 'link', href, id, children };
 export const time = (datetime: string, children: readonly Inline[]): Inline => ({ kind: 'time', datetime, children });
 
+/** Replaces every link by its content (a call shown outside the document it links into). */
+export const unlink = (nodes: readonly Inline[]): Inline[] =>
+  nodes.flatMap((n): Inline[] => {
+    if (n.kind === 'text') return [n];
+    if (n.kind === 'link') return unlink(n.children);
+    return [{ ...n, children: unlink(n.children) }];
+  });
+
 /** Plain-text interpretation (what a reader would copy). */
 export const toPlainText = (nodes: readonly Inline[]): string =>
   nodes.map((n) => (n.kind === 'text' ? n.value : toPlainText(n.children))).join('');

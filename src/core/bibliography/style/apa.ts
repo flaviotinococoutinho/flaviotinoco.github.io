@@ -17,6 +17,7 @@
  */
 import { absurd } from '../../algebra/match.ts';
 import type { Locator, LocatorLabel } from '../cite/locator.ts';
+import type { MarkedText } from '../bibtex/latex.ts';
 import type { Name, NameList } from '../bibtex/names.ts';
 import type { Edition, EditorRole, Issued, Reference, Title } from '../model/reference.ts';
 import { inLang, italic, link, text, title, toPlainText, type Inline } from '../render/inline.ts';
@@ -24,6 +25,7 @@ import {
   NBSP,
   block,
   capitalizeFirst,
+  doiHref,
   doiUrl,
   foreign,
   fromMarked,
@@ -157,9 +159,29 @@ const standaloneTitle = (t: Title, lang: string | undefined, notes: readonly str
   );
 };
 
+/** Names of the authors as written in running text ("Flavio Tinoco", "World Wide Web Consortium"). */
+const authorNames = (ref: Reference): readonly string[] =>
+  ref.authors.names.map((n) =>
+    n.kind === 'corporate'
+      ? n.name.text
+      : [n.given?.text, n.particle?.text, n.family.text, n.suffix?.text].filter((s) => s !== undefined).join(' '),
+  );
+
+/**
+ * The publisher (or site name) element — omitted when it repeats the author,
+ * APA 7 §9.24 ("When the author and publisher are the same, omit the publisher")
+ * and §10.16 (webpages: "When the author and site name are the same, omit the
+ * site name").
+ */
+const publisherBlock = (ref: Reference, publisher: MarkedText | undefined): Block | undefined => {
+  if (publisher === undefined) return undefined;
+  const same = (a: string): boolean => a.localeCompare(publisher.text, LOCALE, { sensitivity: 'base' }) === 0;
+  return authorNames(ref).some(same) ? undefined : block(fromMarked(publisher));
+};
+
 const doiOrUrl = (ref: Reference): readonly (Block | undefined)[] =>
   ref.doi !== undefined
-    ? [{ content: [link(doiUrl(ref.doi), [text(doiUrl(ref.doi))])], terminal: 'none' }]
+    ? [{ content: [link(doiHref(ref.doi), [text(doiUrl(ref.doi))])], terminal: 'none' }]
     : ref.url !== undefined
       ? [{ content: [link(ref.url, [text(ref.url)])], terminal: 'none' }]
       : [];
@@ -206,7 +228,7 @@ export const apaStyle = (): CitationStyle => {
         return sentences([
           ...head,
           titleUsed ? undefined : standaloneTitle(ref.title, lang, notes),
-          ref.imprint.publisher === undefined ? undefined : block(fromMarked(ref.imprint.publisher)),
+          publisherBlock(ref, ref.imprint.publisher),
           ...doiOrUrl(ref),
         ]);
       }
@@ -283,18 +305,17 @@ export const apaStyle = (): CitationStyle => {
         return sentences([
           ...head,
           titleUsed ? undefined : standaloneTitle(ref.title, lang, [...translators, ...designation]),
-          block(fromMarked(ref.institution)),
+          publisherBlock(ref, ref.institution),
           ...doiOrUrl(ref),
         ]);
       }
       case 'online': {
         const notes = [...translators, ...(ref.version === undefined ? [] : [`Version ${ref.version}`])];
         const { head, titleUsed } = entryHead(ref, letter, true, notes);
-        const source = ref.site ?? ref.imprint.publisher;
         return sentences([
           ...head,
           titleUsed ? undefined : standaloneTitle(ref.title, lang, notes),
-          source === undefined ? undefined : block(fromMarked(source)),
+          publisherBlock(ref, ref.site ?? ref.imprint.publisher),
           ...doiOrUrl(ref),
         ]);
       }
@@ -304,7 +325,7 @@ export const apaStyle = (): CitationStyle => {
         return sentences([
           ...head,
           titleUsed ? undefined : standaloneTitle(ref.title, lang, notes, 'Computer software'),
-          ref.imprint.publisher === undefined ? undefined : block(fromMarked(ref.imprint.publisher)),
+          publisherBlock(ref, ref.imprint.publisher),
           ...doiOrUrl(ref),
         ]);
       }

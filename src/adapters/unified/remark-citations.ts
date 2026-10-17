@@ -25,7 +25,9 @@
  *     the "reading" stage to place in the figcaption.
  *   - The document language (frontmatter.lang) selects the style: pt-BR → ABNT
  *     (NBR 10520:2023 + NBR 6023:2025), en → APA 7.
- *   - Exports frontmatter.citations: the cited keys in order of first use.
+ *   - Exports frontmatter.citations: the cited keys in order of first use, and
+ *     frontmatter.citationJsonLd: the same works as schema.org nodes (the
+ *     `citation` property of the page's ScholarlyArticle JSON-LD).
  */
 import type { Element, ElementContent, Properties } from 'hast';
 import type { Heading, Nodes, Paragraph, Parent, PhrasingContent, Root, RootContent, Text } from 'mdast';
@@ -42,9 +44,9 @@ import { scanCitations, type Citation } from '../../core/bibliography/cite/synta
 import { lineIndex, pointAt, type LineIndex } from '../../core/bibliography/bibtex/source.ts';
 import type { Reference } from '../../core/bibliography/model/reference.ts';
 import { toPlainText, type Inline } from '../../core/bibliography/render/inline.ts';
-import { abnt } from '../../core/bibliography/style/abnt.ts';
-import { apa } from '../../core/bibliography/style/apa.ts';
+import { schemaCitations } from '../../core/bibliography/schema-org.ts';
 import type { CitationStyle } from '../../core/bibliography/style/style.ts';
+import { styleFor } from '../../core/bibliography/style/styles.ts';
 import type { CitationKey } from '../../core/domain/identifiers.ts';
 import { DEFAULT_LOCALE, parseLocale, type Locale } from '../../core/domain/locale.ts';
 import { translator } from '../../core/i18n/messages.ts';
@@ -54,9 +56,6 @@ import type { PipelineContext } from './context.ts';
 export interface RemarkCitationsOptions {
   readonly context: PipelineContext;
 }
-
-/** Style per document language. */
-const STYLES: Readonly<Record<Locale, CitationStyle>> = { 'pt-BR': abnt, en: apa };
 
 /** Nodes whose content is never prose for this stage (docs/arquitetura.md §4). */
 const OPAQUE = new Set([
@@ -145,7 +144,7 @@ export function remarkCitations(options: RemarkCitationsOptions) {
     const frontmatter = frontmatterOf(file);
     const parsedLang = parseLocale(frontmatter['lang']);
     const locale: Locale = parsedLang.ok ? parsedLang.value : DEFAULT_LOCALE;
-    const style = STYLES[locale];
+    const style = styleFor(locale);
     const t = translator(catalog, locale);
 
     const textJobs: TextJob[] = [];
@@ -186,6 +185,16 @@ export function remarkCitations(options: RemarkCitationsOptions) {
           if (only !== undefined && only.source.trim() === attribute.trim()) {
             const [found] = collect([only], scan.problems, node, node.position?.start.offset, false);
             if (found !== undefined) epigraphs.push({ directive: node, found });
+          } else {
+            // source="@typo [p. 3]": a narrative citation of an unknown key is prose in running
+            // text, but a source attribute that is nothing BUT a citation is meant as one.
+            const any = scanCitations(attribute, { isKnown: () => true, isEscaped: () => false });
+            const meant = any.citations.length === 1 ? any.citations[0] : undefined;
+            if (meant !== undefined && meant.source.trim() === attribute.trim()) {
+              for (const item of meant.items)
+                if (!isKnown(item.key))
+                  unknown.push({ key: item.key, place: node, offset: node.position?.start.offset });
+            }
           }
         }
         return undefined;
@@ -342,6 +351,9 @@ export function remarkCitations(options: RemarkCitationsOptions) {
     }
 
     frontmatter['citations'] = [...order];
+    frontmatter['citationJsonLd'] = schemaCitations(
+      order.map((k) => bibliography.get(k)).filter((r): r is Reference => r !== undefined),
+    );
   };
 }
 

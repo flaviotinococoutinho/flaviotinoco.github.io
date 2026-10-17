@@ -61,6 +61,21 @@ describe('APA 7 reference list', () => {
     );
   });
 
+  it('omits a publisher or site name that repeats the author (§9.24, §10.16)', () => {
+    const corporate = { kind: 'corporate' as const, name: { text: 'Example Org', protected: [], italic: [] } };
+    const byPublisher = { ...ref('tool2020'), authors: { others: false, names: [corporate] } };
+    expect(spaces(toPlainText(apa.reference(byPublisher, '')))).toBe(
+      'Example Org. (2020). Example tool (Version 1.2) [Computer software].',
+    );
+    const report = {
+      ...ref('knuth1977'),
+      authors: { others: false, names: [{ ...corporate, name: { ...corporate.name, text: 'Stanford University' } }] },
+    };
+    expect(spaces(toPlainText(apa.reference(report, '')))).toBe(
+      'Stanford University. (1977). A test report (Technical Report No. STAN-CS-77-000).',
+    );
+  });
+
   it('lists 21+ authors as 19, an ellipsis and the last (§9.8)', () => {
     const many = {
       ...ref('cruz1998'),
