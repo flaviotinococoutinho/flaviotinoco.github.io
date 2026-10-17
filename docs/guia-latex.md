@@ -230,7 +230,10 @@ O estágio exporta, em `remarkPluginFrontmatter`:
 
 - `hasMath: boolean` — o documento tem algo que o KaTeX vai desenhar (`$$…$$` ou ` ```math `);
 - `crossrefs: { label, id, type, kind, number?, title? }[]` — a tabela de rótulos em ordem de definição (útil
-  para listas de ilustrações e de tabelas, NBR 14724 4.2.1.9–4.2.1.11).
+  para listas de ilustrações e de tabelas, NBR 14724 4.2.1.9–4.2.1.11). O `title` é o texto que o leitor vê na
+  cabeça ou na legenda, já resolvido: `:ref[lem:a]` vira “Lema 1”; a matemática fica como `$$TeX$$` (com
+  `\ref` resolvido), para a lista mostrá-la como escrita ou desenhá-la de novo; diretivas de prosa (“10:30”) ficam
+  como na fonte; chamadas de nota de rodapé são omitidas.
 
 As views carregam o CSS e as fontes do KaTeX **só** quando há matemática:
 

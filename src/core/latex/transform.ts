@@ -72,7 +72,6 @@ import {
   isOpaque,
   latexBlock,
   latexInline,
-  plainText,
   sourceOf,
   text,
   withMathValue,
@@ -232,7 +231,7 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     return undefined;
   };
 
-  const register = (label: Label, target: Target, node: Nodes, title?: readonly PhrasingContent[]): void => {
+  const register = (label: Label, target: Target, node: Nodes): void => {
     const previous = table.get(label);
     if (previous !== undefined) {
       report(
@@ -243,12 +242,10 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
       );
       return;
     }
-    const plainTitle = title === undefined ? undefined : title.map(plainText).join('');
     table.set(label, {
       label,
       id: labelToId(label),
       target,
-      ...(plainTitle === undefined ? {} : { title: plainTitle }),
       ...(node.position === undefined ? {} : { position: node.position }),
     });
   };
@@ -291,7 +288,7 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
         isTheoremKind(kind) && number !== undefined
           ? { type: 'environment', kind, number }
           : { type: 'unnumbered', kind: kind === 'proof' ? 'proof' : 'remark' };
-      register(label, target, node, title);
+      register(label, target, node);
     }
     envs.set(node, { node, kind, id, headId: partId(id, 'head'), label, number, title, body: bodyOf(node), of });
   };
@@ -337,7 +334,7 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     figureCounters[kind] += 1;
     const number = String(figureCounters[kind]);
     const id = label === undefined ? anonymousId('figure', figureOrdinal) : labelToId(label);
-    if (label !== undefined) register(label, { type: 'figure', kind, number }, node, title);
+    if (label !== undefined) register(label, { type: 'figure', kind, number }, node);
     figures.set(node, {
       kind,
       id,
@@ -599,8 +596,18 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     return [...body, { type: 'paragraph', data: { hProperties: { className: ['qed-line'] } }, children: [qed()] }];
   };
 
+  /**
+   * Titles as rendered (pass 2: references resolved), by label — the `title` of the label
+   * table and of frontmatter.crossrefs (see {@link titleText}).
+   */
+  const titles = new Map<Label, string>();
+  const recordTitle = (label: Label | undefined, title: readonly PhrasingContent[] | undefined): void => {
+    if (label !== undefined && title !== undefined) titles.set(label, titleText(title, source));
+  };
+
   const renderEnv = (node: ContainerDirective, item: EnvItem): RootContent => {
     const title = item.title?.map((child) => mapNode(child, false) as PhrasingContent);
+    recordTitle(item.label, title);
     const head: Paragraph = {
       type: 'paragraph',
       data: { hProperties: { className: ['env__head'], id: item.headId } },
@@ -624,6 +631,7 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
 
   const renderFigure = (node: ContainerDirective, item: FigureItem): RootContent => {
     const title = item.title.map((child) => mapNode(child, false) as PhrasingContent);
+    recordTitle(item.label, title);
     const caption = latexBlock('figure-caption', 'figcaption', { className: ['figure__caption'], id: item.captionId }, [
       latexInline('figure-label', { className: ['figure__label'] }, [
         text(captionLabel(locale, item.kind, item.number)),
@@ -696,7 +704,10 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
   }
 
   const output = mapParent(tree, false);
-  const labels = [...table.values()];
+  const labels = [...table.values()].map((entry): LabelEntry => {
+    const title = titles.get(entry.label);
+    return title === undefined ? entry : { ...entry, title };
+  });
   return {
     tree: output,
     labels,
@@ -706,6 +717,32 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     diagnostics,
   };
 };
+
+/**
+ * Plain reading text of a RENDERED title, for the label table and frontmatter.crossrefs (lists
+ * of illustrations, NBR 14724 §4.2.1.9–4.2.1.11): what the head or caption shows. References
+ * read as their resolved text ("Lema 1"); inline math keeps its TeX (references inside it
+ * resolved) between the site's `$$` delimiters, so a list can show it as written or render it
+ * again; text directives no stage claimed ("10:30") read as their source, which is what the
+ * integrity stage will restore; footnote marks are left out.
+ */
+const titleText = (nodes: readonly Nodes[], source: string | undefined): string =>
+  nodes
+    .map((node): string => {
+      if (node.type === 'inlineMath') return `$$${node.value}$$`;
+      if (node.type === 'footnoteReference') return '';
+      if (node.type === 'break') return ' ';
+      if (node.type === 'textDirective' && !isClaimed(node)) {
+        return (
+          sourceOf(node, source) ??
+          `:${node.name}${node.children.length > 0 ? `[${titleText(node.children, source)}]` : ''}`
+        );
+      }
+      if (node.type === 'image' || node.type === 'imageReference') return node.alt ?? '';
+      if ('value' in node && typeof node.value === 'string') return node.value;
+      return hasChildren(node) ? titleText(node.children as readonly Nodes[], source) : '';
+    })
+    .join('');
 
 const toCrossref = (entry: LabelEntry): Crossref => {
   const number = targetNumber(entry.target);
