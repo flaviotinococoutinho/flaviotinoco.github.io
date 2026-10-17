@@ -6,9 +6,11 @@
  * Catalogs  — `defineMessages` already proves key parity at compile time; at
  *             run time we also reject empty strings and placeholder drift
  *             ("{year}" in pt-BR but "{ano}" in en would print a raw brace).
- * Content   — every translatable entry (essays, labs, pages) exists in both
- *             locales under the same translationKey; the folder agrees with
- *             `lang`; no two entries collide on (collection, locale, slug).
+ * Content   — every published translatable entry (essays, labs, pages) has a
+ *             published counterpart in the other locale under the same
+ *             translationKey (a work that is a draft in every locale only
+ *             warns); the folder agrees with `lang`; no two entries collide on
+ *             (collection, locale, slug).
  * Strata    — the four strata exist exactly once in each locale.
  */
 import { LOCALES, type Locale } from '../../src/core/domain/locale.ts';
@@ -176,22 +178,20 @@ export const checkTranslations = (entries: readonly ContentEntry[]): readonly Is
         );
       }
       // Drafts are not built (src/adapters/astro/content.ts), so a work whose every
-      // version is a draft only warns; a PUBLISHED work without a counterpart is an error.
+      // version is a draft only warns. A PUBLISHED work needs a published counterpart:
+      // none at all, or only drafts, means the page ships untranslated — an error (ADR 0002 §6).
       const published = members.filter((m) => !m.draft);
+      const first = published[0];
       if (inLocale.length === 0) {
         const message = `no ${locale} counterpart with translationKey "${key}" in ${sample.collection}`;
-        const first = published[0];
         issues.push(first === undefined ? warning(sample.file, `${message} (draft)`) : error(first.file, message));
-      } else if (inLocale.every((m) => m.draft)) {
-        const first = published[0];
-        if (first !== undefined) {
-          issues.push(
-            warning(
-              first.file,
-              `the ${locale} counterpart of translationKey "${key}" is still a draft: the published page has no translation yet`,
-            ),
-          );
-        }
+      } else if (first !== undefined && inLocale.every((m) => m.draft)) {
+        issues.push(
+          error(
+            first.file,
+            `the ${locale} counterpart of translationKey "${key}" is a draft, so this published page would ship without its translation (publish both versions, or neither)`,
+          ),
+        );
       }
     }
   }

@@ -5,9 +5,10 @@
  *
  * 1. Every message catalog in src/core/i18n/catalogs/*.ts: same keys in both
  *    locales, no empty message, identical {placeholders}.
- * 2. Every translatable entry (essays, labs, pages) has a counterpart in the
- *    other locale with the same translationKey (drafts only warn); folders
- *    agree with `lang`; no slug collides within a collection and locale.
+ * 2. Every published translatable entry (essays, labs, pages) has a published
+ *    counterpart in the other locale with the same translationKey (a work that
+ *    is a draft in every locale only warns); folders agree with `lang`; no slug
+ *    collides within a collection and locale.
  *    Frontmatter is parsed exactly as Astro parses it (scripts/lib/frontmatter.ts).
  * 3. The four strata exist exactly once per locale.
  * Rules: scripts/lib/i18n.ts (pure, unit-tested).

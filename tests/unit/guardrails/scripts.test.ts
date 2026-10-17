@@ -114,8 +114,10 @@ describe('check-i18n', () => {
     const multiline = run('check-i18n.ts', withEntropy('translationKey:\n  entropy-2'));
     expect(multiline.out).not.toContain('missing `translationKey`');
     expect(multiline.code).toBe(0);
+    // …and a published page whose only translation is that draft fails (review guardrails#3).
     const draft = run('check-i18n.ts', withEntropy('translationKey: entropy-2\ndraft: True'));
-    expect(draft.out).toContain('the en counterpart of translationKey "entropy-2" is still a draft');
+    expect(draft.code).toBe(1);
+    expect(draft.out).toContain('the en counterpart of translationKey "entropy-2" is a draft');
   });
 
   it('reports an unsupported frontmatter form instead of a missing field', () => {
