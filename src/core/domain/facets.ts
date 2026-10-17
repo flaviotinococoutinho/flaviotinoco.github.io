@@ -10,6 +10,7 @@
  *   concepts — SKOS concepts the item discusses          : zero or more (ontology)
  */
 import { err, ok, type Result } from '../algebra/result.ts';
+import { show } from '../algebra/show.ts';
 
 export const FORMS = ['essay', 'note', 'lab', 'concept', 'map'] as const;
 export type Form = (typeof FORMS)[number];
@@ -45,9 +46,9 @@ export const DOMAINS = [
 export type Domain = (typeof DOMAINS)[number];
 
 export const parseForm = (v: unknown): Result<Form, string> =>
-  typeof v === 'string' && (FORMS as readonly string[]).includes(v) ? ok(v as Form) : err(`unknown form "${String(v)}"`);
+  typeof v === 'string' && (FORMS as readonly string[]).includes(v) ? ok(v as Form) : err(`unknown form "${show(v)}"`);
 
 export const parseDomain = (v: unknown): Result<Domain, string> =>
   typeof v === 'string' && (DOMAINS as readonly string[]).includes(v)
     ? ok(v as Domain)
-    : err(`unknown domain "${String(v)}"`);
+    : err(`unknown domain "${show(v)}"`);

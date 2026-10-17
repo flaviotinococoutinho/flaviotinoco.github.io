@@ -15,6 +15,13 @@ import { GLYPHS, GLYPH_VIEWBOX, type ArgumentKind } from './argument.ts';
 /** Node type of wrappers created by the reading stages (rendered through hName). */
 export const READING_NODE = 'readingElement';
 
+/**
+ * Private marker: the reading stage built or claimed this node, so an id it carries is one
+ * the stage itself emitted. A second pass must not mistake those ids for an earlier stage's.
+ */
+export const READING_OWNED = 'readingOwned';
+export const isReadingOwned = (node: MdNode): boolean => node.data?.[READING_OWNED] === true;
+
 interface ElementOptions {
   readonly generated?: boolean;
   readonly position?: Position | undefined;
@@ -36,6 +43,7 @@ export const element = (
   data: {
     hName,
     hProperties: props(hProperties),
+    [READING_OWNED]: true,
     ...(options.generated === true ? { [GENERATED]: true } : {}),
     ...options.extra,
   },
@@ -63,7 +71,7 @@ export const claim = (
 ): MdNode => ({
   ...node,
   children,
-  data: { ...node.data, hName, hProperties: props(hProperties), ...extra },
+  data: { ...node.data, hName, hProperties: props(hProperties), [READING_OWNED]: true, ...extra },
 });
 
 /** SVG glyph of an argument kind as hast (inline, self-contained: works in any view). */

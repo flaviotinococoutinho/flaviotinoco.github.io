@@ -37,4 +37,12 @@ describe('label ids and heading ids share one namespace (latex → reading)', ()
       /id "def-1" is used more than once in the page/,
     );
   });
+
+  it('a label-derived id equal to an id the reading stage generates fails the build', async () => {
+    // :::definition{#sn:1} → id "sn-1", which is also the id of the first sidenote.
+    await expect(site('Texto:sidenote[nota].\n\n:::definition{#sn:1}\nD.\n:::')).rejects.toThrow(
+      /id "sn-1" set by an earlier stage collides with an id this page generates/,
+    );
+    await expect(site(':::definition{#essay:title}\nD.\n:::')).rejects.toThrow(/id "essay-title"/);
+  });
 });

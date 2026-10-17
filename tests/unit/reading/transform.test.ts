@@ -218,6 +218,15 @@ describe('heading attributes and the argument graph', () => {
     expect(html).toContain('<h2 id="introdução-1">');
     expect(html).toContain('<h2 id="content-1">');
   });
+  it('keeps heading slugs off the ids this stage generates (toc, notes)', async () => {
+    const { html } = await render('## Toc\n\n## Sn 1\n\nTexto:sidenote[nota].');
+    expect(html).toContain('<h2 id="toc-1">');
+    expect(html).toContain('<h2 id="sn-1-1">');
+    expect(html).toContain('id="sn-1"');
+  });
+  it('rejects an explicit heading id that a generated id would duplicate', () => {
+    expect(errors('## A {#toc}\n\n::toc')).toEqual([expect.stringMatching(/duplicate-id.*"toc"/)]);
+  });
   it('leaves headings that end with braces that are not attributes untouched', async () => {
     const { html } = await render('## O conjunto {1, 2}\n\n## Escapado \\{.claim}\n\n## Fórmula $$\\{x\\}$$');
     expect(html).toContain('<h2 id="o-conjunto-1-2">O conjunto {1, 2}</h2>');

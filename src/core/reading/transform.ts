@@ -50,7 +50,7 @@ import {
 } from './argument.ts';
 import { isEscapedInSource, splitHeadingAttributes, type HeadingAttributes } from './heading-attributes.ts';
 import { uniqueSlugs } from './slug.ts';
-import { claim, element, glyphHast, link, text } from './nodes.ts';
+import { claim, element, glyphHast, isReadingOwned, link, text } from './nodes.ts';
 import {
   ATTRS_RECORD,
   EPIGRAPH_SOURCE,
@@ -205,11 +205,16 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
   const headings: MdNode[] = [];
   const headingInToc = new Map<MdNode, boolean>();
   const existingIds: string[] = [];
+  // Ids this stage emitted on an earlier pass: kept out of new slugs, exempt from the collision check.
+  const ownIds = new Set<string>();
   let sidenoteTotal = 0;
   let marginnoteTotal = 0;
   const scan = (node: MdNode, outsideFlow: boolean): void => {
     const hid = node.data?.hProperties?.['id'];
-    if (typeof hid === 'string' && node.data?.[HEADING_RECORD] === undefined) existingIds.push(hid);
+    if (typeof hid === 'string' && node.data?.[HEADING_RECORD] === undefined) {
+      existingIds.push(hid);
+      if (isReadingOwned(node)) ownIds.add(hid);
+    }
     const name = directiveName(node);
     if (isDirective(node) && !isClaimed(node)) {
       const id = directiveAttributes(node)['id'];
@@ -224,6 +229,7 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
       } else {
         const record = node.data[HEADING_RECORD] as HeadingRecord;
         existingIds.push(record.id);
+        ownIds.add(record.id);
       }
     }
     if (OPAQUE_TYPES.has(node.type)) return;
@@ -234,6 +240,27 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
     for (const c of childrenOf(node)) scan(c, outside);
   };
   scan(root, false);
+
+  // Ids already set by earlier stages (environment labels, figures…) must not take an id
+  // this page or this stage will emit: page ids, sidenote/marginnote ids, the toc.
+  const generated = new Set<string>([
+    ...ctx.reservedIds,
+    TOC_ID,
+    TOC_TITLE_ID,
+    ...Array.from({ length: sidenoteTotal }, (_, i) => sidenoteId(i + 1)),
+    ...Array.from({ length: sidenoteTotal }, (_, i) => sidenoteRefId(i + 1)),
+    ...Array.from({ length: marginnoteTotal }, (_, i) => marginnoteId(i + 1)),
+  ]);
+  for (const id of new Set(existingIds)) {
+    if (generated.has(id) && !ownIds.has(id)) {
+      report(
+        'error',
+        'duplicate-id',
+        `id "${id}" set by an earlier stage collides with an id this page generates`,
+        root,
+      );
+    }
+  }
 
   interface Parsed {
     readonly node: MdNode;
@@ -312,7 +339,7 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
   const parsed = headings.map(parseHeading);
 
   // Ids: explicit ones first, then github-compatible slugs avoiding every taken id.
-  const taken = new Set([...ctx.reservedIds, ...existingIds]);
+  const taken = new Set([...generated, ...existingIds]);
   const explicit = new Set<string>();
   for (const p of parsed) {
     if (p.explicitId === undefined) continue;

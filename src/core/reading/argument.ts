@@ -14,6 +14,7 @@
 import { type Brand, unsafeBrand } from '../algebra/brand.ts';
 import { absurd } from '../algebra/match.ts';
 import { err, ok, type Result } from '../algebra/result.ts';
+import { show } from '../algebra/show.ts';
 
 export const ARGUMENT_KINDS = [
   'question',
@@ -33,9 +34,7 @@ export const isArgumentKind = (v: unknown): v is ArgumentKind =>
   typeof v === 'string' && (ARGUMENT_KINDS as readonly string[]).includes(v);
 
 export const parseArgumentKind = (v: unknown): Result<ArgumentKind, string> =>
-  isArgumentKind(v)
-    ? ok(v)
-    : err(`unknown argument kind "${String(v)}" (expected one of ${ARGUMENT_KINDS.join(', ')})`);
+  isArgumentKind(v) ? ok(v) : err(`unknown argument kind "${show(v)}" (expected one of ${ARGUMENT_KINDS.join(', ')})`);
 
 /**
  * Toulmin's six elements (Data, Claim, Warrant, Backing, Qualifier, Rebuttal)
@@ -101,7 +100,7 @@ const SECTION_ID = /^[\p{L}\p{N}_][\p{L}\p{N}_:.-]*$/u;
 export const parseSectionId = (v: unknown): Result<SectionId, string> =>
   typeof v === 'string' && SECTION_ID.test(v)
     ? ok(unsafeBrand<string, 'SectionId'>(v))
-    : err(`invalid section id "${String(v)}" (letters, digits, _ : . - ; must not start with punctuation)`);
+    : err(`invalid section id "${show(v)}" (letters, digits, _ : . - ; must not start with punctuation)`);
 
 export interface ArgumentNode {
   readonly id: SectionId;
