@@ -16,10 +16,32 @@
  * without type stripping, and .claude/ is outside the TypeScript project.
  */
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 import path from 'node:path';
 
-const ROOT = path.resolve(import.meta.dirname, '..', '..');
-const SOURCE = path.join(ROOT, 'src', 'core', 'design', 'tokens.json');
+/**
+ * A path with every symbolic link resolved. Node starts this module from its real
+ * path, so ROOT is canonical, while the payload's file_path and cwd come as the
+ * session sees them (macOS /tmp → /private/tmp, a symlinked ~/code): comparing
+ * the spellings would silently skip the regeneration. A file that does not exist
+ * resolves through its directory.
+ * @param {string} file
+ * @returns {string}
+ */
+const canonical = (file) => {
+  try {
+    return fs.realpathSync.native(file);
+  } catch {
+    try {
+      return path.join(fs.realpathSync.native(path.dirname(file)), path.basename(file));
+    } catch {
+      return path.resolve(file);
+    }
+  }
+};
+
+const ROOT = canonical(path.resolve(import.meta.dirname, '..', '..'));
+const SOURCE = canonical(path.join(ROOT, 'src', 'core', 'design', 'tokens.json'));
 
 /** @returns {Promise<string>} */
 const readStdin = async () => {
@@ -61,7 +83,7 @@ const run = (script) => {
 };
 
 const file = editedFile(await readStdin());
-if (file === undefined || file !== SOURCE) process.exit(0);
+if (file === undefined || canonical(file) !== SOURCE) process.exit(0);
 
 const tokens = run('tokens.ts');
 if (!tokens.ok) {
