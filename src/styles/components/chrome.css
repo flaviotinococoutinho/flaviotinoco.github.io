@@ -1183,11 +1183,14 @@ ft-ambient-field {
   margin-block-start: var(--space-0);
   font-size: var(--step-4);
 }
-.not-found__heading > span {
+.not-found__heading > [lang] {
   display: block;
 }
-.not-found__heading > span + span {
+.not-found__heading > [lang] ~ [lang] {
   color: var(--ink-muted);
+}
+.not-found__separator {
+  display: none;
 }
 .not-found__title {
   font-family: var(--font-ui);

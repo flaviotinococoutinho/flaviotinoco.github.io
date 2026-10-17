@@ -83,9 +83,22 @@ const pageTitle = `${columns.map((col) => col.title).join(' · ')} · ${siteName
       <svg class="not-found__mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
         <use href="#simplex-0"></use>
       </svg>
+      {/* One title per locale, each a block with CSS. Between them a real separator, so the
+          text itself keeps them apart wherever CSS does not apply (text extraction, reader
+          modes, no styles): " · " in the text, silent for assistive technology. */}
       <h1 class="not-found__heading">
-        {columns.map((col) => (
-          <span lang={col.locale}>{col.title}</span>
+        {columns.map((col, i) => (
+          <>
+            {i > 0 && (
+              <>
+                {' '}
+                <span class="not-found__separator" aria-hidden="true">
+                  ·
+                </span>{' '}
+              </>
+            )}
+            <span lang={col.locale}>{col.title}</span>
+          </>
         ))}
       </h1>
       <div class="not-found__columns">
