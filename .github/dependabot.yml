@@ -1,0 +1,61 @@
+# Dependency updates: one weekly PR per ecosystem for minor/patch releases,
+# majors one by one (they need a human reading the changelog).
+# Cooldown: new releases wait 14 days before Dependabot proposes them — most
+# compromised packages are detected and yanked within days. Security updates
+# ignore the cooldown.
+version: 2
+
+updates:
+  - package-ecosystem: npm # pnpm-lock.yaml is detected and kept in sync
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/Sao_Paulo
+    cooldown:
+      default-days: 14
+    commit-message:
+      prefix: 'chore(deps)'
+    open-pull-requests-limit: 10
+    groups:
+      npm-minor-patch:
+        applies-to: version-updates
+        update-types: [minor, patch]
+    ignore:
+      # `astro check` refuses TypeScript 7 (docs/research/astro7.md); revisit with Astro.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: cargo
+    directory: /wasm
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/Sao_Paulo
+    cooldown:
+      default-days: 14
+    commit-message:
+      prefix: 'chore(deps)'
+    groups:
+      cargo-minor-patch:
+        applies-to: version-updates
+        update-types: [minor, patch]
+
+  # Keeps the SHA pins and their `# vX.Y.Z` comments in sync (ADR 0005).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/Sao_Paulo
+    cooldown:
+      default-days: 14
+    commit-message:
+      prefix: 'ci(deps)'
+    groups:
+      actions-minor-patch:
+        applies-to: version-updates
+        update-types: [minor, patch]

@@ -1,0 +1,22 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifierEnding": "auto",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
+  "eslint.validate": ["javascript", "typescript", "astro"],
+  "prettier.documentSelectors": ["**/*.astro"],
+  "[markdown]": { "editor.formatOnSave": false, "files.trimTrailingWhitespace": false },
+  "[rust]": { "editor.defaultFormatter": "rust-lang.rust-analyzer" },
+  "rust-analyzer.linkedProjects": ["wasm/Cargo.toml"],
+  "rust-analyzer.cargo.target": "wasm32-unknown-unknown",
+  "rust-analyzer.check.command": "clippy",
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.exclude": { "**/node_modules": true, "dist": true, ".astro": true, "wasm/target": true },
+  "search.exclude": { "pnpm-lock.yaml": true, "coverage": true, "playwright-report": true, "test-results": true },
+  "files.readonlyInclude": { "src/styles/tokens.css": true },
+  "cSpell.language": "en,pt-BR"
+}

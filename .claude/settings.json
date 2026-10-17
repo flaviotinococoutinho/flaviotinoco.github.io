@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(pnpm check:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm tokens)",
+      "Bash(pnpm verify:palette)",
+      "Bash(pnpm search:index)",
+      "Bash(pnpm format)",
+      "Bash(pnpm install --frozen-lockfile:*)",
+      "Bash(pnpm exec astro check:*)",
+      "Bash(pnpm exec astro build:*)",
+      "Bash(pnpm exec tsc --noEmit:*)",
+      "Bash(pnpm exec eslint:*)",
+      "Bash(pnpm exec prettier --check:*)",
+      "Bash(pnpm exec vitest run:*)",
+      "Bash(pnpm exec playwright test:*)",
+      "Bash(node scripts/tokens.ts:*)",
+      "Bash(node scripts/verify-palette.ts:*)",
+      "Bash(node scripts/check-i18n.ts:*)",
+      "Bash(node scripts/check-links.ts:*)",
+      "Bash(node scripts/check-budgets.ts:*)",
+      "Bash(node scripts/build-wasm.mjs:*)",
+      "Bash(cargo fmt --check:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(cargo test:*)",
+      "Bash(cargo build:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch --show-current)",
+      "Bash(git rev-parse:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git blame:*)"
+    ],
+    "deny": ["Edit(/src/styles/tokens.css)", "Read(./.env)", "Read(./.env.*)"]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tokens-on-edit.mjs",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

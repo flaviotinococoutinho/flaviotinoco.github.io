@@ -1,0 +1,2 @@
+body{background:url(/base/img/a.svg)}/* url(/base/ignored-in-comment.png) */
+.x{filter:url(#grain)}
