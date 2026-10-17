@@ -12,8 +12,10 @@
  * the transcript); 2 = the edit is kept but stderr is fed back to Claude, so a
  * token edit that breaks generation or the palette checks is fixed right away.
  *
- * Plain JavaScript on purpose: a hook must start on any supported Node (≥ 22.12)
- * without type stripping, and .claude/ is outside the TypeScript project.
+ * Plain JavaScript on purpose: .claude/ is outside the TypeScript project, and
+ * the hook itself needs no type stripping. The scripts it runs do
+ * (`node scripts/tokens.ts`): type stripping is on by default from Node 22.18,
+ * the minimum in package.json `engines` (24 recommended, see .nvmrc).
  */
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
