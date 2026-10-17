@@ -79,7 +79,7 @@
 .stratum-mark {
   display: inline-flex;
   align-items: center;
-  gap: 0.4em;
+  gap: var(--space-n2);
   color: inherit;
 }
 .stratum-mark__glyph {
@@ -94,10 +94,11 @@
 }
 .stratum-mark[data-size='l'] {
   font-size: var(--step-1);
+  gap: var(--space-n1);
 }
 .stratum-mark[data-size='xl'] {
   font-size: var(--step-3);
-  gap: 0.3em;
+  gap: var(--space-n1);
 }
 .stratum-mark[data-size='xl'] .stratum-mark__glyph {
   inline-size: 1.4em;
@@ -330,8 +331,10 @@
   inline-size: min(100% - 2 * var(--space-0), calc(var(--space-5) * 3.4));
   max-inline-size: none;
   max-block-size: min(100dvh - 2 * var(--space-2), calc(var(--space-5) * 3));
-  /* The reset zeroes the UA's `margin: auto` on modal dialogs: restore centring. */
-  margin: min(12vh, var(--space-4)) auto auto;
+  /* The reset zeroes the UA's `margin: auto` on modal dialogs: restore horizontal centring.
+     The top margin grows with the viewport's height (steps of the space scale below), always
+     within the 2 × --space-2 that max-block-size leaves free. */
+  margin: var(--space-2) auto auto;
   padding: 0;
   overflow: hidden;
   color: var(--ink);
@@ -347,6 +350,16 @@
     translate calc(var(--duration-3) * var(--motion)) var(--ease-enter),
     overlay calc(var(--duration-3) * var(--motion)) allow-discrete,
     display calc(var(--duration-3) * var(--motion)) allow-discrete;
+}
+@media (height >= 40rem) {
+  .palette {
+    margin-block-start: var(--space-3);
+  }
+}
+@media (height >= 56rem) {
+  .palette {
+    margin-block-start: var(--space-4);
+  }
 }
 .palette[open] {
   display: flex;
