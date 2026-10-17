@@ -21,12 +21,12 @@
 import { err, ok, type Result } from '../algebra/result.ts';
 import { parseCitationKey, type CitationKey } from '../domain/identifiers.ts';
 import type { Locale } from '../domain/locale.ts';
+import { toBibtex } from './bibtex/encode.ts';
 import { marked, type MarkedText, type Range } from './bibtex/latex.ts';
 import { EMPTY_NAMES } from './bibtex/names.ts';
 import { renderCitation } from './cite/engine.ts';
 import type { CalendarDate, Month, Online } from './model/reference.ts';
 import { unlink, type Inline } from './render/inline.ts';
-import { isoDate } from './style/shared.ts';
 import type { CitationStyle } from './style/style.ts';
 
 /** A person responsible for a work of the site. */
@@ -76,9 +76,6 @@ export type SelfCitation = {
   readonly bibtex: string;
 };
 
-/** babel names read back by the model parser (model/from-entry.ts). */
-const LANGID: Readonly<Record<Locale, string>> = { 'pt-BR': 'brazilian', en: 'english' };
-
 /** Absolute http(s) URL without characters that would break a BibTeX brace group or an HTML attribute. */
 const URL_PATTERN = /^https?:\/\/[^\s<>"{}\\]+$/u;
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
@@ -100,39 +97,15 @@ const keyPart = (s: string): string =>
     .replace(/[^a-z0-9]/gu, '');
 
 /**
- * Escapes text for a BibTeX field so that the site's decoder (bibtex/latex.ts)
- * yields it back unchanged: the ten LaTeX special characters (Lamport, "LaTeX",
- * 1994, §2.2.1: # $ % & ~ _ ^ \ { }). Runs of white space, which TeX collapses,
- * are reduced to one space by the caller.
- */
-export const escapeBibtex = (s: string): string =>
-  s.replace(/[\\{}%&#$_~^]/gu, (c) => {
-    switch (c) {
-      case '\\':
-        return '\\textbackslash{}';
-      case '~':
-        return '\\textasciitilde{}';
-      case '^':
-        return '\\textasciicircum{}';
-      // BibTeX counts braces even after a backslash, so "\{" alone would unbalance the value.
-      case '{':
-        return '\\textbraceleft{}';
-      case '}':
-        return '\\textbraceright{}';
-      default:
-        return `\\${c}`;
-    }
-  });
-
-/**
  * Case protection of a title (Patashnik, "BibTeXing", 1988, §4: BibTeX styles
  * never re-case text inside braces). The site's titles are already in their
  * intended case, so every word that a sentence-casing style could damage — one
  * with a capital letter other than the initial of the field ("SKOS",
  * "Nyquist–Shannon", "iPhone") — is protected, while ordinary words stay free
- * (APA still capitalises the first word of a subtitle, §6.17). The SAME spans
- * are protected in the model, so the formatted reference and the exported
- * BibTeX read back always agree.
+ * (APA still capitalises the first word of a subtitle, §6.17). The spans are
+ * protected in the MODEL, so the BibTeX export (bibtex/encode.ts) writes them
+ * as brace groups and the formatted reference and the exported entry read back
+ * always agree.
  */
 const protectedWords = (s: string): readonly Range[] =>
   [...s.matchAll(/\S+/gu)]
@@ -142,33 +115,33 @@ const protectedWords = (s: string): readonly Range[] =>
 /** A title as marked text with its case-protected words. */
 const markedTitle = (s: string): MarkedText => ({ text: s, protected: protectedWords(s), italic: [] });
 
-/** The title as a BibTeX value: escaped, with the protected words in braces. */
-export const protectCase = (s: string): string => {
-  let out = '';
-  let at = 0;
-  for (const r of protectedWords(s)) {
-    const word = escapeBibtex(s.slice(r.start, r.end));
-    // A group that starts with "\\" is a "special character", not a protection (BibTeXing §4):
-    // an empty group in front ({{}\\%aA}) keeps it a protecting group.
-    out += `${escapeBibtex(s.slice(at, r.start))}{${word.startsWith('\\') ? '{}' : ''}${word}}`;
-    at = r.end;
+/**
+ * "Título: subtítulo" without a separate subtitle is split at the first ": "
+ * outside a protected word — the rule the model applies to .bib titles
+ * (model/from-entry.ts; NBR 6023 §8.2), so the work and its BibTeX export agree.
+ */
+const splitTitle = (t: string): { readonly main: string; readonly sub?: string } => {
+  const words = protectedWords(t);
+  for (const m of t.matchAll(/:\s/gu)) {
+    if (words.some((r) => r.start <= m.index && m.index < r.end)) continue;
+    const main = t.slice(0, m.index).trim();
+    const sub = t.slice(m.index + 1).trim();
+    if (main !== '' && sub !== '') return { main, sub };
+    break;
   }
-  return out + escapeBibtex(s.slice(at));
+  return { main: t };
 };
 
-const bibtexName = (a: SiteAuthor): string => {
-  const family = escapeBibtex(a.family);
-  // A compound or particle-led surname stays one unit ({da Silva}); a plain one needs no braces.
-  const unit = /[\s,]/u.test(a.family) || /^\p{Ll}/u.test(a.family) ? `{${family}}` : family;
-  return `${unit}, ${escapeBibtex(a.given)}`;
-};
-
-/** NFC, with runs of TeX white space as one space; a no-break space is content and stays. */
+/**
+ * NFC, with runs of TeX white space as one space (TeX collapses them, TeXbook
+ * ch. 8) and no white space at the ends (the model trims field values); a
+ * no-break space inside the text is content and stays.
+ */
 const collapse = (s: string): string =>
   s
     .normalize('NFC')
     .replace(/[ \t\n\r\f\v]+/gu, ' ')
-    .replace(/^ | $/gu, '');
+    .trim();
 
 /** Formats a work of the site as a reference, in-text calls and a BibTeX entry. */
 export const citeSelf = (
@@ -177,8 +150,9 @@ export const citeSelf = (
   options: SelfCitationOptions,
 ): Result<SelfCitation, readonly string[]> => {
   const problems: string[] = [];
-  const title = collapse(work.title);
-  const subtitle = work.subtitle === undefined ? undefined : collapse(work.subtitle);
+  const given = work.subtitle === undefined ? splitTitle(collapse(work.title)) : { main: collapse(work.title) };
+  const title = given.main;
+  const subtitle = work.subtitle === undefined ? given.sub : collapse(work.subtitle);
   const siteName = collapse(options.siteName);
   const authors = (work.authors ?? [SITE_AUTHOR]).map((a) => ({
     given: collapse(a.given),
@@ -233,21 +207,11 @@ export const citeSelf = (
     anchorId: () => undefined,
   };
   const item = { reference, prefix: '', suppressAuthor: false, suffix: '' };
-  const fields: readonly (readonly [string, string | undefined])[] = [
-    ['author', authors.map(bibtexName).join(' and ')],
-    ['title', protectCase(title)],
-    ['subtitle', subtitle === undefined ? undefined : protectCase(subtitle)],
-    ['organization', escapeBibtex(siteName)],
-    ['date', isoDate(work.published.year, work.published.month, work.published.day)],
-    ['url', options.url],
-    ['urldate', isoDate(options.accessed.year, options.accessed.month, options.accessed.day)],
-    ['langid', LANGID[work.lang]],
-  ];
-  const present = fields.filter((f): f is readonly [string, string] => f[1] !== undefined);
-  const width = Math.max(...present.map(([name]) => name.length));
-  const bibtex = `@online{${key.value},\n${present
-    .map(([name, value]) => `  ${name.padEnd(width)} = {${value}},`)
-    .join('\n')}\n}\n`;
+  // The export always carries the full date of publication, whatever the reference prints.
+  const bibtex = toBibtex({
+    ...reference,
+    issued: { year: work.published.year, month: work.published.month, day: work.published.day },
+  });
 
   return ok({
     key: key.value,

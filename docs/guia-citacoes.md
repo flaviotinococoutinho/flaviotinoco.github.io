@@ -63,23 +63,15 @@ Regras:
 
 ### HTML gerado
 
-```html
-<span class="cite" data-cite="[@shannon1948, p. 12]"
-  >(<a href="#ref-shannon1948" id="cite-shannon1948">Shannon</a>, 1948, p. 12)</span
->
+```text
+<span class="cite" data-cite="[@shannon1948, p. 12]">(<a href="#ref-shannon1948" id="cite-shannon1948">Shannon</a>, 1948, p. 12)</span>
 
 <section class="references" data-style="abnt" aria-labelledby="references-title">
   <h2 id="references-title">Referências</h2>
   <ul role="list" class="references__list">
-    <li id="ref-shannon1948" class="references__item">
-      SHANNON, Claude Elwood. …
-      <a
-        class="references__backlink"
-        href="#cite-shannon1948"
-        aria-label="Voltar à primeira citação de Shannon, 1948 no texto"
-        >↩︎</a
-      >
-    </li>
+    <li id="ref-shannon1948" class="references__item">SHANNON, Claude Elwood. …
+      <a class="references__backlink" href="#cite-shannon1948"
+         aria-label="Voltar à primeira citação de Shannon, 1948 no texto">↩︎</a></li>
   </ul>
 </section>
 ```
@@ -125,7 +117,9 @@ Nomes:
 - `Sobrenome, Prenome` ou `Prenome Sobrenome`; vários unidos por `and`; `and others` = _et al._
 - Partículas minúsculas são registradas à parte (`de Saussure, Ferdinand` → família _Saussure_, partícula _de_);
   na ABNT vão depois do prenome: SAUSSURE, Ferdinand de (NBR 6023 §8.1.1, como SILVA, João da).
-- Sobrenome composto: entre chaves (`{García Márquez}, Gabriel`, `{López de Mántaras}, Ramón`).
+- Sobrenome composto: na forma `Prenome Sobrenome`, entre chaves (`Gabriel {García Márquez}`). Na forma com
+  vírgula não precisa (`García Márquez, Gabriel`, `López de Mántaras, Ramón`), salvo quando o sobrenome começa
+  por minúscula e não é partícula (`{da Silva}, Maria` impede que “da” seja lido como partícula).
 - Entidade: o nome inteiro entre chaves duplas (`{{World Wide Web Consortium}}`).
 - Prenomes por extenso quando conhecidos (NBR 6023 §8.1.1 pede padronização; o site padroniza por extenso).
 
@@ -152,9 +146,9 @@ matemática ficam **literais** com aviso. A saída é sempre Unicode NFC (corrig
   subtítulo nunca destacado: **Globalização**: as conseqüências humanas.
 - `2. ed.`; `[S. l.]`, `[s. n.]`, `[S. l.: s. n.]`; meses do Anexo A (jan. fev. mar. abr. maio jun. jul. ago.
   set. out. nov. dez.); `p. 379-423` (hífen); `v. 27, n. 3`; localizador eletrônico no lugar das páginas
-  (`e03304`; número puro como `art. 104047`); `DOI: https://doi.org/…`; `Disponível em: URL. Acesso em: 3 maio
-2024.` sem sinais de menor/maior.
-- Evento: `In: NOME DO EVENTO, 16., 2004, Valencia. **Anais/Proceedings** […]`.
+  (`e03304`; número puro como `art. 104047`); `DOI: https://doi.org/…`; por último “Disponível em: URL. Acesso
+  em: 3 maio 2024.”, sem os sinais de menor e maior em volta da URL.
+- Evento: _In_: NOME DO EVENTO, 16., 2004, Valencia. **Proceedings** [...] (ou **Anais** [...]).
 - Tese: `2009. 82 f. Dissertação (Mestrado em …) – Unidade, Instituição, Local, 2009.`
 - Ordem alfabética com `Intl.Collator('pt-BR', { numeric: true })` sobre o texto da entrada (§9.1): Ávila antes
   de Azevedo, Eça junto de Edson. Mesmo autor e ano → 1927a, 1927b atribuídos na lista ordenada e usados também nas
@@ -209,26 +203,38 @@ matemática ficam **literais** com aviso. A saída é sempre Unicode NFC (corrig
     elementos complementares além de `pagetotal`, ISBN/ISSN (aceitos no `.bib`, não impressos — §7.7.1 os torna
     complementares), títulos traduzidos entre colchetes do APA para obras em outras línguas.
 
-## 6. “Como citar” os textos do site
+## 6. “Como citar” os textos do site e exportações
 
 `citeSelf(obra, estilo, { siteName, url, accessed })` (`src/core/bibliography/self.ts`) formata um ensaio ou
 laboratório do site como documento _online_, com o **mesmo** formatador da lista de referências. A data de
-acesso é um argumento (o núcleo não tem relógio).
+acesso é um argumento (o núcleo não tem relógio). Para um ensaio publicado em 3 de maio de 2026 e consultado
+em 17 de outubro de 2026:
 
-- ABNT: `TINOCO, Flavio. Amostrar é decidir: o teorema de Nyquist–Shannon. **Flavio Tinoco**, 2026. Disponível
-em: https://…/pt/ensaios/amostrar-e-decidir/. Acesso em: 17 out. 2026.` — com `date: 'full'`, a data completa
-  (`3 maio 2026`), como no Exemplo 10 da §7.20.
-- APA: `Tinoco, F. (2026, May 3). *To sample is to decide: The Nyquist–Shannon theorem*. https://…` (o nome do
-  site é omitido porque repete o autor).
-- Chamadas: (Tinoco, 2026) / Tinoco (2026).
+> TINOCO, Flavio. Amostrar é decidir: o teorema de Nyquist–Shannon. **Flavio Tinoco**, 2026. Disponível em:
+> https://…/pt/ensaios/amostrar-e-decidir/. Acesso em: 17 out. 2026.
+
+> Tinoco, F. (2026, May 3). _To sample is to decide: The Nyquist–Shannon theorem_. https://…/en/essays/to-sample-is-to-decide/
+
+- ABNT segue o modelo “SOBRENOME, Prenome. Título: subtítulo. Nome do site, ano. Disponível em: URL. Acesso em:
+  d mmm. aaaa.”, com destaque no nome do site; com `date: 'full'`, a data completa (3 maio 2026), como no
+  Exemplo 10 da NBR 6023 §7.20.
+- APA omite o nome do site quando ele repete o autor (§10.16), como acontece aqui.
+- Chamadas (NBR 10520 e APA): (Tinoco, 2026) / Tinoco (2026).
 - BibTeX (biblatex `@online`): `author`, `title`, `subtitle`, `organization`, `date`, `url`, `urldate`, `langid`.
-  Palavras com maiúsculas internas ficam entre chaves; o analisador do próprio site lê a entrada de volta e
-  produz a mesma referência (teste de propriedade).
+  Palavras com maiúsculas além da inicial (siglas, nomes próprios) ficam entre chaves — no modelo e na
+  exportação —, e o analisador do próprio site lê a entrada de volta e produz a mesma referência (teste de
+  propriedade). O apóstrofo reto `'` é exportado como está: em BibTeX ele significa ’.
 
-`toSchemaOrg(referência)` e `schemaCitations(referências)` (`src/core/bibliography/schema-org.ts`) descrevem as
-obras citadas como objetos schema.org (ScholarlyArticle dentro de PublicationIssue → PublicationVolume →
-Periodical; Book, Chapter, Thesis, Report, WebPage, SoftwareApplication), com `author`, `datePublished`,
-`identifier` (DOI) e `url`.
+Outras exportações do núcleo (`src/core/bibliography/index.ts`):
+
+- `toBibtex(referência)` e `toBibtexFile(referências)` (`bibtex/encode.ts`): qualquer referência do modelo como
+  entrada biblatex — por exemplo, “baixar as referências desta página (.bib)” a partir de
+  `frontmatter.citations`. É o inverso exato do analisador: reler a saída devolve a mesma referência, campo a
+  campo, com as caixas protegidas e os itálicos (verificado em toda a bibliografia semente e nas fixtures).
+- `toSchemaOrg(referência)` e `schemaCitations(referências)` (`schema-org.ts`): objetos schema.org
+  (ScholarlyArticle dentro de PublicationIssue → PublicationVolume → Periodical; Book, Chapter, Thesis, Report,
+  WebPage, SoftwareApplication), com `author`, `datePublished`, `identifier` (DOI) e `url`. O estágio já os
+  exporta em `frontmatter.citationJsonLd`, prontos para a propriedade `citation` do JSON-LD da página.
 
 ## 7. A bibliografia semente (`bibliography/main.bib`)
 

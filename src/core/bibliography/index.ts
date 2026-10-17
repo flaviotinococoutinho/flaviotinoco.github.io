@@ -108,3 +108,4 @@ export {
   type SiteWork,
 } from './self.ts';
 export { SCHEMA_CONTEXT, schemaCitations, toSchemaOrg, type JsonValue, type SchemaNode } from './schema-org.ts';
+export { toBibtex, toBibtexFile } from './bibtex/encode.ts';
