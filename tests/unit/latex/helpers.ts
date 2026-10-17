@@ -107,6 +107,44 @@ export const site = async (
   return { html: rendered.code, frontmatter: rendered.metadata.frontmatter };
 };
 
+let siteTreeProcessor: Promise<SiteProcessor> | undefined;
+
+/**
+ * The mdast exactly as the site's latex stage receives it — Astro's parse with GFM and SmartyPants,
+ * then remark-math and remark-directive — which is the input src/core/latex/export.ts expects.
+ */
+export const siteTree = async (markdown: string): Promise<Root> => {
+  const capture = () => (tree: Root, file: VFile) => {
+    const frontmatter = ((file.data.astro ??= {}).frontmatter ??= {}) as Record<string, unknown>;
+    frontmatter['__tree'] = structuredClone(tree);
+  };
+  siteTreeProcessor ??= createMarkdownProcessor({
+    remarkPlugins: [[remarkMath, { singleDollarTextMath: false }], remarkDirective, capture],
+    syntaxHighlight: false,
+    gfm: true,
+    smartypants: true,
+  });
+  const { metadata } = await (await siteTreeProcessor).render(markdown, { frontmatter: {} });
+  return metadata.frontmatter['__tree'] as Root;
+};
+
+let smartypantsProcessor: Promise<SiteProcessor> | undefined;
+
+/** The text the site's SmartyPants (Astro: remark-smartypants, default options) makes of a one-line paragraph. */
+export const smartypants = async (text: string): Promise<string> => {
+  smartypantsProcessor ??= createMarkdownProcessor({ syntaxHighlight: false, gfm: true, smartypants: true });
+  const { code } = await (await smartypantsProcessor).render(text);
+  const inner = /^<p>([\s\S]*)<\/p>$/.exec(code.trim())?.[1];
+  if (inner === undefined) throw new Error(`not a single paragraph: ${code}`);
+  return inner
+    .replace(/<[^>]*>/g, '')
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCodePoint(Number.parseInt(hex, 16)))
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&');
+};
+
 /** Every `id="…"` of an HTML string, in order. */
 export const htmlIds = (html: string): readonly string[] =>
   [...html.matchAll(/\sid="([^"]*)"/g)].map((m) => m[1] ?? '');

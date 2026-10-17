@@ -3,7 +3,7 @@
  * localisation, proof heads and the QED tombstone.
  */
 import { describe, expect, it } from 'vitest';
-import { failure, html, NBSP } from './helpers.ts';
+import { failure, html, NBSP, site } from './helpers.ts';
 
 describe('numbering', () => {
   it('numbers every numbered kind with ONE shared counter, in document order (\\newtheorem{lemma}[theorem])', () => {
@@ -213,6 +213,26 @@ describe('proofs', () => {
   it('puts the tombstone on its own line when the proof does not end with a paragraph', () => {
     const { html: out } = html(':::proof\nTexto.\n\n$$\nx\n$$\n:::', 'pt-BR', { katex: false });
     expect(out).toMatch(/<p class="qed-line"><span class="qed">/);
+  });
+});
+
+describe('attribute text (title="…") reads like the body around it', () => {
+  it("gets the punctuation SmartyPants gives the body, with the author's text kept in data-title", async () => {
+    const { html: out } = await site(
+      '::::theorem{#thm:amostragem title="amostragem--reconstrução"}\n"aspas" -- e travessão\n::::',
+    );
+    expect(out).toContain(
+      '<span class="env__title" data-title="amostragem--reconstrução">(amostragem—reconstrução)</span>',
+    );
+    expect(out).toContain('<p>“aspas” — e travessão</p>');
+    const proof = html(':::proof{title="Esboço d\'après Shannon"}\nQ.\n:::').html;
+    expect(proof).toContain(
+      '<span class="env__title" data-title="Esboço d&#x27;après Shannon">Esboço d’après Shannon</span>',
+    );
+    // Unchanged text needs no copy.
+    expect(html(':::theorem{title="Nyquist–Shannon"}\nT.\n:::').html).toContain(
+      '<span class="env__title">(Nyquist–Shannon)</span>',
+    );
   });
 });
 

@@ -15,6 +15,7 @@ import { fc, test } from '@fast-check/vitest';
 import type { Nodes, Root } from 'mdast';
 import { toString } from 'mdast-util-to-string';
 import { directiveLabelSource, plainText } from '../../../src/core/latex/nodes.ts';
+import { smartPunctuation } from '../../../src/core/latex/smart-punctuation.ts';
 import { transformLatex } from '../../../src/core/latex/transform.ts';
 import { parse } from './helpers.ts';
 
@@ -116,6 +117,10 @@ type Block =
 
 const word = fc.stringMatching(/^[a-zà-úç]{1,8}$/);
 const sentence = fc.array(word, { minLength: 1, maxLength: 6 }).map((ws) => `${ws.join(' ')}.`);
+/** Attribute text (title="…", source="…") with the ASCII punctuation the stage makes typographic. */
+const attributeText = fc
+  .array(fc.oneof(word, fc.constantFrom(' -- ', '... ', " d'água", " 'ok'", ' x--y')), { minLength: 1, maxLength: 6 })
+  .map((parts) => `${parts.join(' ').trim()}.`);
 const tex = fc.stringMatching(/^[a-z0-9+=^ ]{1,12}$/).map((s) => s.trim() || 'x');
 const ref: fc.Arbitrary<Ref> = fc.record({ kind: fc.constantFrom('ref', 'eqref', 'math'), pick: fc.nat() });
 
@@ -142,15 +147,15 @@ const block: fc.Arbitrary<Block> = fc.oneof(
       'proof',
     ),
     labelled: fc.boolean(),
-    title: fc.option(sentence, { nil: undefined }),
+    title: fc.option(attributeText, { nil: undefined }),
     body: fc.array(sentence, { minLength: 1, maxLength: 2 }),
   }),
   fc.record({ t: fc.constant('eq' as const), tex, labelled: fc.boolean() }),
   fc.record({
     t: fc.constant('fig' as const),
     kind: fc.constantFrom('figure', 'chart', 'frame', 'table'),
-    title: sentence,
-    source: sentence,
+    title: attributeText,
+    source: attributeText,
   }),
 );
 
@@ -280,10 +285,17 @@ const outputView = (tree: Root): View => {
   return view;
 };
 
+/**
+ * The text of each node with the class, with an attribute's original recovered: the stage gives
+ * attribute text typographic punctuation and keeps the author's text in data-title / data-source.
+ */
 const collectByClass = (tree: Root, className: string): string[] => {
   const out: string[] = [];
   const walk = (node: Nodes): void => {
-    if (classes(node).includes(className)) out.push(plainText(node));
+    const original = prop(node, 'dataTitle') ?? prop(node, 'dataSource');
+    const shown = plainText(node);
+    if (classes(node).includes(className))
+      out.push(typeof original === 'string' ? shown.replace(smartPunctuation(original), original) : shown);
     if ('children' in node) for (const child of node.children as readonly Nodes[]) walk(child);
   };
   walk(tree);

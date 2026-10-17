@@ -95,6 +95,10 @@ Pela fórmula de interpolação :eqref[eq:sinc], segue o resultado.
 - A demonstração termina com o símbolo ∎ (a “lápide” de Halmos), alinhado à direita na última linha. O símbolo é
   `aria-hidden`; leitores de tela ouvem, em vez dele, o texto oculto “Fim da demonstração.” / “End of proof.”.
 - A cabeça é “corrida” (run-in), como no `amsthm`: “**Teorema 2** (Nyquist–Shannon). _Um sinal…_”.
+- O texto de um atributo (`title="…"`, e `source="…"` nas figuras) recebe a mesma pontuação tipográfica que o
+  SmartyPants do Astro dá ao corpo, que nunca vê atributos: `"` e `'` viram aspas curvas, `--` vira travessão (—),
+  `...` vira reticências (…). O texto original fica em `data-title` / `data-source` (preservação de informação).
+  Para uma meia-risca (–), como em “Nyquist–Shannon”, digite o próprio caractere, como no corpo.
 
 ### 2.1 Aninhamento: mais dois-pontos por fora
 

@@ -38,6 +38,7 @@ import {
   type Segment,
 } from './format.ts';
 import { anonymousId, labelToId, partId } from './label-codec.ts';
+import { smartPunctuation } from './smart-punctuation.ts';
 import {
   appendTag,
   extractLabels,
@@ -118,6 +119,8 @@ interface EnvItem {
   readonly label: Label | undefined;
   readonly number: string | undefined;
   readonly title: readonly PhrasingContent[] | undefined;
+  /** The `title="…"` text as written, when typographic punctuation changed it (kept in data-title). */
+  readonly titleSource: string | undefined;
   readonly body: readonly Nodes[];
   readonly of: Label | undefined;
 }
@@ -129,7 +132,10 @@ interface FigureItem {
   readonly label: Label | undefined;
   readonly number: string;
   readonly title: readonly PhrasingContent[];
+  readonly titleSource: string | undefined;
   readonly source: string | undefined;
+  /** The `source="…"` text as written, when typographic punctuation changed it (kept in data-source). */
+  readonly sourceSource: string | undefined;
   readonly body: readonly Nodes[];
 }
 
@@ -251,16 +257,32 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     });
   };
 
-  /** Title from `title="…"` or from the directive label `[…]` (rich text); both is an error. */
-  const titleOf = (node: ContainerDirective): readonly PhrasingContent[] | undefined => {
+  /**
+   * Text from an attribute, with the typographic punctuation SmartyPants gave the body (it never
+   * sees attributes); `source` is the author's text when that changed it, for a data-* attribute.
+   */
+  const typeset = (attribute: string): { readonly value: string; readonly source: string | undefined } => {
+    const value = smartPunctuation(attribute);
+    return { value, source: value === attribute ? undefined : attribute };
+  };
+
+  /**
+   * Title from `title="…"` or from the directive label `[…]` (rich text); both is an error. The
+   * label went through SmartyPants with the body; the attribute gets the same punctuation here.
+   */
+  const titleOf = (
+    node: ContainerDirective,
+  ): { readonly title: readonly PhrasingContent[] | undefined; readonly source: string | undefined } => {
     const attribute = attributesOf(node)['title'];
     const first = node.children[0];
     const fromLabel = first !== undefined && isLabelParagraph(first) ? first.children : undefined;
-    const fromAttribute = attribute === undefined || attribute === '' ? undefined : [text(attribute)];
+    const fromAttribute = attribute === undefined || attribute === '' ? undefined : typeset(attribute);
     if (fromLabel !== undefined && fromAttribute !== undefined) {
       report('error', 'duplicate-title', `:${node.name} has both a [label] and title=""; keep one`, node);
     }
-    return fromAttribute ?? fromLabel;
+    return fromAttribute === undefined
+      ? { title: fromLabel, source: undefined }
+      : { title: [text(fromAttribute.value)], source: fromAttribute.source };
   };
 
   const bodyOf = (node: ContainerDirective): readonly Nodes[] =>
@@ -278,7 +300,7 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     envOrdinal += 1;
     const label = labelAttribute(node, 'id');
     const of = kind === 'proof' ? labelAttribute(node, 'of') : undefined;
-    const title = titleOf(node);
+    const { title, source: titleSource } = titleOf(node);
     if (kind === 'proof' && of !== undefined && title !== undefined) {
       report('error', 'duplicate-title', ':proof takes either of="…" or a title, not both', node);
     }
@@ -291,7 +313,18 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
           : { type: 'unnumbered', kind: kind === 'proof' ? 'proof' : 'remark' };
       register(label, target, node);
     }
-    envs.set(node, { node, kind, id, headId: partId(id, 'head'), label, number, title, body: bodyOf(node), of });
+    envs.set(node, {
+      node,
+      kind,
+      id,
+      headId: partId(id, 'head'),
+      label,
+      number,
+      title,
+      titleSource,
+      body: bodyOf(node),
+      of,
+    });
   };
 
   const registerFigure = (node: ContainerDirective): void => {
@@ -310,7 +343,7 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
       );
     }
     const label = labelAttribute(node, 'id');
-    const title = titleOf(node);
+    const { title, source: titleSource } = titleOf(node);
     if (title === undefined) {
       report(
         'error',
@@ -319,8 +352,9 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
         node,
       );
     }
-    const source = attributes['source']?.trim();
-    if (source === undefined || source === '') {
+    const rawSource = attributes['source']?.trim();
+    const source = rawSource === undefined || rawSource === '' ? undefined : typeset(rawSource);
+    if (source === undefined) {
       report(
         'warning',
         'missing-source',
@@ -343,7 +377,9 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
       label,
       number,
       title: title ?? [],
-      source: source === '' ? undefined : source,
+      titleSource,
+      source: source?.value,
+      sourceSource: source?.source,
       body,
     });
   };
@@ -575,14 +611,17 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
   const headContent = (item: EnvItem, title: readonly PhrasingContent[] | undefined): PhrasingContent[] => {
     const name = (children: readonly PhrasingContent[]): PhrasingContent =>
       latexInline('env-name', { className: ['env__name'] }, children);
+    const titleProperties: Properties = {
+      className: ['env__title'],
+      ...(item.titleSource === undefined ? {} : { dataTitle: item.titleSource }),
+    };
     const note = (): PhrasingContent[] =>
       title === undefined
         ? []
-        : [text(' '), latexInline('env-title', { className: ['env__title'] }, [text('('), ...title, text(')')])];
+        : [text(' '), latexInline('env-title', titleProperties, [text('('), ...title, text(')')])];
     if (item.kind === 'proof') {
       // \begin{proof}[Esboço]: the author's title REPLACES the name (amsthm).
-      if (title !== undefined)
-        return [name([latexInline('env-title', { className: ['env__title'] }, title)]), text('.')];
+      if (title !== undefined) return [name([latexInline('env-title', titleProperties, title)]), text('.')];
       if (item.of !== undefined) {
         const found = lookup(item.of, item.node);
         if (found !== undefined && found.entry.target.type === 'environment') {
@@ -665,7 +704,11 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
         text(captionLabel(locale, item.kind, item.number)),
       ]),
       text(message(locale, 'caption.separator')),
-      latexInline('figure-title', { className: ['figure__title'] }, title),
+      latexInline(
+        'figure-title',
+        { className: ['figure__title'], ...(item.titleSource === undefined ? {} : { dataTitle: item.titleSource }) },
+        title,
+      ),
     ]);
     let labelled = false;
     const body = item.body.map((child): RootContent => {
@@ -690,7 +733,12 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
         : [
             {
               type: 'paragraph',
-              data: { hProperties: { className: ['figure__source'] } },
+              data: {
+                hProperties: {
+                  className: ['figure__source'],
+                  ...(item.sourceSource === undefined ? {} : { dataSource: item.sourceSource }),
+                },
+              },
               children: [
                 latexInline('figure-source-label', { className: ['figure__source-label'] }, [
                   text(message(locale, 'figure.source')),

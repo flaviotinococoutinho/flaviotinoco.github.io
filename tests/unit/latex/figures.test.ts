@@ -46,6 +46,16 @@ describe('figures', () => {
     expect(out).toContain('id="figure_1"');
   });
 
+  it("gives title and source attributes the body's punctuation, keeping the author's text in data-*", () => {
+    const { html: out } = html(':::figure{title="O \'dobramento\'..." source="Autor\'s -- 2026"}\n![x](x.png)\n:::');
+    expect(out).toContain(
+      '<span class="figure__title" data-title="O &#x27;dobramento&#x27;...">O ‘dobramento’…</span>',
+    );
+    expect(out).toContain(
+      '<p class="figure__source" data-source="Autor&#x27;s -- 2026"><span class="figure__source-label">Fonte:</span> Autor’s — 2026</p>',
+    );
+  });
+
   it('localises designation and source (en)', () => {
     const { html: out } = html(figure('frame', 'fig:q'), 'en');
     expect(out).toContain(`<span class="figure__label">Box${NBSP}1</span> – `);
