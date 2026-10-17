@@ -1,0 +1,83 @@
+---
+/**
+ * Epistemic status and provenance of a text (editorial ethics).
+ *
+ * Confidence uses Sherman Kent's estimative words (1964) on an ORDINAL scale:
+ * six positions drawn as marks on a line, the essay's level a filled diamond
+ * (shape), its word and probability band printed beside it (text) — so neither
+ * colour nor position alone carries the meaning. Evidence names the kind of
+ * support. The provenance notice appears when AI assistance was used or the
+ * author has not reviewed the text.
+ */
+import type { Confidence, Evidence } from '../../core/domain/epistemic.ts';
+import type { Locale } from '../../core/domain/locale.ts';
+import reading from '../../core/i18n/catalogs/reading.ts';
+import { confidenceScale, kentBand, provenanceMessage, type Provenance } from '../../core/reading/essay.ts';
+import { useTranslations } from '../../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly confidence: Confidence;
+  readonly evidence: Evidence;
+  readonly provenance: Provenance & { readonly note?: string | undefined };
+  /** Id of the section heading (for aria-labelledby). */
+  readonly headingId: string;
+}
+
+const { locale, confidence, evidence, provenance, headingId } = Astro.props;
+const t = useTranslations(reading, locale);
+const scale = confidenceScale(confidence);
+const position = scale.findIndex((s) => s.active) + 1;
+const band = kentBand(confidence, locale);
+const notice = provenanceMessage(provenance);
+const STEP = 16;
+const width = STEP * (scale.length - 1) + 12;
+---
+
+<section class="status" aria-labelledby={headingId}>
+  <h2 class="status__title" id={headingId}>
+    {t('epistemic.title')}
+  </h2>
+  <dl class="status__list">
+    <div class="status__item">
+      <dt>{t('epistemic.confidence')}</dt>
+      <dd class="kent">
+        <svg
+          class="kent__scale"
+          viewBox={`0 0 ${width} 12`}
+          width={width}
+          height="12"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path class="kent__axis" d={`M6 6H${width - 6}`}></path>
+          {scale.map((s, i) =>
+            s.active ? (
+              <path
+                class="kent__mark kent__mark--active"
+                d={`M${6 + i * STEP} 0.8 ${11.2 + i * STEP} 6 ${6 + i * STEP} 11.2 ${0.8 + i * STEP} 6Z`}
+              />
+            ) : (
+              <circle class="kent__mark" cx={6 + i * STEP} cy="6" r="2.2" />
+            ),
+          )}
+        </svg>
+        <span class="kent__label">{t(`confidence.${confidence}`)}</span>
+        <span class="kent__band">({t('epistemic.band', { range: band })})</span>
+        <span class="visually-hidden">{t('epistemic.scale', { i: position, n: scale.length })}</span>
+      </dd>
+    </div>
+    <div class="status__item">
+      <dt>{t('epistemic.evidence')}</dt>
+      <dd>{t(`evidence.${evidence}`)}</dd>
+    </div>
+  </dl>
+  {notice !== null && (
+    <p class="provenance" data-assistance={provenance.assistance} data-reviewed={String(provenance.reviewed)}>
+      <span class="provenance__title">{t('provenance.title')}:</span> {t(notice)}
+      {provenance.note !== undefined && provenance.note.length > 0 && (
+        <span class="provenance__note">{provenance.note}</span>
+      )}
+    </p>
+  )}
+</section>

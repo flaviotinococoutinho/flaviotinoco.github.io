@@ -1,0 +1,36 @@
+---
+/**
+ * Abstract and keywords per ABNT NBR 6028:2021: a single paragraph, followed by
+ * "Palavras-chave:" and the keywords separated by semicolons and ended by a
+ * full stop (4.1.7). The authors' casing of each keyword is kept.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import reading from '../../core/i18n/catalogs/reading.ts';
+import { keywordList } from '../../core/reading/essay.ts';
+import { useTranslations } from '../../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly abstract: string | undefined;
+  readonly keywords: readonly string[];
+  readonly headingId: string;
+}
+
+const { locale, abstract, keywords, headingId } = Astro.props;
+const t = useTranslations(reading, locale);
+const list = keywordList(keywords);
+---
+
+{(abstract !== undefined || list.length > 0) && (
+  <section class="abstract" aria-labelledby={headingId}>
+    <h2 class="abstract__title" id={headingId}>
+      {t('abstract.title')}
+    </h2>
+    {abstract !== undefined && <p class="abstract__text">{abstract}</p>}
+    {list.length > 0 && (
+      <p class="abstract__keywords">
+        <span class="abstract__keywords-label">{t('keywords.label')}:</span> {list}
+      </p>
+    )}
+  </section>
+)}
