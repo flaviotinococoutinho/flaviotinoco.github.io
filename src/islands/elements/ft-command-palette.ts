@@ -15,8 +15,10 @@
  * works and a polite status explains why there are no text results.
  *
  * Pure logic lives in the core: keyboard state machine and ranking
- * (src/core/chrome/palette.ts) and excerpt sanitising (excerpt.ts — only <mark>
- * survives, rendered with DOM APIs, never innerHTML).
+ * (src/core/chrome/palette.ts) and excerpts (excerpt.ts — rebuilt from the
+ * page's raw text and the matched word indices, because Pagefind's own excerpt
+ * string cannot be decoded back to the text; rendered with DOM APIs as text
+ * nodes and <mark>, never innerHTML).
  *
  * Messages arrive from the server catalog as JSON in data-messages
  * ({ zero, one, other, indexMissing, text }), so no UI text is hard-coded here.
@@ -29,7 +31,7 @@ import {
   toPaletteKey,
   type PaletteState,
 } from '../../core/chrome/palette.ts';
-import { sanitiseExcerpt, type ExcerptSegment } from '../../core/chrome/excerpt.ts';
+import { excerptFromContent, sanitiseExcerpt, type ExcerptSegment } from '../../core/chrome/excerpt.ts';
 import { format } from '../../core/i18n/messages.ts';
 
 const TAG = 'ft-command-palette';
@@ -76,9 +78,27 @@ const parseMessages = (raw: string | undefined): Messages => {
 /** Minimal structural type of the Pagefind 1.x client API that we use. */
 interface PagefindData {
   readonly url: string;
-  readonly excerpt: string;
+  /** Raw indexed text of the page. */
+  readonly content?: unknown;
+  /** Indices of the matched words in content.split(/[\r\n\s]+/g). */
+  readonly locations?: unknown;
+  /** HTML excerpt (only < and > escaped): a fallback, see core/chrome/excerpt.ts. */
+  readonly excerpt?: unknown;
   readonly meta?: { readonly title?: string };
 }
+
+/** The excerpt of a result: from the raw text when Pagefind provides it, else from its excerpt string. */
+const excerptOf = (d: PagefindData): readonly ExcerptSegment[] | null => {
+  const { content, locations, excerpt } = d;
+  if (
+    typeof content === 'string' &&
+    Array.isArray(locations) &&
+    locations.every((l): l is number => typeof l === 'number')
+  )
+    return excerptFromContent(content, locations);
+  return typeof excerpt === 'string' ? sanitiseExcerpt(excerpt) : null;
+};
+
 interface Pagefind {
   options(options: Readonly<Record<string, unknown>>): Promise<void>;
   debouncedSearch(
@@ -250,7 +270,7 @@ class FtCommandPalette extends HTMLElement {
         lang: null,
         glyph: page?.glyph ?? 'form-essay',
         stratum: page?.stratum ?? null,
-        excerpt: sanitiseExcerpt(d.excerpt),
+        excerpt: excerptOf(d),
       });
     }
     // Same query, so the quick-navigation options keep their indices and the text hits are
