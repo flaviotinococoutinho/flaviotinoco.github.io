@@ -53,15 +53,43 @@ describe('reference extraction', () => {
     expect(srcsetUrls('')).toEqual([]);
   });
 
-  it('reads meta refresh targets', () => {
+  it('reads meta refresh targets (HTML shared declarative refresh steps)', () => {
     expect(refreshUrl('0; url=/b/pt/')).toBe('/b/pt/');
     expect(refreshUrl("2;URL='/b/en/'")).toBe('/b/en/');
-    expect(refreshUrl('5')).toBeUndefined();
+    expect(refreshUrl('0 /b/x/')).toBe('/b/x/');
+    expect(refreshUrl('.5, url = "a b" trailing')).toBe('a b');
+    // Regression (review guardrails#4): a time alone refreshes the page itself. The old pattern
+    // took the time's last digit for a URL ("10" → "0"), a broken link to /0.
+    for (const timeOnly of ['5', '10', '300', ' 15 ', '1.5', '10;', '10; '])
+      expect(refreshUrl(timeOnly), timeOnly).toBeUndefined();
+    expect(refreshUrl('x; url=/y/')).toBeUndefined();
+    expect(refreshUrl('3x')).toBeUndefined();
   });
+
+  test.prop([fc.stringMatching(/^\d{1,4}$/), fc.stringMatching(/^\/[a-z0-9/._-]{0,20}$/)])(
+    'refresh: a time alone has no URL; with a separator the URL is read whole',
+    (time, url) => {
+      expect(refreshUrl(time)).toBeUndefined();
+      expect(refreshUrl(`${time}; url=${url}`)).toBe(url);
+      expect(refreshUrl(`${time},'${url}'`)).toBe(url);
+    },
+  );
 
   it('reads stylesheet url() and @import, ignoring comments, data: and fragment-only URLs', () => {
     const css = `@import "a.css"; /* url(/no.png) */ .x{background:url( "/b/i.png" ) url(data:image/png;base64,AA) url(#f) url(y.svg)}`;
-    expect(cssReferences(css).map((r) => r.url)).toEqual(['/b/i.png', 'y.svg', 'a.css']);
+    expect(cssReferences(css).map((r) => r.url)).toEqual(['a.css', '/b/i.png', 'y.svg']);
+  });
+
+  it('does not read url() inside CSS strings or comments (review guardrails#4)', () => {
+    expect(cssReferences('b{content:"url(fake.png)"} i{content:\'url(x.png)\'}')).toEqual([]);
+    // A quote inside a comment opens no string; "/*" inside a string opens no comment.
+    expect(
+      cssReferences('/* it\'s */ a{background:url(a.png)} q{content:"/*"} b{background:url(b.png)}').map((r) => r.url),
+    ).toEqual(['a.png', 'b.png']);
+    expect(cssReferences('@import url("d.css"); x{mask:url(\'e f.svg\')}').map((r) => `${r.via} ${r.url}`)).toEqual([
+      'css url() d.css',
+      'css url() e f.svg',
+    ]);
   });
 
   it('reads sitemap and feed URLs', () => {
@@ -121,7 +149,7 @@ describe('checkLinks', () => {
       },
       ['i.png'],
     );
-    expect(checkLinks(site, coords)).toEqual({ issues: [], checked: 5, external: 0 });
+    expect(checkLinks(site, coords)).toEqual({ issues: [], warnings: [], checked: 5, external: 0 });
   });
 
   it('reports every kind of broken internal reference once, in a stable order', () => {
@@ -149,6 +177,28 @@ describe('checkLinks', () => {
       'pt/index.html http://[::1 → unparseable URL',
       'sitemap-0.xml https://example.test/b/fr/ → no such file: fr/index.html',
     ]);
+  });
+
+  // Review guardrails#4: on a project site the origin is shared with the owner's user site
+  // and every other project, so absolute URLs outside the base name other sites.
+  it('lists absolute URLs to other sites on the shared origin as warnings, not broken links', () => {
+    const site = snapshot({
+      'index.html':
+        '<a href="https://example.test/outro-projeto/">o</a><a href="https://example.test/">u</a><a href="//example.test/x/">s</a><a href="/pt/">bug</a>',
+    });
+    const report = checkLinks(site, coords);
+    expect(report.issues.map((i) => `${i.url} → ${i.reason}`)).toEqual([
+      '/pt/ → outside the base path /b/ (prefix links with import.meta.env.BASE_URL)',
+    ]);
+    expect(report.warnings.map((w) => w.url)).toEqual([
+      '//example.test/x/',
+      'https://example.test/',
+      'https://example.test/outro-projeto/',
+    ]);
+    expect(report.external).toBe(3);
+    expect(report.warnings[0]?.reason).toBe(
+      'another site on the shared origin (outside the base path /b/); not checked',
+    );
   });
 
   it('distinguishes a missing page from a missing slash', () => {

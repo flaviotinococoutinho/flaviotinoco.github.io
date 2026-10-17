@@ -6,7 +6,9 @@
  * Crawls every HTML page, stylesheet and XML document (sitemaps, feeds) in
  * dist/, resolves each internal reference against the deployed URL (SITE and
  * BASE_PATH, same defaults as astro.config.ts) and fails if a target file or a
- * fragment id is missing. External URLs are counted but never fetched.
+ * fragment id is missing. External URLs are counted but never fetched; absolute
+ * URLs to other sites on the same origin (GitHub Pages project sites share
+ * owner.github.io) are listed as warnings.
  * The logic lives in scripts/lib/links.ts (pure, unit-tested).
  */
 import path from 'node:path';
@@ -38,6 +40,10 @@ console.log(
     `${report.checked} internal references checked, ${report.external} external skipped ` +
     `(site ${coords.origin}${coords.base}).`,
 );
+if (report.warnings.length > 0) {
+  console.warn('\nOther sites on the shared origin (not checked):');
+  for (const w of report.warnings) console.warn(`  ! ${w.source}: ${w.url}  [${w.via}]`);
+}
 if (report.issues.length > 0) {
   let source = '';
   for (const issue of report.issues) {
