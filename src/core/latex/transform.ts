@@ -453,6 +453,17 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     data: { hProperties: { className: ['xref', `xref--${kindClass(target)}`], dataLabel: label } },
   });
 
+  /**
+   * A resolved reference. Inside the author's own link it cannot be a link too: `<a>` admits no
+   * interactive content (HTML Living Standard §4.5.1), and a parser closes the outer link at the
+   * nested one, cutting the author's link short. There it is the same text and markup as a
+   * `span.xref`, so the author's link keeps every word.
+   */
+  const reference = (label: Label, target: Target, display: string, inLink: boolean): PhrasingContent =>
+    inLink
+      ? latexInline('xref', { className: ['xref', `xref--${kindClass(target)}`], dataLabel: label }, [text(display)])
+      : xref(label, target, display);
+
   const lookup = (raw: string, node: Nodes): { readonly label: Label; readonly entry: LabelEntry } | undefined => {
     const parsed = parseLabel(raw);
     if (!parsed.ok) {
@@ -472,7 +483,7 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     return { label: parsed.value, entry };
   };
 
-  const renderRef = (node: TextDirective): RootContent => {
+  const renderRef = (node: TextDirective, inLink: boolean): RootContent => {
     const raw = directiveLabelSource(node, source).trim();
     if (Object.keys(attributesOf(node)).length > 0) {
       report('error', 'unknown-attribute', `:${node.name}[…] takes no attributes`, node);
@@ -489,14 +500,14 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
       if (entry.target.type !== 'equation') {
         report('warning', 'eqref-target', `:eqref[${label}] points to a ${entry.target.kind}; use :ref`, node);
       }
-      return xref(label, entry.target, eqrefText(locale, number));
+      return reference(label, entry.target, eqrefText(locale, number), inLink);
     }
     const display = refText(locale, entry.target);
     if (display === undefined) {
       report('error', 'unnumbered-ref', `"${label}" is unnumbered and cannot be referenced`, node);
       return node;
     }
-    return xref(label, entry.target, display);
+    return reference(label, entry.target, display, inLink);
   };
 
   const resolveMath = (tex: string, node: Nodes): string =>
@@ -589,13 +600,13 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
   };
 
   const renderEnv = (node: ContainerDirective, item: EnvItem): RootContent => {
-    const title = item.title?.map((child) => mapNode(child) as PhrasingContent);
+    const title = item.title?.map((child) => mapNode(child, false) as PhrasingContent);
     const head: Paragraph = {
       type: 'paragraph',
       data: { hProperties: { className: ['env__head'], id: item.headId } },
       children: headContent(item, title),
     };
-    const body = item.body.map(mapNode) as RootContent[];
+    const body = item.body.map((child) => mapNode(child, false)) as RootContent[];
     const content = item.kind === 'proof' ? withQed(body) : body;
     const properties: Properties = {
       // Kind first, then amsthm style (deduplicated: definition/remark/proof name their own style).
@@ -612,7 +623,7 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
   };
 
   const renderFigure = (node: ContainerDirective, item: FigureItem): RootContent => {
-    const title = item.title.map((child) => mapNode(child) as PhrasingContent);
+    const title = item.title.map((child) => mapNode(child, false) as PhrasingContent);
     const caption = latexBlock('figure-caption', 'figcaption', { className: ['figure__caption'], id: item.captionId }, [
       latexInline('figure-label', { className: ['figure__label'] }, [
         text(captionLabel(locale, item.kind, item.number)),
@@ -622,7 +633,7 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     ]);
     let labelled = false;
     const body = item.body.map((child): RootContent => {
-      const mapped = mapNode(child) as RootContent;
+      const mapped = mapNode(child, false) as RootContent;
       if (item.kind !== 'table' || labelled || mapped.type !== 'table') return mapped;
       labelled = true;
       const table: Table = {
@@ -658,8 +669,10 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     };
   };
 
-  const mapParent = <P extends Parent>(node: P): P => {
-    const children = (node.children as readonly Nodes[]).map(mapNode);
+  /** `inLink`: some ancestor is a link (references inside it must not be links themselves). */
+  const mapParent = <P extends Parent>(node: P, inLink: boolean): P => {
+    const within = inLink || node.type === 'link' || node.type === 'linkReference';
+    const children = (node.children as readonly Nodes[]).map((child) => mapNode(child, within));
     return children.every((child, i) => child === node.children[i]) ? node : { ...node, children };
   };
 
@@ -668,21 +681,21 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
    * rebuilt only if a descendant changed, leaves and opaque nodes are shared.
    * (Not a case analysis over the closed mdast union, hence no switch.)
    */
-  function mapNode(node: Nodes): Nodes {
+  function mapNode(node: Nodes, inLink: boolean): Nodes {
     if (isOpaque(node)) return node;
     if (node.type === 'containerDirective') {
       const env = envs.get(node);
       if (env !== undefined) return renderEnv(node, env);
       const figure = figures.get(node);
-      return figure === undefined ? mapParent(node) : renderFigure(node, figure);
+      return figure === undefined ? mapParent(node, inLink) : renderFigure(node, figure);
     }
-    if (node.type === 'textDirective') return isReference(node) ? renderRef(node) : mapParent(node);
+    if (node.type === 'textDirective') return isReference(node) ? renderRef(node, inLink) : mapParent(node, inLink);
     if (node.type === 'math') return renderDisplayMath(node);
     if (node.type === 'inlineMath') return renderInlineMath(node);
-    return hasChildren(node) ? mapParent(node) : node;
+    return hasChildren(node) ? mapParent(node, inLink) : node;
   }
 
-  const output = mapParent(tree);
+  const output = mapParent(tree, false);
   const labels = [...table.values()];
   return {
     tree: output,

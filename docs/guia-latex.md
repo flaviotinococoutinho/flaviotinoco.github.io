@@ -136,6 +136,10 @@ depois de uma, no mesmo nível. Num texto sem contêineres, uma linha só de doi
 - O nome e o número são unidos por espaço não separável (como `Teorema~\ref{…}`): a linha nunca quebra entre
   “Teorema” e “2”.
 - `:ref` **sem colchetes** (“a nota:ref”, “3:eqref”) é prosa e permanece intacto.
+- Dentro de um link do autor (`[veja :ref[thm:a] aqui](https://…)`), a referência mostra o mesmo texto, mas como
+  `<span class="xref xref--theorem" data-label="thm:a">`, sem link próprio: o HTML não admite `<a>` dentro de
+  `<a>`, e o navegador cortaria o link do autor no ponto do aninhamento. Na exportação, ela vira `\ref*{…}` (a
+  forma sem link do `hyperref`).
 
 ## 4. Ilustrações e tabelas (ABNT NBR 14724:2024, 5.8–5.9)
 

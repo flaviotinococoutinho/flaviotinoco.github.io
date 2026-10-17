@@ -81,7 +81,14 @@ describe('documents without LaTeX-layer constructs', () => {
 
 type Ref = { readonly kind: 'ref' | 'eqref' | 'math'; readonly pick: number };
 type Block =
-  | { readonly t: 'p'; readonly text: string; readonly refs: readonly Ref[]; readonly math: string | undefined }
+  | {
+      readonly t: 'p';
+      readonly text: string;
+      readonly refs: readonly Ref[];
+      readonly math: string | undefined;
+      /** Text and references inside an author link (references there must not become links). */
+      readonly linked: boolean;
+    }
   | {
       readonly t: 'env';
       readonly kind: string;
@@ -103,6 +110,7 @@ const block: fc.Arbitrary<Block> = fc.oneof(
     text: sentence,
     refs: fc.array(ref, { maxLength: 3 }),
     math: fc.option(tex, { nil: undefined }),
+    linked: fc.boolean(),
   }),
   fc.record({
     t: fc.constant('env' as const),
@@ -172,7 +180,8 @@ const render = (blocks: readonly Block[]): Doc => {
                 if (r.kind === 'eqref' && target.equation) return ` :eqref[${target.label}]`;
                 return ` :ref[${target.label}]`;
               });
-        return `${b.text}${refs.join('')}${b.math === undefined ? '' : ` $$${b.math}$$`} fim.`;
+        const prose = `${b.text}${refs.join('')}`;
+        return `${b.linked ? `[${prose}](https://example.org/)` : prose}${b.math === undefined ? '' : ` $$${b.math}$$`} fim.`;
       }
       case 'env': {
         // A proof's title replaces its name (amsthm); other titles are a parenthesised note.
@@ -243,7 +252,8 @@ const outputView = (tree: Root): View => {
       for (const m of tex.matchAll(/\\eqref\{([^}]*)\}/g)) view.refs.push(m[1] ?? '');
       return;
     }
-    if (node.type === 'link' && classes(node).includes('xref') && !inGenerated)
+    // A reference is a link.xref, or a span.xref (latexInline) inside the author's own link.
+    if ((node.type === 'link' || node.type === 'latexInline') && classes(node).includes('xref') && !inGenerated)
       view.refs.push(String(prop(node, 'dataLabel')));
     if (node.type === 'text' && !inGenerated) view.texts.push(node.value);
     if (node.type === 'math' || node.type === 'inlineMath') view.math.push(node.value);
@@ -264,6 +274,14 @@ const collectByClass = (tree: Root, className: string): string[] => {
   return out;
 };
 
+/** Links inside links: invalid HTML, which a parser repairs by cutting the outer link short. */
+const nestedLinks = (node: Nodes, inLink = false): number => {
+  const isLink = node.type === 'link' || node.type === 'linkReference';
+  const own = isLink && inLink ? 1 : 0;
+  if (!('children' in node)) return own;
+  return (node.children as readonly Nodes[]).reduce((n, child) => n + nestedLinks(child, inLink || isLink), own);
+};
+
 describe('documents with environments, equations, figures and references', () => {
   test.prop([fc.array(block, { minLength: 1, maxLength: 8 }), fc.constantFrom('pt-BR' as const, 'en' as const)], {
     numRuns: 300,
@@ -277,6 +295,7 @@ describe('documents with environments, equations, figures and references', () =>
     expect(after.texts).toEqual(before.texts);
     expect(after.math).toEqual(before.math);
     expect(after.refs).toEqual(before.refs);
+    expect(nestedLinks(result.tree)).toBe(0);
     // Attribute values (titles, sources) are recoverable from the generated structure.
     expect(
       [...collectByClass(result.tree, 'env__title'), ...collectByClass(result.tree, 'figure__title')].sort(),

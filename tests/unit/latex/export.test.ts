@@ -336,6 +336,18 @@ describe('robustness', () => {
     expect(tex).toContain('::folha\\{a=1\\}');
   });
 
+  it('uses non-linking \\ref* inside a link (a PDF link cannot contain another one)', () => {
+    const { tex } = run(
+      ':::theorem{#thm:a}\nT.\n:::\n\n$$\nx \\label{eq:a}\n$$\n\n' +
+        '[veja :ref[thm:a], :eqref[eq:a] e $$\\eqref{eq:a}$$](https://example.org) e :ref[thm:a].',
+    );
+    expect(tex).toContain(
+      '\\href{https://example.org}{veja Teorema~\\ref*{thm:a}, \\textup{(\\ref*{eq:a})} e $\\textup{(\\ref*{eq:a})}$} ' +
+        'e Teorema~\\ref{thm:a}.',
+    );
+    expect(lintDocument(tex)).toEqual([]);
+  });
+
   it('ends an inline formula with a comment on its own line', () => {
     const { tex } = run('Ver $$x % nota$$ aqui.');
     expect(tex).toContain('$x % nota\n$');

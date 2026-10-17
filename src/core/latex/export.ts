@@ -44,7 +44,14 @@ import common from '../i18n/catalogs/common.ts';
 import { escapedPositions, scanCitations, type CitationItem, type CitationToken } from './citation-parser.ts';
 import { envName, equationName, figureName, longDate, message, proofOfTemplate } from './format.ts';
 import { MACROS } from './macros.ts';
-import { extractLabels, findTag, hasLabel, isOuterEnvironment, starAutoNumbered } from './math-transform.ts';
+import {
+  extractLabels,
+  findTag,
+  hasLabel,
+  isOuterEnvironment,
+  replaceRefs,
+  starAutoNumbered,
+} from './math-transform.ts';
 import {
   ENV_STYLE,
   FIGURE_KINDS,
@@ -502,11 +509,30 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
       .map(inline)
       .reduce((out, tex) => (tex.startsWith('\\footnote{') ? out.trimEnd() : out) + tex, '');
 
+  /**
+   * How many links enclose the content being folded. Inside one, references use hyperref's
+   * non-linking `\ref*`: a PDF has no nested links, and a `\ref` inside `\href` becomes a second
+   * annotation overlapping the first (hyperref logs "Link nesting OFF"; verified with pdfTeX and
+   * LuaTeX, TeX Live 2023), so a click on the number lands on either target. The site renders
+   * such a reference as a span, and the author's link keeps all of its text, in both outputs.
+   */
+  let linkDepth = 0;
+
   /** Link text: escaped, but never scanned for citations (a link label is not running prose). */
-  const linkText = (nodes: readonly PhrasingContent[]): string =>
-    normalize(nodes)
+  const linkText = (nodes: readonly PhrasingContent[]): string => {
+    linkDepth += 1;
+    const tex = normalize(nodes)
       .map((n) => (n.type === 'text' ? escapeTex(n.value) : inline(n)))
       .join('');
+    linkDepth -= 1;
+    return tex;
+  };
+
+  /** `\ref{x}` / `\eqref{x}`, or their non-linking forms inside a link (amsmath: `\eqref` = upright `(\ref)`). */
+  const refCall = (command: 'ref' | 'eqref', label: string): string => {
+    if (linkDepth === 0) return `\\${command}{${label}}`;
+    return command === 'ref' ? `\\ref*{${label}}` : `\\textup{(\\ref*{${label}})}`;
+  };
 
   const url = (href: string): string => {
     const base = options.baseUrl;
@@ -527,9 +553,11 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
     return `\\includegraphics[width=\\linewidth,alt={${escapeTex(image.alt ?? '')}}]{${escapeUrl(file)}}`;
   };
 
-  const mathInline = (value: string): string =>
+  const mathInline = (raw: string): string => {
+    const value = linkDepth === 0 ? raw : replaceRefs(raw, (ref) => refCall(ref.command, ref.label));
     // A trailing `%` comment would swallow the closing delimiter: end the line first.
-    tokenize(value).some((t) => t.kind === 'comment') ? `$${value}\n$` : `$${value}$`;
+    return tokenize(value).some((t) => t.kind === 'comment') ? `$${value}\n$` : `$${value}$`;
+  };
 
   const reference = (node: TextDirective): string => {
     const raw = directiveLabelSource(node, source).trim();
@@ -537,19 +565,19 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
       warn(`:${node.name}[${raw}] is not a valid label (expected prefix:name); exported as literal text`, node);
       return escapeTex(sourceOf(node, source) ?? `:${node.name}[${raw}]`);
     }
-    if (node.name === 'eqref') return `\\eqref{${raw}}`;
+    if (node.name === 'eqref') return refCall('eqref', raw);
     const kind = labels.get(raw);
     if (kind === undefined) {
       warn(`:ref[${raw}] points to no label of this document; exported as a bare \\ref`, node);
-      return `\\ref{${raw}}`;
+      return refCall('ref', raw);
     }
     switch (kind.type) {
       case 'environment':
-        return `${escapeTex(envName(lang, kind.kind))}~\\ref{${raw}}`;
+        return `${escapeTex(envName(lang, kind.kind))}~${refCall('ref', raw)}`;
       case 'figure':
-        return `${escapeTex(figureName(lang, kind.kind))}~\\ref{${raw}}`;
+        return `${escapeTex(figureName(lang, kind.kind))}~${refCall('ref', raw)}`;
       case 'equation':
-        return `${escapeTex(equationName(lang))}~\\eqref{${raw}}`;
+        return `${escapeTex(equationName(lang))}~${refCall('eqref', raw)}`;
       default:
         return absurd(kind);
     }

@@ -31,7 +31,9 @@ export type LatexRole =
   | 'figure-title'
   | 'figure-source-label'
   | 'equation'
-  | 'math-source';
+  | 'math-source'
+  /** A resolved reference inside the author's own link (a span: links cannot nest). */
+  | 'xref';
 
 interface LatexData extends Data {
   hName: string;
