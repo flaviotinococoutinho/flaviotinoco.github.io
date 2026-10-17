@@ -21,12 +21,17 @@ import { parse } from './helpers.ts';
 const OURS =
   /:(?:definition|theorem|lemma|proposition|corollary|conjecture|axiom|example|remark|proof|figure|ref|eqref)\b/;
 const LATEX_IN_MATH = /\\(?:label|ref|eqref|begin)/;
-const FENCE_LINE = /^\s*:{2,}/m;
+
+/** Whether the tree has a container directive (after one, a ":::" line is a stray fence: an error, not prose). */
+const hasContainer = (node: Nodes): boolean =>
+  node.type === 'containerDirective' ||
+  ('children' in node && (node.children as readonly Nodes[]).some((child) => hasContainer(child)));
 
 describe('documents without LaTeX-layer constructs', () => {
   const unchanged = (s: string): void => {
-    fc.pre(!OURS.test(s) && !LATEX_IN_MATH.test(s) && !FENCE_LINE.test(s));
+    fc.pre(!OURS.test(s) && !LATEX_IN_MATH.test(s));
     const tree = parse(s);
+    fc.pre(!hasContainer(tree));
     const result = transformLatex(tree, { locale: 'pt-BR', source: s });
     expect(result.tree).toBe(tree);
     expect(toString(result.tree)).toBe(toString(tree));
@@ -46,6 +51,9 @@ describe('documents without LaTeX-layer constructs', () => {
             '\n',
             '\n\n',
             ':',
+            ':::',
+            '\\:::',
+            '::::',
             '10:30',
             'nota:',
             '[',

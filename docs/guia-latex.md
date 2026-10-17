@@ -109,6 +109,11 @@ Com cercas iguais (`:::theorem` … `:::proof` … `:::` … `:::`), o primeiro 
 segundo sobra como texto. O estágio detecta essa linha órfã e falha com a mensagem
 `stray ":::" line … the OUTER fence needs more colons`. Três níveis: `:::::`, `::::`, `:::`.
 
+A verificação vale só onde um contêiner pode ter sido fechado cedo: dentro de uma diretiva de contêiner ou
+depois de uma, no mesmo nível. Num texto sem contêineres, uma linha só de dois-pontos (“Placar final:” seguido de
+`:::`) é prosa e fica como está. Para manter uma linha `:::` como texto mesmo depois de um contêiner, escape-a:
+`\:::` (a verificação lê a fonte, onde a barra ainda está).
+
 ## 3. Referências cruzadas
 
 | Sintaxe                | Resultado (pt-BR)               | Resultado (en)             |
@@ -291,7 +296,7 @@ frontmatter (título, subtítulo, data `published`, resumo, palavras-chave, macr
 | `invalid-kind`      | erro      | `kind` de figura desconhecido                                      |
 | `missing-title`     | erro      | figura sem título                                                  |
 | `missing-table`     | erro      | `kind="table"` sem tabela GFM                                      |
-| `stray-fence`       | erro      | linha `:::` órfã (aninhamento com cercas iguais)                   |
+| `stray-fence`       | erro      | linha `:::` órfã após ou dentro de contêiner (escape: `\:::`)      |
 | `missing-source`    | aviso     | figura sem `source`                                                |
 | `eqref-target`      | aviso     | `:eqref` para algo que não é equação (use `:ref`)                  |
 | `complex-tag`       | aviso     | `\tag{…}` com marcação TeX (as referências a mostram literalmente) |

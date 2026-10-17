@@ -171,6 +171,24 @@ describe('proofs', () => {
     const message = failure(() => html(md));
     expect(message).toMatch(/stray ":::" line/);
     expect(message).toMatch(/OUTER fence needs more colons/);
+    // The same mistake as a separate paragraph, and inside an outer container.
+    expect(failure(() => html(':::theorem\nT.\n:::\n\n:::'))).toMatch(/stray ":::" line/);
+    expect(failure(() => html('::::theorem\nT.\n\n:::\n\n::::'))).toMatch(/stray ":::" line/);
+  });
+
+  it('keeps colon-only lines as prose outside containers, or when escaped', () => {
+    // No container precedes or encloses them: nothing can have been closed early.
+    for (const md of ['Razão\n\n::::\n\nfim', 'Placar final:\n:::', ':::\n\nTexto.', '> Citação\n> :::']) {
+      const { html: out, file } = html(md);
+      expect(file.messages).toEqual([]);
+      expect(out).toMatch(/:{3,}/);
+    }
+    // A backslash keeps the line as text even right after a container (the escape hatch).
+    for (const md of ['Antes.\n\n\\:::\n\nDepois.', ':::theorem\nT.\n:::\n\n\\:::', ':::remark\nR.\n\n:\\::\n:::']) {
+      const { html: out, file } = html(md);
+      expect(file.messages).toEqual([]);
+      expect(out).toContain(':::');
+    }
   });
 
   it('uses the right pt-BR contraction for each statement kind', () => {

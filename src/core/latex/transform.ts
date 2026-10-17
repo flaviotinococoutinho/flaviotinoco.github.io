@@ -73,6 +73,7 @@ import {
   latexBlock,
   latexInline,
   plainText,
+  sourceOf,
   text,
   withMathValue,
   type ContainerDirective,
@@ -145,15 +146,31 @@ const isLabelParagraph = (node: Nodes): node is Paragraph =>
   node.type === 'paragraph' && node.data?.directiveLabel === true;
 
 /**
- * A paragraph with a line that is only a closing fence (":::"). remark-directive
- * closes the OUTERMOST open container whose fence is not longer than the
- * closing one, so ":::theorem … :::proof … ::: … :::" ends the theorem at the
- * first ":::" and leaves the second as text (its own paragraph, or a lazy
- * continuation line of the previous one) — the classic nesting mistake.
+ * A closing fence (":::") left over as text: remark-directive closes the
+ * OUTERMOST open container whose fence is not longer than the closing one, so
+ * ":::theorem … :::proof … ::: … :::" ends the theorem at the first ":::" and
+ * leaves the second as text (its own paragraph, or a lazy continuation line of
+ * the previous one) — the classic nesting mistake.
+ *
+ * Only a line that is nothing but a colon run qualifies, and only when the
+ * author wrote the run unescaped: `\:::` (or `&#58;::`) is the escape hatch for
+ * prose, and the backslash is gone from the text value, so the check reads the
+ * source. Without a source the value decides.
  */
-const STRAY_FENCE = /^[ \t]*:{3,}[ \t]*$/m;
-const isStrayFence = (node: Nodes): boolean =>
-  node.type === 'paragraph' && node.children.some((child) => child.type === 'text' && STRAY_FENCE.test(child.value));
+const FENCE_LINE = /^[ \t]*(:{3,})[ \t]*$/m;
+/** A colon run of three or more that starts unescaped (not after `\` or another colon). */
+const UNESCAPED_RUN = /(?<![\\:]):{3,}/;
+const strayFence = (node: Nodes, source: string | undefined): string | undefined => {
+  if (node.type !== 'paragraph') return undefined;
+  for (const child of node.children) {
+    if (child.type !== 'text') continue;
+    const fence = FENCE_LINE.exec(child.value)?.[1];
+    if (fence === undefined) continue;
+    const raw = sourceOf(child, source);
+    if (raw === undefined || UNESCAPED_RUN.test(raw)) return fence;
+  }
+  return undefined;
+};
 
 const attributesOf = (node: Directive): Readonly<Record<string, string>> => {
   const out: Record<string, string> = {};
@@ -373,7 +390,12 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     });
   };
 
-  const collect = (node: Nodes): void => {
+  /**
+   * `fenced`: the node sits inside a container directive or after one among its
+   * siblings — the only places where a ":::" line can be a container closed early.
+   * Elsewhere (a document without containers) such a line is prose.
+   */
+  const collect = (node: Nodes, inContainer: boolean, fenced: boolean): void => {
     // rehype-katex ≥ 7 also renders ```math fences (class language-math, which
     // Shiki is told to skip): they need the KaTeX stylesheet, but their content
     // stays opaque to this stage (no \label, no \ref there; see docs/guia-latex.md).
@@ -397,19 +419,28 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
       }
     } else if (isReference(node)) {
       localized = true;
-    } else if (isStrayFence(node)) {
-      report(
-        'error',
-        'stray-fence',
-        `stray "${STRAY_FENCE.exec(plainText(node))?.[0].trim() ?? ':::'}" line: a container closed early. When nesting, the OUTER fence needs ` +
-          'more colons (::::theorem … :::proof … ::: … ::::)',
-        node,
-      );
+    } else if (fenced) {
+      const fence = strayFence(node, source);
+      if (fence !== undefined) {
+        report(
+          'error',
+          'stray-fence',
+          `stray "${fence}" line: a container closed early. When nesting, the OUTER fence needs ` +
+            `more colons (::::theorem … :::proof … ::: … ::::); write \\${fence} to keep it as text`,
+          node,
+        );
+      }
     }
-    if (hasChildren(node)) for (const child of node.children as readonly Nodes[]) collect(child);
+    if (!hasChildren(node)) return;
+    const inside = inContainer || node.type === 'containerDirective';
+    let afterContainer = false;
+    for (const child of node.children as readonly Nodes[]) {
+      collect(child, inside, inside || afterContainer);
+      if (child.type === 'containerDirective') afterContainer = true;
+    }
   };
 
-  collect(tree);
+  collect(tree, false, false);
 
   // ── pass 2: render and resolve (copy-on-write map) ────────────────────────
 
