@@ -1,0 +1,10 @@
+# Fixture lexicon for the unit tests (small and stable; the real one is lexicon/*.tsv).
+term	lang	case	variants	vernacular_in	note
+software	en	sentence	softwares		programa
+big data	en	sentence			dados massivos
+design	en	sentence	designs		projeto
+Zeitgeist	de	insensitive		en	espírito da época
+Sinn	de	exact			sentido
+lógos	grc-Latn	sentence			razão
+saudade	pt-BR	sentence			longing
+raison d’être	fr	sentence	raison d'être	en	razão de ser

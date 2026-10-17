@@ -1,0 +1,120 @@
+# Siglas — marcadas como <abbr class="acronym" title="forma completa na língua do documento">.
+# A expansão NUNCA é inserida no texto; o lint avisa quando a primeira ocorrência não vem
+# acompanhada da forma completa (NBR 14724:2024, 5.6).
+# Esquema: term	lang	case	expansion_pt	expansion_en	lang_of_expansion
+# lang: comunidade em que a sigla é usada nessa forma: mul (ambas as línguas), pt-BR ou en.
+#   Ex.: CLT (central limit theorem) só em inglês — em português, CLT é a Consolidação das Leis
+#   do Trabalho; a sigla portuguesa do teorema é TCL.
+# lang_of_expansion: língua do nome que as letras abreviam (FFT → en; ABNT → pt-BR; SI → fr;
+#   ISO → mul: a própria ISO declara que o nome não é sigla de nenhuma língua).
+# Siglas AMBÍGUAS no domínio do site ficam de fora (a expansão automática poderia estar errada):
+#   IC (conteúdo informacional × intervalo de confiança × circuito integrado) e
+#   LCS (menor subsumidor comum × maior subsequência comum). Use :abbr[IC]{title="…"}.
+term	lang	case	expansion_pt	expansion_en	lang_of_expansion
+# --- sinais e informação -----------------------------------------------------------
+FFT	mul	exact	transformada rápida de Fourier	fast Fourier transform	en
+DFT	mul	exact	transformada discreta de Fourier	discrete Fourier transform	en
+DTFT	mul	exact	transformada de Fourier de tempo discreto	discrete-time Fourier transform	en
+STFT	mul	exact	transformada de Fourier de tempo curto	short-time Fourier transform	en
+SNR	mul	exact	razão sinal-ruído	signal-to-noise ratio	en
+PCM	mul	exact	modulação por código de pulsos	pulse-code modulation	en
+ADC	mul	exact	conversor analógico-digital	analog-to-digital converter	en
+DAC	mul	exact	conversor digital-analógico	digital-to-analog converter	en
+DSP	mul	exact	processamento digital de sinais	digital signal processing	en
+FIR	mul	exact	resposta ao impulso finita	finite impulse response	en
+IIR	mul	exact	resposta ao impulso infinita	infinite impulse response	en
+LTI	mul	exact	linear e invariante no tempo	linear time-invariant	en
+PSD	mul	exact	densidade espectral de potência	power spectral density	en
+CRC	mul	exact	verificação de redundância cíclica	cyclic redundancy check	en
+BSC	mul	exact	canal binário simétrico	binary symmetric channel	en
+KL	mul	exact	Kullback–Leibler (divergência)	Kullback–Leibler (divergence)	en
+MDL	mul	exact	comprimento mínimo de descrição	minimum description length	en
+i.i.d.	mul	exact	independentes e identicamente distribuídas	independent and identically distributed	en
+CLT	en	exact	teorema central do limite	central limit theorem	en
+TCL	pt-BR	exact	teorema central do limite	central limit theorem	pt-BR
+ODE	en	exact	equação diferencial ordinária	ordinary differential equation	en
+EDO	pt-BR	exact	equação diferencial ordinária	ordinary differential equation	pt-BR
+PDE	en	exact	equação diferencial parcial	partial differential equation	en
+EDP	pt-BR	exact	equação diferencial parcial	partial differential equation	pt-BR
+PCA	mul	exact	análise de componentes principais	principal component analysis	en
+DAFSA	mul	exact	autômato finito determinístico acíclico	deterministic acyclic finite state automaton	en
+# --- acessibilidade, cor, web, ontologias --------------------------------------
+WCAG	mul	exact	Diretrizes de Acessibilidade para Conteúdo Web	Web Content Accessibility Guidelines	en
+WAI	mul	exact	Iniciativa de Acessibilidade na Web	Web Accessibility Initiative	en
+ARIA	mul	exact	aplicações ricas de internet acessíveis	Accessible Rich Internet Applications	en
+APCA	mul	exact	algoritmo de contraste perceptual acessível	Accessible Perceptual Contrast Algorithm	en
+CVD	mul	exact	deficiência na visão de cores	color vision deficiency	en
+SKOS	mul	exact	Sistema Simples de Organização do Conhecimento	Simple Knowledge Organization System	en
+RDF	mul	exact	Estrutura de Descrição de Recursos	Resource Description Framework	en
+OWL	mul	exact	Linguagem de Ontologias para a Web	Web Ontology Language	en
+JSON	mul	exact	notação de objetos JavaScript	JavaScript Object Notation	en
+JSON-LD	mul	exact	JSON para dados interligados	JSON for Linking Data	en
+XML	mul	exact	linguagem de marcação extensível	Extensible Markup Language	en
+HTML	mul	exact	linguagem de marcação de hipertexto	HyperText Markup Language	en
+CSS	mul	exact	folhas de estilo em cascata	Cascading Style Sheets	en
+SVG	mul	exact	gráficos vetoriais escaláveis	Scalable Vector Graphics	en
+DOM	mul	exact	modelo de objeto de documento	Document Object Model	en
+HTTP	mul	exact	protocolo de transferência de hipertexto	Hypertext Transfer Protocol	en
+URL	mul	exact	localizador uniforme de recursos	Uniform Resource Locator	en
+URI	mul	exact	identificador uniforme de recursos	Uniform Resource Identifier	en
+IRI	mul	exact	identificador internacionalizado de recursos	Internationalized Resource Identifier	en
+RSS	mul	exact	distribuição realmente simples	Really Simple Syndication	en
+W3C	mul	exact	Consórcio World Wide Web	World Wide Web Consortium	en
+IETF	mul	exact	Força-Tarefa de Engenharia da Internet	Internet Engineering Task Force	en
+RFC	mul	exact	pedido de comentários	Request for Comments	en
+BCP	mul	exact	melhor prática corrente	Best Current Practice	en
+TSV	mul	exact	valores separados por tabulação	tab-separated values	en
+CSV	mul	exact	valores separados por vírgula	comma-separated values	en
+YAML	mul	exact	YAML não é linguagem de marcação	YAML Ain't Markup Language	en
+NFC	mul	exact	forma de normalização C (composição canônica)	Normalization Form C (canonical composition)	en
+NFD	mul	exact	forma de normalização D (decomposição canônica)	Normalization Form D (canonical decomposition)	en
+UTF	mul	exact	formato de transformação Unicode	Unicode Transformation Format	en
+ASCII	mul	exact	Código Padrão Americano para Intercâmbio de Informação	American Standard Code for Information Interchange	en
+CLDR	mul	exact	Repositório Comum de Dados de Localidade	Common Locale Data Repository	en
+CSP	mul	exact	política de segurança de conteúdo	Content Security Policy	en
+# --- computação ------------------------------------------------------------------
+API	mul	exact	interface de programação de aplicações	application programming interface	en
+CPU	mul	exact	unidade central de processamento	central processing unit	en
+GPU	mul	exact	unidade de processamento gráfico	graphics processing unit	en
+RAM	mul	exact	memória de acesso aleatório	random-access memory	en
+SIMD	mul	exact	instrução única, múltiplos dados	single instruction, multiple data	en
+Wasm	mul	exact	WebAssembly	WebAssembly	en
+CLI	mul	exact	interface de linha de comando	command-line interface	en
+GUI	mul	exact	interface gráfica do usuário	graphical user interface	en
+IDE	mul	exact	ambiente de desenvolvimento integrado	integrated development environment	en
+UX	mul	exact	experiência do usuário	user experience	en
+UI	mul	exact	interface do usuário	user interface	en
+AI	en	exact	inteligência artificial	artificial intelligence	en
+IA	pt-BR	exact	inteligência artificial	artificial intelligence	pt-BR
+LLM	mul	exact	grande modelo de linguagem	large language model	en
+NLP	en	exact	processamento de linguagem natural	natural language processing	en
+PLN	pt-BR	exact	processamento de linguagem natural	natural language processing	pt-BR
+OCR	mul	exact	reconhecimento óptico de caracteres	optical character recognition	en
+PDF	mul	exact	formato de documento portátil	Portable Document Format	en
+MVP	mul	exact	produto mínimo viável	minimum viable product	en
+KPI	mul	exact	indicador-chave de desempenho	key performance indicator	en
+OKR	mul	exact	objetivos e resultados-chave	objectives and key results	en
+NPS	mul	exact	índice de recomendação líquida	Net Promoter Score	en
+SaaS	mul	exact	software como serviço	software as a service	en
+GPL	mul	exact	Licença Pública Geral GNU	GNU General Public License	en
+LGPD	mul	exact	Lei Geral de Proteção de Dados Pessoais	Brazilian General Data Protection Law	pt-BR
+# --- normas, documentação e instituições --------------------------------------
+ABNT	mul	exact	Associação Brasileira de Normas Técnicas	Brazilian Association of Technical Standards	pt-BR
+NBR	mul	exact	Norma Brasileira	Brazilian Standard	pt-BR
+ISO	mul	exact	Organização Internacional de Normalização	International Organization for Standardization	mul
+IEC	mul	exact	Comissão Eletrotécnica Internacional	International Electrotechnical Commission	en
+IEEE	mul	exact	Instituto de Engenheiros Eletricistas e Eletrônicos	Institute of Electrical and Electronics Engineers	en
+SI	mul	exact	Sistema Internacional de Unidades	International System of Units	fr
+BIPM	mul	exact	Bureau Internacional de Pesos e Medidas	International Bureau of Weights and Measures	fr
+Inmetro	mul	exact	Instituto Nacional de Metrologia, Qualidade e Tecnologia	National Institute of Metrology, Quality and Technology (Brazil)	pt-BR
+IBGE	mul	exact	Instituto Brasileiro de Geografia e Estatística	Brazilian Institute of Geography and Statistics	pt-BR
+ABL	mul	exact	Academia Brasileira de Letras	Brazilian Academy of Letters	pt-BR
+VOLP	mul	exact	Vocabulário Ortográfico da Língua Portuguesa	Orthographic Vocabulary of the Portuguese Language	pt-BR
+CNPq	mul	exact	Conselho Nacional de Desenvolvimento Científico e Tecnológico	National Council for Scientific and Technological Development (Brazil)	pt-BR
+DOI	mul	exact	identificador de objeto digital	Digital Object Identifier	en
+ISBN	mul	exact	Número Padrão Internacional de Livro	International Standard Book Number	en
+ISSN	mul	exact	Número Internacional Normalizado para Publicações Seriadas	International Standard Serial Number	en
+ORCID	mul	exact	identificador aberto de pesquisador e colaborador	Open Researcher and Contributor ID	en
+APA	mul	exact	Associação Americana de Psicologia	American Psychological Association	en
+MIT	mul	exact	Instituto de Tecnologia de Massachusetts	Massachusetts Institute of Technology	en
+CERN	mul	exact	Organização Europeia para a Pesquisa Nuclear	European Organization for Nuclear Research	fr
