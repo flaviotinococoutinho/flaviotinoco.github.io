@@ -9,7 +9,8 @@
  * - "/" typed into a field inside a shadow root stays in that field;
  * - the palette field shows focus in forced-colours mode (WCAG 2.4.7);
  * - the narrow-screen navigation does not shift when its island upgrades;
- * - the two titles of the 404 heading stay separate words without CSS.
+ * - the two titles of the 404 heading stay separate words without CSS;
+ * - the root page sends the reader to the home of the negotiated language.
  * The `guard` fixture adds: no console errors, uncaught exceptions or CSP violations.
  */
 import type { Page } from '@playwright/test';
@@ -24,7 +25,7 @@ import {
   preferenceRadio,
 } from './support/contract.ts';
 import { expect, settle, test } from './support/fixtures.ts';
-import { hasNotFoundPage } from './support/site.ts';
+import { ROOT_PAGE, hasNotFoundPage, hasRootPage } from './support/site.ts';
 
 /** Opens the palette with Ctrl+K and waits until <ft-command-palette> has upgraded the field. */
 const openPalette = async (page: Page): Promise<void> => {
@@ -213,6 +214,24 @@ test.describe('narrow screens (375 px)', () => {
       await expect(page.locator(`${NAV_MENU} > button[aria-controls]`)).toBeHidden();
     });
   });
+});
+
+test.describe('root page', () => {
+  for (const [locale, home] of [
+    ['pt-BR', 'pt/'],
+    ['en-GB', 'en/'],
+  ] as const) {
+    test.describe(`browser language ${locale}`, () => {
+      test.use({ locale });
+
+      test(`sends the reader to /${home}`, async ({ page }) => {
+        test.skip(!hasRootPage(), 'the build has no root page');
+        await page.goto(ROOT_PAGE);
+        await expect(page).toHaveURL((url) => url.pathname.endsWith(`/${home}`));
+        await expect(page.locator('h1')).toHaveCount(1);
+      });
+    });
+  }
 });
 
 test.describe('404 page', () => {
