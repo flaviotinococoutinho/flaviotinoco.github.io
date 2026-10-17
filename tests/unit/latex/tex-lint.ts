@@ -9,7 +9,15 @@
  *     sub/superscripts) and no & outside tabular/alignment environments;
  *   - `%` only starts whole-line comments in text mode (a mid-line `%` would
  *     silently swallow the rest of the line);
- *   - math delimiters ($ … $, \[ \], math environments) are balanced.
+ *   - math delimiters ($ … $, \[ \], math environments) are balanced, and no
+ *     display environment sits inside another (amsmath "Erroneous nesting");
+ *   - text prints as written: no `'` `` ` `` `"` (TeX's fonts print quotes for
+ *     them) and no input ligature `--` `,,` `<<` `>>` outside math;
+ *   - nothing is put where LaTeX loses or rejects it: no verbatim environment
+ *     in a command's argument (TeX FAQ "verbwithin"), no \footnote in a tabular
+ *     or float (its text is lost, FAQ "footintab") or in another footnote, no
+ *     \marginpar in a footnote, tabular or float ("Not in outer par mode"), no
+ *     link (\ref, \href, \url, citations) inside the text of an \href.
  *
  * Verbatim environments and the URL/file arguments of \href, \url and
  * \includegraphics are opaque, as they are to TeX.
@@ -23,7 +31,11 @@ const MATH_ENVS = /^(?:equation|align|gather|alignat|multline|flalign)\*?$/;
 const ALIGN_ENVS =
   /^(?:tabular|align|alignat|flalign)\*?$|^(?:aligned|alignedat|split|matrix|pmatrix|bmatrix|vmatrix|Vmatrix|cases|array)$/;
 /** LaTeX's verbatim, fancyvrb's Verbatim and the exporter's \DefineVerbatimEnvironment copies. */
-const VERBATIM_ENV = /^(?:verbatim|Verbatim|ftverbatim\d*)$/;
+const VERBATIM_ENV = /^(?:verbatim|Verbatim|SaveVerbatim|ftverbatim\d*)$/;
+/** Where a footnote's text is lost and a \marginpar is rejected. */
+const TRAP_ENVS = /^(?:tabular|figure|table|ftchart|ftframe)\*?$/;
+/** Commands that make a PDF link. */
+const LINKS = new Set(['ref', 'eqref', 'href', 'url', 'autoref', 'pageref', 'parencite', 'parencites', 'textcite']);
 /** Commands whose arguments are not typeset text: URLs, files, labels and citation keys. */
 const OPAQUE_ARGUMENTS = new Set([
   'href',
@@ -50,6 +62,9 @@ export interface LintOptions {
 export const lintTex = (tex: string, options: LintOptions = {}): readonly LintProblem[] => {
   const problems: LintProblem[] = [];
   const envs: string[] = [];
+  /** Brace groups that are a command's argument: the command and the depth inside the group. */
+  const frames: { readonly name: string; readonly depth: number }[] = [];
+  let argumentOwner: { readonly name: string; readonly at: number } | undefined;
   let depth = 0;
   let inlineMath = false;
   let displayMath = false;
@@ -59,6 +74,8 @@ export const lintTex = (tex: string, options: LintOptions = {}): readonly LintPr
     problems.push({ line, message });
   };
   const inMath = (): boolean => inlineMath || displayMath || envs.some((e) => MATH_ENVS.test(e));
+  const inFrame = (name: string): boolean => frames.some((f) => f.name === name);
+  const trapped = (): boolean => envs.some((e) => TRAP_ENVS.test(e));
   /** A balanced group from `from` (braces nested inside a [ ] group are skipped). */
   const readGroup = (
     from: number,
@@ -108,6 +125,12 @@ export const lintTex = (tex: string, options: LintOptions = {}): readonly LintPr
           continue;
         }
         if (name === 'begin') {
+          if (VERBATIM_ENV.test(group.content) && frames.length > 0) {
+            report(`${group.content} environment inside the argument of \\${frames[frames.length - 1]?.name ?? ''}`);
+          }
+          if (MATH_ENVS.test(group.content) && options.preamble !== true && inMath()) {
+            report(`display environment ${group.content} nested in another display`);
+          }
           if (VERBATIM_ENV.test(group.content)) {
             const close = `\\end{${group.content}}`;
             const end = tex.indexOf(close, group.end);
@@ -123,6 +146,16 @@ export const lintTex = (tex: string, options: LintOptions = {}): readonly LintPr
         advance(group.end);
         continue;
       }
+      if (options.preamble !== true) {
+        // hyperref's starred \ref* / \pageref* make no link.
+        if (LINKS.has(name) && tex.charAt(j) !== '*' && inFrame('href'))
+          report(`\\${name} inside the text of an \\href (nested links)`);
+        if (name === 'footnote' && trapped()) report('\\footnote inside a tabular or float (its text is lost)');
+        if (name === 'footnote' && inFrame('footnote')) report('\\footnote inside a footnote (its text is lost)');
+        if (name === 'marginpar' && (trapped() || inFrame('footnote'))) {
+          report('\\marginpar inside a footnote, tabular or float (not in outer par mode)');
+        }
+      }
       if (OPAQUE_ARGUMENTS.has(name)) {
         // \href takes {url}{text}: only the first group is opaque. The others take
         // any sequence of [opt] and {mandatory} arguments (\parencites[a][b]{k}[c]{l}).
@@ -134,9 +167,11 @@ export const lintTex = (tex: string, options: LintOptions = {}): readonly LintPr
           k = group.end;
           if (name === 'href' && tex.charAt(group.end - 1) === '}') break;
         }
+        if (name === 'href' && tex.charAt(k) === '{') argumentOwner = { name, at: k };
         advance(Math.max(k, j));
         continue;
       }
+      if (tex.charAt(j) === '{') argumentOwner = { name, at: j };
       advance(j);
       continue;
     }
@@ -152,8 +187,11 @@ export const lintTex = (tex: string, options: LintOptions = {}): readonly LintPr
       advance(end === -1 ? tex.length : end);
       continue;
     }
-    if (c === '{') depth += 1;
-    else if (c === '}') {
+    if (c === '{') {
+      depth += 1;
+      if (argumentOwner?.at === i) frames.push({ name: argumentOwner.name, depth });
+    } else if (c === '}') {
+      if (frames[frames.length - 1]?.depth === depth) frames.pop();
       depth -= 1;
       if (depth < 0) {
         report('unbalanced }');
@@ -169,6 +207,10 @@ export const lintTex = (tex: string, options: LintOptions = {}): readonly LintPr
       report(`bare ${c} in text mode`);
     } else if (c === '&' && !envs.some((e) => ALIGN_ENVS.test(e))) {
       report('bare & outside an alignment');
+    } else if (!inMath() && (c === "'" || c === '`' || c === '"' || c === '<' || c === '>')) {
+      report(`bare ${c} in text mode (it does not print as itself)`);
+    } else if (!inMath() && (c === '-' || c === ',') && tex.charAt(i + 1) === c) {
+      report(`${c}${c} in text mode (a TeX input ligature)`);
     }
     advance(i + 1);
   }

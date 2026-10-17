@@ -276,9 +276,12 @@ elementos do KaTeX.
 
 ## 7. Exportação para LaTeX (`src/core/latex/export.ts`)
 
-`exportLatex(árvore, metadados, opções)` é uma função pura que recebe a mdast **antes** dos estágios do site
-(`remark-parse` + `remark-gfm` + `remark-math` com `singleDollarTextMath: false` + `remark-directive`) e devolve um
-documento `.tex` completo e os avisos do que o papel não representa. `parseExportMeta(frontmatter)` converte o
+`exportLatex(árvore, metadados, opções)` é uma função pura que recebe a mdast que o estágio `latex` do site recebe
+— a análise do Astro (`remark-parse` + `remark-gfm` + `remark-smartypants`, isto é, `smartypants: true`) +
+`remark-math` com `singleDollarTextMath: false` + `remark-directive` — e devolve um documento `.tex` completo e os
+avisos do que o papel não representa. Quem chama monta essa árvore com o `createMarkdownProcessor` de
+`@astrojs/markdown-remark` e um plugin que captura a árvore (é o que faz `siteTree` em `tests/unit/latex/helpers.ts`):
+assim o corpo chega com a mesma pontuação tipográfica do site. `parseExportMeta(frontmatter)` converte o
 frontmatter (título, subtítulo, data `published`, resumo, palavras-chave, macros) e lista todos os problemas.
 
 | Markdown                                     | LaTeX                                                                                      |
@@ -301,13 +304,32 @@ frontmatter (título, subtítulo, data `published`, resumo, palavras-chave, macr
 
 - Os caracteres especiais (`# $ % & ~ _ ^ \ { }`, e também `< > | "`) são escapados fora da matemática; a
   operação é inversível (`unescapeTex ∘ escapeTex = id`, testado com fast-check).
+- **O PDF imprime o que o site mostra.** O TeX reinterpreta parte do ASCII: `--` vira meia-risca, `---`
+  travessão, `,,` vira „, `<<` vira «, e `'`/`` ` `` viram aspas curvas. O escape quebra essas ligaduras com `\/`
+  (`-\/-`; `{}` não basta no LuaTeX, e `\kern0pt` vazaria para o título do PDF) e imprime `'` e `` ` `` retos
+  (`\textquotesingle`, `\textasciigrave`). Como o corpo já chega com a pontuação do SmartyPants, o resultado é o
+  mesmo texto do site; um teste de propriedade compara os dois, e o verificador estático rejeita qualquer ligadura
+  ou aspa crua no texto. Verificado com pdfLaTeX e LuaLaTeX (TeX Live 2023).
+- **Nada vai para onde o LaTeX perde ou recusa.** Código numa nota de rodapé é guardado com `SaveVerbatim`
+  (fancyvrb) logo após `\begin{document}` e impresso na nota com `\UseVerbatim` (um ambiente verbatim não pode
+  estar no argumento de um comando). Uma nota numa célula de tabela ou numa figura vira `\footnotemark` no lugar e
+  `\footnotetext` depois da tabela ou do flutuante (lá dentro o texto da nota se perde). Uma nota de margem dentro
+  de uma nota, tabela ou figura — ou uma nota dentro de outra — fica no texto, entre parênteses, com aviso.
+- **A numeração das equações é a do site.** Um bloco rotulado tem um número: nas linhas de um `align`, `gather`,
+  `flalign` ou `alignat` rotulado, as que não têm `\label`, `\tag`, `\notag` ou `\nonumber` recebem `\notag`
+  (o amsmath numeraria todas, e as referências seguintes mudariam); um ambiente estrelado com rótulo perde a
+  estrela. Um `\label` escrito antes de `\begin{align}` vai para dentro dele, em vez de o bloco ser embrulhado em
+  `equation` (aninhamento proibido pelo amsmath).
+- Uma referência dentro de um link usa `\ref*` (sem link próprio).
 - As macros do site entram no preâmbulo por `\ftmacro`, que preserva o significado em modo texto de nomes que o
   LaTeX já usa (`\H`, `\i`, `\d`).
 - Rótulos e chaves de citação inválidos nunca chegam ao TeX (viram texto literal, com aviso).
 - `pdflatex` não está disponível na integração contínua: os testes comparam instantâneos
   (`tests/unit/latex/__snapshots__/*.tex`) e passam cada saída por um verificador estático
-  (`tests/unit/latex/tex-lint.ts`): ambientes e chaves balanceados, matemática fechada, nenhum `# _ ^ &` solto e
-  nenhum `%` engolindo texto.
+  (`tests/unit/latex/tex-lint.ts`): ambientes e chaves balanceados, matemática fechada, nenhum `# _ ^ &` solto,
+  nenhum `%` engolindo texto, nenhuma ligadura ou aspa crua no texto, nenhum bloco de destaque dentro de outro,
+  nenhum verbatim em argumento, nenhuma nota em tabela, flutuante ou outra nota, nenhuma nota de margem fora do
+  parágrafo externo e nenhum link dentro do texto de `\href`.
 
 ## 8. Diagnósticos
 

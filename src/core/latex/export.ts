@@ -1,15 +1,25 @@
 /**
  * Compiler: Markdown AST → complete LaTeX document (for the terminal CLI).
  *
- * Input: the mdast produced by remark-parse + remark-gfm + remark-math
- * (singleDollarTextMath: false) + remark-directive — i.e. the authoring
- * language BEFORE the site's own stages. Output: a self-contained `.tex`
+ * Input: the mdast the site's latex stage receives — Astro's parse
+ * (remark-parse + remark-gfm + remark-smartypants with default options, i.e.
+ * `smartypants: true`) + remark-math (singleDollarTextMath: false) +
+ * remark-directive — the authoring language BEFORE the site's own stages, with
+ * the body text already given typographic punctuation exactly as on the site.
+ * (A caller builds it with @astrojs/markdown-remark's createMarkdownProcessor
+ * and a remark plugin that captures the tree; see tests/unit/latex/helpers.ts,
+ * siteTree.) Text is escaped so that TeX prints every character as itself
+ * (tex-escape.ts: no ligature, no quote reinterpreted), so the PDF shows the
+ * punctuation the site shows; attribute text, which SmartyPants never sees,
+ * goes through smartPunctuation on both sides. Output: a self-contained `.tex`
  * source whose preamble reproduces the site's conventions:
  *
  *   - babel (brazilian | english as main language), csquotes;
  *   - amsthm environments with ONE shared counter and the catalog names
  *     (`\newtheorem{lemma}[theorem]{Lema}`), Halmos tombstone;
- *   - amsmath equations keep their `\label`; `\eqref` works natively;
+ *   - amsmath equations keep their `\label`; `\eqref` works natively; a
+ *     labelled display is numbered once, as on the site (rows of a labelled
+ *     `align`/`gather`/… without a label get `\notag`);
  *   - ABNT NBR 14724 floats: caption above with an en dash separator
  *     (caption package; the separator is the catalog's, as on the site),
  *     source below (`\ftsource`),
@@ -17,6 +27,11 @@
  *   - biblatex: `style=abnt` (biblatex-abnt) for pt-BR, `style=apa` for en;
  *     Pandoc-style citations become `\parencite`/`\textcite`;
  *   - the site's KaTeX macros, defined mode-safely (see `macroDefinition`).
+ *
+ * Content is never put where LaTeX loses or rejects it: code in a footnote is
+ * saved with fancyvrb's SaveVerbatim; a footnote in a tabular or float becomes
+ * \footnotemark + \footnotetext after it; a margin note (or a note) inside a
+ * note, tabular or float stays in the text in parentheses, with a warning.
  *
  * It is a pure fold: no I/O, deterministic, total. Anything that cannot be
  * represented is kept as literal text or as a `%` comment and reported in
@@ -48,7 +63,9 @@ import {
   extractLabels,
   findTag,
   hasLabel,
+  hoistLeadingLabels,
   isOuterEnvironment,
+  numberOnce,
   replaceRefs,
   starAutoNumbered,
 } from './math-transform.ts';
@@ -74,6 +91,7 @@ import {
   type LeafDirective,
   type TextDirective,
 } from './nodes.ts';
+import { smartPunctuation } from './smart-punctuation.ts';
 import { escapeTex, escapeUrl } from './tex-escape.ts';
 import { tokenize } from './tex-parser.ts';
 
@@ -371,6 +389,54 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
   /** fancyvrb environments the body needed (defined in the preamble). */
   const verbatims = new Set<string>();
 
+  /**
+   * Where a note is folded. Inside a `\footnote` argument (`footnoteDepth`) a verbatim block, a
+   * `\marginpar` or another `\footnote` cannot be typeset (TeX FAQ "verbwithin"; "Not in outer par
+   * mode"; a nested footnote's text is lost). Inside a tabular or a float (`trapDepth`) a footnote's
+   * text is lost (TeX FAQ "footintab"), so its text waits in `pendingNotes` for the outermost trap
+   * to close: `\footnotemark` in place, `\footnotetext` after it.
+   */
+  let footnoteDepth = 0;
+  let trapDepth = 0;
+  let pendingNotes: string[] = [];
+  /** fancyvrb SaveVerbatim blocks for code inside footnotes, written right after \begin{document}. */
+  const savedVerbatims: string[] = [];
+
+  const inFootnote = <T>(fold: () => T): T => {
+    footnoteDepth += 1;
+    const result = fold();
+    footnoteDepth -= 1;
+    return result;
+  };
+
+  const trapped = <T>(fold: () => T): T => {
+    trapDepth += 1;
+    const result = fold();
+    trapDepth -= 1;
+    return result;
+  };
+
+  /** A footnote, or — inside a tabular or float — its mark, the text waiting for the trap to close. */
+  const footnote = (text: string): string => {
+    if (trapDepth === 0) return `\\footnote{${text}}`;
+    pendingNotes.push(text);
+    return '\\protect\\footnotemark';
+  };
+
+  /**
+   * The texts of the marks set inside the trap that just closed, numbered like the marks: back
+   * to the first mark's number, then one more for each (LaTeX Companion 3rd ed. §3.2.3).
+   */
+  const releaseNotes = (tex: string): string => {
+    if (trapDepth > 0 || pendingNotes.length === 0) return tex;
+    const notes = pendingNotes.map(
+      (text, i) =>
+        `${i === 0 ? (pendingNotes.length > 1 ? `\\addtocounter{footnote}{-${String(pendingNotes.length - 1)}}` : '') : '\\stepcounter{footnote}'}\\footnotetext{${text}}`,
+    );
+    pendingNotes = [];
+    return [tex, ...notes].join('\n');
+  };
+
   // ── pre-pass: label kinds, definitions, footnotes, heading depth ──────────
   const labels = new Map<string, LabelKind>();
   /** Validated `#id` of each environment/figure (validated once, so warnings are not repeated). */
@@ -507,7 +573,11 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
   const phrasing = (nodes: readonly PhrasingContent[]): string =>
     normalize(nodes)
       .map(inline)
-      .reduce((out, tex) => (tex.startsWith('\\footnote{') ? out.trimEnd() : out) + tex, '');
+      .reduce(
+        (out, tex) =>
+          (tex.startsWith('\\footnote{') || tex.startsWith('\\protect\\footnotemark') ? out.trimEnd() : out) + tex,
+        '',
+      );
 
   /**
    * How many links enclose the content being folded. Inside one, references use hyperref's
@@ -583,6 +653,16 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
     }
   };
 
+  /**
+   * A side or margin note where LaTeX cannot place one — a footnote inside a footnote, or a
+   * \marginpar inside a footnote, tabular or float: its text stays in the flow, in parentheses.
+   */
+  const noteInNote = (node: TextDirective, content: () => string): string => {
+    const where = footnoteDepth > 0 ? 'a footnote' : 'a table or figure';
+    warn(`:${node.name} inside ${where} cannot be a note in LaTeX; exported in parentheses`, node);
+    return `(${content()})`;
+  };
+
   const textDirective = (node: TextDirective): string => {
     const content = (): string => phrasing(node.children);
     const attributes = attributesOf(node);
@@ -591,8 +671,10 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
       case 'eqref':
         return reference(node);
       case 'sidenote':
-        return `\\footnote{${content()}}`;
+        if (footnoteDepth > 0) return noteInNote(node, content);
+        return footnote(inFootnote(content));
       case 'marginnote':
+        if (footnoteDepth > 0 || trapDepth > 0) return noteInNote(node, content);
         return `\\marginpar{${content()}}`;
       case 'concept':
       case 'raw':
@@ -659,7 +741,7 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
           warn(`footnote [^${node.identifier}] has no definition`, node);
           return escapeTex(`[^${node.label ?? node.identifier}]`);
         }
-        return `\\footnote{${definition.children.map((child) => block(child, false)).join('\n\n')}}`;
+        return footnote(inFootnote(() => definition.children.map((child) => block(child, false)).join('\n\n')));
       }
       case 'html':
         // Inline HTML has no print form: kept as a comment on its own line. The
@@ -715,7 +797,9 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
     return `\\begin{${env}}${start}\n${items.join('\n')}\n\\end{${env}}`;
   };
 
-  const tabular = (node: Table): string => {
+  const tabular = (node: Table): string => trapped(() => tabularBody(node));
+
+  const tabularBody = (node: Table): string => {
     const columns = Math.max(0, ...node.children.map((row) => row.children.length));
     const align = Array.from({ length: columns }, (_, i) => {
       const a = node.align?.[i];
@@ -746,9 +830,28 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
     // listing does not contain, so any code — even LaTeX about verbatim — survives.
     let env = 'verbatim';
     for (let n = 1; node.value.includes(`\\end{${env}}`); n += 1) env = `ftverbatim${n === 1 ? '' : String(n)}`;
-    if (env !== 'verbatim') verbatims.add(env);
     const language = node.lang === null || node.lang === undefined ? [] : [`% language: ${node.lang}`];
+    if (footnoteDepth > 0) return savedVerbatim(node, language);
+    if (env !== 'verbatim') verbatims.add(env);
     return [...language, `\\begin{${env}}`, node.value, `\\end{${env}}`].join('\n');
+  };
+
+  /**
+   * Code inside a footnote: a verbatim environment cannot sit in a command's argument (its catcode
+   * changes come too late; TeX FAQ "verbwithin"), so the listing is saved with fancyvrb's
+   * SaveVerbatim at the start of the document and typeset in the note with \UseVerbatim.
+   */
+  const savedVerbatim = (node: Code, language: readonly string[]): string => {
+    if (node.value.includes('\\end{SaveVerbatim}')) {
+      warn('code containing \\end{SaveVerbatim} inside a footnote: exported line by line as \\texttt', node);
+      return node.value
+        .split('\n')
+        .map((line) => `\\texttt{${escapeTex(line)}}`)
+        .join('\\newline\n');
+    }
+    const name = `ftcode${String(savedVerbatims.length + 1)}`;
+    savedVerbatims.push([...language, `\\begin{SaveVerbatim}{${name}}`, node.value, '\\end{SaveVerbatim}'].join('\n'));
+    return `\\par\\UseVerbatim{${name}}`;
   };
 
   /**
@@ -760,7 +863,9 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
     // ignores it. Collapsing it changes no formula (math mode ignores spaces).
     const value = raw.replace(/\n[ \t]*(?:\n[ \t]*)+/g, '\n');
     const numbered = hasLabel(value) || findTag(value) !== undefined;
-    if (isOuterEnvironment(value)) return numbered ? value : starAutoNumbered(value);
+    // A \label written before the environment goes inside it (wrapping it in `equation` would
+    // nest display structures); a labelled multi-row environment is numbered once, as on the site.
+    if (isOuterEnvironment(value)) return numbered ? numberOnce(hoistLeadingLabels(value)) : starAutoNumbered(value);
     const env = numbered ? 'equation' : 'equation*';
     return `\\begin{${env}}\n${value}\n\\end{${env}}`;
   };
@@ -768,9 +873,10 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
   const environment = (node: ContainerDirective, kind: EnvKind): string => {
     const attributes = attributesOf(node);
     const first = node.children[0];
+    // An attribute never met the site's SmartyPants: it gets the same punctuation as on the site.
     const title =
       attributes['title'] !== undefined && attributes['title'] !== ''
-        ? escapeTex(attributes['title'])
+        ? escapeTex(smartPunctuation(attributes['title']))
         : first !== undefined && isLabelParagraph(first)
           ? phrasing(first.children)
           : undefined;
@@ -813,26 +919,32 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
     if (!isFigureKind(rawKind))
       warn(`figure kind "${rawKind}" is not one of ${FIGURE_KINDS.join(', ')}; exported as figure`, node);
     const first = node.children[0];
-    const caption =
-      attributes['title'] !== undefined && attributes['title'] !== ''
-        ? escapeTex(attributes['title'])
-        : first !== undefined && isLabelParagraph(first)
-          ? phrasing(first.children)
-          : '';
     const id = ids.get(node);
     const source = attributes['source'];
     const env = FLOAT_ENV[kind];
-    return [
-      `\\begin{${env}}[htbp]`,
-      '\\centering',
-      `\\caption{${caption}}${id === undefined ? '' : `\\label{${id}}`}`,
-      blocks(
-        node.children.filter((c) => !isLabelParagraph(c)),
-        true,
-      ),
-      ...(source === undefined || source === '' ? [] : [`\\ftsource{${textWithCitations(source, undefined, node)}}`]),
-      `\\end{${env}}`,
-    ].join('\n');
+    // A float traps footnotes like a tabular does: their texts follow the float (releaseNotes).
+    const float = trapped(() => {
+      const caption =
+        attributes['title'] !== undefined && attributes['title'] !== ''
+          ? escapeTex(smartPunctuation(attributes['title']))
+          : first !== undefined && isLabelParagraph(first)
+            ? phrasing(first.children)
+            : '';
+      return [
+        `\\begin{${env}}[htbp]`,
+        '\\centering',
+        `\\caption{${caption}}${id === undefined ? '' : `\\label{${id}}`}`,
+        blocks(
+          node.children.filter((c) => !isLabelParagraph(c)),
+          true,
+        ),
+        ...(source === undefined || source === ''
+          ? []
+          : [`\\ftsource{${textWithCitations(smartPunctuation(source), undefined, node)}}`]),
+        `\\end{${env}}`,
+      ].join('\n');
+    });
+    return releaseNotes(float);
   };
 
   const containerDirective = (node: ContainerDirective, inFloat: boolean): string => {
@@ -889,7 +1001,7 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
       case 'math':
         return displayMath(node.value);
       case 'table':
-        return inFloat ? tabular(node) : `\\begin{center}\n${tabular(node)}\n\\end{center}`;
+        return releaseNotes(inFloat ? tabular(node) : `\\begin{center}\n${tabular(node)}\n\\end{center}`);
       case 'html':
         return comment('html', node.value);
       case 'definition':
@@ -965,6 +1077,12 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
     `\\date{${date === undefined ? '' : escapeTex(date)}}`,
     '',
     '\\begin{document}',
+    ...(savedVerbatims.length === 0
+      ? []
+      : [
+          '% Code used inside footnotes (fancyvrb SaveVerbatim: verbatim cannot sit in a command argument).',
+          ...savedVerbatims,
+        ]),
     '\\maketitle',
     '',
     ...abstract,
