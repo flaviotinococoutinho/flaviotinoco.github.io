@@ -16,10 +16,12 @@ const fallback = href({ kind: 'home' }, DEFAULT_LOCALE);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Flavio Tinoco</title>
+    <title>Flávio Tinoco</title>
     <meta name="robots" content="noindex" />
     <link rel="canonical" href={new URL(fallback, Astro.site)} />
-    <noscript><meta http-equiv="refresh" content={`0; url=${fallback}`} /></noscript>
+    <noscript>
+      <meta http-equiv="refresh" content={`0; url=${fallback}`} />
+    </noscript>
     <script>
       import { negotiate } from '../core/domain/locale.ts';
       const target = negotiate(navigator.languages ?? [navigator.language]) === 'en' ? 'en' : 'pt';
@@ -28,6 +30,14 @@ const fallback = href({ kind: 'home' }, DEFAULT_LOCALE);
     </script>
   </head>
   <body>
-    <p><a href={pt} hreflang="pt-BR" lang="pt-BR">Português</a> · <a href={en} hreflang="en" lang="en">English</a></p>
+    <p>
+      <a href={pt} hreflang="pt-BR" lang="pt-BR">
+        Português
+      </a>{' '}
+      ·{' '}
+      <a href={en} hreflang="en" lang="en">
+        English
+      </a>
+    </p>
   </body>
 </html>

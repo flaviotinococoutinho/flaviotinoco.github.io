@@ -1,0 +1,23 @@
+---
+/**
+ * Reading progress through the ARTICLE (not the page): a hairline at the top of
+ * the viewport, driven by a CSS scroll-driven view timeline where supported and
+ * by <ft-reading-progress> elsewhere (src/islands/elements/ft-reading-progress.ts).
+ *
+ * Decision (accessibility): the line is decorative and hidden from assistive
+ * technology (aria-hidden). Position in the text is already available to
+ * screen-reader users through headings, landmarks and the table of contents; a
+ * role="progressbar" would announce a changing value on every scroll (verbose),
+ * and in the CSS-driven path no script runs that could keep aria-valuenow true —
+ * an ARIA value that lies is worse than none.
+ */
+export interface Props {
+  /** Id of the element whose progress is shown. */
+  readonly target: string;
+}
+const { target } = Astro.props;
+---
+
+<ft-reading-progress class="reading-progress" data-target={target} aria-hidden="true">
+  <span class="reading-progress__bar"></span>
+</ft-reading-progress>

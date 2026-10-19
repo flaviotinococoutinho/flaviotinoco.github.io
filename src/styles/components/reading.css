@@ -1,1 +1,1218 @@
-/* Component styles: reading workstream. Wrapped in the components cascade layer by global.css. */
+/*
+ * Reading workstream — prose typography, non-linear reading directives, essay
+ * pages and the essays index. Wrapped in the `components` cascade layer by
+ * global.css. Only design tokens (tokens.css): no literal colours, spacing from
+ * --space-*, durations from --duration-* (multiplied by --motion, 0 or 1).
+ * Typographic lengths (indents, drop caps) are in em, after Bringhurst.
+ * Islands are custom elements: they are inline by default, hence display:block.
+ */
+
+ft-sidenotes,
+ft-scrolly,
+ft-horizontal,
+ft-argument-map,
+ft-essay-filter {
+  display: block;
+}
+
+/* The stratum of an element, as a colour token (always paired with glyph + label). */
+[data-stratum='philosophy'] {
+  --stratum: var(--stratum-philosophy);
+}
+[data-stratum='theory'] {
+  --stratum: var(--stratum-theory);
+}
+[data-stratum='formal'] {
+  --stratum: var(--stratum-formal);
+}
+[data-stratum='value'] {
+  --stratum: var(--stratum-value);
+}
+
+.reading-sprite {
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+  overflow: hidden;
+}
+
+/* ───────────────────────────── 1. Prose ───────────────────────────── */
+
+/*
+ * Book typography (R. Bringhurst, The Elements of Typographic Style, 2.3–3.2):
+ * one measure, body leading, paragraphs marked by a first-line indent and no
+ * extra space, never after a heading, figure or list (only p + p is indented).
+ * Ragged right always: never justify (dyslexia guidance, BDA Style Guide 2023).
+ */
+.prose {
+  max-inline-size: var(--measure);
+  line-height: var(--leading-body);
+  text-align: start;
+  font-variant-numeric: oldstyle-nums proportional-nums;
+  hanging-punctuation: first allow-end last;
+}
+.prose p {
+  margin-block: 0;
+}
+.prose p + p {
+  text-indent: 1.618em;
+}
+.prose :is(ul, ol, figure, table, pre, blockquote, details, aside, .scrolly, .horizontal, .toc) {
+  margin-block: var(--space-0);
+}
+
+/* Headings: generous space above, a little below (φ steps). */
+.prose :is(h2, h3, h4, h5, h6) {
+  margin-block: var(--space-3) var(--space-n1);
+  scroll-margin-block-start: var(--space-3);
+}
+.prose :is(h3, h4) {
+  margin-block-start: var(--space-2);
+}
+.prose :is(h5, h6) {
+  margin-block-start: var(--space-1);
+}
+.prose > :first-child {
+  margin-block-start: 0;
+}
+
+.prose :is(ul, ol) {
+  padding-inline-start: 1.618em;
+}
+.prose li + li {
+  margin-block-start: var(--space-n3);
+}
+.prose li > :is(ul, ol) {
+  margin-block: var(--space-n3) 0;
+}
+.prose li p + p {
+  text-indent: 0;
+  margin-block-start: var(--space-n2);
+}
+
+/*
+ * Long quotations (ABNT NBR 10520:2023, 7.1.1): an indented block (4 cm is
+ * recommended), a smaller type size, single spacing, no quotation marks.
+ */
+.prose blockquote {
+  margin-inline: var(--space-1) 0;
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+  quotes: none;
+}
+@container (inline-size >= 48rem) {
+  .prose blockquote {
+    margin-inline-start: var(--space-4);
+  }
+}
+.prose blockquote p + p {
+  text-indent: 0;
+  margin-block-start: var(--space-n2);
+}
+
+/* Lining, tabular figures where figures are compared or read as data. */
+.prose :is(table, pre, code, kbd, samp, time) {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.prose :not(pre) > code {
+  padding-inline: 0.15em;
+  border-radius: 2px;
+  background-color: var(--paper-sunken);
+}
+
+/*
+ * Code blocks: Shiki with two themes and defaultColor:false writes the colours
+ * of each token as CSS variables (--shiki-light / --shiki-dark, and -bg,
+ * -font-style, -font-weight); the theme is chosen here, explicitly by
+ * [data-theme] and otherwise by prefers-color-scheme. The block takes the
+ * theme's own background, against which its token colours were designed
+ * (github-light reds fall below 4.5:1 on the sunken paper).
+ */
+.prose pre {
+  overflow-x: auto;
+  padding: var(--space-0) var(--space-1);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background-color: var(--paper-sunken);
+  line-height: var(--leading-ui);
+  tab-size: 2;
+}
+.prose pre code {
+  font-size: inherit;
+}
+.prose .astro-code {
+  background-color: var(--shiki-light-bg, var(--paper-sunken));
+}
+:root[data-theme='dark'] .prose .astro-code {
+  background-color: var(--shiki-dark-bg, var(--paper-sunken));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .prose .astro-code {
+    background-color: var(--shiki-dark-bg, var(--paper-sunken));
+  }
+}
+.prose :is(.astro-code, .astro-code span) {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style, inherit);
+  font-weight: var(--shiki-light-font-weight, inherit);
+}
+:root[data-theme='dark'] .prose :is(.astro-code, .astro-code span) {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style, inherit);
+  font-weight: var(--shiki-dark-font-weight, inherit);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .prose :is(.astro-code, .astro-code span) {
+    color: var(--shiki-dark);
+    font-style: var(--shiki-dark-font-style, inherit);
+    font-weight: var(--shiki-dark-font-weight, inherit);
+  }
+}
+
+/* Tables: horizontal rules only (booktabs: top, mid and bottom rules). */
+.prose table {
+  border-collapse: collapse;
+  max-inline-size: 100%;
+  border-block: 2px solid var(--rule-strong);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+}
+.prose thead th {
+  border-block-end: 1px solid var(--rule-strong);
+}
+.prose :is(th, td) {
+  padding: var(--space-n3) var(--space-n1);
+  text-align: start;
+  vertical-align: baseline;
+  overflow-wrap: anywhere;
+}
+.prose :is(th, td)[align='right'] {
+  text-align: end;
+}
+.prose :is(th, td)[align='center'] {
+  text-align: center;
+}
+
+/* Ornamental break: three spaced points, not a line. */
+.prose hr {
+  block-size: auto;
+  margin-block: var(--space-2);
+  border: 0;
+  background: none;
+  color: var(--ink-subtle);
+  text-align: center;
+  line-height: 1;
+}
+.prose hr::after {
+  content: '·   ·   ·';
+  content: '·   ·   ·' / '';
+  white-space: pre;
+  letter-spacing: 0.3em;
+}
+
+/* GFM footnotes (remark-rehype): a short rule above (NBR 14724, 5.2.1), smaller type. */
+.prose .footnotes {
+  margin-block-start: var(--space-2);
+  padding-block-start: var(--space-n1);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+  border-block-start: 1px solid var(--rule);
+}
+.prose .footnotes ol {
+  padding-inline-start: 1.618em;
+}
+.prose .sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.prose [data-footnote-ref] {
+  text-decoration: none;
+  font-variant-numeric: lining-nums;
+}
+.prose .data-footnote-backref {
+  text-decoration: none;
+}
+
+/*
+ * Drop cap on the first paragraph of an essay (CSS Inline 3, initial-letter),
+ * with a floated ::first-letter as fallback. The fallback is also used when
+ * that paragraph holds a side or margin note: Chromium 141 crashes laying out
+ * an out-of-flow (anchor-positioned) note in a paragraph with an initial letter.
+ */
+.essay__article > p:first-of-type {
+  display: flow-root;
+}
+.essay__article > p:first-of-type::first-letter {
+  color: var(--stratum, var(--ink));
+  font-weight: 400;
+}
+@supports (initial-letter: 3) or (-webkit-initial-letter: 3) {
+  .essay__article > p:first-of-type:not(:has(.sidenote, .marginnote))::first-letter {
+    -webkit-initial-letter: 3;
+    initial-letter: 3;
+    margin-inline-end: 0.12em;
+  }
+  .essay__article > p:first-of-type:has(.sidenote, .marginnote)::first-letter {
+    float: inline-start;
+    margin-block-start: 0.06em;
+    margin-inline-end: 0.08em;
+    font-size: 4.1em;
+    line-height: 0.82;
+  }
+}
+@supports not ((initial-letter: 3) or (-webkit-initial-letter: 3)) {
+  .essay__article > p:first-of-type::first-letter {
+    float: inline-start;
+    margin-block-start: 0.06em;
+    margin-inline-end: 0.08em;
+    font-size: 4.1em;
+    line-height: 0.82;
+  }
+}
+
+/* ─────────────────────── 2. Argument headings ─────────────────────── */
+
+.prose .arg {
+  margin-block: var(--space-3) var(--space-n1);
+}
+.prose .arg > :is(h2, h3, h4, h5, h6) {
+  margin: 0;
+}
+.arg__kind,
+.arg__deps {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+  color: var(--ink-muted);
+}
+.arg__kind {
+  display: flex;
+  align-items: center;
+  gap: var(--space-n2);
+  margin-block-end: var(--space-n3);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+}
+.arg__glyph {
+  display: inline-flex;
+}
+.arg__glyph svg {
+  inline-size: 1.1em;
+  block-size: 1.1em;
+}
+.arg__deps {
+  margin-block-start: var(--space-n2);
+}
+.arg__deps-label::after {
+  content: ':';
+}
+
+/* ───────────────────── 3. Stretchtext (T. H. Nelson) ─────────────────────
+ * Opening continues the flow of the text: no box, only a hairline in the gutter. */
+.prose .stretch {
+  margin-block: 0;
+}
+.stretch__label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-n3);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  color: var(--link);
+  cursor: pointer;
+  list-style: none;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 0.06em;
+  text-underline-offset: 0.2em;
+}
+.stretch__label::-webkit-details-marker {
+  display: none;
+}
+.stretch__label::before {
+  content: '⊕';
+  content: '⊕' / '';
+  text-decoration: none;
+}
+.stretch[open] > .stretch__label::before {
+  content: '⊖';
+  content: '⊖' / '';
+}
+.stretch__body {
+  margin-inline-start: calc(-1 * var(--space-n1));
+  padding-inline-start: calc(var(--space-n1) - 2px);
+  border-inline-start: 2px solid var(--mark);
+}
+.stretch[open] > .stretch__body {
+  animation: reading-fade-in calc(var(--duration-4) * var(--motion)) var(--ease-enter);
+}
+@keyframes reading-fade-in {
+  from {
+    opacity: 0.001;
+  }
+}
+
+/* ───────────────────── 4. Side notes and margin notes ─────────────────────
+ * Default (narrow screens, no JS, no anchor positioning): inline notes. */
+.sidenote__ref {
+  font-variant-numeric: lining-nums;
+}
+.sidenote__link {
+  text-decoration: none;
+}
+.sidenote__note,
+.marginnote__note {
+  display: block;
+  margin-block: var(--space-n2);
+  padding-inline-start: var(--space-n1);
+  border-inline-start: 2px solid var(--rule);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+  color: var(--ink-muted);
+  text-indent: 0;
+  text-align: start;
+}
+.sidenote__num {
+  margin-inline-end: 0.4em;
+  font-variant-numeric: lining-nums;
+  font-weight: 600;
+}
+.marginnote__anchor {
+  display: inline;
+}
+[data-collapsed] > .sidenote__note,
+[data-collapsed] > .marginnote__note {
+  display: none;
+}
+.note-toggle {
+  padding: 0 0.3em;
+  border: 1px solid var(--rule-strong);
+  border-radius: 0.3em;
+  background-color: var(--paper-raised);
+  color: var(--link);
+  font: inherit;
+  font-family: var(--font-ui);
+  font-size: 0.8em;
+  line-height: 1.2;
+  font-variant-numeric: lining-nums;
+  cursor: pointer;
+}
+.note-toggle[aria-expanded='true'] {
+  background-color: var(--mark);
+  color: var(--ink);
+}
+.marginnote > .note-toggle {
+  vertical-align: super;
+  margin-inline-start: 0.15em;
+}
+
+/* ───────────────────── 5. Scrollytelling ───────────────────── */
+.scrolly__step + .scrolly__step {
+  margin-block-start: var(--space-0);
+}
+.scrolly__step p + p {
+  text-indent: 0;
+  margin-block-start: var(--space-n2);
+}
+.scrolly__figure :is(img, svg) {
+  max-inline-size: 100%;
+  block-size: auto;
+}
+/* Enhanced: the figure sticks while the steps scroll over it. */
+ft-scrolly:defined:has(> .scrolly__figure) .scrolly__figure {
+  position: sticky;
+  inset-block-start: var(--space-1);
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  min-block-size: 38svh;
+}
+ft-scrolly:defined:has(> .scrolly__figure) .scrolly__steps {
+  position: relative;
+  z-index: 1;
+  padding-block: 24svh 38svh;
+}
+ft-scrolly:defined:has(> .scrolly__figure) .scrolly__step {
+  max-inline-size: calc(100% - 2 * var(--space-1));
+  margin-inline: auto;
+  margin-block: 0 50svh;
+  padding: var(--space-0) var(--space-1);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background-color: var(--paper-raised);
+  transition: border-color calc(var(--duration-3) * var(--motion)) var(--ease-standard);
+}
+ft-scrolly:defined .scrolly__step[data-active] {
+  border-color: var(--rule-strong);
+}
+
+/* ───────────────────── 6. Horizontal passages ─────────────────────
+ * Default: a native horizontal scroll region with scroll-snap and a visible affordance. */
+.horizontal__viewport {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule-strong) var(--paper-sunken);
+  padding-block: var(--space-0);
+  border-block: 1px solid var(--rule);
+}
+.horizontal__track {
+  display: flex;
+  gap: var(--space-1);
+}
+.horizontal__panel {
+  flex: 0 0 min(85%, var(--measure));
+  scroll-snap-align: start;
+}
+.horizontal__panel p + p {
+  text-indent: 0;
+  margin-block-start: var(--space-n2);
+}
+.horizontal__hint {
+  margin-block: var(--space-n2) 0;
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  color: var(--ink-muted);
+}
+.horizontal__hint::after {
+  content: ' →';
+  content: ' →' / '';
+}
+/* Pinned: vertical scroll drives the track (ft-horizontal sets data-mode). */
+@property --h-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+@keyframes h-progress {
+  from {
+    --h-progress: 0;
+  }
+  to {
+    --h-progress: 1;
+  }
+}
+/* One screen to pin, then 0.618 screen of vertical travel per panel change. */
+ft-horizontal[data-mode='pinned'] {
+  block-size: calc(100svh + (var(--panels) - 1) * 61.8svh);
+}
+ft-horizontal[data-mode='pinned'] .horizontal__viewport {
+  position: sticky;
+  inset-block-start: 0;
+  display: flex;
+  align-items: center;
+  block-size: 100svh;
+  overflow: clip;
+  scroll-snap-type: none;
+  border-block: 0;
+}
+ft-horizontal[data-mode='pinned'] .horizontal__track {
+  flex: none;
+  inline-size: calc(var(--panels) * 100%);
+  gap: 0;
+  transform: translateX(calc(var(--h-progress) * (1 / var(--panels) - 1) * 100%));
+}
+ft-horizontal[data-mode='pinned'] .horizontal__panel {
+  flex-basis: calc(100% / var(--panels));
+  padding-inline: var(--space-1);
+}
+ft-horizontal[data-mode='pinned'] .horizontal__hint {
+  display: none;
+}
+/*
+ * Scroll-driven animations are written with longhands only: the CSS minifier
+ * folds `animation` + `animation-timeline` into one `animation` shorthand with a
+ * timeline, which browsers reject (the shorthand only resets the timeline).
+ */
+@supports (animation-timeline: view()) {
+  ft-horizontal[data-mode='pinned'] {
+    animation-name: h-progress;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: view();
+    animation-range: contain 0% contain 100%;
+  }
+}
+
+/* ───────────────────── 7. Epigraph, aside, table of contents ───────────────────── */
+.prose .epigraph {
+  inline-size: fit-content;
+  max-inline-size: 61.8%;
+  margin-block: 0 var(--space-2);
+  margin-inline: auto 0;
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+}
+.prose .epigraph__quote {
+  margin: 0;
+  font-size: inherit;
+  font-style: italic;
+}
+.epigraph__source {
+  margin-block-start: var(--space-n2);
+  font-family: var(--font-ui);
+  color: var(--ink-muted);
+}
+.epigraph__source::before {
+  content: '— ';
+  content: '— ' / '';
+}
+
+.prose .aside {
+  margin-block: var(--space-1);
+  padding: var(--space-0) var(--space-1);
+  border-radius: 2px;
+  background-color: var(--paper-sunken);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+}
+.aside__title {
+  margin-block-end: var(--space-n2);
+  font-family: var(--font-ui);
+  font-weight: 600;
+}
+.prose .aside p + p {
+  text-indent: 0;
+  margin-block-start: var(--space-n2);
+}
+
+.prose .toc {
+  margin-block: var(--space-1) var(--space-2);
+  padding-block: var(--space-n1);
+  border-block: 1px solid var(--rule);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+}
+.toc__title {
+  margin: 0 0 var(--space-n2);
+  color: var(--ink-muted);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.prose .toc__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.prose .toc__list .toc__list {
+  padding-inline-start: var(--space-1);
+}
+.prose .toc__item {
+  margin-block: var(--space-n3) 0;
+}
+.toc__link {
+  text-decoration-line: none;
+}
+.toc__link:hover {
+  text-decoration-line: underline;
+}
+
+/* ───────────────────── 8. Essay page ───────────────────── */
+.essay {
+  row-gap: var(--space-1);
+  padding-block: var(--space-3) var(--space-4);
+}
+.essay__stratum {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-n2) var(--space-0);
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  color: var(--ink-muted);
+}
+.essay__stratum-link {
+  color: var(--ink);
+  text-decoration-line: none;
+}
+.essay__title {
+  margin-block: var(--space-n1) var(--space-n2);
+}
+.essay__subtitle {
+  margin: 0;
+  font-size: var(--step-1);
+  font-style: italic;
+  color: var(--ink-muted);
+  text-wrap: balance;
+}
+.essay__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n3) var(--space-n1);
+  margin-block: var(--space-0) 0;
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  color: var(--ink-muted);
+  font-variant-numeric: lining-nums;
+}
+.essay__meta > :not(:first-child)::before {
+  content: '·';
+  content: '·' / '';
+  margin-inline-end: var(--space-n1);
+}
+.essay__expandable {
+  margin-inline-start: var(--space-n3);
+}
+
+.stratum-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-n2);
+}
+.stratum-label__glyph {
+  flex: none;
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  color: var(--stratum, var(--ink));
+}
+
+/* Epistemic status and provenance. */
+.status {
+  padding-block: var(--space-n1);
+  border-block: 1px solid var(--rule);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+}
+.status__title {
+  margin: 0 0 var(--space-n3);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  font-weight: 600;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.05em;
+  color: var(--ink-muted);
+}
+.status__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2) var(--space-1);
+  margin: 0;
+}
+.status__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-n2);
+}
+.status__item dt {
+  color: var(--ink-muted);
+}
+.status__item dt::after {
+  content: ':';
+}
+.status__item dd {
+  margin: 0;
+}
+.kent {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-n3) var(--space-n2);
+}
+.kent__scale {
+  overflow: visible;
+}
+.kent__axis {
+  stroke: var(--rule-strong);
+  stroke-width: 1;
+}
+.kent__mark {
+  fill: var(--paper);
+  stroke: var(--ink-muted);
+  stroke-width: 1;
+}
+.kent__mark--active {
+  fill: var(--ink);
+  stroke: var(--ink);
+}
+.kent__label {
+  font-weight: 600;
+}
+.kent__band {
+  color: var(--ink-muted);
+  font-variant-numeric: lining-nums;
+}
+.provenance {
+  margin: var(--space-n2) 0 0;
+  padding: var(--space-n2) var(--space-n1);
+  border-radius: 2px;
+  background-color: var(--mark);
+  color: var(--ink);
+}
+.provenance__title {
+  font-weight: 600;
+}
+.provenance__note {
+  display: block;
+  margin-block-start: var(--space-n3);
+}
+
+/* Abstract and keywords (ABNT NBR 6028). */
+.abstract {
+  font-size: var(--step-n1);
+  line-height: var(--leading-body);
+}
+.abstract__title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  font-weight: 600;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.05em;
+  color: var(--ink-muted);
+}
+.abstract__text,
+.abstract__keywords {
+  margin: var(--space-n3) 0 0;
+}
+.abstract__keywords-label {
+  font-weight: 600;
+}
+
+/*
+ * Main row: on wide screens a subgrid of the page grid — the article in the
+ * main column; the sticky argument map and the side notes in the margin column.
+ */
+.essay__main {
+  position: relative;
+}
+.essay__rail {
+  display: block;
+  block-size: 0;
+}
+@media (width >= 72rem) {
+  .page-grid > .essay__main {
+    grid-column: main-start / margin-end;
+    display: grid;
+    grid-template-columns: subgrid;
+    align-items: start;
+  }
+  .essay__main > :is(.essay__article, .essay__notes) {
+    grid-column: main;
+    grid-row: 1;
+  }
+  .essay__main > .essay__rail {
+    grid-column: margin;
+    grid-row: 1;
+  }
+  .essay__main > .argmap {
+    grid-column: margin;
+    grid-row: 1;
+    position: sticky;
+    inset-block-start: var(--space-1);
+    z-index: 2;
+    max-block-size: calc(100svh - 2 * var(--space-1));
+    overflow-y: auto;
+  }
+
+  /*
+   * Side and margin notes in the margin, level with their marks (CSS Anchor
+   * Positioning). Only once <ft-sidenotes> runs: anchor positioning has no
+   * collision avoidance between notes, and the element stacks them; without
+   * JavaScript the notes stay inline (the CSS-only fallback).
+   */
+  @supports (anchor-name: --a) and (position-anchor: --a) {
+    .essay__rail {
+      anchor-name: --essay-rail;
+    }
+    .essay__main .sidenote__ref,
+    .essay__main .marginnote__anchor {
+      anchor-name: var(--anchor);
+    }
+    .essay__main ft-sidenotes:defined :is(.sidenote__note, .marginnote__note) {
+      position: absolute;
+      position-anchor: var(--anchor);
+      inset-block-start: calc(anchor(top) + var(--shift, 0px));
+      inset-inline-start: anchor(--essay-rail start);
+      inline-size: anchor-size(--essay-rail width);
+      z-index: 1;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+    .essay__main ft-sidenotes:defined [data-collapsed] > :is(.sidenote__note, .marginnote__note) {
+      display: block;
+    }
+    /* Inside moving or tabular constructs a note stays inline. */
+    .essay__main ft-sidenotes:defined :is(.scrolly, .horizontal, table) :is(.sidenote__note, .marginnote__note) {
+      position: static;
+      inline-size: auto;
+      margin-block: var(--space-n2);
+      padding-inline-start: var(--space-n1);
+      border-inline-start: 2px solid var(--rule);
+    }
+  }
+}
+
+.essay__footer {
+  display: grid;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+  padding-block-start: var(--space-1);
+  border-block-start: 1px solid var(--rule);
+  font-family: var(--font-ui);
+  line-height: var(--leading-ui);
+}
+.essay__footer-title {
+  margin: 0 0 var(--space-n1);
+  font-size: var(--step-1);
+}
+.essay__footer-title a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-n2);
+}
+.revisions__summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+.revisions__count {
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+.revisions__list {
+  margin: var(--space-n1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.revisions__item {
+  display: grid;
+  grid-template-columns: minmax(10em, max-content) 1fr;
+  gap: var(--space-0);
+  padding-block: var(--space-n3);
+  border-block-end: 1px solid var(--rule);
+}
+.revisions__item time {
+  color: var(--ink-muted);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.essay__concept-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2) var(--space-0);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bridge-next__list {
+  display: grid;
+  gap: var(--space-1);
+}
+
+/* ───────────────────── 9. Argument map ───────────────────── */
+.argmap {
+  margin-block-end: var(--space-1);
+  background-color: var(--paper);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+}
+.argmap__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-n3) var(--space-n1);
+  padding-block: var(--space-n2);
+  border-block-end: 1px solid var(--rule);
+  font-weight: 600;
+  cursor: pointer;
+}
+.argmap__current {
+  font-size: var(--step-n2);
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+.argmap__body {
+  padding-block: var(--space-n1);
+}
+.argmap__svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  overflow: visible;
+}
+.argmap__line {
+  fill: none;
+  stroke: var(--rule-strong);
+  stroke-width: 1.2;
+}
+.argmap__head {
+  fill: var(--rule-strong);
+}
+.argmap__node {
+  color: var(--ink);
+  text-decoration: none;
+}
+.argmap__hit {
+  fill: var(--mark);
+  fill-opacity: 0;
+}
+.argmap__label {
+  font-family: var(--font-ui);
+  font-size: var(--step-n2);
+  fill: var(--ink-muted);
+}
+.argmap__node:is(:hover, :focus-visible) .argmap__label {
+  fill: var(--ink);
+  text-decoration: underline;
+}
+.argmap__node.is-current .argmap__hit {
+  fill-opacity: 1;
+}
+.argmap__node.is-current .argmap__label {
+  fill: var(--ink);
+  font-weight: 700;
+}
+.argmap__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n3) var(--space-n1);
+  margin: var(--space-n1) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--step-n2);
+  color: var(--ink-muted);
+}
+.argmap__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-n3);
+}
+.argmap__legend-glyph,
+.argmap__item-glyph {
+  inline-size: 1em;
+  block-size: 1em;
+  flex: none;
+}
+.argmap__item-glyph {
+  margin-inline-end: 0.3em;
+  vertical-align: -0.125em;
+}
+.argmap__list {
+  margin: 0;
+  padding-inline-start: 1.618em;
+}
+.argmap__item + .argmap__item {
+  margin-block-start: var(--space-n3);
+}
+.argmap__item.is-current > .argmap__link {
+  font-weight: 700;
+}
+.argmap__deps {
+  color: var(--ink-muted);
+}
+
+/* ───────────────────── 10. Reading progress ─────────────────────
+ * Decorative hairline: CSS scroll-driven where supported, ft-reading-progress elsewhere. */
+ft-reading-progress {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 50;
+  display: none;
+  block-size: 2px;
+  pointer-events: none;
+}
+ft-reading-progress[data-mode='js'] {
+  display: block;
+}
+.reading-progress__bar {
+  display: block;
+  block-size: 100%;
+  background-color: var(--stratum, var(--link));
+  transform-origin: 0 50%;
+  transform: scaleX(var(--reading-progress, 0));
+}
+:dir(rtl) .reading-progress__bar {
+  transform-origin: 100% 50%;
+}
+@keyframes reading-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@supports (animation-timeline: view()) and (timeline-scope: --a) {
+  :root:has(.essay__article) {
+    timeline-scope: --essay-article;
+  }
+  .essay__article {
+    view-timeline: --essay-article block;
+  }
+  ft-reading-progress {
+    display: block;
+  }
+  .reading-progress__bar {
+    animation-name: reading-progress;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: --essay-article;
+    animation-range: contain 0% contain 100%;
+  }
+}
+
+/* ───────────────────── 11. Essays index ───────────────────── */
+.essays-index {
+  padding-block: var(--space-3) var(--space-4);
+}
+.essays-index__lede {
+  margin-block: var(--space-n1) 0;
+  font-size: var(--step-1);
+  color: var(--ink-muted);
+}
+.essays-index__empty {
+  margin-block-start: var(--space-2);
+  color: var(--ink-muted);
+}
+.essay-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-n2) var(--space-0);
+  margin-block: var(--space-1) 0;
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+}
+.essay-filter[hidden],
+.essays-index__stratum[hidden],
+.essay-card[hidden] {
+  display: none;
+}
+.essay-filter__select {
+  padding: var(--space-n3) var(--space-n2);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background-color: var(--paper-raised);
+  color: var(--ink);
+  font: inherit;
+}
+.essay-filter__status {
+  margin: 0;
+  color: var(--ink-muted);
+}
+.essays-index__stratum {
+  margin-block-start: var(--space-2);
+}
+.essays-index__stratum-title {
+  margin-block-end: var(--space-0);
+  font-size: var(--step-2);
+}
+.essays-index__stratum-title a {
+  color: var(--ink);
+  text-decoration-line: none;
+}
+.essays-index__list {
+  display: grid;
+  gap: var(--space-1);
+}
+.essay-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: var(--space-n1) var(--space-0);
+}
+.essay-card .stratum-label {
+  margin-block-start: 0.3em;
+}
+.essay-card__title {
+  margin: 0;
+  font-size: var(--step-1);
+}
+.essay-card__title a {
+  text-decoration-line: none;
+}
+.essay-card__title a:hover {
+  text-decoration-line: underline;
+}
+.essay-card__form {
+  margin-inline-end: var(--space-n2);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  font-variant-caps: all-small-caps;
+  color: var(--ink-muted);
+}
+.essay-card__description {
+  margin: var(--space-n3) 0 0;
+}
+.essay-card__meta > :not(:first-child)::before {
+  content: '·';
+  content: '·' / '';
+  margin-inline-end: var(--space-0);
+}
+.essay-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n3) var(--space-0);
+  margin: var(--space-n3) 0 0;
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  color: var(--ink-muted);
+  font-variant-numeric: lining-nums;
+}
+
+/* ───────────────────── 12. Preferences, forced colours, print ───────────────────── */
+@media (forced-colors: active) {
+  .argmap__line,
+  .kent__axis {
+    stroke: CanvasText;
+  }
+  .argmap__head,
+  .kent__mark--active {
+    fill: CanvasText;
+  }
+  .argmap__node.is-current .argmap__hit {
+    fill: Highlight;
+  }
+  .reading-progress__bar {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
+  .stretch__body,
+  .sidenote__note,
+  .marginnote__note {
+    border-color: CanvasText;
+  }
+}
+
+@media print {
+  ft-reading-progress,
+  .essay-filter,
+  .note-toggle,
+  .horizontal__hint {
+    display: none;
+  }
+  [data-collapsed] > :is(.sidenote__note, .marginnote__note) {
+    display: block;
+  }
+  ft-horizontal[data-mode='pinned'] {
+    block-size: auto;
+  }
+  .horizontal__viewport,
+  ft-horizontal[data-mode='pinned'] .horizontal__viewport {
+    position: static;
+    block-size: auto;
+    overflow: visible;
+  }
+  .horizontal__track,
+  ft-horizontal[data-mode='pinned'] .horizontal__track {
+    display: block;
+    inline-size: auto;
+    transform: none;
+  }
+  .argmap__figure[hidden] {
+    display: none;
+  }
+}

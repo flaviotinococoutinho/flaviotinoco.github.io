@@ -1,1 +1,59 @@
-/* Component styles: abnt workstream. Wrapped in the components cascade layer by global.css. */
+/*
+ * Normative marks produced by the "abnt" Markdown stage (src/adapters/unified/remark-abnt.ts).
+ * Wrapped in the `components` cascade layer by global.css.
+ *
+ * Every rule here is presentation only: the stage never changes the author's
+ * characters, so turning any rule off leaves the exact text in place.
+ */
+
+/* Foreign terms (<i lang class="foreign">) and Latin locutions (<i lang="la" class="locution">).
+   Literata ships a true italic master; never let the browser slant the roman (font-synthesis). */
+.foreign,
+.locution {
+  font-style: italic;
+  font-synthesis: none;
+}
+
+/* Proper names: no automatic hyphenation (Bringhurst, The Elements of Typographic Style, §2.4
+   "Etiquette of Hyphenation & Pagination": proper names are hyphenated only as a last resort).
+   `translate="no"` is set in the HTML. */
+.proper-name {
+  hyphens: manual;
+}
+
+/* Titles of works (<cite class="proper-name work">): italic per Acordo Ortográfico (1990), Base XIX. */
+cite.work {
+  font-style: italic;
+  font-synthesis: none;
+}
+
+/* Acronyms (<abbr class="acronym" title>). Bringhurst recommends spaced small caps for acronyms
+   in running text, but the subset of Literata served by the site has no small-capital glyphs
+   (its GSUB lists no `smcp`/`c2sc` features) and synthesised small caps are typographically
+   poor — so the capitals are only letter-spaced. `c2sc` is requested anyway: if a future font
+   provides true small caps they are used; if not, nothing happens (font-feature-settings never
+   synthesises). */
+.acronym {
+  letter-spacing: 0.04em;
+  font-feature-settings: 'c2sc' 1;
+  font-kerning: normal;
+  hyphens: manual;
+  text-decoration: none;
+}
+
+/* Non-breaking groups (10 kHz, p. 12, 3 maio 2024, C. E. Shannon): the characters are the author's;
+   only the line breaking changes. */
+.nowrap {
+  white-space: nowrap;
+}
+
+/* :sc[…] — explicit small caps. Use the font's small capitals when present; otherwise allow
+   the browser to synthesise them for this span only (the body sets font-synthesis: none). */
+.sc {
+  font-variant-caps: small-caps;
+  font-synthesis-small-caps: auto;
+  letter-spacing: 0.04em;
+}
+
+/* No colour, motion or animation is used here: the marks survive forced colours, greyscale
+   printing and reduced-motion settings unchanged. */

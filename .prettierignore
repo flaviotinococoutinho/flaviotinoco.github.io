@@ -1,0 +1,32 @@
+# Build output and caches
+dist/
+.astro/
+coverage/
+playwright-report/
+test-results/
+wasm/target/
+src/wasm/
+
+# Lockfiles: owned by their generators (pnpm; scripts/fonts/build_fonts.py writes json.dumps(indent=2))
+pnpm-lock.yaml
+src/assets/fonts/fonts.lock.json
+
+# Generated from src/core/design/tokens.json by scripts/tokens.ts (CI checks it is up to date)
+src/styles/tokens.css
+
+# Verbatim research reports: quoted evidence must stay byte-identical
+docs/research/
+
+# Authored content and data sources. Information preservation: a formatter must
+# never rewrite prose, lexicons or bibliographic records (whitespace, quotes and
+# line breaks can carry meaning — e.g. two trailing spaces are a hard break).
+src/content/**
+*.tsv
+bibliography/*.bib
+*.bib
+
+# Test fixtures are byte-exact inputs of the Markdown pipeline
+tests/fixtures/
+
+# Parallel agent worktrees inside the main checkout
+.claude/worktrees/

@@ -1,0 +1,23 @@
+# Homógrafos — palavras estrangeiras num sentido e vernáculas noutro. NUNCA são marcadas
+# automaticamente: cada uma gera UM aviso por documento (com o número de ocorrências), e o
+# autor decide: :foreign[data]{lang=en} para o sentido estrangeiro, :raw[data] para o vernáculo,
+# ou lexicon.ignore no frontmatter para silenciar o aviso no documento inteiro.
+# Esquema: term	lang	case	homograph_of	note
+# lang: língua do sentido estrangeiro; homograph_of: línguas (subetiqueta primária) em que a
+#   mesma grafia também é palavra nativa. A entrada só vale em documentos dessas línguas.
+# Cada entrada foi verificada como forma portuguesa corrente (substantivo, adjetivo ou forma
+# verbal). Descartados após verificação: "fair" (não é palavra portuguesa); "real", "base",
+# "total" (o sentido inglês coincide com um sentido português — não há o que marcar).
+term	lang	case	homograph_of	note
+data	en	sentence	pt	en: dados; pt: data (dia)
+come	en	sentence	pt	en: vir; pt: 3.ª pessoa de comer
+pane	en	sentence	pt	en: vidraça (window pane); pt: pane, falha mecânica
+time	en	sentence	pt	en: tempo; pt: time, equipe
+case	en	sentence	pt	en: caso; pt: subjuntivo de casar
+more	en	sentence	pt	en: mais; pt: subjuntivo de morar
+use	en	sentence	pt	en: usar, uso; pt: subjuntivo/imperativo de usar
+pare	en	sentence	pt	en: aparar; pt: imperativo de parar
+assume	en	sentence	pt	en: supor; pt: 3.ª pessoa de assumir
+logos	grc-Latn	sentence	pt en	grc: lógos (razão, discurso); pt/en: plural de logo (logotipo)
+via	la	sentence	pt	la: por meio de; pt: via, caminho
+idem	la	exact	pt	la: o mesmo (notas ABNT usam Id., Idem); pt: idem (o mesmo), dicionarizado

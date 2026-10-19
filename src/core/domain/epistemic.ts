@@ -7,6 +7,7 @@
  * so "provável" means the same thing in every essay.
  */
 import { err, ok, type Result } from '../algebra/result.ts';
+import { show } from '../algebra/show.ts';
 
 export const CONFIDENCE_LEVELS = [
   'certain',
@@ -40,9 +41,9 @@ export interface EpistemicStatus {
 export const parseConfidence = (v: unknown): Result<Confidence, string> =>
   typeof v === 'string' && (CONFIDENCE_LEVELS as readonly string[]).includes(v)
     ? ok(v as Confidence)
-    : err(`unknown confidence "${String(v)}"`);
+    : err(`unknown confidence "${show(v)}"`);
 
 export const parseEvidence = (v: unknown): Result<Evidence, string> =>
   typeof v === 'string' && (EVIDENCE_KINDS as readonly string[]).includes(v)
     ? ok(v as Evidence)
-    : err(`unknown evidence kind "${String(v)}"`);
+    : err(`unknown evidence kind "${show(v)}"`);

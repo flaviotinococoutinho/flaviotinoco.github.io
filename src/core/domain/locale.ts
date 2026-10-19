@@ -8,6 +8,7 @@
  * tests/unit/core/locale.test.ts), so no information is lost in either direction.
  */
 import { err, ok, type Result } from '../algebra/result.ts';
+import { show } from '../algebra/show.ts';
 
 export const LOCALES = ['pt-BR', 'en'] as const;
 export type Locale = (typeof LOCALES)[number];
@@ -22,14 +23,16 @@ const fromSegment: Readonly<Record<LocaleSegment, Locale>> = { pt: 'pt-BR', en: 
 export const localeCodec = {
   encode: (locale: Locale): LocaleSegment => toSegment[locale],
   decode: (segment: string): Result<Locale, string> =>
-    segment in fromSegment ? ok(fromSegment[segment as LocaleSegment]) : err(`unknown locale segment "${segment}"`),
+    Object.hasOwn(fromSegment, segment)
+      ? ok(fromSegment[segment as LocaleSegment])
+      : err(`unknown locale segment "${segment}"`),
 } as const;
 
 export const isLocale = (value: unknown): value is Locale =>
   typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
 
 export const parseLocale = (value: unknown): Result<Locale, string> =>
-  isLocale(value) ? ok(value) : err(`unknown locale "${String(value)}"`);
+  isLocale(value) ? ok(value) : err(`unknown locale "${show(value)}"`);
 
 /** The other locale; total because the set has exactly two members. */
 export const alternateLocales = (locale: Locale): readonly Locale[] => LOCALES.filter((l) => l !== locale);

@@ -1,11 +1,192 @@
 ---
-/** STUB view — replaced by the owning workstream (chrome). */
+/**
+ * Stratum page: one level of the bridge (philosophy → theory → formal → value).
+ *
+ * Structure: the path of the four strata (current one marked with
+ * aria-current), a head with the large simplex glyph, position and title, the
+ * guiding question and method as a description list, the Markdown body (from
+ * src/content/strata/{pt,en}/*.md through the site pipeline), the items filed
+ * under this stratum (essays, labs, concepts; each group hidden when empty) and
+ * previous/next navigation along the bridge (nextStratum/previousStratum, pure).
+ *
+ * Strata are never shown by colour alone: every mark pairs the k-simplex glyph
+ * with its textual label (StratumMark) and the colour token only reinforces it.
+ */
+import { render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import MathAssets from '../components/MathAssets.astro';
+import StratumMark from '../components/chrome/StratumMark.astro';
 import type { Locale } from '../core/domain/locale.ts';
-export interface Props { readonly locale: Locale; readonly stratum: import('../core/domain/strata.ts').Stratum; }
-const { locale } = Astro.props;
+import { STRATA, STRATUM_SPECS, nextStratum, previousStratum, type Stratum } from '../core/domain/strata.ts';
+import { FORM_GLYPH } from '../core/domain/facets.ts';
+import common from '../core/i18n/catalogs/common.ts';
+import chrome from '../core/i18n/catalogs/chrome.ts';
+import { href, useTranslations } from '../adapters/astro/i18n.ts';
+import {
+  alternatesForAll,
+  concepts,
+  essays,
+  labs,
+  routeOfConcept,
+  routeOfEssay,
+  routeOfLab,
+  strata,
+} from '../adapters/astro/content.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly stratum: Stratum;
+}
+
+const { locale, stratum } = Astro.props;
+const t = useTranslations(common, locale);
+const c = useTranslations(chrome, locale);
+const spec = STRATUM_SPECS[stratum];
+
+const entry = (await strata(locale)).find((e) => e.data.stratum === stratum);
+if (entry === undefined) {
+  throw new Error(`[StratumView] missing src/content/strata entry for ${stratum} (${locale})`);
+}
+const { Content, remarkPluginFrontmatter } = await render(entry);
+const hasMath = (remarkPluginFrontmatter as Readonly<Record<string, unknown>>)['hasMath'] === true;
+
+interface Item {
+  readonly title: string;
+  readonly href: string;
+  readonly lang?: string;
+}
+interface Group {
+  readonly id: 'essays' | 'labs' | 'concepts';
+  readonly heading: string;
+  readonly glyph: string;
+  readonly items: readonly Item[];
+}
+
+const [allEssays, allLabs, allConcepts] = await Promise.all([essays(locale), labs(locale), concepts()]);
+const collator = new Intl.Collator(locale);
+const groups: readonly Group[] = (
+  [
+    {
+      id: 'essays',
+      heading: c('stratum.items.essays'),
+      glyph: FORM_GLYPH.essay,
+      items: allEssays
+        .filter((e) => e.data.stratum === stratum)
+        .map((e) => ({ title: e.data.title, href: href(routeOfEssay(e), locale) })),
+    },
+    {
+      id: 'labs',
+      heading: c('stratum.items.labs'),
+      glyph: FORM_GLYPH.lab,
+      items: allLabs
+        .filter((e) => e.data.stratum === stratum)
+        .map((e) => ({ title: e.data.title, href: href(routeOfLab(e), locale) })),
+    },
+    {
+      id: 'concepts',
+      heading: c('stratum.items.concepts'),
+      glyph: FORM_GLYPH.concept,
+      items: allConcepts
+        .filter((k) => k.data.stratum === stratum)
+        .map((k) => ({ title: k.data.prefLabel[locale], href: href(routeOfConcept(k, locale), locale) }))
+        .sort((a, b) => collator.compare(a.title, b.title)),
+    },
+  ] satisfies Group[]
+).filter((g) => g.items.length > 0);
+
+const total = STRATA.length;
+const previous = previousStratum(stratum);
+const next = nextStratum(stratum);
+/** The bridge is crossed in one direction; at its end the pager offers to start again. */
+const first: Stratum = STRATA[0];
+const alternates = alternatesForAll(() => ({ kind: 'stratum', stratum }));
 ---
 
-<BaseLayout locale={locale} title="StratumView" description="Placeholder page rendered by a view stub until its workstream lands." alternates={{}} noindex>
-  <div class="page-grid"><h1>StratumView</h1></div>
+<BaseLayout locale={locale} title={entry.data.title} description={entry.data.description} alternates={alternates}>
+  {hasMath && <MathAssets slot="head" />}
+  <article class="page-grid stratum" data-stratum={stratum}>
+    <nav class="stratum-path" aria-label={t('strata.label')}>
+      <ol role="list">
+        {STRATA.map((s) => (
+          <li>
+            <a href={href({ kind: 'stratum', stratum: s }, locale)} aria-current={s === stratum ? 'page' : undefined}>
+              <StratumMark stratum={s} locale={locale} size="s" />
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+
+    <header class="stratum-head">
+      <svg class="stratum-head__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+        <use href={`#${spec.glyph}`}></use>
+      </svg>
+      <p class="stratum-head__position">
+        {c('stratum.position', { n: spec.ordinal + 1, total })} · {c(`simplex.${spec.simplex}`)}
+      </p>
+      <h1 class="stratum-head__title">{entry.data.title}</h1>
+      <dl class="stratum-facts">
+        <dt>{c('stratum.question')}</dt>
+        <dd class="stratum-facts__question">{entry.data.question}</dd>
+        <dt>{c('stratum.method')}</dt>
+        <dd>{entry.data.method}</dd>
+      </dl>
+    </header>
+
+    <div class="stratum-body">
+      <Content />
+    </div>
+
+    <section class="stratum-items" aria-labelledby="stratum-items-title" data-pagefind-ignore>
+      <h2 id="stratum-items-title" class="section-title">
+        {c('stratum.items')}
+      </h2>
+      {groups.length === 0 && <p class="stratum-items__empty">{c('stratum.items.empty')}</p>}
+      {groups.map((g) => (
+        <section class="stratum-items__group" aria-labelledby={`stratum-items-${g.id}`}>
+          <h3 class="stratum-items__heading" id={`stratum-items-${g.id}`}>
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+              <use href={`#${g.glyph}`} />
+            </svg>
+            {g.heading}
+          </h3>
+          <ul class="stratum-items__list" role="list">
+            {g.items.map((item) => (
+              <li>
+                <a href={item.href}>{item.title}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </section>
+
+    <nav class="stratum-pager" aria-label={c('stratum.pager')} data-pagefind-ignore>
+      <ul role="list">
+        {previous !== null && (
+          <li>
+            <a href={href({ kind: 'stratum', stratum: previous }, locale)} rel="prev">
+              <span class="stratum-pager__dir">{c('stratum.previous')}</span>
+              <StratumMark stratum={previous} locale={locale} size="l" />
+            </a>
+          </li>
+        )}
+        {next !== null ? (
+          <li>
+            <a href={href({ kind: 'stratum', stratum: next }, locale)} rel="next">
+              <span class="stratum-pager__dir">{c('stratum.next')}</span>
+              <StratumMark stratum={next} locale={locale} size="l" />
+            </a>
+          </li>
+        ) : (
+          <li>
+            <a href={href({ kind: 'stratum', stratum: first }, locale)}>
+              <span class="stratum-pager__dir">{c('stratum.end')}</span>
+              <StratumMark stratum={first} locale={locale} size="l" />
+            </a>
+          </li>
+        )}
+      </ul>
+    </nav>
+  </article>
 </BaseLayout>

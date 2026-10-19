@@ -1,1 +1,114 @@
-/* Component styles: citations workstream. Wrapped in the components cascade layer by global.css. */
+/*
+ * Component styles: citations workstream (remark stage "citations").
+ * Wrapped in the components cascade layer by global.css.
+ *
+ * Markup (src/adapters/unified/remark-citations.ts):
+ *   span.cite[data-cite] > a[href="#ref-k"][id="cite-k"]        a call in running text
+ *   section.references[data-style="abnt"|"apa"] > h2 + ul.references__list
+ *     > li.references__item#ref-k > … a.references__backlink   the reference list
+ *
+ * Typography follows the norms, not taste:
+ *   - ABNT (NBR 6023:2025 §6.3–6.4): left-aligned, never justified, single
+ *     spacing, one blank line between references; the destaque (<cite>) in bold —
+ *     bold is the norm's own choice and keeps italics for Latin (<i lang="la">).
+ *   - APA 7 (§2.13, §9.43): hanging indent; titles of stand-alone works in italics
+ *     (the default rendering of <cite>).
+ * Meaning never rests on style alone: the destaque is a <cite> element, Latin
+ * carries lang="la", and every list item is reachable and announced by its link.
+ */
+
+/* ---------------------------------------------------------------- calls */
+
+.cite a {
+  /* A call is a quiet link: same colour as the text, marked by a dotted rule. */
+  color: inherit;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 0.08em;
+}
+
+.cite a:hover {
+  color: var(--link);
+  text-decoration-style: solid;
+}
+
+/* The call the reader returns to from the list. */
+.cite a:target {
+  background-color: var(--mark);
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------- the list */
+
+.references {
+  margin-block-start: var(--space-3);
+  max-inline-size: var(--measure);
+}
+
+.references > h2 {
+  margin-block-end: var(--space-1);
+}
+
+.references__list {
+  display: grid;
+  gap: var(--space-0);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.references__item {
+  /* NBR 6023 §6.3: aligned to the left margin, never justified; URLs may break anywhere. */
+  text-align: start;
+  hyphens: manual;
+  line-height: var(--leading-ui);
+  overflow-wrap: anywhere;
+  border-radius: var(--space-n4);
+  /* --motion is 0 under prefers-reduced-motion unless the reader opted in (motion.css). */
+  transition: background-color calc(var(--duration-3) * var(--motion)) var(--ease-standard);
+}
+
+.references__item a {
+  overflow-wrap: anywhere;
+}
+
+.references__item:target {
+  background-color: var(--mark);
+  box-shadow: 0 0 0 var(--space-n3) var(--mark);
+}
+
+.references[data-style='abnt'] cite {
+  font-style: normal;
+  font-weight: 700;
+}
+
+.references[data-style='apa'] .references__item {
+  padding-inline-start: var(--space-1);
+  text-indent: calc(-1 * var(--space-1));
+}
+
+.references__backlink {
+  margin-inline-start: var(--space-n3);
+  padding-inline: var(--space-n4);
+  font-family: var(--font-ui);
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+
+.references__backlink:hover {
+  color: var(--link);
+}
+
+@media (forced-colors: active) {
+  .cite a:target,
+  .references__item:target {
+    background-color: Mark;
+    color: MarkText;
+    box-shadow: none;
+  }
+}
+
+@media print {
+  .references__backlink {
+    display: none;
+  }
+}

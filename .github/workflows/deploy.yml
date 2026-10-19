@@ -1,0 +1,101 @@
+# Deployment to GitHub Pages (source: "GitHub Actions" in Settings → Pages). ADR 0005.
+#
+# The repository flaviotinococoutinho/flaviotinoco.github.io is a PROJECT site:
+# Pages serves it under /flaviotinoco.github.io/. The authoritative origin and
+# base path come from actions/configure-pages, so a rename to
+# <owner>.github.io or a custom domain removes the base path with no code change.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege (ADR 0005): the workflow grants only read access to the code; each job
+# states what it needs, so a job added later inherits nothing more.
+permissions:
+  contents: read
+
+# One deployment at a time; never cancel one that is already running (a cancelled
+# deploy can leave Pages half-published). Queued runs wait their turn.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build (wasm + site + search index)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # Least privilege: reading the Pages configuration is enough to build.
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - name: Read the pinned Rust toolchain
+        id: rust
+        run: |
+          channel="$(sed -n 's/^channel[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' wasm/rust-toolchain.toml)"
+          if [ -z "$channel" ]; then
+            echo "::error file=wasm/rust-toolchain.toml::no [toolchain] channel found"
+            exit 1
+          fi
+          echo "channel=$channel" >> "$GITHUB_OUTPUT"
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master (2026-10-08)
+        with:
+          toolchain: ${{ steps.rust.outputs.channel }}
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: 'wasm -> target'
+          # Same key as the CI `wasm` job (the default key includes the job id); deploys only read it.
+          shared-key: wasm
+          save-if: 'false'
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build (pnpm build = build:wasm → astro build → pagefind)
+        env:
+          SITE: ${{ steps.pages.outputs.origin }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: pnpm build
+      # Same gates as CI, now against the real origin and base path.
+      - name: Internal links and size budgets
+        env:
+          SITE: ${{ steps.pages.outputs.origin }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: pnpm check:links && pnpm check:budgets
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # actions/deploy-pages: write to Pages, and an OIDC token proving where the deployment comes from.
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

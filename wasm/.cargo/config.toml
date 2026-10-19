@@ -1,0 +1,10 @@
+# Cargo reads this file when it is invoked with `wasm/` as the working directory
+# (scripts/build-wasm.mjs always spawns cargo there, so rust-toolchain.toml applies too).
+
+[target.wasm32-unknown-unknown]
+rustflags = [
+    # The kernels never recurse and keep large scratch buffers in the arena, so a
+    # 64 KiB shadow stack (instead of the 1 MiB default) is plenty and keeps the
+    # initial linear memory at a couple of pages.
+    "-C", "link-arg=-zstack-size=65536",
+]

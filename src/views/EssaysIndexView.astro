@@ -1,11 +1,100 @@
 ---
-/** STUB view — replaced by the owning workstream (reading). */
+/**
+ * Essays index (route kind "essays"): the essays of a locale grouped by
+ * stratum in bridge order (philosophy → theory → formal → value), each with
+ * its simplex glyph, title, description, date and reading time.
+ *
+ * A quiet filter by the domain facet (Ranganathan's faceted classification) is
+ * a progressive enhancement: without JavaScript the page is the plain grouped
+ * list and no inert control is shown; <ft-essay-filter> reveals the select,
+ * hides non-matching essays (and emptied groups) and announces the count in a
+ * polite live region.
+ */
+import { render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import EssayCard from '../components/reading/EssayCard.astro';
+import StratumLabel from '../components/reading/StratumLabel.astro';
 import type { Locale } from '../core/domain/locale.ts';
-export interface Props { readonly locale: Locale;  }
+import reading from '../core/i18n/catalogs/reading.ts';
+import { parseDocumentMeta } from '../core/fold/meta.ts';
+import { domainsPresent, groupByStratum } from '../core/reading/essay.ts';
+import { alternatesForAll, essays, routeOfEssay } from '../adapters/astro/content.ts';
+import { href, useTranslations } from '../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+}
+
 const { locale } = Astro.props;
+const t = useTranslations(reading, locale);
+const all = await essays(locale);
+const minutes = new Map(
+  await Promise.all(
+    all.map(async (e) => {
+      const decoded = parseDocumentMeta((await render(e)).remarkPluginFrontmatter);
+      if (!decoded.ok)
+        throw new Error(`EssaysIndexView: essay "${e.id}" has no reading metadata: ${decoded.error.join('; ')}`);
+      return [e.id, decoded.value.readingMinutes] as const;
+    }),
+  ),
+);
+const groups = groupByStratum(all, (e) => e.data.stratum);
+const domains = domainsPresent(all, (e) => e.data.domains);
+const alternates = alternatesForAll(() => ({ kind: 'essays' }));
 ---
 
-<BaseLayout locale={locale} title="EssaysIndexView" description="Placeholder page rendered by a view stub until its workstream lands." alternates={{}} noindex>
-  <div class="page-grid"><h1>EssaysIndexView</h1></div>
+<BaseLayout locale={locale} title={t('index.title')} description={t('index.description')} alternates={alternates}>
+  <div class="page-grid essays-index">
+    <header class="essays-index__header">
+      <h1>{t('index.title')}</h1>
+      <p class="essays-index__lede">{t('index.description')}</p>
+    </header>
+    {all.length === 0 ? (
+      <p class="essays-index__empty">{t('index.empty')}</p>
+    ) : (
+      <ft-essay-filter
+        class="essays-index__body"
+        data-count-one={t('index.count.one')}
+        data-count-other={t('index.count.other')}
+      >
+        {domains.length > 1 && (
+          <div class="essay-filter" hidden>
+            <label class="essay-filter__label" for="essay-filter-domain">
+              {t('index.filter')}
+            </label>
+            <select class="essay-filter__select" id="essay-filter-domain">
+              <option value="">{t('index.filter.all')}</option>
+              {domains.map((d) => (
+                <option value={d}>{t(`domain.${d}`)}</option>
+              ))}
+            </select>
+            <p class="essay-filter__status" role="status" />
+          </div>
+        )}
+        {groups.map((g) => (
+          <section class="essays-index__stratum" data-stratum={g.stratum} aria-labelledby={`stratum-${g.stratum}`}>
+            <h2 class="essays-index__stratum-title" id={`stratum-${g.stratum}`}>
+              <a href={href({ kind: 'stratum', stratum: g.stratum }, locale)}>
+                <StratumLabel stratum={g.stratum} locale={locale} />
+              </a>
+            </h2>
+            <div class="essays-index__list">
+              {g.items.map((e) => (
+                <EssayCard
+                  locale={locale}
+                  href={href(routeOfEssay(e), locale)}
+                  title={e.data.title}
+                  description={e.data.description}
+                  stratum={e.data.stratum}
+                  published={e.data.published}
+                  readingMinutes={minutes.get(e.id) ?? null}
+                  domains={e.data.domains}
+                />
+              ))}
+            </div>
+          </section>
+        ))}
+      </ft-essay-filter>
+    )}
+  </div>
 </BaseLayout>

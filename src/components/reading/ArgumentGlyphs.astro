@@ -1,0 +1,29 @@
+---
+/**
+ * SVG symbol sprite of the argument kinds (one <symbol id="arg-<kind>"> each),
+ * drawn from the single geometric source src/core/reading/argument.ts (GLYPHS),
+ * shared with the heading marks the reading stage emits. Shapes, not colours,
+ * carry the kind (WCAG 1.4.1): open/filled pairs share a meaning (question ○ /
+ * claim ●, definition □ / proof ■, objection ◇ / reply ◆). Render once per page
+ * that shows an argument map; strokes use currentColor (forced-colors safe).
+ */
+import { ARGUMENT_KINDS, GLYPHS, GLYPH_VIEWBOX, glyphSymbolId } from '../../core/reading/argument.ts';
+---
+
+<svg class="reading-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+  <defs>
+    {ARGUMENT_KINDS.map((kind) => (
+      <symbol id={glyphSymbolId(kind)} viewBox={GLYPH_VIEWBOX}>
+        {GLYPHS[kind].map((p) => (
+          <path
+            d={p.d}
+            fill={p.filled ? 'currentColor' : 'none'}
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linejoin="round"
+          />
+        ))}
+      </symbol>
+    ))}
+  </defs>
+</svg>

@@ -1,4 +1,4 @@
-import { defineConfig } from 'astro/config';
+import { defineConfig, passthroughImageService } from 'astro/config';
 import { unified } from '@astrojs/markdown-remark';
 import sitemap from '@astrojs/sitemap';
 import { loadPipelineContext } from './src/adapters/unified/context.ts';
@@ -15,8 +15,8 @@ import { FONT_FAMILIES } from './src/adapters/astro/fonts.ts';
  * covers a future custom domain or a rename to `<owner>.github.io` (empty base).
  * Local builds default to production values so base-path bugs surface early.
  */
-const SITE = process.env.SITE ?? 'https://flaviotinococoutinho.github.io';
-const BASE_PATH = process.env.BASE_PATH ?? '/flaviotinoco.github.io';
+const SITE = process.env['SITE'] ?? 'https://flaviotinococoutinho.github.io';
+const BASE_PATH = process.env['BASE_PATH'] ?? '/flaviotinoco.github.io';
 const base = BASE_PATH === '' ? '/' : BASE_PATH;
 const baseWithSlash = base.endsWith('/') ? base : `${base}/`;
 
@@ -52,7 +52,9 @@ export default defineConfig({
       defaultColor: false,
     },
   },
-  fonts: [...FONT_FAMILIES],
+  fonts: FONT_FAMILIES,
+  // Content images are authored as optimised SVG/WebP; no raster pipeline (and no native sharp dependency).
+  image: { service: passthroughImageService() },
   security: {
     csp: {
       // 'wasm-unsafe-eval' is required to compile WebAssembly; it does not enable JS eval.

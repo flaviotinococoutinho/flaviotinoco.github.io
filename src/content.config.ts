@@ -9,6 +9,7 @@
  */
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { parseLanguageTag } from './core/lexicon/language-tag.ts';
 import { z } from 'astro/zod';
 import type { Result } from './core/algebra/result.ts';
 import { LOCALES } from './core/domain/locale.ts';
@@ -17,8 +18,16 @@ import { DOMAINS } from './core/domain/facets.ts';
 import { CONFIDENCE_LEVELS, EVIDENCE_KINDS } from './core/domain/epistemic.ts';
 import { parseConceptId, parseSlug, parseTranslationKey } from './core/domain/identifiers.ts';
 
+/**
+ * Entry identity = file path relative to the collection base, without extension
+ * ("pt/do-signo-a-informacao", "entropy"). Astro's default uses `data.slug`, which
+ * would make a pt and an en entry with the same slug collide, and turns the
+ * per-locale slug object of a concept into "[object Object]" for every concept.
+ */
+const pathId = ({ entry }: { readonly entry: string }): string => entry.replace(/\.(md|json)$/, '');
+
 /** Lifts a core parser into a zod transform that reports the parser's own message. */
-const parsed = <T>(parse: (v: unknown) => Result<T, string>) =>
+const parsed = <T>(parse: (v: string) => Result<T, string>) =>
   z.string().transform((value, ctx): T => {
     const r = parse(value);
     if (r.ok) return r.value;
@@ -79,7 +88,7 @@ const work = z.object({
   lexicon: z
     .object({
       ignore: z.array(z.string().min(1)).default([]),
-      foreign: z.array(z.object({ term: z.string().min(1), lang: z.string().min(2) }).strict()).default([]),
+      foreign: z.array(z.object({ term: z.string().min(1), lang: parsed(parseLanguageTag) }).strict()).default([]),
     })
     .strict()
     .optional(),
@@ -89,12 +98,12 @@ const work = z.object({
 });
 
 const essays = defineCollection({
-  loader: glob({ pattern: '{pt,en}/**/*.md', base: './src/content/essays' }),
+  loader: glob({ pattern: '{pt,en}/**/*.md', base: './src/content/essays', generateId: pathId }),
   schema: work.extend({ form: z.literal('essay').default('essay') }).strict(),
 });
 
 const labs = defineCollection({
-  loader: glob({ pattern: '{pt,en}/**/*.md', base: './src/content/labs' }),
+  loader: glob({ pattern: '{pt,en}/**/*.md', base: './src/content/labs', generateId: pathId }),
   schema: work
     .extend({
       form: z.literal('lab').default('lab'),
@@ -107,7 +116,7 @@ const labs = defineCollection({
 });
 
 const strata = defineCollection({
-  loader: glob({ pattern: '{pt,en}/*.md', base: './src/content/strata' }),
+  loader: glob({ pattern: '{pt,en}/*.md', base: './src/content/strata', generateId: pathId }),
   schema: z
     .object({
       stratum,
@@ -123,7 +132,7 @@ const strata = defineCollection({
 });
 
 const pages = defineCollection({
-  loader: glob({ pattern: '{pt,en}/*.md', base: './src/content/pages' }),
+  loader: glob({ pattern: '{pt,en}/*.md', base: './src/content/pages', generateId: pathId }),
   schema: z
     .object({
       title: z.string().min(1),
@@ -141,7 +150,7 @@ const pages = defineCollection({
  * The language-neutral concept id is the file name (entry.id), e.g. entropy.json → "entropy".
  */
 const concepts = defineCollection({
-  loader: glob({ pattern: '*.json', base: './src/content/concepts' }),
+  loader: glob({ pattern: '*.json', base: './src/content/concepts', generateId: pathId }),
   schema: z
     .object({
       slug: localized(slug),

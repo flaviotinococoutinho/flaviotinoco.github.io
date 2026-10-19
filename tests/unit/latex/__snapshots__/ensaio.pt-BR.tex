@@ -1,0 +1,194 @@
+% !TEX program = lualatex
+% Generated from Markdown by src/core/latex/export.ts. Edit the Markdown source, not this file.
+\documentclass[12pt,a4paper]{article}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{lmodern}
+\else
+  \usepackage{fontspec}
+\fi
+\usepackage[english,main=brazilian]{babel}
+\usepackage{csquotes}
+% ABNT NBR 14724:2024 §5.1: A4, margins 3 cm (top, left) and 2 cm (bottom, right), 1.5 line spacing.
+\usepackage[top=3cm,left=3cm,bottom=2cm,right=2cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage[normalem]{ulem}
+\usepackage{fancyvrb}
+\usepackage{newfloat}
+\usepackage{caption}
+% ABNT NBR 14724:2024 §5.8: designation, number, dash and title ABOVE; source below.
+\DeclareCaptionLabelSeparator{ft}{ – }
+\captionsetup{labelsep=ft,position=top}
+\DeclareFloatingEnvironment[fileext=lgr,name={Gráfico},listname={Lista de gráficos}]{ftchart}
+\DeclareFloatingEnvironment[fileext=lqd,name={Quadro},listname={Lista de quadros}]{ftframe}
+\newcommand{\ftsource}[1]{\par\smallskip{\footnotesize Fonte: #1\par}}
+\DefineVerbatimEnvironment{ftverbatim}{Verbatim}{}
+\usepackage[backend=biber,style=abnt]{biblatex}
+\addbibresource{bibliography.bib}
+\usepackage{hyperref}
+\hypersetup{hidelinks,pdftitle={Amostragem \& informação: 100\% \textquotedbl{}sinal\textquotedbl{}},pdfauthor={Flávio Tinoco},pdflang={pt-BR}}
+
+% Theorem-like environments: one shared counter (amsthm \newtheorem{x}[theorem]).
+\theoremstyle{plain}
+\newtheorem{theorem}{Teorema}
+\newtheorem{lemma}[theorem]{Lema}
+\newtheorem{proposition}[theorem]{Proposição}
+\newtheorem{corollary}[theorem]{Corolário}
+\newtheorem{conjecture}[theorem]{Conjectura}
+\newtheorem{axiom}[theorem]{Axioma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definição}
+\newtheorem{example}[theorem]{Exemplo}
+\theoremstyle{remark}
+\newtheorem*{remark}{Observação}
+\renewcommand{\qedsymbol}{\ensuremath{\blacksquare}}
+
+% Markup of the abnt stage (semantic wrappers; see docs/guia-latex.md).
+\newcommand{\ftforeign}[2]{\textit{#2}}
+\newcommand{\ftname}[1]{#1}
+\newcommand{\ftabbr}[2]{#1}
+% KaTeX-only HTML extensions degrade to their content.
+\providecommand{\htmlClass}[2]{#2}
+\providecommand{\htmlData}[2]{#2}
+\providecommand{\htmlId}[2]{#2}
+\providecommand{\htmlStyle}[2]{#2}
+
+% Site notation (src/core/latex/macros.ts) and document macros.
+\makeatletter
+\newcommand*{\ftmacro}[3]{%
+  \ifdefined#1%
+    \expandafter\NewCommandCopy\csname fttext\string#1\endcsname#1%
+    \expandafter\newcommand\csname ftmath\string#1\endcsname[#2]{#3}%
+    \DeclareRobustCommand{#1}{%
+      \ifmmode\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi
+      {\csname ftmath\string#1\endcsname}{\csname fttext\string#1\endcsname}}%
+  \else
+    \newcommand{#1}[#2]{#3}%
+  \fi}
+\makeatother
+\ftmacro{\N}{0}{\mathbb{N}}
+\ftmacro{\Z}{0}{\mathbb{Z}}
+\ftmacro{\Q}{0}{\mathbb{Q}}
+\ftmacro{\R}{0}{\mathbb{R}}
+\ftmacro{\C}{0}{\mathbb{C}}
+\ftmacro{\E}{0}{\operatorname{\mathbb{E}}}
+\ftmacro{\Var}{0}{\operatorname{Var}}
+\ftmacro{\Prob}{0}{\operatorname{P}}
+\ftmacro{\H}{0}{\operatorname{H}}
+\ftmacro{\I}{0}{\operatorname{I}}
+\ftmacro{\KL}{0}{D_{\mathrm{KL}}\infdivx}
+\ftmacro{\infdivx}{2}{\left(#1\,\middle\|\,#2\right)}
+\ftmacro{\d}{0}{\mathop{}\!\mathrm{d}}
+\ftmacro{\e}{0}{\mathrm{e}}
+\ftmacro{\i}{0}{\mathrm{i}}
+\ftmacro{\sinc}{0}{\operatorname{sinc}}
+\ftmacro{\abs}{1}{\left\lvert #1 \right\rvert}
+\ftmacro{\norm}{1}{\left\lVert #1 \right\rVert}
+\ftmacro{\set}{1}{\left\{ #1 \right\}}
+\ftmacro{\F}{0}{\mathcal{F}}
+\ftmacro{\defeq}{0}{\coloneqq}
+\ftmacro{\entails}{0}{\vDash}
+\ftmacro{\proves}{0}{\vdash}
+
+\title{Amostragem \& informação: 100\% \textquotedbl{}sinal\textquotedbl{}\\[0.5ex]\large Um ensaio de teste}
+\author{Flávio Tinoco}
+\date{14 de março de 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Resumo com \$ e \#.
+
+\noindent\textbf{Palavras-chave:} amostragem; entropia.
+\end{abstract}
+
+\section{Amostragem e informação}\label{amostragem}
+% attributes: .claim
+
+A teoria de Shannon \parencite[{p.~379}]{shannon1948} mede a informação em bits; ver também
+\parencites[{ver}][{}]{nyquist1928}[{cap.~2}]{kotelnikov1933} e a releitura de \textcite[{p.~12}]{gallager2008}.
+Já \parencite*{shannon1949} tratou do ruído. Escrever \texttt{R\$ 5,00 \& 10\%} não é fórmula, e
+“aspas” com \# \$ \% \& \textasciitilde{} \_ \textasciicircum{} \textbackslash{} \{ \} devem sobreviver; o e-mail \href{mailto:fulano@exemplo.com}{fulano@exemplo.com} também.
+Às 10:30 a proporção é 1:2 e [@escapado] não é citação.
+
+\begin{definition}[{Entropia}]\label{def:entropia}
+A \textbf{entropia} de uma variável $X$ é
+
+\begin{equation}
+\H(X) = -\sum_{x} p(x) \log_2 p(x) \label{eq:entropia}
+\end{equation}
+\end{definition}
+
+\begin{theorem}[{Nyquist–Shannon}]\label{thm:amostragem}
+Se $x$ é limitado em banda a $B$, então $x$ é determinado por amostras a $2B$
+(compare \eqref{eq:entropia} e Definição~\ref{def:entropia}).
+\end{theorem}
+
+\begin{proof}[{Demonstração do Teorema~\ref{thm:amostragem}}]
+Pela Equação~\eqref{eq:sinc}, segue o resultado.
+\end{proof}
+
+\begin{equation}
+x(t) = \sum_{n} x(nT) \sinc\left(\frac{t - nT}{T}\right) \label{eq:sinc}
+\end{equation}
+
+\begin{ftchart}[htbp]
+\centering
+\caption{Dobramento espectral}\label{fig:dobramento}
+\includegraphics[width=\linewidth,alt={Espectro dobrado em torno de f\_s/2}]{./dobramento}
+\ftsource{Elaborado pelo autor (2026).}
+\end{ftchart}
+
+\begin{table}[htbp]
+\centering
+\caption{Taxas de amostragem usuais}\label{tab:taxas}
+\begin{tabular}{@{}lcr@{}}
+\toprule
+Sinal & Banda (kHz) & Taxa (kHz) \\
+\midrule
+Voz & 4 & 8 \\
+CD & 22,05 & 44,1 \\
+\bottomrule
+\end{tabular}
+\ftsource{\parencite{iso80000}}
+\end{table}
+
+\begin{remark}
+Uma \emph{observação} com\footnote{nota lateral} e \ftforeign{de}{Zeitgeist},
+\ftname{\mbox{Ferdinand} \mbox{de} \mbox{Saussure}} e \ftabbr{FFT}{Fast Fourier Transform}.
+\end{remark}
+
+\begin{enumerate}
+\item primeiro item
+\item {}[segundo] item com colchete
+\end{enumerate}
+
+\begin{itemize}
+\item[$\boxtimes$] tarefa feita
+\item[$\square$] tarefa pendente
+\end{itemize}
+
+\begin{quote}
+Citação em bloco.\footnote{Nota de rodapé com \texttt{código}.}
+\end{quote}
+
+% language: ts
+\begin{ftverbatim}
+const x = 1; // \end{verbatim}
+\end{ftverbatim}
+
+\tableofcontents
+
+\printbibliography
+
+\end{document}

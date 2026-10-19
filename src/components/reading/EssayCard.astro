@@ -1,0 +1,47 @@
+---
+/**
+ * One essay in a list (essays index, "next on the bridge"): simplex glyph of
+ * its stratum, title (link), description, date and reading time. The domains
+ * are exposed as data-domains for the facet filter (ft-essay-filter).
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import type { Stratum } from '../../core/domain/strata.ts';
+import common from '../../core/i18n/catalogs/common.ts';
+import { isoDate } from '../../core/reading/essay.ts';
+import { formatDate, useTranslations } from '../../adapters/astro/i18n.ts';
+import StratumLabel from './StratumLabel.astro';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly href: string;
+  readonly title: string;
+  readonly description: string;
+  readonly stratum: Stratum;
+  readonly published: Date;
+  readonly readingMinutes: number | null;
+  readonly domains: readonly string[];
+  /** Heading level of the title inside its list. */
+  readonly level?: 2 | 3 | 4;
+  /** Form label shown before the title (e.g. "Laboratório" in mixed lists). */
+  readonly form?: string | undefined;
+}
+
+const { locale, href, title, description, stratum, published, readingMinutes, domains, level = 3, form } = Astro.props;
+const t = useTranslations(common, locale);
+const Heading = `h${level}` as const;
+---
+
+<article class="essay-card" data-stratum={stratum} data-domains={domains.join(' ')}>
+  <StratumLabel stratum={stratum} locale={locale} quiet />
+  <div class="essay-card__body">
+    <Heading class="essay-card__title">
+      {form !== undefined && <span class="essay-card__form">{form}</span>}
+      <a href={href}>{title}</a>
+    </Heading>
+    <p class="essay-card__description">{description}</p>
+    <p class="essay-card__meta">
+      <time datetime={isoDate(published)}>{formatDate(locale, published)}</time>
+      {readingMinutes !== null && <span>{t('reading.time', { minutes: readingMinutes })}</span>}
+    </p>
+  </div>
+</article>

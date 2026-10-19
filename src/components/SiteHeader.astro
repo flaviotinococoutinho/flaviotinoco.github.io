@@ -1,25 +1,119 @@
 ---
-/** Site header — minimal placeholder; refined by the chrome workstream. */
+/**
+ * Site header — static HTML; behaviour arrives through three small islands:
+ *   <ft-nav-menu>        disclosure for the primary nav on narrow screens (loads with the header)
+ *   <ft-palette-trigger> "/" · Ctrl/⌘K shortcut + opener for the palette dialog (loads with the header, <1 KB)
+ *   <ft-command-palette>, <ft-preferences>  inside the closed dialog / popover: load on first open
+ *
+ * Identity: wordmark in the text face + the 3-simplex mark (the whole bridge
+ * condensed into its final, solid stage). Current page and section are marked
+ * with aria-current (pure helper: core/chrome/nav.ts). The language switch
+ * links to this page's translation when `alternates` has one; otherwise to the
+ * other language's home, and says so to assistive technology.
+ *
+ * Without JavaScript the search and preference buttons are not shown (they
+ * would do nothing); navigation, language switch and every link remain.
+ */
 import type { Locale } from '../core/domain/locale.ts';
+import { alternateLocales } from '../core/domain/locale.ts';
 import common from '../core/i18n/catalogs/common.ts';
+import chrome from '../core/i18n/catalogs/chrome.ts';
 import { href, useTranslations } from '../adapters/astro/i18n.ts';
+import { currentness, languageSwitch } from '../core/chrome/nav.ts';
+import { PALETTE_KEYSHORTCUTS } from '../core/chrome/shortcut.ts';
+import CommandPalette from './chrome/CommandPalette.astro';
+import PreferencesPanel from './chrome/PreferencesPanel.astro';
 
 export interface Props {
   readonly locale: Locale;
   readonly alternates: Partial<Record<Locale, string>>;
 }
+
 const { locale, alternates } = Astro.props;
 const t = useTranslations(common, locale);
-const other: Locale = locale === 'pt-BR' ? 'en' : 'pt-BR';
-const otherHref = alternates[other];
+const c = useTranslations(chrome, locale);
+const other: Locale = alternateLocales(locale)[0] ?? locale;
+const tOther = useTranslations(common, other);
+const cOther = useTranslations(chrome, other);
+const sw = languageSwitch(alternates, other, href({ kind: 'home' }, other));
+
+const path = Astro.url.pathname;
+const home = href({ kind: 'home' }, locale);
+const nav = [
+  { label: t('nav.essays'), href: href({ kind: 'essays' }, locale) },
+  { label: t('nav.labs'), href: href({ kind: 'labs' }, locale) },
+  { label: t('nav.ontology'), href: href({ kind: 'ontology' }, locale) },
+].map((item) => ({ ...item, current: currentness(path, item.href) }));
 ---
 
-<header class="site-header ui">
-  <nav aria-label={t('nav.label')}>
-    <a href={href({ kind: 'home' }, locale)}>{t('site.name')}</a>
-    <a href={href({ kind: 'essays' }, locale)}>{t('nav.essays')}</a>
-    <a href={href({ kind: 'labs' }, locale)}>{t('nav.labs')}</a>
-    <a href={href({ kind: 'ontology' }, locale)}>{t('nav.ontology')}</a>
-    {otherHref && <a href={otherHref} hreflang={other} lang={other}>{other === 'en' ? 'English' : 'Português'}</a>}
-  </nav>
+<header class="site-header ui" data-pagefind-ignore="all">
+  <div class="site-header__bar">
+    <a class="wordmark" href={home} aria-current={currentness(path, home, true) ?? undefined}>
+      <svg class="wordmark__mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+        <use href="#simplex-3"></use>
+      </svg>
+      <span class="wordmark__name">{t('site.name')}</span>
+    </a>
+
+    <ft-nav-menu class="site-nav">
+      <button
+        type="button"
+        class="tool tool-slot--js site-nav__toggle"
+        aria-expanded="false"
+        aria-controls="site-nav-list"
+      >
+        <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+          <use href="#ui-menu"></use>
+        </svg>
+        <span class="tool__label">{c('header.menu')}</span>
+      </button>
+      <nav class="site-nav__nav" aria-label={t('nav.label')}>
+        <ul class="site-nav__list" id="site-nav-list" role="list">
+          {nav.map((item) => (
+            <li>
+              <a class="site-nav__link" href={item.href} aria-current={item.current ?? undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </ft-nav-menu>
+
+    <div class="site-tools">
+      <a class="tool lang-switch" href={sw.href} hreflang={sw.locale} lang={sw.locale}>
+        <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+          <use href="#ui-language"></use>
+        </svg>
+        <span class="tool__label">{tOther('lang.name')}</span>
+        {!sw.isTranslation && <span class="visually-hidden">{cOther('lang.otherHome')}</span>}
+      </a>
+      <ft-palette-trigger class="tool-slot tool-slot--js">
+        <button
+          type="button"
+          class="tool tool--search"
+          aria-haspopup="dialog"
+          aria-controls="ft-palette"
+          aria-keyshortcuts={PALETTE_KEYSHORTCUTS}
+        >
+          <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+            <use href="#ui-search"></use>
+          </svg>
+          <span class="tool__label">{c('search.open')}</span>
+          <span class="tool__keys" aria-hidden="true">
+            <kbd class="tool__key--single">{c('search.kbdSlash')}</kbd>
+            <kbd>{c('search.kbdMod')}</kbd>
+          </span>
+        </button>
+      </ft-palette-trigger>
+      <button type="button" class="tool tool--prefs tool-slot--js" popovertarget="ft-prefs" aria-haspopup="dialog">
+        <svg class="tool__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+          <use href="#ui-prefs"></use>
+        </svg>
+        <span class="tool__label">{c('prefs.open')}</span>
+      </button>
+    </div>
+  </div>
+  <CommandPalette locale={locale} languageSwitch={sw} />
+  <PreferencesPanel locale={locale} />
 </header>
