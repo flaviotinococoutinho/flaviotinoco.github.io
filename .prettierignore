@@ -7,8 +7,9 @@ test-results/
 wasm/target/
 src/wasm/
 
-# Lockfile: owned by pnpm
+# Lockfiles: owned by their generators (pnpm; scripts/fonts/build_fonts.py writes json.dumps(indent=2))
 pnpm-lock.yaml
+src/assets/fonts/fonts.lock.json
 
 # Generated from src/core/design/tokens.json by scripts/tokens.ts (CI checks it is up to date)
 src/styles/tokens.css

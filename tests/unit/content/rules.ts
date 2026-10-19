@@ -4,7 +4,7 @@
  * runner so that rules.test.ts can prove each rule fires on bad input.
  */
 import katex from 'katex';
-import type { Nodes, Parents, Text } from 'mdast';
+import type { Nodes, Parents } from 'mdast';
 import { toString } from 'mdast-util-to-string';
 import { visitParents } from 'unist-util-visit-parents';
 import { KATEX_OPTIONS, MACROS } from '../../../src/core/latex/macros.ts';
@@ -131,7 +131,7 @@ export const checkDocument = (doc: Doc, corpus: readonly Doc[]): string[] => {
     }
 
     if (node.type === 'text') {
-      const { value } = node as Text;
+      const { value } = node;
       for (const use of citationsIn(value)) {
         if (!CITATION_KEYS.has(use.key)) report(node, `unknown citation key "@${use.key}"`);
       }

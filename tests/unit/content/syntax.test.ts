@@ -29,7 +29,7 @@ const PROVENANCE_NOTE: Readonly<Record<'pt-BR' | 'en', string>> = {
   en: 'Seed text drafted with AI assistance (Claude) as a demonstration of the template; awaiting review by the author.',
 };
 const iso = (value: unknown): string =>
-  value instanceof Date ? value.toISOString().slice(0, 10) : String(value ?? '').slice(0, 10);
+  value instanceof Date ? value.toISOString().slice(0, 10) : typeof value === 'string' ? value.slice(0, 10) : '';
 
 describe('content corpus', () => {
   it('is not empty and has one file per entry in each locale folder', () => {
@@ -83,7 +83,7 @@ describe('content corpus', () => {
       const fm = doc.frontmatter;
       const lang = LOCALE_DIRS[doc.dir];
       const problems: string[] = [];
-      const abstract = String(fm['abstract'] ?? '');
+      const abstract = typeof fm['abstract'] === 'string' ? fm['abstract'] : '';
       const abstractWords = countWords(abstract, lang);
       if (abstractWords < ABSTRACT_RANGE[0] || abstractWords > ABSTRACT_RANGE[1]) {
         problems.push(`abstract has ${abstractWords} words (expected ${ABSTRACT_RANGE.join('–')})`);

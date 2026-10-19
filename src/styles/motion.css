@@ -41,12 +41,24 @@
   translate: 0 calc((var(--scroll-progress) - 0.5) * var(--depth-unit, 6vh) * var(--depth-n, 0) * var(--motion));
   will-change: translate;
 }
-[data-depth='-3'] { --depth-n: -3; }
-[data-depth='-2'] { --depth-n: -2; }
-[data-depth='-1'] { --depth-n: -1; }
-[data-depth='1'] { --depth-n: 1; }
-[data-depth='2'] { --depth-n: 2; }
-[data-depth='3'] { --depth-n: 3; }
+[data-depth='-3'] {
+  --depth-n: -3;
+}
+[data-depth='-2'] {
+  --depth-n: -2;
+}
+[data-depth='-1'] {
+  --depth-n: -1;
+}
+[data-depth='1'] {
+  --depth-n: 1;
+}
+[data-depth='2'] {
+  --depth-n: 2;
+}
+[data-depth='3'] {
+  --depth-n: 3;
+}
 
 @property --scroll-progress {
   syntax: '<number>';

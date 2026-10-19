@@ -26,7 +26,9 @@ import { CVD_TYPES, simulateLinear, type Vec3 } from '../src/core/design/cvd.ts'
 import { STRATA } from '../src/core/domain/strata.ts';
 
 const tokens = parseTokens(
-  JSON.parse(await readFile(new URL('../src/core/design/tokens.json', import.meta.url), 'utf8')) as Parameters<typeof parseTokens>[0],
+  JSON.parse(await readFile(new URL('../src/core/design/tokens.json', import.meta.url), 'utf8')) as Parameters<
+    typeof parseTokens
+  >[0],
 );
 if (!tokens.ok) {
   console.error(tokens.error.join('\n'));

@@ -173,7 +173,7 @@ describe('windows (Harris 1978)', () => {
       expect(() => kernel.window(name as WindowKind, 6), name).toThrow(RangeError);
     }
     for (const value of [undefined, null, 0, 1, {}]) {
-      expect(() => kernel.window(value as unknown as WindowKind, 6)).toThrow(RangeError);
+      expect(() => kernel.window(value as WindowKind, 6)).toThrow(RangeError);
     }
     expect(() => kernel.window('kaiser' as WindowKind, 6)).toThrow(/unknown window "kaiser"; expected one of/);
   });

@@ -54,9 +54,16 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
   <link slot="head" rel="alternate" type="application/rss+xml" title={c('feed.title')} href={feed} />
 
   <section class="hero page-grid" aria-labelledby="home-title">
-    <ft-ambient-field class="hero__ambient" data-daypart-aware aria-hidden="true" role="presentation"></ft-ambient-field>
+    <ft-ambient-field
+      class="hero__ambient"
+      data-daypart-aware
+      aria-hidden="true"
+      role="presentation"
+    ></ft-ambient-field>
     <div class="hero__text">
-      <h1 id="home-title" class="hero__title">{t('site.name')}</h1>
+      <h1 id="home-title" class="hero__title">
+        {t('site.name')}
+      </h1>
       <p class="hero__tagline">{t('site.tagline')}</p>
     </div>
     <SimplexScene locale={locale} />
@@ -64,101 +71,105 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
 
   <div class="page-grid">
     <section class="home-section wide" aria-labelledby="bridge-title" data-pagefind-ignore>
-      <h2 id="bridge-title" class="section-title">{c('home.bridge.title')}</h2>
+      <h2 id="bridge-title" class="section-title">
+        {c('home.bridge.title')}
+      </h2>
       <p class="section-lede">{c('home.bridge.lede')}</p>
       <ol class="bridge" role="list">
-        {
-          bridge.map(({ stratum, spec, data }) => (
-            <li class="bridge__step" data-stratum={stratum} data-reveal>
-              <span class="bridge__node" aria-hidden="true">
-                <svg focusable="false" viewBox="0 0 24 24">
-                  <use href={`#${spec.glyph}`} />
-                </svg>
-              </span>
-              <p class="bridge__step-label ui">{c('home.bridge.step', { n: spec.ordinal + 1, total: STRATA.length })}</p>
-              <h3 class="bridge__heading">
-                <a class="bridge__link" href={href({ kind: 'stratum', stratum }, locale)}>
-                  <span class="bridge__title">{data.title}</span>
-                </a>
-              </h3>
-              <span class="bridge__simplex ui">{c(`simplex.${spec.simplex}`)}</span>
-              <dl class="bridge__facts">
-                <dt class="ui">{c('home.bridge.question')}</dt>
-                <dd class="bridge__question">{data.question}</dd>
-                <dt class="ui">{c('home.bridge.method')}</dt>
-                <dd>{data.method}</dd>
-              </dl>
-            </li>
-          ))
-        }
+        {bridge.map(({ stratum, spec, data }) => (
+          <li class="bridge__step" data-stratum={stratum} data-reveal>
+            <span class="bridge__node" aria-hidden="true">
+              <svg focusable="false" viewBox="0 0 24 24">
+                <use href={`#${spec.glyph}`} />
+              </svg>
+            </span>
+            <p class="bridge__step-label ui">{c('home.bridge.step', { n: spec.ordinal + 1, total: STRATA.length })}</p>
+            <h3 class="bridge__heading">
+              <a class="bridge__link" href={href({ kind: 'stratum', stratum }, locale)}>
+                <span class="bridge__title">{data.title}</span>
+              </a>
+            </h3>
+            <span class="bridge__simplex ui">{c(`simplex.${spec.simplex}`)}</span>
+            <dl class="bridge__facts">
+              <dt class="ui">{c('home.bridge.question')}</dt>
+              <dd class="bridge__question">{data.question}</dd>
+              <dt class="ui">{c('home.bridge.method')}</dt>
+              <dd>{data.method}</dd>
+            </dl>
+          </li>
+        ))}
       </ol>
     </section>
 
-    {
-      recent.length > 0 && (
-        <section class="home-section" aria-labelledby="latest-title" data-pagefind-ignore>
-          <h2 id="latest-title" class="section-title">
-            {c('home.latest.title')}
-          </h2>
-          <ul class="entry-list" role="list">
-            {recent.map((e) => (
-              <li class="entry" data-reveal>
-                <h3 class="entry__title">
-                  <a href={href(routeOfEssay(e), locale)}>{e.data.title}</a>
-                </h3>
-                <p class="entry__description">{e.data.description}</p>
-                <p class="entry__meta ui">
-                  <StratumMark stratum={e.data.stratum} locale={locale} size="s" />
-                  <time datetime={e.data.published.toISOString().slice(0, 10)}>
-                    {t('date.published', { date: formatDate(locale, e.data.published) })}
-                  </time>
-                </p>
-              </li>
-            ))}
-          </ul>
-          <a class="more-link" href={href({ kind: 'essays' }, locale)}>
-            {c('home.latest.all')}
-            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
-              <use href="#ui-arrow" />
-            </svg>
-          </a>
-        </section>
-      )
-    }
+    {recent.length > 0 && (
+      <section class="home-section" aria-labelledby="latest-title" data-pagefind-ignore>
+        <h2 id="latest-title" class="section-title">
+          {c('home.latest.title')}
+        </h2>
+        <ul class="entry-list" role="list">
+          {recent.map((e) => (
+            <li class="entry" data-reveal>
+              <h3 class="entry__title">
+                <a href={href(routeOfEssay(e), locale)}>{e.data.title}</a>
+              </h3>
+              <p class="entry__description">{e.data.description}</p>
+              <p class="entry__meta ui">
+                <StratumMark stratum={e.data.stratum} locale={locale} size="s" />
+                <time datetime={e.data.published.toISOString().slice(0, 10)}>
+                  {t('date.published', { date: formatDate(locale, e.data.published) })}
+                </time>
+              </p>
+            </li>
+          ))}
+        </ul>
+        <a class="more-link" href={href({ kind: 'essays' }, locale)}>
+          {c('home.latest.all')}
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+            <use href="#ui-arrow" />
+          </svg>
+        </a>
+      </section>
+    )}
 
     <div class="home-section teasers wide" data-pagefind-ignore>
       <section class="teaser" aria-labelledby="labs-title" data-reveal>
         <svg class="teaser__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
           <use href={`#${FORM_GLYPH.lab}`}></use>
         </svg>
-        <h2 id="labs-title" class="teaser__title">{c('home.labs.title')}</h2>
+        <h2 id="labs-title" class="teaser__title">
+          {c('home.labs.title')}
+        </h2>
         <p class="teaser__body">{c('home.labs.body')}</p>
-        {
-          labNames.length > 0 && (
-            <ul class="teaser__list" role="list">
-              {labNames.map((l) => (
-                <li>
-                  <a href={href(routeOfLab(l), locale)}>{l.data.title}</a>
-                </li>
-              ))}
-            </ul>
-          )
-        }
+        {labNames.length > 0 && (
+          <ul class="teaser__list" role="list">
+            {labNames.map((l) => (
+              <li>
+                <a href={href(routeOfLab(l), locale)}>{l.data.title}</a>
+              </li>
+            ))}
+          </ul>
+        )}
         <a class="more-link" href={href({ kind: 'labs' }, locale)}>
           {c('home.labs.link')}
-          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#ui-arrow"></use></svg>
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+            <use href="#ui-arrow"></use>
+          </svg>
         </a>
       </section>
       <section class="teaser" aria-labelledby="ontology-title" data-reveal>
         <svg class="teaser__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
           <use href={`#${FORM_GLYPH.map}`}></use>
         </svg>
-        <h2 id="ontology-title" class="teaser__title">{c('home.ontology.title')}</h2>
+        <h2 id="ontology-title" class="teaser__title">
+          {c('home.ontology.title')}
+        </h2>
         <p class="teaser__body">{c('home.ontology.body')}</p>
         <p class="teaser__links">
           <a class="more-link" href={href({ kind: 'ontology' }, locale)}>
             {c('home.ontology.link')}
-            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><use href="#ui-arrow"></use></svg>
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+              <use href="#ui-arrow"></use>
+            </svg>
           </a>
           <a class="more-link" href={asset('ontology.jsonld')} type="application/ld+json">
             {c('home.ontology.data')}

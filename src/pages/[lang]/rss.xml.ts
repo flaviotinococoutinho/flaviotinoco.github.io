@@ -18,7 +18,13 @@ import chrome from '../../core/i18n/catalogs/chrome.ts';
 
 export const getStaticPaths = localeStaticPaths;
 
-const XML_ESCAPES: Readonly<Record<string, string>> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' };
+const XML_ESCAPES: Readonly<Record<string, string>> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&apos;',
+};
 
 /** Escapes text for an XML attribute or element (the feed's own URL in customData). */
 const xml = (s: string): string => s.replace(/[&<>"']/g, (ch) => XML_ESCAPES[ch] ?? ch);

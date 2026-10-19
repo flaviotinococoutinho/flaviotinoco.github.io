@@ -60,9 +60,7 @@ function binary64(x: number): { m: bigint; e: number } {
   const sign = bits >> 63n === 1n ? -1n : 1n;
   const biased = Number((bits >> 52n) & 0x7ffn);
   const fraction = bits & ((1n << 52n) - 1n);
-  return biased === 0
-    ? { m: sign * fraction, e: -1074 }
-    : { m: sign * (fraction | (1n << 52n)), e: biased - 1075 };
+  return biased === 0 ? { m: sign * fraction, e: -1074 } : { m: sign * (fraction | (1n << 52n)), e: biased - 1075 };
 }
 
 /**
