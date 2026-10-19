@@ -1,0 +1,484 @@
+@comment{
+  Bibliografia da camada "acidentes" (ferramentas, ontologia de domínio e
+  metaprodutos) e dos ensaios que a usam. Mesmas convenções de
+  bibliography/main.bib e de docs/guia-citacoes.md: só referências reais,
+  títulos em caixa de sentença com nomes próprios e siglas entre chaves,
+  prenomes por extenso quando documentados (catálogos de autoridade).
+
+  Verificação em 2026-10-19: artigos com DOI contra o registro Crossref
+  (api.crossref.org/works/<doi>), campo a campo; livros contra registros
+  MARC de bibliotecas (Library of Congress, Universidade de Toronto,
+  Columbia), o catálogo da BnF ou a própria publicação (folha de rosto e
+  verso, digitalizados); o comentário de cada entrada diz qual. Os trechos
+  citados nos comentários foram conferidos em digitalizações das edições
+  indicadas, com a página impressa.
+
+  Chaves: sobrenome + ano, exceto as duas obras de Aristóteles, cujas chaves
+  (aristotle-categories, aristotle-metaphysics) nomeiam a obra porque as datas
+  são das traduções, não da composição.
+}
+
+% Title page and copyright page (scan of the 2002 digital reprint, which keeps the
+% 1963 pagination: "© Oxford University Press 1963 ... Reprinted 2002"): Aristotle,
+% Categories and De Interpretatione, translated with notes by J. L. Ackrill,
+% Clarendon Press, Oxford; Clarendon Aristotle Series. Catalogue (Toronto, Columbia,
+% Harvard MARC via Open Library): Oxford, Clarendon Press, 1963, vi, 162 p.
+% Translator's full name: British Academy memoir and BnF authority (John Lloyd Ackrill).
+%
+% Categories 2, 1a24-25, in Ackrill's rendering, p. 4 (the passage of 1a20-1b9):
+%   "(b) Some are in a subject but are not said of any subject. (By 'in a subject'
+%   I mean what is in something, not as a part, and cannot exist separately from
+%   what it is in.)"
+% Ackrill's wording is "in a subject", not "present in a subject". The example that
+% follows on the same page: "the individual knowledge-of-grammar is in a subject,
+% the soul, but is not said of any subject".
+@book{aristotle-categories,
+  author     = {Aristotle},
+  title      = {{Categories} and {De Interpretatione}},
+  translator = {Ackrill, John Lloyd},
+  series     = {Clarendon Aristotle Series},
+  address    = {Oxford},
+  publisher  = {Clarendon Press},
+  year       = 1963,
+  langid     = {english},
+}
+
+% Project MUSE table of contents of volume 2 (digitization of the Princeton print
+% edition): "Metaphysics, W. D. Ross", pp. 1552-1728; volume 2 = pp. 1251-2487.
+% Library record (Univ. of Patras): Princeton, Princeton University Press, 1984,
+% 2 v., Bollingen series. Ross's translation as revised for this edition
+% ("The Revised Oxford Translation").
+@incollection{aristotle-metaphysics,
+  author     = {Aristotle},
+  title      = {Metaphysics},
+  translator = {Ross, William David},
+  booktitle  = {The complete works of {Aristotle}},
+  booksubtitle = {the revised {Oxford} translation},
+  editor     = {Barnes, Jonathan},
+  volume     = 2,
+  series     = {Bollingen Series},
+  address    = {Princeton},
+  publisher  = {Princeton University Press},
+  year       = 1984,
+  pages      = {1552--1728},
+  langid     = {english},
+}
+
+% Crossref (Computer 20(4):10-19, April 1987; Crossref omits the colon of the
+% printed title and the author's given names; name: LoC authority "Brooks,
+% Frederick P., Jr. (Frederick Phillips)").
+%
+% The sentence in which Brooks invokes Aristotle exists in three wordings:
+% - Computer (1987), section "Does it have to be hard?—Essential difficulties",
+%   per two transcriptions of the Computer text (B. Cox's annotated copy, marked
+%   "Computer Magazine; April 1987", and the UCSF course copy, "IEEE Computer,
+%   Vol. 20, No. 4 (April 1987) pp. 10-19"); the PAGE IS NOT VERIFIED (no scan of
+%   the magazine was available):
+%     "Following Aristotle, I divide them into essence, the difficulties inherent
+%     in the nature of software, and accidents, those difficulties that today
+%     attend its production but are not inherent."
+% - The Mythical Man-Month, Anniversary Edition (1995), ch. 16, p. 182 (scan of the
+%   book; reprints the IFIP 1986 text) — see brooks1995:
+%     "Following Aristotle, I divide them into essence—the difficulties inherent in
+%     the nature of the software—and accidents—those difficulties that today attend
+%     its production but that are not inherent."
+% - UNC technical report TR86-020 (1986), scan: "... essence, the difficulties
+%   inherent in the nature of the software, and accidents, those difficulties which
+%   today attend its production but which are not inherent."
+% For a quotation with a page number, cite brooks1995 [p. 182].
+@article{brooks1987,
+  author   = {Brooks, Jr., Frederick Phillips},
+  title    = {No silver bullet},
+  subtitle = {essence and accidents of software engineering},
+  journal  = {Computer},
+  volume   = 20,
+  number   = 4,
+  pages    = {10--19},
+  date     = {1987-04},
+  doi      = {10.1109/MC.1987.1663532},
+  langid   = {english},
+}
+
+% LoC MARC record 94036653: The mythical man-month : essays on software
+% engineering / Frederick P. Brooks, Jr. — Anniversary ed. — Reading, Mass. :
+% Addison-Wesley Pub. Co., 1995. xiii, 322 p. Copyright page (publisher's sample):
+% ch. 16 is the IFIP 1986 paper (Kugler (ed.), Information Processing 86,
+% pp. 1069-1076).
+%
+% Ch. 17, '"No Silver Bullet" Refired', section "Obscure writing will be
+% misunderstood", p. 209 (scan of the book):
+%   "Some have been confused, however, by the terms accident and accidental, which
+%   follow an ancient usage going back to Aristotle. By accidental, I did not mean
+%   occurring by chance, nor misfortunate, but more nearly incidental, or
+%   appurtenant."
+% (note 4, p. 303, quotes Webster's New International Dictionary, 2nd ed., for
+% the Aristotelian and Scholastic sense of "accident").
+@book{brooks1995,
+  author    = {Brooks, Jr., Frederick Phillips},
+  title     = {The mythical man-month},
+  subtitle  = {essays on software engineering},
+  edition   = {Anniversary ed.},
+  address   = {Reading, MA},
+  publisher = {Addison-Wesley},
+  year      = 1995,
+  langid    = {english},
+}
+
+% The paper itself (title page: "Ben Moseley, Peter Marks, February 6, 2006"; no
+% venue printed; 66 p.). The URL is a public copy of that PDF, which responded on
+% the urldate.
+@online{moseley2006,
+  author  = {Moseley, Ben and Marks, Peter},
+  title   = {Out of the tar pit},
+  date    = {2006-02-06},
+  url     = {https://curtclifton.net/papers/MoseleyMarks06a.pdf},
+  urldate = {2026-10-19},
+  langid  = {english},
+}
+
+% Crossref (author name: LoC authority "Parnas, David Lorge").
+@article{parnas1972,
+  author   = {Parnas, David Lorge},
+  title    = {On the criteria to be used in decomposing systems into modules},
+  journal  = {Communications of the {ACM}},
+  volume   = 15,
+  number   = 12,
+  pages    = {1053--1058},
+  date     = {1972-12},
+  doi      = {10.1145/361598.361623},
+  langid   = {english},
+}
+
+% Crossref (second author: LoC authority "Wing, Jeannette Marie"; the first
+% author's middle initial as printed).
+@article{liskov1994,
+  author   = {Liskov, Barbara H. and Wing, Jeannette Marie},
+  title    = {A behavioral notion of subtyping},
+  journal  = {{ACM} Transactions on Programming Languages and Systems},
+  volume   = 16,
+  number   = 6,
+  pages    = {1811--1841},
+  date     = {1994-11},
+  doi      = {10.1145/197320.197383},
+  langid   = {english},
+}
+
+% PhilPapers (pp. 37-48) and library catalogue (SFPL MARC, LCCN 67013924): Art,
+% mind, and religion; proceedings [of the 1965 Oberlin Colloquium in Philosophy],
+% ed. W. H. Capitan and D. D. Merrill, [Pittsburgh], University of Pittsburgh
+% Press, [1967], 158 p. The catalogue brackets place and date (not on the title
+% page); they are given plainly here, as the press's own name gives the place.
+% Editors' names: LoC authority "Capitan, William H."; catalogue "Merrill, Daniel D.
+% (Daniel Davy)".
+@incollection{putnam1967,
+  author    = {Putnam, Hilary},
+  title     = {Psychological predicates},
+  booktitle = {Art, mind, and religion},
+  editor    = {Capitan, William H. and Merrill, Daniel Davy},
+  address   = {Pittsburgh},
+  publisher = {University of Pittsburgh Press},
+  year      = 1967,
+  pages     = {37--48},
+  langid    = {english},
+}
+
+% Decision: the ORIGINAL German first edition, so that pinpoint citations can use
+% the 1927 pagination, which the later Niemeyer editions keep and which the two
+% translations below print in their margins; citing by section (§ 15 …) is
+% edition-independent. Catalogue (Toronto MARC): Sein und Zeit / von Martin
+% Heidegger ; erste Hälfte. Halle a. d. S., M. Niemeyer, 1927. xi, [1], 438 p.,
+% "Sonderdruck aus: Jahrbuch für Philosophie und phänomenologische Forschung,
+% Band VIII, herausgegeben von E. Husserl". The words "erste Hälfte" of the title
+% page are not part of the title proper and are omitted.
+@book{heidegger1927,
+  author    = {Heidegger, Martin},
+  title     = {Sein und {Zeit}},
+  address   = {Halle},
+  publisher = {M. Niemeyer},
+  year      = 1927,
+  langid    = {german},
+}
+
+% For English quotations. Catalogues (Toronto MARC: New York, Harper & Row, [1962],
+% 589 p., "Translation of Sein und Zeit"; Laurentian MARC: London, SCM Press, 1962,
+% LCCN 62-5846). The New York imprint is given.
+@book{heidegger1962,
+  author     = {Heidegger, Martin},
+  title      = {Being and time},
+  translator = {Macquarrie, John and Robinson, Edward},
+  address    = {New York},
+  publisher  = {Harper {\&} Row},
+  year       = 1962,
+  langid     = {english},
+}
+
+% For Portuguese quotations: the bilingual (German-Portuguese) edition translated by
+% Fausto Castilho. Reviews giving the imprint: Filosofia Unisinos 14(2), 2013
+% ("Campinas/Petrópolis, Editora da Unicamp/Vozes, 1200 p.") and Revista Húmus,
+% 2013 ("Trad. de Fausto Castilho. Editora da Unicamp; Vozes, 2012. 1200p.").
+% Co-published by Editora da Unicamp (Campinas) and Vozes (Petrópolis); only the
+% first place and publisher are given, as in main.bib (ranganathan1933).
+@book{heidegger2012,
+  author     = {Heidegger, Martin},
+  title      = {Ser e tempo},
+  translator = {Castilho, Fausto},
+  address    = {Campinas},
+  publisher  = {Editora da Unicamp},
+  year       = 2012,
+  langid     = {brazil},
+}
+
+% BnF catalogue (ark:/12148/cb32633381p): Du mode d'existence des objets techniques /
+% par Gilbert Simondon. Paris, Aubier, 1958, 1 vol. (265 p.), 23 cm. (Columbia
+% MARC adds the series "Analyse et raisons", Aubier-Éditions Montaigne.)
+@book{simondon1958,
+  author    = {Simondon, Gilbert},
+  title     = {Du mode d'existence des objets techniques},
+  address   = {Paris},
+  publisher = {Aubier},
+  year      = 1958,
+  langid    = {french},
+}
+
+% LoC MARC record 78069585: Boston, Houghton Mifflin, c1979, xiv, 332 p.
+% (author heading "Gibson, James Jerome, 1904-1980").
+@book{gibson1979,
+  author    = {Gibson, James Jerome},
+  title     = {The ecological approach to visual perception},
+  address   = {Boston},
+  publisher = {Houghton Mifflin},
+  year      = 1979,
+  langid    = {english},
+}
+
+% LoC MARC record 87047782: New York, Basic Books, c1988, xi, 257 p. (author: LoC
+% authority "Norman, Donald Arthur").
+@book{norman1988,
+  author    = {Norman, Donald Arthur},
+  title     = {The psychology of everyday things},
+  address   = {New York},
+  publisher = {Basic Books},
+  year      = 1988,
+  langid    = {english},
+}
+
+% LoC MARC record 69011312: The sciences of the artificial, by Herbert A. Simon.
+% [Cambridge, M.I.T. Press, 1969], xii, 123 p. First edition (2nd ed. 1981, 3rd ed.
+% 1996); the catalogue's brackets are dropped.
+@book{simon1969,
+  author    = {Simon, Herbert Alexander},
+  title     = {The sciences of the artificial},
+  address   = {Cambridge, MA},
+  publisher = {{MIT} Press},
+  year      = 1969,
+  langid    = {english},
+}
+
+% Crossref (March 2004). Pages as printed in the article (75-105, with the authors'
+% biographies on p. 105); Crossref says 75-106, counting a page that carries only
+% the running foot.
+@article{hevner2004,
+  author   = {Hevner, Alan R. and March, Salvatore T. and Park, Jinsoo and Ram, Sudha},
+  title    = {Design science in information systems research},
+  journal  = {{MIS} Quarterly},
+  volume   = 28,
+  number   = 1,
+  pages    = {75--105},
+  date     = {2004-03},
+  doi      = {10.2307/25148625},
+  langid   = {english},
+}
+
+% Crossref (first author: LoC authority "Orlikowski, Wanda J. (Wanda Janina)").
+% "Research commentary" is the article's rubric, printed as part of its title.
+@article{orlikowski2001,
+  author   = {Orlikowski, Wanda Janina and Iacono, C. Suzanne},
+  title    = {Research commentary},
+  subtitle = {desperately seeking the ``{IT}'' in {IT} research---a call to theorizing the {IT} artifact},
+  journal  = {Information Systems Research},
+  volume   = 12,
+  number   = 2,
+  pages    = {121--134},
+  date     = {2001-06},
+  doi      = {10.1287/isre.12.2.121.9700},
+  langid   = {english},
+}
+
+% Crossref (September 1989).
+@article{davis1989,
+  author   = {Davis, Fred D.},
+  title    = {Perceived usefulness, perceived ease of use, and user acceptance of information technology},
+  journal  = {{MIS} Quarterly},
+  volume   = 13,
+  number   = 3,
+  pages    = {319--340},
+  date     = {1989-09},
+  doi      = {10.2307/249008},
+  langid   = {english},
+}
+
+% Decision: the ORIGINAL Russian article, verified on a scan of the issue (header
+% "Проблемы передачи информации, Том I, 1965, Вып. 1"; pp. 3-11). The English
+% translation in Problems of Information Transmission (Faraday Press) could not be
+% checked against a copy, so its pages (given as 1-7 in the literature) are not
+% used; for English quotations cite the authorised reprint, kolmogorov1968.
+% Name: LoC authority "Kolmogorov, A. N. (Andreĭ Nikolaevich)", transliterated
+% without diacritics as kotelnikov1933 in main.bib.
+@article{kolmogorov1965,
+  author   = {Kolmogorov, Andrei Nikolaevich},
+  title    = {Три подхода к определению понятия «количество информации»},
+  journal  = {Проблемы передачи информации},
+  volume   = 1,
+  number   = 1,
+  pages    = {3--11},
+  year     = 1965,
+  langid   = {russian},
+}
+
+% Crossref; the reprint's first page reads "Reprinted with the publishers
+% permission from Problems of Information Transmission, the Faraday Press, New York"
+% and cites the original as Problemy Peredachi Informatsii 1(1):3-11, 1965.
+@article{kolmogorov1968,
+  author   = {Kolmogorov, Andrei Nikolaevich},
+  title    = {Three approaches to the quantitative definition of information},
+  journal  = {International Journal of Computer Mathematics},
+  volume   = 2,
+  number   = {1-4},
+  pages    = {157--168},
+  year     = 1968,
+  doi      = {10.1080/00207166808803030},
+  langid   = {english},
+}
+
+% Crossref (July 1928; Crossref's title carries a footnote mark, omitted).
+@article{hartley1928,
+  author   = {Hartley, Ralph Vinton Lyon},
+  title    = {Transmission of information},
+  journal  = {Bell System Technical Journal},
+  volume   = 7,
+  number   = 3,
+  pages    = {535--563},
+  date     = {1928-07},
+  doi      = {10.1002/j.1538-7305.1928.tb01236.x},
+  langid   = {english},
+}
+
+% Crossref (proceedings of September 2000, ACM, New York) and DBLP (ICFP '00,
+% Montreal; proceedings edited by Martin Odersky and Philip Wadler).
+@inproceedings{claessen2000,
+  author      = {Claessen, Koen and Hughes, John},
+  title       = {{QuickCheck}},
+  subtitle    = {a lightweight tool for random testing of {Haskell} programs},
+  booktitle   = {Proceedings of the Fifth {ACM SIGPLAN} International Conference on Functional Programming},
+  editor      = {Odersky, Martin and Wadler, Philip},
+  eventtitle  = {International Conference on Functional Programming},
+  eventnumber = 5,
+  eventyear   = 2000,
+  venue       = {Montr{\'e}al},
+  address     = {New York},
+  publisher   = {{ACM}},
+  pages       = {268--279},
+  year        = 2000,
+  doi         = {10.1145/351240.351266},
+  langid      = {english},
+}
+
+% The paper's page on the second author's site (laputan.org/drc/drc.html):
+% "Journal of Object-Oriented Programming, June/July 1988, Volume 1, Number 2,
+% pages 22-35". No DOI.
+@article{johnson1988,
+  author   = {Johnson, Ralph E. and Foote, Brian},
+  title    = {Designing reusable classes},
+  journal  = {Journal of Object-Oriented Programming},
+  volume   = 1,
+  number   = 2,
+  pages    = {22--35},
+  date     = {1988-06/1988-07},
+  langid   = {english},
+}
+
+% LoC MARC record 2003050331: Boston, Addison-Wesley, c2004, xxx, 529 p. The
+% publisher (InformIT) gives "Published Aug 20, 2003 ... Copyright 2004", and the
+% copyright page reads "Copyright © 2004 by Eric Evans". Decision: the year of
+% publication, 2003 (NBR 6023 §8.6.1 gives the date of publication; the copyright
+% date is the fallback). APA 7 would use the copyright year (2004).
+@book{evans2003,
+  author    = {Evans, Eric},
+  title     = {Domain-driven design},
+  subtitle  = {tackling complexity in the heart of software},
+  address   = {Boston},
+  publisher = {Addison-Wesley},
+  year      = 2003,
+  langid    = {english},
+}
+
+% Crossref (proceedings-article, OOPSLA '92 Addendum, ACM Press, New York; event in
+% Vancouver, 18-22 October 1992). The author's online copy of the report
+% (c2.com/doc/oopsla92.html) has the sentence: "Shipping first time code is like
+% going into debt." (the printed page is not verified).
+@inproceedings{cunningham1992,
+  author     = {Cunningham, Ward},
+  title      = {The {WyCash} portfolio management system},
+  booktitle  = {Addendum to the proceedings on object-oriented programming systems, languages, and applications},
+  eventtitle = {Conference on Object-Oriented Programming Systems, Languages, and Applications ({OOPSLA})},
+  eventyear  = 1992,
+  venue      = {Vancouver},
+  address    = {New York},
+  publisher  = {{ACM} Press},
+  pages      = {29--30},
+  year       = 1992,
+  doi        = {10.1145/157709.157715},
+  langid     = {english},
+}
+
+% LoC MARC record 98024923: Boston, Mass., Harvard Business School Press, c1999,
+% x, 352 p.
+@book{shapiro1999,
+  author    = {Shapiro, Carl and Varian, Hal R.},
+  title     = {Information rules},
+  subtitle  = {a strategic guide to the network economy},
+  address   = {Boston},
+  publisher = {Harvard Business School Press},
+  year      = 1999,
+  langid    = {english},
+}
+
+% Crossref (print issue May 2014; online 4 September 2013).
+@article{gawer2014,
+  author   = {Gawer, Annabelle and Cusumano, Michael A.},
+  title    = {Industry platforms and ecosystem innovation},
+  journal  = {Journal of Product Innovation Management},
+  volume   = 31,
+  number   = 3,
+  pages    = {417--433},
+  date     = {2014-05},
+  doi      = {10.1111/jpim.12105},
+  langid   = {english},
+}
+
+% Crossref (June 2000).
+@article{vandeursen2000,
+  author   = {van Deursen, Arie and Klint, Paul and Visser, Joost},
+  title    = {Domain-specific languages},
+  subtitle = {an annotated bibliography},
+  journal  = {{ACM SIGPLAN} Notices},
+  volume   = 35,
+  number   = 6,
+  pages    = {26--36},
+  date     = {2000-06},
+  doi      = {10.1145/352029.352035},
+  langid   = {english},
+}
+
+% Crossref (1981; no month in the record).
+@article{sugiyama1981,
+  author   = {Sugiyama, Kozo and Tagawa, Shojiro and Toda, Mitsuhiko},
+  title    = {Methods for visual understanding of hierarchical system structures},
+  journal  = {{IEEE} Transactions on Systems, Man, and Cybernetics},
+  volume   = 11,
+  number   = 2,
+  pages    = {109--125},
+  year     = 1981,
+  doi      = {10.1109/TSMC.1981.4308636},
+  langid   = {english},
+}
