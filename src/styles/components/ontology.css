@@ -1,1 +1,1132 @@
-/* Component styles: ontology workstream. Wrapped in the components cascade layer by global.css. */
+/*
+ * Component styles: ontology workstream (wrapped in the components cascade layer by global.css).
+ *
+ * Concept references and previews, concept maps (local and full explorer), the
+ * taxonomy tree, the concept page, the ontology page (top-level grid, stats,
+ * compare tool, bridges, communities, formal concept lattice, vocabulary) and
+ * the glossary.
+ *
+ * Rules of the design system: colours only from tokens (strata through the
+ * --stratum variable that [data-stratum] sets, src/styles/components/chrome.css),
+ * spacing from --space-*, durations from --duration-* multiplied by --motion,
+ * no gradients. Meaning is never carried by colour alone: strata always come
+ * with the simplex glyph and a label; relation types are told apart by dash
+ * pattern and end marker; selection and search recede the context with
+ * opacity and change stroke widths. Forced colours fall back to system colours.
+ */
+
+/* ───────────────────────── Concept references and previews ───────────────────────── */
+
+.concept-link {
+  text-decoration-style: dotted;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+.concept-link:hover {
+  text-decoration-style: solid;
+}
+
+.concept-preview {
+  /* Popover UA defaults centre the box (inset: 0; margin: auto); previews are placed instead. */
+  inset: auto;
+  margin: 0;
+  position: fixed;
+  z-index: 20;
+  max-inline-size: min(36ch, calc(100vw - 2 * var(--space-0)));
+  padding: var(--space-n1) var(--space-0);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background-color: var(--paper-raised);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+  text-align: start;
+  hyphens: auto;
+  opacity: 1;
+  transition:
+    opacity calc(var(--duration-3) * var(--motion)) var(--ease-enter),
+    overlay calc(var(--duration-3) * var(--motion)) allow-discrete,
+    display calc(var(--duration-3) * var(--motion)) allow-discrete;
+}
+.concept-preview[popover]:not(:popover-open) {
+  opacity: 0;
+}
+@starting-style {
+  .concept-preview[popover]:popover-open {
+    opacity: 0;
+  }
+}
+.concept-preview > span {
+  display: block;
+}
+.concept-preview > span + span {
+  margin-block-start: var(--space-n3);
+}
+.concept-preview__label {
+  font-weight: 600;
+}
+.concept-preview__marks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-n2);
+  color: var(--ink-muted);
+}
+.concept-preview__hint {
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+}
+.concept-preview__hint::before {
+  content: '→ ' / '';
+}
+@supports (anchor-name: --a) and (position-anchor: --a) {
+  .concept-preview[data-anchored] {
+    position-area: block-end span-inline-end;
+    position-try-fallbacks:
+      flip-block,
+      flip-inline,
+      flip-block flip-inline;
+    margin-block: var(--space-n3);
+  }
+}
+
+/* Category: the ontological kind, as a small-caps label (never a colour). */
+.category-mark {
+  font-family: var(--font-ui);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+
+/* ───────────────────────── Concept chips and lists ───────────────────────── */
+
+.concept-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-n3);
+}
+.concept-chip .glyph {
+  flex: none;
+  inline-size: 1em;
+  block-size: 1em;
+  align-self: center;
+  color: var(--stratum, currentColor);
+}
+.concept-chip__stratum {
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+}
+.concept-chip__stratum::after {
+  content: ' ·' / '';
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2) var(--space-0);
+  padding: 0;
+  margin-block: var(--space-n1);
+  list-style: none;
+}
+
+.relation-list {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: var(--space-n2) var(--space-0);
+  margin-block: var(--space-0);
+}
+.relation-list__group {
+  display: contents;
+}
+.relation-list dt {
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  padding-block-start: 0.15em;
+}
+.relation-list dd {
+  margin: 0;
+}
+.relation-list dd ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n3) var(--space-0);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.relation-list--compact {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  font-size: var(--step-n1);
+}
+.relation-list--compact dd {
+  margin-block-end: var(--space-n2);
+}
+@container (inline-size < 30rem) {
+  .relation-list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .relation-list dd {
+    margin-block-end: var(--space-n1);
+  }
+}
+
+/* ───────────────────────── Concept maps ───────────────────────── */
+
+.cmap {
+  display: block;
+  margin-block: var(--space-1);
+  font-family: var(--font-ui);
+}
+.cmap__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2) var(--space-0);
+  align-items: center;
+  margin-block-end: var(--space-n2);
+}
+.cmap__toolbar[hidden] {
+  display: none;
+}
+.cmap__group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n3);
+  align-items: center;
+}
+.cmap__button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-n3);
+  min-block-size: 2.75rem;
+  min-inline-size: 2.75rem;
+  padding: var(--space-n3) var(--space-n1);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background-color: var(--paper-raised);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--step-n1);
+  cursor: pointer;
+}
+.cmap__button:hover {
+  background-color: var(--paper-sunken);
+}
+.cmap__button[aria-pressed='true'] {
+  border-width: 2px;
+  font-weight: 600;
+}
+.cmap__button[aria-pressed='false'] {
+  border-style: dashed;
+  color: var(--ink-muted);
+}
+/* A hidden stratum: struck-through label and a faded glyph, besides the pressed state. */
+.cmap__filter[aria-pressed='false'] span {
+  text-decoration: line-through;
+}
+.cmap__filter[aria-pressed='false'] .glyph {
+  opacity: 0.4;
+}
+.cmap__filter .glyph,
+.cmap__legend-item .glyph {
+  inline-size: 1.2em;
+  block-size: 1.2em;
+  flex: none;
+  color: var(--stratum, currentColor);
+}
+.cmap__search {
+  gap: var(--space-n2);
+  font-size: var(--step-n1);
+}
+.cmap__search-input {
+  min-block-size: 2.75rem;
+  inline-size: min(16rem, 60vw);
+  padding: var(--space-n3) var(--space-n1);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background-color: var(--paper);
+  color: var(--ink);
+  font: inherit;
+}
+.cmap__help,
+.cmap__caption {
+  margin-block: var(--space-n2);
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+.cmap__help[hidden] {
+  display: none;
+}
+
+.cmap__viewport {
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background-color: var(--paper-sunken);
+}
+.cmap.is-enhanced .cmap__viewport {
+  cursor: grab;
+  /* Vertical swipes still scroll the page; horizontal drags pan the map. */
+  touch-action: pan-y pinch-zoom;
+}
+.cmap.is-panning .cmap__viewport {
+  cursor: grabbing;
+}
+.cmap.is-panning .cmap__svg {
+  user-select: none;
+}
+.cmap__svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  font-size: 15px;
+}
+.cmap--full .cmap__svg {
+  max-block-size: min(85vh, 60rem);
+}
+
+/* Nodes: the simplex glyph of the stratum inside a halo, the label below. */
+.cmap-node {
+  color: var(--stratum, var(--ink));
+  text-decoration: none;
+  transition: opacity calc(var(--duration-3) * var(--motion)) var(--ease-standard);
+}
+.cmap-node__halo {
+  fill: var(--paper);
+  stroke: var(--stratum, var(--ink));
+  stroke-width: 1.5;
+}
+.cmap-node__glyph {
+  color: var(--stratum, var(--ink));
+}
+.cmap-node__label {
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--paper-sunken);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.cmap-node:hover .cmap-node__label {
+  text-decoration: underline;
+}
+.cmap-node.is-focus .cmap-node__halo,
+.cmap-node.is-selected .cmap-node__halo {
+  stroke-width: 3.5;
+}
+.cmap-node.is-focus .cmap-node__label,
+.cmap-node.is-selected .cmap-node__label {
+  font-weight: 700;
+}
+.cmap-node:focus-visible {
+  outline: none;
+}
+.cmap-node:focus-visible .cmap-node__halo {
+  stroke: var(--focus);
+  stroke-width: 4;
+}
+.cmap-node:focus-visible .cmap-node__label {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+.cmap-node.is-filtered,
+.cmap-edge.is-filtered {
+  display: none;
+}
+
+/* Focus + context: the selection and its neighbours stay; the rest recedes. */
+.cmap.has-selection .cmap-node:not(.is-selected, .is-neighbour),
+.cmap.has-query .cmap-node:not(.is-match, .is-selected) {
+  opacity: 0.25;
+}
+.cmap.has-selection .cmap__edges .cmap-edge:not(.is-active) {
+  opacity: 0.12;
+}
+.cmap.has-query:not(.has-selection) .cmap__edges .cmap-edge {
+  opacity: 0.2;
+}
+.cmap .cmap__edges .cmap-edge.is-active {
+  stroke: var(--ink);
+  stroke-width: 2.4;
+}
+.cmap-node.is-match .cmap-node__halo {
+  stroke-width: 3.5;
+  stroke-dasharray: 3 2;
+}
+
+/* Edges: told apart by dash pattern and marker (named in the legend). */
+.cmap-edge {
+  fill: none;
+  stroke: var(--ink-subtle);
+  stroke-width: 1.4;
+  transition: opacity calc(var(--duration-3) * var(--motion)) var(--ease-standard);
+}
+.cmap-edge[data-type='broader'] {
+  stroke: var(--ink-muted);
+  stroke-width: 1.8;
+}
+.cmap-edge[data-type='partOf'] {
+  stroke: var(--ink-muted);
+}
+.cmap-edge[data-type='dependsOn'] {
+  stroke-dasharray: 7 4;
+}
+.cmap-edge[data-type='formalizes'] {
+  stroke-dasharray: 2 3;
+  stroke-linecap: round;
+}
+.cmap-edge[data-type='appliesTo'] {
+  stroke-dasharray: 9 3 2 3;
+}
+.cmap-edge[data-type='measures'] {
+  stroke-dasharray: 4 2;
+}
+.cmap-edge[data-type='contrastsWith'] {
+  stroke-dasharray: 1 5;
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+.cmap-edge[data-type='related'] {
+  stroke-width: 1;
+}
+.cmap__arrow {
+  fill: var(--ink-muted);
+}
+.cmap__diamond {
+  fill: var(--paper);
+  stroke: var(--ink-muted);
+  stroke-width: 1.2;
+}
+
+/* The category × stratum grid (full explorer): headings only in that layout. */
+.cmap__grid-labels {
+  display: none;
+}
+.cmap[data-layout='grid'] .cmap__grid-labels {
+  display: inline;
+}
+.cmap__grid-head {
+  fill: var(--ink);
+  font-weight: 700;
+}
+.cmap__grid-row {
+  fill: var(--ink-muted);
+  font-variant-caps: all-small-caps;
+}
+
+.cmap__legend {
+  margin-block: var(--space-n1);
+  font-size: var(--step-n1);
+}
+.cmap__legend-title {
+  margin: 0 0 var(--space-n3);
+  color: var(--ink-muted);
+}
+.cmap__legend-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n3) var(--space-0);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.cmap__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-n3);
+}
+.cmap__legend-line {
+  inline-size: 2.25em;
+  block-size: 0.75em;
+  flex: none;
+}
+.cmap__relations {
+  margin-block: var(--space-n1);
+  font-size: var(--step-n1);
+}
+.cmap__relations ul {
+  columns: 18rem auto;
+  column-gap: var(--space-1);
+  margin-block: var(--space-n2);
+}
+
+/* ───────────────────────── Ontology page ───────────────────────── */
+
+.ontology > section {
+  margin-block-start: var(--space-2);
+}
+.ontology__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2) var(--space-1);
+  padding: 0;
+  list-style: none;
+}
+.ontology__lede {
+  font-size: var(--step-1);
+}
+
+.ontology__explorer-head,
+.ontology__fca-head {
+  max-inline-size: var(--measure);
+  margin-inline: auto;
+}
+.explorer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-0);
+}
+@container (inline-size >= 64rem) {
+  .explorer {
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+    align-items: start;
+  }
+  .explorer__detail {
+    position: sticky;
+    inset-block-start: var(--space-1);
+  }
+}
+.explorer__map .cmap {
+  margin-block: 0;
+}
+.explorer__detail {
+  padding: var(--space-0);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background-color: var(--paper-raised);
+}
+.explorer__detail h3 {
+  margin-block-start: 0;
+  font-size: var(--step-0);
+}
+.explorer__detail-title {
+  margin-block: 0 var(--space-n2);
+  font-size: var(--step-1);
+  font-weight: 600;
+}
+.explorer__detail-marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2);
+  align-items: center;
+}
+.explorer__detail-heading {
+  margin-block: var(--space-0) var(--space-n3);
+  color: var(--ink-muted);
+}
+
+.ontology-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+  gap: var(--space-n1) var(--space-0);
+}
+.ontology-stats__item {
+  padding-block: var(--space-n2);
+  border-block-start: 1px solid var(--rule);
+}
+.ontology-stats__item dt {
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+.ontology-stats__item dd {
+  margin: 0;
+  font-size: var(--step-1);
+  font-variant-numeric: tabular-nums;
+}
+.ontology-stats__note {
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+
+/* Tables in scrollable regions (keyboard-focusable, labelled): top-level grid and vocabulary. */
+.toplevel-grid,
+.vocabulary-table {
+  overflow-x: auto;
+  margin-block: var(--space-0);
+}
+.toplevel-grid table,
+.vocabulary-table table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--step-n1);
+}
+.toplevel-grid caption,
+.vocabulary-table caption {
+  caption-side: top;
+  text-align: start;
+  color: var(--ink-muted);
+  padding-block-end: var(--space-n2);
+}
+.toplevel-grid th,
+.toplevel-grid td,
+.vocabulary-table th,
+.vocabulary-table td {
+  padding: var(--space-n2);
+  border-block-end: 1px solid var(--rule);
+  text-align: start;
+  vertical-align: top;
+}
+.toplevel-grid thead th,
+.vocabulary-table thead th {
+  border-block-end: 2px solid var(--rule-strong);
+}
+.toplevel-grid tbody th {
+  min-inline-size: 12rem;
+  font-weight: 600;
+}
+.toplevel-grid tr:target th {
+  background-color: var(--mark);
+}
+.toplevel-grid__question {
+  display: block;
+  margin-block-start: var(--space-n3);
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+.toplevel-grid ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.toplevel-grid li + li {
+  margin-block-start: var(--space-n3);
+}
+.relation-swatch {
+  inline-size: 2.25em;
+  block-size: 0.75em;
+  vertical-align: middle;
+  margin-inline-end: var(--space-n3);
+}
+.num {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.bridge-list li,
+.community-list__item {
+  margin-block: var(--space-n2);
+}
+.bridge-list__value {
+  margin-inline-start: var(--space-n2);
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+.ontology__nmi {
+  font-variant-numeric: tabular-nums;
+}
+.community-list {
+  padding-inline-start: 0;
+  list-style: none;
+}
+.community-list__item h3 {
+  margin-block: var(--space-0) 0;
+  font-size: var(--step-0);
+}
+
+/* Compare tool. */
+.compare__form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n1) var(--space-0);
+  align-items: end;
+  margin-block: var(--space-0);
+}
+.compare__form[hidden] {
+  display: none;
+}
+.compare__field {
+  display: grid;
+  gap: var(--space-n3);
+}
+.compare__field select,
+.compare__submit {
+  min-block-size: 2.75rem;
+  padding: var(--space-n3) var(--space-n1);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background-color: var(--paper-raised);
+  color: var(--ink);
+  font: inherit;
+}
+.compare__submit {
+  cursor: pointer;
+  font-weight: 600;
+}
+.compare__needs-js {
+  color: var(--ink-muted);
+}
+:root[data-js] .compare__needs-js {
+  display: none;
+}
+.compare__needs-js[hidden] {
+  display: none;
+}
+.compare__output:empty {
+  display: none;
+}
+.compare__output {
+  padding: var(--space-0);
+  border-inline-start: 2px solid var(--rule-strong);
+  background-color: var(--paper-raised);
+}
+.compare__summary {
+  margin-block-start: 0;
+  font-weight: 600;
+}
+.compare__table {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: var(--space-n3) var(--space-0);
+  margin: 0;
+}
+.compare__table dt {
+  color: var(--ink-muted);
+}
+.compare__table dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.compare__path {
+  margin: 0;
+  padding-inline-start: var(--space-1);
+}
+.compare__cost {
+  color: var(--ink-muted);
+}
+@container (inline-size < 30rem) {
+  .compare__table {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .compare__table dd {
+    margin-block-end: var(--space-n2);
+  }
+}
+
+/* Explanations of the measures (stretchtext). */
+.measures-note {
+  margin-block: var(--space-0);
+  font-size: var(--step-n1);
+}
+.measures-note summary {
+  cursor: pointer;
+  color: var(--link);
+}
+.measures-note__item {
+  margin-block: var(--space-n1);
+}
+.ontology-tex--display {
+  display: block;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin-block: var(--space-n2);
+}
+
+/* Formal concept lattice (Hasse diagram) with reduced labelling. */
+.fca {
+  margin: var(--space-0) 0;
+}
+.fca__viewport {
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background-color: var(--paper-sunken);
+}
+.fca__svg {
+  display: block;
+  inline-size: max(100%, 40rem);
+  max-inline-size: 64rem;
+  block-size: auto;
+  margin-inline: auto;
+  font-family: var(--font-ui);
+  font-size: 13px;
+}
+.fca__edge {
+  stroke: var(--ink-subtle);
+  stroke-width: 1.2;
+}
+.fca__dot {
+  fill: var(--paper);
+  stroke: var(--ink-muted);
+  stroke-width: 1.4;
+}
+/* Half-filled circles: top = introduces concepts, bottom = introduces works (shape, not colour). */
+.fca__half {
+  fill: none;
+}
+.fca__node.has-attributes .fca__half--top,
+.fca__node.has-objects .fca__half--bottom {
+  fill: var(--ink-muted);
+}
+.fca__attrs {
+  fill: var(--ink);
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--paper-sunken);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.fca__objs {
+  fill: var(--ink-muted);
+  font-style: italic;
+  paint-order: stroke;
+  stroke: var(--paper-sunken);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.fca__list {
+  margin-block: var(--space-n1);
+  font-size: var(--step-n1);
+}
+.fca__list p {
+  margin-block: var(--space-n3);
+}
+
+/* ───────────────────────── Taxonomy tree ───────────────────────── */
+
+.ctree {
+  /* Width of the disclosure triangle; leaves are indented by the same amount so labels align. */
+  --ctree-twisty: 1.25em;
+}
+.ctree ul {
+  padding-inline-start: 0;
+  margin: 0;
+  list-style: none;
+}
+.ctree__group {
+  padding-inline-start: var(--space-1);
+  border-inline-start: 1px solid var(--rule);
+  margin-inline-start: var(--space-n1);
+}
+.ctree__group[hidden] {
+  display: none;
+}
+.ctree__item {
+  margin-block: var(--space-n3);
+}
+.ctree__label--category {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+}
+.ctree__label[data-repeat] {
+  font-style: italic;
+}
+.ctree.is-enhanced .ctree__label--category {
+  cursor: pointer;
+}
+.ctree__twisty {
+  display: inline-block;
+  inline-size: var(--ctree-twisty);
+  text-align: center;
+  color: var(--ink-muted);
+  cursor: pointer;
+  user-select: none;
+}
+.ctree__twisty::before {
+  content: '▸' / '';
+}
+.ctree__item:has(> [aria-expanded='true']) > .ctree__twisty::before {
+  content: '▾' / '';
+}
+.ctree.is-enhanced .ctree__item:not(:has(> .ctree__twisty)) > .ctree__label {
+  margin-inline-start: var(--ctree-twisty);
+}
+/* Synchronised with the map: a weight change and a rule, besides the mark colour. */
+.ctree__label[aria-current='true'] {
+  font-weight: 700;
+  background-color: var(--mark);
+  box-shadow: inset 2px 0 0 var(--ink);
+}
+
+/* ───────────────────────── Concept page ───────────────────────── */
+
+.breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-n3);
+  padding: 0;
+  margin-block: var(--space-0);
+  list-style: none;
+  font-size: var(--step-n1);
+}
+.breadcrumbs li + li::before {
+  content: '›' / '';
+  margin-inline-end: var(--space-n3);
+  color: var(--ink-muted);
+}
+.concept__title {
+  margin-block-end: var(--space-n2);
+}
+.concept__alt {
+  margin-block: 0 var(--space-n2);
+  color: var(--ink-muted);
+}
+.concept__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-n2) var(--space-0);
+}
+.concept-badge {
+  display: inline-block;
+  padding: 0 var(--space-n2);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+}
+.concept-badge--bridge {
+  border-style: double;
+  border-width: 3px;
+}
+.concept__definition {
+  font-size: var(--step-1);
+  line-height: var(--leading-body);
+}
+.concept__notation {
+  margin: var(--space-0) 0;
+}
+.concept__notation figcaption {
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+.concept__facets {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-n3) var(--space-0);
+  font-size: var(--step-n1);
+}
+.concept__facets dt {
+  color: var(--ink-muted);
+}
+.concept__facets dd {
+  margin: 0;
+}
+.concept > section {
+  margin-block-start: var(--space-1);
+}
+.concept__note {
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+.learning-path {
+  padding-inline-start: var(--space-1);
+}
+.learning-path li {
+  margin-block: var(--space-n3);
+}
+.learning-path__target {
+  font-weight: 700;
+}
+.measure-table {
+  inline-size: 100%;
+  margin-block: var(--space-0);
+  border-collapse: collapse;
+  font-size: var(--step-n1);
+}
+.measure-table caption {
+  caption-side: top;
+  text-align: start;
+  color: var(--ink-muted);
+  padding-block-end: var(--space-n2);
+}
+.measure-table th,
+.measure-table td {
+  padding: var(--space-n3) var(--space-n2);
+  border-block-end: 1px solid var(--rule);
+  text-align: start;
+}
+.measure-table thead th {
+  border-block-end: 2px solid var(--rule-strong);
+}
+.measure-table th[scope='row'] {
+  font-weight: 400;
+}
+.source-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n3) var(--space-0);
+  padding: 0;
+  list-style: none;
+}
+.source-key {
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: var(--step-n1);
+}
+.concept__footer {
+  margin-block-start: var(--space-2);
+  padding-block-start: var(--space-0);
+  border-block-start: 1px solid var(--rule);
+}
+
+/* ───────────────────────── Related works and backlinks ───────────────────────── */
+
+.related-works,
+.backlinks {
+  margin-block: var(--space-2) var(--space-1);
+  padding-block-start: var(--space-0);
+  border-block-start: 1px solid var(--rule);
+}
+.related-works__note,
+.backlinks__note {
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+.related-works__list,
+.backlinks__list {
+  padding: 0;
+  list-style: none;
+}
+.related-works__item,
+.backlinks__item {
+  margin-block: var(--space-n1);
+}
+.related-works__title,
+.backlinks__title {
+  font-weight: 600;
+}
+.related-works__meta,
+.backlinks__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-n3) var(--space-n1);
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+.related-works__reason {
+  margin-block: var(--space-n3) 0;
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+
+/* ───────────────────────── Glossary ───────────────────────── */
+
+.glossary__letters ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n3);
+  padding: 0;
+  list-style: none;
+}
+.glossary__letters a {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 2.75rem;
+  min-block-size: 2.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  text-decoration: none;
+}
+.glossary__letters a:hover {
+  background-color: var(--paper-sunken);
+}
+.glossary__count {
+  color: var(--ink-muted);
+}
+.glossary__letter {
+  margin-block-start: var(--space-2);
+  padding-block-end: var(--space-n3);
+  border-block-end: 1px solid var(--rule-strong);
+}
+.glossary__entries {
+  margin: 0;
+}
+.glossary__entry {
+  margin-block: var(--space-0);
+}
+.glossary__entry:target {
+  outline: 2px solid var(--focus);
+  outline-offset: var(--space-n3);
+}
+.glossary__entry dt {
+  font-weight: 600;
+}
+.glossary__entry dfn {
+  font-style: normal;
+}
+.glossary__entry dd {
+  margin-inline-start: 0;
+}
+.glossary__entry dd p {
+  margin-block: var(--space-n3);
+}
+.glossary__entry--alt dt {
+  font-weight: 400;
+  font-style: italic;
+}
+.glossary__marks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-n2) var(--space-0);
+}
+.glossary__footer {
+  margin-block-start: var(--space-2);
+}
+
+/* ───────────────────────── Forced colours and print ───────────────────────── */
+
+@media (forced-colors: active) {
+  .concept-preview,
+  .explorer__detail,
+  .cmap__viewport,
+  .fca__viewport,
+  .compare__output {
+    border: 1px solid CanvasText;
+  }
+  .cmap-node__halo,
+  .fca__dot {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+  .cmap-node__glyph,
+  .cmap__filter .glyph,
+  .cmap__legend-item .glyph,
+  .concept-chip .glyph {
+    color: CanvasText;
+  }
+  .cmap-node__label,
+  .cmap__grid-head,
+  .cmap__grid-row,
+  .fca__attrs,
+  .fca__objs {
+    fill: CanvasText;
+    stroke: Canvas;
+  }
+  .cmap-edge,
+  .fca__edge,
+  .cmap__diamond {
+    stroke: CanvasText;
+  }
+  .cmap__arrow,
+  .fca__node.has-attributes .fca__half--top,
+  .fca__node.has-objects .fca__half--bottom {
+    fill: CanvasText;
+  }
+  .cmap-node:focus-visible .cmap-node__halo {
+    stroke: Highlight;
+  }
+  .ctree__label[aria-current='true'] {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    color: HighlightText;
+  }
+}
+
+@media print {
+  .cmap__toolbar,
+  .cmap__help,
+  .compare,
+  .explorer__detail {
+    display: none;
+  }
+}

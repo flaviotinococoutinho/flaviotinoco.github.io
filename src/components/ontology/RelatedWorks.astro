@@ -1,0 +1,62 @@
+---
+/**
+ * "Read next" for an essay or a lab: the three works of the same locale closest
+ * to it by the best-match average of Lin similarity between their concept sets
+ * (src/core/ontology/works.ts, relatedWorks), each with its title, form, stratum
+ * and a one-line reason — the concepts they share, or the closest pair of
+ * concepts (relationReason). Renders nothing when the work is unknown or has no
+ * related work. Stateless; the data comes from the build-time site ontology.
+ *
+ * Usage (essay and lab views):
+ *   <RelatedWorks locale={locale} work={{ collection: 'essays', id: entry.id }} />
+ */
+import type { ConceptId } from '../../core/domain/identifiers.ts';
+import type { Locale } from '../../core/domain/locale.ts';
+import { relatedWorks, relationReason } from '../../core/ontology/index.ts';
+import WorkItem from './WorkItem.astro';
+import { siteOntology } from './data.ts';
+import { ontologyText } from './text.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly work: { readonly collection: 'essays' | 'labs'; readonly id: string };
+  /** Heading level of the section title (default 2). */
+  readonly level?: 2 | 3;
+}
+const { locale, work: ref, level = 2 } = Astro.props;
+const site = await siteOntology();
+const { taxonomy, ic, graph } = site.ontology;
+const work = site.workOfEntry(ref.collection, ref.id);
+const { t } = ontologyText(locale);
+const related =
+  work === undefined || work.locale !== locale ? [] : relatedWorks(taxonomy, ic, work, site.works[locale], 3);
+// Labels as authored: lower-casing would break proper names (Huffman, Fourier, Lyapunov).
+const label = (id: ConceptId): string => graph.concepts.get(id)?.prefLabel[locale] ?? id;
+const listFormat = new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' });
+const reasonOf = (other: (typeof related)[number]['work']): string | undefined => {
+  if (work === undefined) return undefined;
+  const r = relationReason(taxonomy, ic, work, other);
+  switch (r.kind) {
+    case 'shared':
+      return t('works.shares', { concepts: listFormat.format(r.concepts.slice(0, 4).map(label)) });
+    case 'closest':
+      return t('works.closest', { a: label(r.a), b: label(r.b) });
+    case 'none':
+      return undefined;
+  }
+};
+const Heading = `h${String(level)}` as 'h2' | 'h3';
+const headingId = `related-works-${ref.collection}-${ref.id.replace(/[^a-z0-9-]/gu, '-')}`;
+---
+
+{related.length > 0 && (
+  <section class="related-works" aria-labelledby={headingId}>
+    <Heading id={headingId}>{t('works.related')}</Heading>
+    <p class="related-works__note ui">{t('works.relatedNote')}</p>
+    <ol class="related-works__list" role="list">
+      {related.map((r) => (
+        <WorkItem work={r.work} locale={locale} block="related-works" reason={reasonOf(r.work)} />
+      ))}
+    </ol>
+  </section>
+)}

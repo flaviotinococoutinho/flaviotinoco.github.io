@@ -1,0 +1,23 @@
+{
+  "slug": {
+    "pt-BR": "frequencia",
+    "en": "frequency"
+  },
+  "prefLabel": {
+    "pt-BR": "Frequência",
+    "en": "Frequency"
+  },
+  "definition": {
+    "pt-BR": "Número de ciclos de um fenômeno periódico por unidade de tempo; na análise de sinais, a variável do domínio espectral.",
+    "en": "The number of cycles of a periodic phenomenon per unit of time; in signal analysis, the variable of the spectral domain."
+  },
+  "notation": "f = \\frac{1}{T}",
+  "stratum": "theory",
+  "category": "quality",
+  "domains": [
+    "signal-processing"
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q11652"
+  ]
+}

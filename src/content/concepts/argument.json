@@ -1,0 +1,35 @@
+{
+  "slug": {
+    "pt-BR": "argumento",
+    "en": "argument"
+  },
+  "prefLabel": {
+    "pt-BR": "Argumento",
+    "en": "Argument"
+  },
+  "definition": {
+    "pt-BR": "Conjunto de premissas apresentadas em apoio a uma conclusão; no modelo de Toulmin, a alegação articula-se com dados, garantia, apoio, qualificador e refutação.",
+    "en": "A set of premises offered in support of a conclusion; in Toulmin’s model, a claim is articulated with data, warrant, backing, qualifier and rebuttal."
+  },
+  "stratum": "philosophy",
+  "category": "entity",
+  "domains": [
+    "logic"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "inference"
+    },
+    {
+      "type": "appliesTo",
+      "target": "decision"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q186619"
+  ],
+  "sources": [
+    "toulmin1958"
+  ]
+}

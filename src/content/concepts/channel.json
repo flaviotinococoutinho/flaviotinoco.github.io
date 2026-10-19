@@ -1,0 +1,40 @@
+{
+  "slug": {
+    "pt-BR": "canal",
+    "en": "channel"
+  },
+  "prefLabel": {
+    "pt-BR": "Canal",
+    "en": "Channel"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "canal de comunicação"
+    ],
+    "en": [
+      "communication channel"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Meio pelo qual uma mensagem passa do transmissor ao receptor, modelado como a distribuição condicional das saídas dadas as entradas.",
+    "en": "The medium through which a message passes from transmitter to receiver, modelled as the conditional distribution of outputs given inputs."
+  },
+  "notation": "p(y \\mid x)",
+  "stratum": "theory",
+  "category": "entity",
+  "domains": [
+    "information-theory"
+  ],
+  "relations": [
+    {
+      "type": "partOf",
+      "target": "communication"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q733553"
+  ],
+  "sources": [
+    "shannon1948"
+  ]
+}

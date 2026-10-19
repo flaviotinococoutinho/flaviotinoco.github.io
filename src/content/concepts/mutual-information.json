@@ -1,0 +1,36 @@
+{
+  "slug": {
+    "pt-BR": "informacao-mutua",
+    "en": "mutual-information"
+  },
+  "prefLabel": {
+    "pt-BR": "Informação mútua",
+    "en": "Mutual information"
+  },
+  "definition": {
+    "pt-BR": "Quantidade de informação que uma variável aleatória fornece sobre outra: a redução da entropia de uma quando a outra é conhecida.",
+    "en": "The amount of information one random variable provides about another: the reduction in the entropy of one when the other is known."
+  },
+  "notation": "I(X;Y) = H(X) - H(X \\mid Y)",
+  "stratum": "theory",
+  "category": "measure",
+  "domains": [
+    "information-theory"
+  ],
+  "broader": [
+    "information"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "entropy"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q252973"
+  ],
+  "sources": [
+    "shannon1948",
+    "cover2006"
+  ]
+}

@@ -38,7 +38,7 @@ provenance:
 draft: false
 ---
 
-Every interface asks for choices: which button, which menu item, which of the ways to send something. Each choice takes some of the user's time and attention. This essay asks whether that cost can be measured in bits — and answers that, in part and under explicit assumptions, it can. It is the site's third crossing, from the formal stratum to the stratum of :concept[value]{id=value}: from what follows necessarily to what is useful to someone, and at what cost.
+Every interface asks for choices: which button, which menu item, which of the ways to send something. Each choice takes some of the user's time and attention. This essay asks whether that cost can be measured in bits — and answers that, in part and under explicit assumptions, it can. It is the site's third crossing, from the formal stratum to the stratum of :concept[value]{ref=value}: from what follows necessarily to what is useful to someone, and at what cost.
 
 ::toc
 
@@ -60,7 +60,7 @@ $$
 \label{eq:hyman}
 $$
 
-For equally likely alternatives $$\H(X) = \log_2 n$$, and :eqref[eq:hyman] differs from :eqref[eq:hick] only by the $$+1$$. Together the two formulations make up the :concept[Hick–Hyman law]{id=hick-hyman-law}: what weighs on a :concept[decision]{id=decision} is not the number of options but the uncertainty they represent for the person choosing.
+For equally likely alternatives $$\H(X) = \log_2 n$$, and :eqref[eq:hyman] differs from :eqref[eq:hick] only by the $$+1$$. Together the two formulations make up the :concept[Hick–Hyman law]{ref=hick-hyman-law}: what weighs on a :concept[decision]{ref=decision} is not the number of options but the uncertainty they represent for the person choosing.
 
 ## Caveats {#caveats .objection depends="hick-hyman-law"}
 
@@ -71,7 +71,7 @@ The law is empirical and local. The constants $$a$$ and $$b$$ are estimated by r
 A hierarchical menu resembles a code. Each item is reached by a sequence of choices, and no complete path is the beginning of another — exactly the property that defines prefix codes.
 
 :::definition{#def:prefix title="Prefix code"}
-A $$k$$-ary code assigns to each symbol of a source a word over an alphabet of $$k$$ letters. It is a :concept[prefix code]{id=prefix-code} when no word is a prefix of another, so that each word can be decoded as soon as it ends, without looking ahead.
+A $$k$$-ary code assigns to each symbol of a source a word over an alphabet of $$k$$ letters. It is a :concept[prefix code]{ref=prefix-code} when no word is a prefix of another, so that each word can be decoded as soon as it ends, without looking ahead.
 :::
 
 ::::theorem{#thm:kraft title="Kraft's inequality"}
@@ -87,7 +87,7 @@ Sketch. The words of a prefix code are leaves of a $$k$$-ary tree, none of them 
 :::
 ::::
 
-:concept[Kraft's inequality]{id=kraft-inequality} works like a budget: short paths are expensive, and there is no room for all of them to be short. The next theorem says how much, on average, the budget allows us to save.
+:concept[Kraft's inequality]{ref=kraft-inequality} works like a budget: short paths are expensive, and there is no room for all of them to be short. The next theorem says how much, on average, the budget allows us to save.
 
 :::theorem{#thm:source title="Source coding"}
 Let $$X$$ be a source with probabilities $$p_i$$, and let $$L^*$$ be the smallest mean length $$\sum_i p_i \ell_i$$ among $$k$$-ary prefix codes for $$X$$. Then
@@ -99,7 +99,7 @@ $$
 and Huffman's algorithm constructs a code that attains $$L^*$$ [@huffman1952; @cover2006, ch. 5].
 :::
 
-A :concept[Huffman code]{id=huffman-code} gives short words to frequent symbols and long ones to rare symbols. For a menu the translation is direct: what is used often should be close at hand; what is used rarely can live further away.
+A :concept[Huffman code]{ref=huffman-code} gives short words to frequent symbols and long ones to rare symbols. For a menu the translation is direct: what is used often should be close at hand; what is used rarely can live further away.
 
 ## The menu as a code {#menu-as-code .claim depends="choosing-is-coding"}
 
@@ -169,10 +169,10 @@ The lab below computes the entropy of any text you type and the mean length of a
 
 Equation :eqref[eq:cross-entropy] has an uncomfortable reading: whoever designs the interface chooses the weights $$w$$, and with them how much excess each of the user's intentions will cost. Burying the option to cancel a subscription deep in a tree gives a long path to something the person wants to do; adding decoy options raises the number of alternatives; pre-selecting whatever suits the business turns the default into a trap. Practices like these, sometimes called dark patterns, are not design mistakes: they are decision costs deliberately shifted onto users without their consent.
 
-The model is not enough to condemn them — the condemnation is ethical — but it helps make them visible and, in principle, measurable. Nor is :concept[cognitive load]{id=cognitive-load} shared equally: an excess that costs a fraction of a second to someone rested and familiar with the product may cost far more — plausibly in errors as well — to someone short of time, short of attention, or new to the :concept[interface]{id=interface}.
+The model is not enough to condemn them — the condemnation is ethical — but it helps make them visible and, in principle, measurable. Nor is :concept[cognitive load]{ref=cognitive-load} shared equally: an excess that costs a fraction of a second to someone rested and familiar with the product may cost far more — plausibly in errors as well — to someone short of time, short of attention, or new to the :concept[interface]{ref=interface}.
 
 ## Value as reduction of uncertainty {#value .conclusion depends="redesign,imposed-cost"}
 
-The journey ends where the bridge was meant to end. Philosophy asked for whom a sign means anything; theory offered a model of choice; the formal stratum set a bound — entropy is the least that any organisation can charge someone who has learned the frequencies —; and the stratum of value asks what to do with all this. The answer proposed here is modest: a :concept[product]{id=product} has value, in this narrow sense, when it reduces someone's uncertainty at a cost that person would accept. Bits measure part of the cost; they do not say who should pay it. That decision remains ours — which is why the bridge leads back, in the end, to the [first essay](../from-sign-to-information/): the meaning that the theory bracketed returns as the question of for whom, in the end, the choice matters.
+The journey ends where the bridge was meant to end. Philosophy asked for whom a sign means anything; theory offered a model of choice; the formal stratum set a bound — entropy is the least that any organisation can charge someone who has learned the frequencies —; and the stratum of value asks what to do with all this. The answer proposed here is modest: a :concept[product]{ref=product} has value, in this narrow sense, when it reduces someone's uncertainty at a cost that person would accept. Bits measure part of the cost; they do not say who should pay it. That decision remains ours — which is why the bridge leads back, in the end, to the [first essay](../from-sign-to-information/): the meaning that the theory bracketed returns as the question of for whom, in the end, the choice matters.
 
 ::bibliography

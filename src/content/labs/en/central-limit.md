@@ -39,7 +39,7 @@ widget: clt
 theorem: Central limit theorem
 ---
 
-Add up $$n$$ numbers drawn uniformly between 0 and 1, standardise the result and repeat many times. The histogram of these sums takes a shape that does not depend on the details of the terms — or hardly does. That is the claim of the :concept[central limit theorem]{id=central-limit-theorem}.
+Add up $$n$$ numbers drawn uniformly between 0 and 1, standardise the result and repeat many times. The histogram of these sums takes a shape that does not depend on the details of the terms — or hardly does. That is the claim of the :concept[central limit theorem]{ref=central-limit-theorem}.
 
 ::::theorem{#thm:clt title="Lindeberg–Lévy"}
 Let $$X_1, X_2, \ldots$$ be independent, identically distributed random variables with mean $$\mu$$ and variance $$\sigma^2$$, $$0 < \sigma^2 < \infty$$. Let $$S_n = X_1 + \cdots + X_n$$ and
@@ -76,6 +76,6 @@ The control is the number $$n$$ of terms added.
 
 ## Limits of the model
 
-The finite-variance assumption is not a technicality. If the terms follow a Cauchy distribution, the mean of $$n$$ of them has exactly the same Cauchy distribution for every $$n$$, and no normal approximation ever appears. Dependence between the terms can also prevent convergence. Strongly skewed distributions converge more slowly than the uniform, which is symmetric. And the lab uses a pseudo-random generator and a finite number of draws: the bar heights fluctuate around the limiting shape, with deviations that grow roughly like the square root of each bar's count. A normal :concept[model]{id=model} is therefore an approximation whose quality depends on $$n$$, on the tails and on independence — not an automatic law for any sum.
+The finite-variance assumption is not a technicality. If the terms follow a Cauchy distribution, the mean of $$n$$ of them has exactly the same Cauchy distribution for every $$n$$, and no normal approximation ever appears. Dependence between the terms can also prevent convergence. Strongly skewed distributions converge more slowly than the uniform, which is symmetric. And the lab uses a pseudo-random generator and a finite number of draws: the bar heights fluctuate around the limiting shape, with deviations that grow roughly like the square root of each bar's count. A normal :concept[model]{ref=model} is therefore an approximation whose quality depends on $$n$$, on the tails and on independence — not an automatic law for any sum.
 
 ::bibliography

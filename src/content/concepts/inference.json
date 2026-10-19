@@ -1,0 +1,32 @@
+{
+  "slug": {
+    "pt-BR": "inferencia",
+    "en": "inference"
+  },
+  "prefLabel": {
+    "pt-BR": "Inferência",
+    "en": "Inference"
+  },
+  "definition": {
+    "pt-BR": "Passagem de premissas a uma conclusão; pode ser dedutiva (a conclusão segue necessariamente), indutiva ou abdutiva (a melhor explicação disponível).",
+    "en": "The passage from premises to a conclusion; it may be deductive (the conclusion follows necessarily), inductive, or abductive (to the best available explanation)."
+  },
+  "stratum": "philosophy",
+  "category": "process",
+  "domains": [
+    "logic",
+    "epistemology"
+  ],
+  "relations": [
+    {
+      "type": "related",
+      "target": "knowledge"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q408386"
+  ],
+  "sources": [
+    "peirce1931"
+  ]
+}

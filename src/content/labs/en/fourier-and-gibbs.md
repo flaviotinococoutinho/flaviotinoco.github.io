@@ -48,7 +48,7 @@ S_N(x) = \frac{4}{\pi} \sum_{j=1}^{N} \frac{\sin\big((2j - 1)x\big)}{2j - 1}
 \label{eq:partial-sum}
 $$
 
-be the partial sum of its :concept[Fourier series]{id=fourier-series} with the first $$N$$ odd harmonics. Then $$S_N(x) \to q(x)$$ at every point of continuity, but the crest of $$S_N$$ closest to the jump at $$x = 0$$ satisfies
+be the partial sum of its :concept[Fourier series]{ref=fourier-series} with the first $$N$$ odd harmonics. Then $$S_N(x) \to q(x)$$ at every point of continuity, but the crest of $$S_N$$ closest to the jump at $$x = 0$$ satisfies
 
 $$
 \lim_{N \to \infty} S_N\!\left(\frac{\pi}{2N}\right) = \frac{2}{\pi} \int_0^{\pi} \frac{\sin t}{t} \d t \approx 1.17898.
@@ -64,7 +64,7 @@ The overshoot is about $$0.179$$ above the level $$1$$, that is, roughly 9 % of 
 
 ## Intuition
 
-Each harmonic adds detail at a finer scale. To climb from $$-1$$ to $$1$$ over a distance of the order of $$\pi/N$$, a finite sum has to oscillate, and its first oscillation overshoots the target. As $$N$$ grows, the oscillations squeeze towards the jump, but their height tends to a fixed value: convergence is pointwise, not uniform. This is the :concept[Gibbs phenomenon]{id=gibbs-phenomenon}.
+Each harmonic adds detail at a finer scale. To climb from $$-1$$ to $$1$$ over a distance of the order of $$\pi/N$$, a finite sum has to oscillate, and its first oscillation overshoots the target. As $$N$$ grows, the oscillations squeeze towards the jump, but their height tends to a fixed value: convergence is pointwise, not uniform. This is the :concept[Gibbs phenomenon]{ref=gibbs-phenomenon}.
 
 ## What to observe
 

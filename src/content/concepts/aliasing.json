@@ -1,0 +1,38 @@
+{
+  "slug": {
+    "pt-BR": "dobramento-espectral",
+    "en": "aliasing"
+  },
+  "prefLabel": {
+    "pt-BR": "Dobramento espectral",
+    "en": "Aliasing"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "aliasing",
+      "falseamento"
+    ],
+    "en": [
+      "spectral folding"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Distorção em que componentes acima da metade da taxa de amostragem reaparecem, após a amostragem, como frequências mais baixas, indistinguíveis das verdadeiras.",
+    "en": "The distortion by which components above half the sampling rate reappear after sampling as lower frequencies, indistinguishable from genuine ones."
+  },
+  "notation": "f_{\\mathrm{a}} = \\left\\lvert f - k f_s \\right\\rvert,\\quad k = \\operatorname{round}(f / f_s)",
+  "stratum": "formal",
+  "category": "process",
+  "domains": [
+    "signal-processing"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "sampling-theorem"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q868732"
+  ]
+}

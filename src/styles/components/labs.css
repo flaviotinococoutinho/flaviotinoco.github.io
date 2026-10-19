@@ -1,1 +1,570 @@
-/* Component styles: labs workstream. Wrapped in the components cascade layer by global.css. */
+/*
+ * Component styles: labs workstream (wrapped in the components cascade layer by global.css).
+ *
+ * The interactive laboratories (<ft-lab-*>, whose DOM is built by
+ * src/islands/elements/ft-lab-kit.ts), their no-JS fallback, the lab page and
+ * the labs index with its build-time previews.
+ *
+ * Rules of the design system: colours only from tokens (the stratum through the
+ * --stratum variable that [data-stratum] sets, src/styles/components/chrome.css),
+ * spacing from --space-*, durations from --duration-* multiplied by --motion,
+ * no gradients. Meaning is never carried by colour alone: plotted series also
+ * differ by dash pattern and stroke width, markers by shape, flipped bits by an
+ * underline and weight. Forced colours fall back to system colours.
+ *
+ * Plots keep a fixed coordinate system (640 units wide) scaled to their
+ * container, so text sizes inside them are in user units.
+ */
+
+/* ───────────────────────── Element and fallback ───────────────────────── */
+
+.lab {
+  display: block;
+  margin-block: var(--space-2);
+  font-family: var(--font-ui);
+  line-height: var(--leading-ui);
+}
+
+/* Reserve the frame's height while the element upgrades, only where scripts run (no layout shift). */
+@media (scripting: enabled) {
+  .lab:not([data-upgraded], [data-failed]) {
+    min-block-size: 24rem;
+  }
+  .lab--page:not([data-upgraded], [data-failed]) {
+    min-block-size: 32rem;
+  }
+}
+
+.lab__fallback {
+  padding: var(--space-0) var(--space-1);
+  border: 1px solid var(--rule);
+  border-inline-start: 3px solid var(--stratum, var(--rule-strong));
+  border-radius: 2px;
+  background-color: var(--paper-sunken);
+  font-size: var(--step-n1);
+}
+.lab__fallback > p {
+  margin: 0;
+}
+.lab__fallback > p + p {
+  margin-block-start: var(--space-n2);
+}
+.lab__noscript {
+  color: var(--ink-muted);
+}
+
+/* ───────────────────────── Frame: plots, then the panel ───────────────────────── */
+
+.lab__frame {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background-color: var(--paper-raised);
+  color: var(--ink);
+}
+
+.lab__plots {
+  display: grid;
+  gap: var(--space-0);
+  min-inline-size: 0;
+}
+.lab__plots-row {
+  display: grid;
+  gap: var(--space-0);
+  grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+}
+.lab__plot {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  overflow: visible;
+}
+.lab__canvas-wrap {
+  position: relative;
+}
+.lab__canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+.lab__overlay {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+/* ───────────────────────── Marks inside the plots ───────────────────────── */
+
+.lab__grid {
+  fill: none;
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+.lab__axis {
+  fill: none;
+  stroke: var(--ink-muted);
+  stroke-width: 1.25;
+}
+.lab__tick,
+.lab__axis-title,
+.lab__mark-label,
+.lab__symbol {
+  fill: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.lab__axis-title {
+  fill: var(--ink);
+}
+.lab__symbol {
+  font-family: var(--font-mono);
+  fill: var(--ink);
+}
+
+.lab__series {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.lab__series--main {
+  stroke: var(--stratum, var(--ink));
+  stroke-width: 2.5;
+}
+.lab__series--ref {
+  stroke: var(--ink-muted);
+  stroke-dasharray: 7 5;
+}
+.lab__series--limit {
+  stroke: var(--ink-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 4;
+}
+.lab__series--level {
+  stroke: var(--rule-strong);
+  stroke-width: 1.5;
+  stroke-dasharray: 10 4 2 4;
+}
+.lab__series--cursor {
+  stroke: var(--focus);
+  stroke-width: 1.5;
+}
+.lab__series--web {
+  stroke: var(--ink-muted);
+  stroke-width: 1;
+}
+.lab__series--stem {
+  stroke: var(--ink-muted);
+  stroke-width: 1.25;
+}
+
+.lab__marker {
+  fill: var(--paper-raised);
+  stroke: var(--stratum, var(--ink));
+  stroke-width: 1.75;
+}
+.lab__marker--alt {
+  fill: var(--ink);
+  stroke: var(--ink);
+}
+.lab__bar {
+  fill: var(--stratum, var(--ink-muted));
+  stroke: none;
+}
+.lab__band {
+  fill: var(--mark);
+  stroke: none;
+}
+
+/* ───────────────────────── Panel: controls, readouts, actions ───────────────────────── */
+
+.lab__panel {
+  display: grid;
+  gap: var(--space-1);
+  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+  align-items: start;
+  font-size: var(--step-n1);
+}
+
+.lab__controls {
+  display: grid;
+  gap: var(--space-n1);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.lab__heading {
+  margin-block-end: var(--space-n2);
+  padding: 0;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+.lab__control {
+  display: grid;
+  gap: var(--space-n3) var(--space-n1);
+  align-items: center;
+}
+.lab__control--number {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.lab__control--number > label {
+  grid-column: 1 / -1;
+}
+.lab__control input[type='range'] {
+  inline-size: 100%;
+  margin: 0;
+  accent-color: var(--stratum, var(--link));
+}
+.lab__control input[type='checkbox'],
+.lab__choice input[type='radio'] {
+  margin-inline-end: var(--space-n3);
+  accent-color: var(--stratum, var(--link));
+}
+.lab__control textarea,
+.lab__control input[type='text'] {
+  inline-size: 100%;
+  padding: var(--space-n3) var(--space-n2);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+}
+.lab__value {
+  min-inline-size: 7ch;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.lab__choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2) var(--space-0);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.lab__choice > legend {
+  margin-block-end: var(--space-n3);
+  padding: 0;
+}
+
+.lab__readouts {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+.lab__readout {
+  display: flex;
+  gap: var(--space-0);
+  justify-content: space-between;
+  padding-block: var(--space-n3);
+  border-block-end: 1px solid var(--rule);
+}
+.lab__readout dt {
+  color: var(--ink-muted);
+}
+.lab__readout dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.lab__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n1) var(--space-0);
+  align-items: center;
+  grid-column: 1 / -1;
+}
+.lab__button {
+  padding: var(--space-n3) var(--space-n1);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background-color: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color calc(var(--duration-2) * var(--motion)) var(--ease-standard);
+}
+.lab__button:hover {
+  border-color: var(--ink-muted);
+}
+.lab__permalink,
+.lab__open-link {
+  color: var(--link);
+}
+
+.lab__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2) var(--space-0);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--step-n1);
+}
+.lab__legend > li {
+  display: inline-flex;
+  gap: var(--space-n3);
+  align-items: center;
+}
+.lab__swatch {
+  inline-size: 28px;
+  block-size: 12px;
+  flex: none;
+}
+
+.lab__summary,
+.lab__status,
+.lab__note {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+.lab__error {
+  margin: 0;
+  padding: var(--space-n1) var(--space-0);
+  border-inline-start: 3px solid var(--rule-strong);
+  font-size: var(--step-n1);
+}
+
+/* Noisy channel: the transmitted and received bit strings; flipped bits change shape, not only tone. */
+.lab__transmission {
+  display: grid;
+  gap: var(--space-n3);
+}
+.lab__bits-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2);
+  align-items: baseline;
+}
+.lab__bits-label {
+  min-inline-size: 10ch;
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+.lab__bits {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  overflow-wrap: anywhere;
+}
+.lab__flip {
+  background-color: var(--mark);
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 0.12em;
+  text-underline-offset: 0.2em;
+}
+
+/* ───────────────────────── Lab page ───────────────────────── */
+
+.lab-page__header {
+  margin-block-end: var(--space-1);
+}
+.lab-page__stratum {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+}
+.lab-page__stratum-link {
+  color: inherit;
+  text-decoration: none;
+}
+.lab-page__title {
+  margin-block: var(--space-n1) var(--space-n2);
+}
+.lab-page__theorem {
+  margin: 0;
+  font-size: var(--step-1);
+}
+.lab-page__theorem-label {
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+}
+.lab-page__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2) var(--space-0);
+  margin-block: var(--space-n2) 0;
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+}
+.lab-page__widget > .lab {
+  margin-block: var(--space-1) var(--space-2);
+}
+.lab-page__footer {
+  display: grid;
+  gap: var(--space-1);
+  margin-block-start: var(--space-3);
+  padding-block-start: var(--space-1);
+  border-block-start: 1px solid var(--rule);
+}
+.lab-page__footer-title {
+  font-size: var(--step-1);
+}
+.lab-page__concept-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2) var(--space-0);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-ui);
+}
+
+/* ───────────────────────── Labs index ───────────────────────── */
+
+.labs-index__header {
+  margin-block-end: var(--space-1);
+}
+.labs-index__lede {
+  color: var(--ink-muted);
+}
+.labs-index__stratum {
+  margin-block-start: var(--space-2);
+}
+.labs-index__stratum-title a {
+  color: inherit;
+  text-decoration: none;
+}
+.labs-index__list {
+  display: grid;
+  gap: var(--space-1);
+  grid-template-columns: repeat(auto-fill, minmax(min(17rem, 100%), 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lab-card {
+  display: grid;
+  gap: var(--space-n1);
+  block-size: 100%;
+  padding: var(--space-0);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background-color: var(--paper-raised);
+}
+.lab-card__body {
+  display: grid;
+  gap: var(--space-n2);
+  align-content: start;
+}
+.lab-card__title {
+  margin: 0;
+  font-size: var(--step-1);
+}
+.lab-card__theorem,
+.lab-card__description {
+  margin: 0;
+  font-size: var(--step-n1);
+}
+.lab-card__theorem-label {
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+}
+.lab-card__description {
+  color: var(--ink-muted);
+}
+
+.lab-thumb {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background-color: var(--paper-sunken);
+}
+.lab-thumb path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lab-thumb__axis {
+  stroke: var(--rule-strong);
+  stroke-width: 1;
+}
+.lab-thumb__reference {
+  stroke: var(--ink-muted);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+.lab-thumb__curve {
+  stroke: var(--stratum, var(--ink));
+  stroke-width: 1.75;
+}
+.lab-thumb__accent {
+  stroke: var(--ink);
+  stroke-width: 1.25;
+}
+.lab-thumb .lab-thumb__bars,
+.lab-thumb .lab-thumb__points {
+  fill: var(--stratum, var(--ink-muted));
+  stroke: none;
+}
+
+/* ───────────────────────── Forced colours ───────────────────────── */
+
+@media (forced-colors: active) {
+  .lab__frame,
+  .lab__fallback,
+  .lab-card,
+  .lab-thumb {
+    border-color: CanvasText;
+  }
+  .lab__series,
+  .lab__series--main,
+  .lab__axis,
+  .lab__marker,
+  .lab-thumb__curve,
+  .lab-thumb__accent,
+  .lab-thumb__axis {
+    stroke: CanvasText;
+  }
+  .lab__series--ref,
+  .lab__series--limit,
+  .lab__series--level,
+  .lab__grid,
+  .lab-thumb__reference {
+    stroke: GrayText;
+  }
+  .lab__series--cursor {
+    stroke: Highlight;
+  }
+  .lab__bar,
+  .lab__marker--alt,
+  .lab-thumb .lab-thumb__bars,
+  .lab-thumb .lab-thumb__points {
+    fill: CanvasText;
+  }
+  .lab__band {
+    fill: Highlight;
+  }
+  .lab__tick,
+  .lab__axis-title,
+  .lab__mark-label,
+  .lab__symbol {
+    fill: CanvasText;
+  }
+  .lab__flip {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    color: HighlightText;
+  }
+}

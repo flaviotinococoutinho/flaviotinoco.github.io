@@ -43,7 +43,7 @@ Um microfone converte variações de pressão do ar numa tensão elétrica que m
 
 ## Sinal, frequência e transformada {#sinal-e-frequencia .definition}
 
-Um :concept[sinal]{id=signal} é uma grandeza que varia no tempo — a pressão diante de um microfone, a tensão num cabo — representada por uma função $$x(t)$$. A :concept[frequência]{id=frequency} de uma oscilação periódica é o número de ciclos por unidade de tempo, medida em hertz (Hz). A ideia que organiza todo o resto é que um sinal pode ser descrito de dois modos equivalentes: pelo valor que assume em cada instante ou pela quantidade de cada frequência que contém.
+Um :concept[sinal]{ref=signal} é uma grandeza que varia no tempo — a pressão diante de um microfone, a tensão num cabo — representada por uma função $$x(t)$$. A :concept[frequência]{ref=frequency} de uma oscilação periódica é o número de ciclos por unidade de tempo, medida em hertz (Hz). A ideia que organiza todo o resto é que um sinal pode ser descrito de dois modos equivalentes: pelo valor que assume em cada instante ou pela quantidade de cada frequência que contém.
 
 :::definition{#def:fourier title="Transformada de Fourier"}
 A transformada de Fourier de um sinal $$x$$ de energia finita é
@@ -56,7 +56,7 @@ $$
 e o sinal é recuperado pela transformada inversa, $$x(t) = \int_{-\infty}^{\infty} X(f)\, \e^{\i 2\pi f t} \d f$$. Diz-se que $$x$$ é *limitado em banda* a $$B$$ quando $$X(f) = 0$$ para todo $$|f| > B$$.
 :::
 
-A :eqref[eq:fourier] define a :concept[transformada de Fourier]{id=fourier-transform}:sidenote[Para sinais de energia finita, a integral deve ser entendida no sentido da energia (teorema de Plancherel); para sinais absolutamente integráveis, as duas leituras coincidem.] e descreve o espectro do sinal: quanto de cada frequência ele contém e com que fase. Nas aplicações, o espectro de sequências finitas de amostras é calculado pela transformada discreta de Fourier, que o algoritmo de Cooley e Tukey tornou rápida o suficiente para uso cotidiano [@cooley1965] — a :concept[transformada rápida de Fourier]{id=fast-fourier-transform}.
+A :eqref[eq:fourier] define a :concept[transformada de Fourier]{ref=fourier-transform}:sidenote[Para sinais de energia finita, a integral deve ser entendida no sentido da energia (teorema de Plancherel); para sinais absolutamente integráveis, as duas leituras coincidem.] e descreve o espectro do sinal: quanto de cada frequência ele contém e com que fase. Nas aplicações, o espectro de sequências finitas de amostras é calculado pela transformada discreta de Fourier, que o algoritmo de Cooley e Tukey tornou rápida o suficiente para uso cotidiano [@cooley1965] — a :concept[transformada rápida de Fourier]{ref=fast-fourier-transform}.
 
 A descrição em frequência não é capricho matemático. Sistemas lineares e invariantes no tempo, como filtros e muitos meios de transmissão, tratam cada frequência separadamente: multiplicam cada componente senoidal por um fator que depende apenas da frequência. Para eles, a pergunta útil não é que valor o sinal assume neste instante, mas até que frequência ele vai — e é exatamente essa pergunta que o teorema da amostragem transforma numa regra de projeto.
 
@@ -88,7 +88,7 @@ Se $$f_s \geq 2B$$, as réplicas da :eqref[eq:replicas] não se sobrepõem (no m
 O caso-limite $$f_s = 2B$$ vale para sinais de energia finita, mas não para uma senoide pura de frequência exatamente $$B$$, que não tem energia finita: amostrada nos cruzamentos por zero, ela produz apenas zeros. Por isso, na prática, amostra-se com folga acima de $$2B$$.
 :::
 
-A intuição oferecida por Shannon é simples: um sinal sem frequências acima de $$B$$ não consegue mudar substancialmente de valor em menos de meio ciclo da frequência mais alta, isto é, em menos de $$1/(2B)$$ segundo; amostras tomadas a esse intervalo não deixam escapar nada de essencial [@shannon1949]. A demonstração mostra que a intuição vale não apenas de modo aproximado, mas exato — e o :concept[teorema da amostragem]{id=sampling-theorem} passa a ser uma regra de projeto: para preservar até $$B$$ hertz, bastam $$2B$$ números por segundo.
+A intuição oferecida por Shannon é simples: um sinal sem frequências acima de $$B$$ não consegue mudar substancialmente de valor em menos de meio ciclo da frequência mais alta, isto é, em menos de $$1/(2B)$$ segundo; amostras tomadas a esse intervalo não deixam escapar nada de essencial [@shannon1949]. A demonstração mostra que a intuição vale não apenas de modo aproximado, mas exato — e o :concept[teorema da amostragem]{ref=sampling-theorem} passa a ser uma regra de projeto: para preservar até $$B$$ hertz, bastam $$2B$$ números por segundo.
 
 ## Uma descoberta de muitos nomes {#atribuicao .premise}
 
@@ -98,7 +98,7 @@ Os nomes compostos — Whittaker–Kotelnikov–Shannon, Nyquist–Shannon, entr
 
 ## Quando a amostragem engana {#aliasing .claim depends="o-teorema"}
 
-Se $$f_s < 2B$$, as réplicas da :eqref[eq:replicas] se sobrepõem, e nenhum filtro consegue separá-las depois: componentes acima de $$f_s/2$$ reaparecem “dobradas” abaixo desse limite. É o :concept[aliasing]{id=aliasing}, às vezes chamado em português de falseamento ou dobramento espectral. Para uma senoide de frequência $$f$$, a frequência aparente é
+Se $$f_s < 2B$$, as réplicas da :eqref[eq:replicas] se sobrepõem, e nenhum filtro consegue separá-las depois: componentes acima de $$f_s/2$$ reaparecem “dobradas” abaixo desse limite. É o :concept[aliasing]{ref=aliasing}, às vezes chamado em português de falseamento ou dobramento espectral. Para uma senoide de frequência $$f$$, a frequência aparente é
 
 $$
 f_a = \left| f - k f_s \right|, \qquad k = \operatorname{round}\!\left(\frac{f}{f_s}\right),
@@ -130,18 +130,18 @@ isto é, a distância de $$f$$ até o múltiplo de $$f_s$$ mais próximo. A sequ
 Por isso os conversores analógico-digitais costumam ser precedidos por um filtro que atenua o que está acima de $$f_s/2$$ antes da amostragem: depois dela, o dobramento já não pode ser desfeito.
 
 :::aside
-**O fenômeno de Gibbs.** O filtro passa-baixas ideal da demonstração corta o espectro de forma abrupta, e cortes abruptos têm um preço. Quando uma função com descontinuidade, como uma onda quadrada, é aproximada pelos primeiros $$N$$ termos de sua :concept[série de Fourier]{id=fourier-series}, a soma parcial ultrapassa o salto em cerca de 9 % da altura dele, perto da descontinuidade, e esse excesso não diminui quando $$N$$ cresce — apenas se estreita. É o :concept[fenômeno de Gibbs]{id=gibbs-phenomenon}. O mesmo mecanismo aparece na reconstrução pela função sinc, cujos lóbulos laterais decaem devagar: transições bruscas, reconstruídas a partir de um espectro truncado, vêm acompanhadas de oscilações. O [laboratório de Fourier e Gibbs](../../laboratorio/fourier-e-gibbs/) permite aumentar $$N$$ e ver o excesso persistir.
+**O fenômeno de Gibbs.** O filtro passa-baixas ideal da demonstração corta o espectro de forma abrupta, e cortes abruptos têm um preço. Quando uma função com descontinuidade, como uma onda quadrada, é aproximada pelos primeiros $$N$$ termos de sua :concept[série de Fourier]{ref=fourier-series}, a soma parcial ultrapassa o salto em cerca de 9 % da altura dele, perto da descontinuidade, e esse excesso não diminui quando $$N$$ cresce — apenas se estreita. É o :concept[fenômeno de Gibbs]{ref=gibbs-phenomenon}. O mesmo mecanismo aparece na reconstrução pela função sinc, cujos lóbulos laterais decaem devagar: transições bruscas, reconstruídas a partir de um espectro truncado, vêm acompanhadas de oscilações. O [laboratório de Fourier e Gibbs](../../laboratorio/fourier-e-gibbs/) permite aumentar $$N$$ e ver o excesso persistir.
 :::
 
 ## O que “determinístico” quer dizer aqui {#deterministico .claim depends="o-teorema"}
 
 O teorema é determinístico num sentido preciso: a conclusão segue necessariamente das hipóteses. Não há nele probabilidade nem estimativa; dadas as amostras, cada valor intermediário do sinal está fixado pela :eqref[eq:interpolacao].:sidenote[Determinístico não quer dizer decidível. @godel1931 mostrou que sistemas formais consistentes e suficientemente expressivos contêm sentenças que não podem provar nem refutar, e @turing1936 mostrou que não existe procedimento mecânico geral para decidir certas propriedades das próprias máquinas de calcular.] Mas o determinismo é da implicação, não do mundo, e as hipóteses são idealizações.
 
-Nenhum sinal não nulo é, ao mesmo tempo, limitado em banda e limitado no tempo: se fosse nulo fora de um intervalo de tempo, sua transformada se estenderia a uma função analítica em todo o plano complexo, e uma função assim que se anula num intervalo é identicamente nula. Sinais reais começam e terminam; logo, nenhum satisfaz exatamente a hipótese do :ref[thm:amostragem]. Além disso, a soma da :eqref[eq:interpolacao] exige amostras de todo o passado e de todo o futuro, e cada amostra real é registrada com um número finito de bits e afetada por :concept[ruído]{id=noise}. Na prática, filtra-se antes de amostrar, amostra-se com folga e aceita-se um erro pequeno e controlado. O teorema não descreve o conversor real; descreve o limite do qual ele se aproxima e serve de referência para medir quanto ele se afasta.
+Nenhum sinal não nulo é, ao mesmo tempo, limitado em banda e limitado no tempo: se fosse nulo fora de um intervalo de tempo, sua transformada se estenderia a uma função analítica em todo o plano complexo, e uma função assim que se anula num intervalo é identicamente nula. Sinais reais começam e terminam; logo, nenhum satisfaz exatamente a hipótese do :ref[thm:amostragem]. Além disso, a soma da :eqref[eq:interpolacao] exige amostras de todo o passado e de todo o futuro, e cada amostra real é registrada com um número finito de bits e afetada por :concept[ruído]{ref=noise}. Na prática, filtra-se antes de amostrar, amostra-se com folga e aceita-se um erro pequeno e controlado. O teorema não descreve o conversor real; descreve o limite do qual ele se aproxima e serve de referência para medir quanto ele se afasta.
 
 ## Decidir o que importa {#decidir .conclusion depends="deterministico,aliasing"}
 
-Amostrar é decidir duas vezes. Primeiro, decide-se o :concept[modelo]{id=model}: quais frequências importam, isto é, qual é o $$B$$ abaixo do qual está tudo o que se quer preservar. Depois, decide-se o custo: $$2B$$ números por segundo, cada um com certa precisão. O teorema garante que, feitas essas escolhas, nada mais se perde; não garante que as escolhas foram boas.
+Amostrar é decidir duas vezes. Primeiro, decide-se o :concept[modelo]{ref=model}: quais frequências importam, isto é, qual é o $$B$$ abaixo do qual está tudo o que se quer preservar. Depois, decide-se o custo: $$2B$$ números por segundo, cada um com certa precisão. O teorema garante que, feitas essas escolhas, nada mais se perde; não garante que as escolhas foram boas.
 
 Shannon usou exatamente essa contagem — um sinal de banda $$W$$ e duração $$T$$ fica especificado por $$2TW$$ números — para calcular quantos bits por segundo um canal limitado em banda e sujeito a ruído branco pode transmitir [@shannon1949]:
 
@@ -150,6 +150,6 @@ C = W \log_2 \frac{P + N}{N},
 \label{eq:capacidade}
 $$
 
-em que $$P$$ é a potência média do sinal e $$N$$ a do ruído na faixa. A :eqref[eq:capacidade] é uma :concept[capacidade de canal]{id=channel-capacity}: o teorema da amostragem converte uma escolha de modelo em contas de custo. O próximo ensaio da ponte, [Escolher custa bits](../escolher-custa-bits/), leva essas contas do sinal para as escolhas de quem usa um produto.
+em que $$P$$ é a potência média do sinal e $$N$$ a do ruído na faixa. A :eqref[eq:capacidade] é uma :concept[capacidade de canal]{ref=channel-capacity}: o teorema da amostragem converte uma escolha de modelo em contas de custo. O próximo ensaio da ponte, [Escolher custa bits](../escolher-custa-bits/), leva essas contas do sinal para as escolhas de quem usa um produto.
 
 ::bibliography

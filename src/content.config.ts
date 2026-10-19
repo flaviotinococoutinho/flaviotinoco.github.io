@@ -14,6 +14,7 @@ import { z } from 'astro/zod';
 import type { Result } from './core/algebra/result.ts';
 import { LOCALES } from './core/domain/locale.ts';
 import { STRATA } from './core/domain/strata.ts';
+import { CATEGORIES, LINK_TYPES } from './core/ontology/vocabulary.ts';
 import { DOMAINS } from './core/domain/facets.ts';
 import { CONFIDENCE_LEVELS, EVIDENCE_KINDS } from './core/domain/epistemic.ts';
 import { parseConceptId, parseSlug, parseTranslationKey } from './core/domain/identifiers.ts';
@@ -146,8 +147,14 @@ const pages = defineCollection({
 });
 
 /**
- * SKOS concepts (W3C Simple Knowledge Organization System, 2009).
- * The language-neutral concept id is the file name (entry.id), e.g. entropy.json → "entropy".
+ * SKOS concepts (W3C Simple Knowledge Organization System, 2009) with the typed
+ * relation vocabulary of src/core/ontology/vocabulary.ts. The full validation
+ * (references, acyclicity, stratum and category constraints, connectedness…) is
+ * done by the core (src/core/ontology/graph.ts) at build time; this schema
+ * checks the shape.
+ *
+ * The language-neutral concept id is the file name, e.g. entropy.json → "entropy"
+ * (`pathId`: the glob loader would otherwise use the per-locale `slug` object).
  */
 const concepts = defineCollection({
   loader: glob({ pattern: '*.json', base: './src/content/concepts', generateId: pathId }),
@@ -159,11 +166,17 @@ const concepts = defineCollection({
       definition: localized(z.string().min(1)),
       /** Optional TeX notation, rendered with KaTeX. */
       notation: z.string().optional(),
+      /** Top-level axis 1: the epistemic mode. */
       stratum,
+      /** Top-level axis 2: the ontological kind (decision procedure in docs/ontologia.md). */
+      category: z.enum(CATEGORIES),
+      /** Ranganathan facet; the first domain is the primary one. */
       domains: z.array(domain).min(1),
+      /** skos:broader (is-a), stored as a transitive reduction. */
       broader: z.array(conceptId).default([]),
-      related: z.array(conceptId).default([]),
-      /** skos:exactMatch — IRIs in external vocabularies (Wikidata, nLab, SEP…). */
+      /** Typed associative relations, stored in one direction (inverses are derived). */
+      relations: z.array(z.object({ type: z.enum(LINK_TYPES), target: conceptId }).strict()).default([]),
+      /** skos:exactMatch — IRIs in external vocabularies (Wikidata, verified). */
       exactMatch: z.array(z.url()).default([]),
       /** BibTeX keys of the sources supporting the definition. */
       sources: z.array(z.string()).default([]),

@@ -1,0 +1,34 @@
+{
+  "slug": {
+    "pt-BR": "modelo",
+    "en": "model"
+  },
+  "prefLabel": {
+    "pt-BR": "Modelo",
+    "en": "Model"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "modelo científico"
+    ],
+    "en": [
+      "scientific model"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Representação simplificada de um sistema que preserva as relações relevantes para um propósito, de modo a explicar ou prever seu comportamento.",
+    "en": "A simplified representation of a system that preserves the relations relevant to a purpose, so that its behaviour can be explained or predicted."
+  },
+  "stratum": "theory",
+  "category": "entity",
+  "domains": [
+    "epistemology",
+    "mathematics"
+  ],
+  "broader": [
+    "sign"
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q193946"
+  ]
+}

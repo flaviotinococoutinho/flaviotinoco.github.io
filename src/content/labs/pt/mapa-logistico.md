@@ -38,10 +38,10 @@ widget: logistic
 theorem: Universalidade de Feigenbaum
 ---
 
-O :concept[mapa logístico]{id=logistic-map}, $$x_{n+1} = r\, x_n (1 - x_n)$$, foi proposto como modelo mínimo de uma população com gerações separadas: $$x_n$$ é a fração da capacidade do ambiente ocupada na geração $$n$$, e $$r$$ mede a taxa de crescimento. Em 1976, Robert May usou exemplos como esse para mostrar que modelos matemáticos simples podem ter dinâmica muito complicada [@may1976].
+O :concept[mapa logístico]{ref=logistic-map}, $$x_{n+1} = r\, x_n (1 - x_n)$$, foi proposto como modelo mínimo de uma população com gerações separadas: $$x_n$$ é a fração da capacidade do ambiente ocupada na geração $$n$$, e $$r$$ mede a taxa de crescimento. Em 1976, Robert May usou exemplos como esse para mostrar que modelos matemáticos simples podem ter dinâmica muito complicada [@may1976].
 
 ::::theorem{#thm:feigenbaum title="Cascata de duplicações e universalidade"}
-Seja $$f_r(x) = r x (1 - x)$$ em $$[0, 1]$$, com $$0 \leq r \leq 4$$. Para $$1 < r < 3$$, o ponto fixo $$x^* = 1 - 1/r$$ atrai as órbitas que partem de $$(0, 1)$$. Em $$r_1 = 3$$, ele perde a estabilidade e surge uma órbita atratora de período 2, que se desestabiliza em $$r_2 = 1 + \sqrt{6} \approx 3{,}449$$, dando lugar ao período 4, e assim por diante: uma cascata de :concept[bifurcações]{id=bifurcation} $$r_1 < r_2 < r_3 < \cdots$$ que se acumula em $$r_\infty \approx 3{,}5699$$. As razões
+Seja $$f_r(x) = r x (1 - x)$$ em $$[0, 1]$$, com $$0 \leq r \leq 4$$. Para $$1 < r < 3$$, o ponto fixo $$x^* = 1 - 1/r$$ atrai as órbitas que partem de $$(0, 1)$$. Em $$r_1 = 3$$, ele perde a estabilidade e surge uma órbita atratora de período 2, que se desestabiliza em $$r_2 = 1 + \sqrt{6} \approx 3{,}449$$, dando lugar ao período 4, e assim por diante: uma cascata de :concept[bifurcações]{ref=bifurcation} $$r_1 < r_2 < r_3 < \cdots$$ que se acumula em $$r_\infty \approx 3{,}5699$$. As razões
 
 $$
 \delta_n = \frac{r_n - r_{n-1}}{r_{n+1} - r_n}
@@ -52,7 +52,7 @@ convergem para $$\delta = 4{,}669201609\ldots$$, a mesma constante para uma ampl
 ::::
 
 :::definition{#def:lyapunov title="Expoente de Lyapunov"}
-Para uma órbita $$x_0, x_1, \ldots$$ do mapa logístico, o :concept[expoente de Lyapunov]{id=lyapunov-exponent} é
+Para uma órbita $$x_0, x_1, \ldots$$ do mapa logístico, o :concept[expoente de Lyapunov]{ref=lyapunov-exponent} é
 
 $$
 \lambda = \lim_{n \to \infty} \frac{1}{n} \sum_{k=0}^{n-1} \ln \left| f_r'(x_k) \right| = \lim_{n \to \infty} \frac{1}{n} \sum_{k=0}^{n-1} \ln \left| r (1 - 2 x_k) \right|.
@@ -64,7 +64,7 @@ Se $$\lambda < 0$$, órbitas vizinhas se aproximam; se $$\lambda > 0$$, pequenas
 
 ## Intuição
 
-Cada duplicação de período acontece num intervalo de $$r$$ cerca de $$\delta$$ vezes menor que o anterior, por isso a cascata se acumula num ponto finito. Além de $$r_\infty$$, para a maior parte dos valores de $$r$$ a órbita nunca se repete e depende sensivelmente do ponto de partida: é o :concept[caos determinístico]{id=deterministic-chaos}, imprevisível na prática embora a regra não tenha nenhum acaso. Edward Lorenz encontrara a mesma sensibilidade, em 1963, num modelo simplificado de convecção atmosférica [@lorenz1963].
+Cada duplicação de período acontece num intervalo de $$r$$ cerca de $$\delta$$ vezes menor que o anterior, por isso a cascata se acumula num ponto finito. Além de $$r_\infty$$, para a maior parte dos valores de $$r$$ a órbita nunca se repete e depende sensivelmente do ponto de partida: é o :concept[caos determinístico]{ref=deterministic-chaos}, imprevisível na prática embora a regra não tenha nenhum acaso. Edward Lorenz encontrara a mesma sensibilidade, em 1963, num modelo simplificado de convecção atmosférica [@lorenz1963].
 
 ## O que observar
 
@@ -79,6 +79,6 @@ O controle é o parâmetro $$r$$.
 
 ## Limites do modelo
 
-A aritmética de ponto flutuante de dupla precisão guarda cerca de 16 algarismos significativos. Com $$\lambda = \ln 2$$, um erro inicial da ordem de $$10^{-16}$$ dobra a cada passo e atinge a ordem da unidade em pouco mais de 50 iterações: a partir daí, a órbita desenhada já não é a do ponto inicial escolhido. O diagrama de bifurcação e o expoente são médias de longo prazo e não dependem de seguir uma órbita exata, mas a justificativa rigorosa disso vai além deste laboratório. As estimativas numéricas de $$\lambda$$ usam um número finito de iterações e convergem devagar perto das bifurcações, onde o valor exato é zero. Por fim, o mapa é um :concept[modelo]{id=model} deliberadamente simplificado: populações reais estão sujeitas a ruído, estrutura espacial e interações que ele ignora. Serve para pensar, não para prever.
+A aritmética de ponto flutuante de dupla precisão guarda cerca de 16 algarismos significativos. Com $$\lambda = \ln 2$$, um erro inicial da ordem de $$10^{-16}$$ dobra a cada passo e atinge a ordem da unidade em pouco mais de 50 iterações: a partir daí, a órbita desenhada já não é a do ponto inicial escolhido. O diagrama de bifurcação e o expoente são médias de longo prazo e não dependem de seguir uma órbita exata, mas a justificativa rigorosa disso vai além deste laboratório. As estimativas numéricas de $$\lambda$$ usam um número finito de iterações e convergem devagar perto das bifurcações, onde o valor exato é zero. Por fim, o mapa é um :concept[modelo]{ref=model} deliberadamente simplificado: populações reais estão sujeitas a ruído, estrutura espacial e interações que ele ignora. Serve para pensar, não para prever.
 
 ::bibliography
