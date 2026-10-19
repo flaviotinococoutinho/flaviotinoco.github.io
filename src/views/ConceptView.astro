@@ -10,7 +10,9 @@
  * Lin, explained in a stretch), sources, works and a local map.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import JsonLd from '../components/JsonLd.astro';
 import MathAssets from '../components/MathAssets.astro';
+import Backlinks from '../components/ontology/Backlinks.astro';
 import CategoryMark from '../components/ontology/CategoryMark.astro';
 import ConceptLink from '../components/ontology/ConceptLink.astro';
 import Markup from '../components/ontology/Markup.astro';
@@ -19,6 +21,7 @@ import StratumMark from '../components/chrome/StratumMark.astro';
 import Tex from '../components/ontology/Tex.astro';
 import { siteOntology } from '../components/ontology/data.ts';
 import { ontologyText } from '../components/ontology/text.ts';
+import { styleFor, toHtml } from '../core/bibliography/index.ts';
 import type { ConceptId } from '../core/domain/identifiers.ts';
 import type { Locale } from '../core/domain/locale.ts';
 import {
@@ -32,11 +35,11 @@ import {
   learningPath,
   linked,
   localMapIds,
-  jsonForScript,
   type RelationType,
 } from '../core/ontology/index.ts';
 import { alternatesForAll, routeOfConcept } from '../adapters/astro/content.ts';
 import { asset, href } from '../adapters/astro/i18n.ts';
+import { jsonLdGraph } from '../core/web/json-ld.ts';
 
 export interface Props {
   readonly locale: Locale;
@@ -102,8 +105,6 @@ const peers = community === undefined ? [] : (ontology.communities.members[commu
 
 // Works (application layer) and the formal concept μ(m) of this attribute.
 const works = site.backlinks[locale].get(id) ?? [];
-const essays = works.filter((w) => w.kind === 'essay');
-const labs = works.filter((w) => w.kind === 'lab');
 const lattice = site.lattice[locale];
 const mu = lattice.attributeConcept.get(id);
 const formal = mu === undefined ? undefined : lattice.concepts[mu];
@@ -121,20 +122,29 @@ const breadcrumbs = [
   { name: tx.category(e.category), item: absolute(categoryHref) },
   { name: label, item: absolute(site.conceptHref(id, locale)) },
 ];
-const breadcrumbJson = jsonForScript({
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
-  itemListElement: breadcrumbs.map((b, i) => ({ '@type': 'ListItem', position: i + 1, name: b.name, item: b.item })),
-});
-const definedTermJson = jsonForScript({
-  '@context': 'https://schema.org',
-  '@type': 'DefinedTerm',
-  '@id': `${absolute(jsonldHref)}#concept/${id}`,
-  name: label,
-  description: e.definition[locale],
-  inDefinedTermSet: `${absolute(jsonldHref)}#scheme`,
-  url: absolute(site.conceptHref(id, locale)),
-  ...(e.exactMatch.length > 0 ? { sameAs: e.exactMatch } : {}),
+const jsonLd = jsonLdGraph([
+  {
+    '@type': 'DefinedTerm',
+    '@id': `${absolute(jsonldHref)}#concept/${id}`,
+    name: label,
+    ...(e.altLabel[locale].length > 0 ? { alternateName: [...e.altLabel[locale]] } : {}),
+    description: e.definition[locale],
+    inLanguage: locale,
+    termCode: id,
+    inDefinedTermSet: `${absolute(jsonldHref)}#scheme`,
+    url: absolute(site.conceptHref(id, locale)),
+    ...(e.exactMatch.length > 0 ? { sameAs: [...e.exactMatch] } : {}),
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbs.map((b, i) => ({ '@type': 'ListItem', position: i + 1, name: b.name, item: b.item })),
+  },
+]);
+// Sources as full references in the locale's style (ABNT NBR 6023 in pt-BR, APA 7 in en).
+const style = styleFor(locale);
+const sources = e.sources.map((k) => {
+  const ref = site.bibliography.get(k);
+  return { key: k, html: ref === undefined ? null : toHtml(style.reference(ref, '')) };
 });
 const hasMath = e.notation !== null;
 const sectionId = (s: string): string => `concept-${s}`;
@@ -144,9 +154,8 @@ const sectionId = (s: string): string => `concept-${s}`;
   <Fragment slot="head">
     {hasMath && <MathAssets />}
     <link rel="alternate" type="application/ld+json" href={jsonldHref} />
-    <script type="application/ld+json" is:inline set:html={breadcrumbJson} />
-    <script type="application/ld+json" is:inline set:html={definedTermJson} />
   </Fragment>
+  <JsonLd slot="head" value={jsonLd} />
   <div class="page-grid concept" data-stratum={e.stratum} data-category={e.category}>
     <nav class="breadcrumbs ui" aria-label={t('breadcrumb.label')}>
       <ol>
@@ -301,34 +310,7 @@ const sectionId = (s: string): string => `concept-${s}`;
     <section class="concept__works" aria-labelledby={sectionId('works')}>
       <h2 id={sectionId('works')}>{t('concept.works')}</h2>
       {works.length === 0 && <p class="concept__note ui">{t('concept.noWorks')}</p>}
-      {
-        essays.length > 0 && (
-          <>
-            <h3>{t('concept.essays')}</h3>
-            <ul>
-              {essays.map((w) => (
-                <li>
-                  <a href={w.href}>{w.title}</a>
-                </li>
-              ))}
-            </ul>
-          </>
-        )
-      }
-      {
-        labs.length > 0 && (
-          <>
-            <h3>{t('concept.labs')}</h3>
-            <ul>
-              {labs.map((w) => (
-                <li>
-                  <a href={w.href}>{w.title}</a>
-                </li>
-              ))}
-            </ul>
-          </>
-        )
-      }
+      <Backlinks locale={locale} concept={id} bare />
       {
         formal !== undefined && formal.extent.length > 0 && (
           <div class="concept__fca">
@@ -354,13 +336,11 @@ const sectionId = (s: string): string => `concept-${s}`;
       (e.sources.length > 0 || e.exactMatch.length > 0) && (
         <section class="concept__sources" aria-labelledby={sectionId('sources')}>
           <h2 id={sectionId('sources')}>{t('concept.sources')}</h2>
-          {e.sources.length > 0 && (
-            <ul class="source-keys ui" role="list">
-              {e.sources.map((k) => (
-                <li>
-                  <cite class="source-key" data-citation-key={k}>
-                    {k}
-                  </cite>
+          {sources.length > 0 && (
+            <ul class="concept-sources" role="list">
+              {sources.map((src) => (
+                <li class="concept-sources__item" data-citation-key={src.key}>
+                  {src.html === null ? <cite class="source-key">{src.key}</cite> : <Fragment set:html={src.html} />}
                 </li>
               ))}
             </ul>

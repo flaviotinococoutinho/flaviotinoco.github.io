@@ -1,0 +1,92 @@
+---
+/**
+ * Backlinks of the application layer (src/core/ontology/works.ts):
+ *
+ *   concept variant — the works of the locale that list the concept in their
+ *                     `concepts` frontmatter (backlinks);
+ *   work variant    — the other works of the locale sharing at least two
+ *                     concepts with the work (sharedConcepts), with the shared ones.
+ *
+ * Each work shows its title, form and stratum (glyph + label). Renders nothing
+ * when the list is empty. Stateless; the data comes from the build-time site ontology.
+ *
+ * `bare` renders only the list, for a page that already titles the section.
+ *
+ * Usage:
+ *   <Backlinks locale={locale} concept={id} />                                  (concept pages)
+ *   <Backlinks locale={locale} work={{ collection: 'labs', id: entry.id }} />   (essay and lab pages)
+ */
+import type { ConceptId } from '../../core/domain/identifiers.ts';
+import type { Locale } from '../../core/domain/locale.ts';
+import { sharedConcepts, type Work } from '../../core/ontology/index.ts';
+import WorkItem from './WorkItem.astro';
+import { siteOntology } from './data.ts';
+import { ontologyText } from './text.ts';
+
+interface Common {
+  readonly locale: Locale;
+  /** Heading level of the section title (default 2). */
+  readonly level?: 2 | 3;
+  /** Only the list, without the section and its heading. */
+  readonly bare?: boolean;
+}
+export type Props =
+  | (Common & { readonly concept: ConceptId; readonly work?: never })
+  | (Common & { readonly work: { readonly collection: 'essays' | 'labs'; readonly id: string }; readonly concept?: never });
+
+const { locale, level = 2, bare = false } = Astro.props;
+const site = await siteOntology();
+const { graph } = site.ontology;
+const { t } = ontologyText(locale);
+const label = (id: ConceptId): string => graph.concepts.get(id)?.prefLabel[locale] ?? id;
+const listFormat = new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' });
+
+let heading = '';
+let note: string | null = null;
+let items: readonly { readonly work: Work; readonly reason?: string }[] = [];
+let key = '';
+if (Astro.props.concept !== undefined) {
+  const id = Astro.props.concept;
+  heading = t('backlinks.concept', { label: label(id) });
+  items = (site.backlinks[locale].get(id) ?? []).map((work) => ({ work }));
+  key = `concept-${id}`;
+} else if (Astro.props.work !== undefined) {
+  const ref = Astro.props.work;
+  const work = site.workOfEntry(ref.collection, ref.id);
+  heading = t('backlinks.work');
+  note = t('backlinks.workNote');
+  items =
+    work === undefined
+      ? []
+      : sharedConcepts(work, site.works[locale], 2).map((s) => ({
+          work: s.work,
+          reason: t('works.shares', { concepts: listFormat.format(s.shared.map(label)) }),
+        }));
+  key = `${ref.collection}-${ref.id.replace(/[^a-z0-9-]/gu, '-')}`;
+}
+const Heading = `h${String(level)}` as 'h2' | 'h3';
+const headingId = `backlinks-${key}`;
+---
+
+{
+  items.length > 0 && bare && (
+    <ul class="backlinks__list" role="list">
+      {items.map((i) => (
+        <WorkItem work={i.work} locale={locale} block="backlinks" reason={i.reason} />
+      ))}
+    </ul>
+  )
+}
+{
+  items.length > 0 && !bare && (
+    <section class="backlinks" aria-labelledby={headingId}>
+      <Heading id={headingId}>{heading}</Heading>
+      {note !== null && <p class="backlinks__note ui">{note}</p>}
+      <ul class="backlinks__list" role="list">
+        {items.map((i) => (
+          <WorkItem work={i.work} locale={locale} block="backlinks" reason={i.reason} />
+        ))}
+      </ul>
+    </section>
+  )
+}

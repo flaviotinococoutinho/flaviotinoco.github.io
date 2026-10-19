@@ -103,3 +103,35 @@ export const relatedWorks = (
     .filter((r) => r.score > 0)
     .sort((x, y) => y.score - x.score || byCodeUnit(x.work.key, y.work.key))
     .slice(0, Math.max(0, k));
+
+/**
+ * Why two works are related, in one line: the concepts they share (most
+ * specific first: higher IC, then id) or, when they share none, the closest
+ * pair of concepts by Lin similarity — the pair that contributed most to the
+ * best-match average.
+ */
+export type RelationReason =
+  | { readonly kind: 'shared'; readonly concepts: readonly ConceptId[] }
+  | { readonly kind: 'closest'; readonly a: ConceptId; readonly b: ConceptId; readonly lin: number }
+  | { readonly kind: 'none' };
+
+export const relationReason = (
+  taxonomy: Hierarchy<TaxonId>,
+  ic: InformationContent<TaxonId>,
+  from: Work,
+  to: Work,
+): RelationReason => {
+  const theirs = new Set(to.concepts);
+  const shared = [...new Set(from.concepts)]
+    .filter((c) => theirs.has(c))
+    .sort((x, y) => (ic.get(y) ?? 0) - (ic.get(x) ?? 0) || byCodeUnit(x, y));
+  if (shared.length > 0) return { kind: 'shared', concepts: shared };
+  let best: { a: ConceptId; b: ConceptId; lin: number } | null = null;
+  for (const a of [...new Set(from.concepts)].sort(byCodeUnit)) {
+    for (const b of [...theirs].sort(byCodeUnit)) {
+      const s = lin(taxonomy, ic, a, b);
+      if (s > 0 && (best === null || s > best.lin)) best = { a, b, lin: s };
+    }
+  }
+  return best === null ? { kind: 'none' } : { kind: 'closest', ...best };
+};

@@ -7,7 +7,9 @@
  * whole build: the ontology with its measures, the works per locale, their
  * backlinks and the formal concept lattice of each locale.
  */
+import { pathToFileURL } from 'node:url';
 import { getCollection } from 'astro:content';
+import type { BibliographyIndex } from '../../core/bibliography/index.ts';
 import type { ConceptId } from '../../core/domain/identifiers.ts';
 import { LOCALES, type Locale } from '../../core/domain/locale.ts';
 import {
@@ -23,9 +25,12 @@ import {
 } from '../../core/ontology/index.ts';
 import { essays, labs, routeOfConcept, routeOfEssay, routeOfLab, type Concept } from '../../adapters/astro/content.ts';
 import { href } from '../../adapters/astro/i18n.ts';
+import { loadBibliography } from '../../adapters/unified/load-bibliography.ts';
 
 export interface SiteOntology {
   readonly ontology: Ontology;
+  /** The site bibliography (bibliography/*.bib), for the sources of the concepts. */
+  readonly bibliography: BibliographyIndex;
   readonly entries: ReadonlyMap<ConceptId, Concept>;
   readonly works: Readonly<Record<Locale, readonly Work[]>>;
   readonly backlinks: Readonly<Record<Locale, ReadonlyMap<ConceptId, readonly Work[]>>>;
@@ -33,6 +38,8 @@ export interface SiteOntology {
   readonly lattice: Readonly<Record<Locale, ConceptLattice<string, ConceptId>>>;
   readonly conceptHref: (id: ConceptId, locale: Locale) => string;
   readonly workByKey: (key: string, locale: Locale) => Work | undefined;
+  /** The work of a content entry (collection + entry id, e.g. 'essays' + 'pt/amostrar-e-decidir'). */
+  readonly workOfEntry: (collection: 'essays' | 'labs', id: string) => Work | undefined;
 }
 
 /** Drops keys whose value is undefined (zod output of optional fields) so the core parser sees the authored shape. */
@@ -44,6 +51,14 @@ const load = async (): Promise<SiteOntology> => {
   const built = buildOntology(collection.map((c) => ({ id: c.id, data: authored(c.data) })));
   if (!built.ok) throw new Error(`ontology: ${built.error.map(describeError).join('; ')}`);
   const ontology = built.value;
+  // Astro resolves the content loaders against the working directory (the project root); so does this.
+  const bibliography = await loadBibliography(pathToFileURL(`${process.cwd()}/`));
+  const unknownSources = ontology.graph.ids.flatMap((id) =>
+    (ontology.graph.concepts.get(id)?.sources ?? []).filter((k) => !bibliography.has(k)).map((k) => `${id}: ${k}`),
+  );
+  if (unknownSources.length > 0) {
+    throw new Error(`ontology: concept sources missing from bibliography/*.bib: ${unknownSources.join(', ')}`);
+  }
   const entries = new Map(collection.map((c) => [c.id as ConceptId, c] as const));
   const conceptHref = (id: ConceptId, locale: Locale): string => {
     const c = entries.get(id);
@@ -53,9 +68,14 @@ const load = async (): Promise<SiteOntology> => {
   const [allEssays, allLabs] = await Promise.all([essays(), labs()]);
   const known = (ids: readonly string[]): readonly ConceptId[] =>
     ids.filter((id): id is ConceptId => ontology.graph.concepts.has(id as ConceptId));
+  const byEntry = new Map<string, Work>();
+  const register = (collection: 'essays' | 'labs', id: string, w: Work): Work => {
+    byEntry.set(`${collection}/${id}`, w);
+    return w;
+  };
   const allWorks: Work[] = [
     ...allEssays.map(
-      (e): Work => ({
+      (e): Work => register('essays', e.id, {
         key: `essay:${e.data.translationKey}`,
         kind: 'essay',
         locale: e.data.lang,
@@ -67,7 +87,7 @@ const load = async (): Promise<SiteOntology> => {
       }),
     ),
     ...allLabs.map(
-      (l): Work => ({
+      (l): Work => register('labs', l.id, {
         key: `lab:${l.data.translationKey}`,
         kind: 'lab',
         locale: l.data.lang,
@@ -84,12 +104,14 @@ const load = async (): Promise<SiteOntology> => {
   const works = per((l) => allWorks.filter((w) => w.locale === l).sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0)));
   return {
     ontology,
+    bibliography,
     entries,
     works,
     backlinks: per((l) => backlinks(works[l])),
     lattice: per((l) => conceptLattice(contextOf(works[l].map((w) => [w.key, w.concepts] as const)))),
     conceptHref,
     workByKey: (key, locale) => works[locale].find((w) => w.key === key),
+    workOfEntry: (collection, id) => byEntry.get(`${collection}/${id}`),
   };
 };
 

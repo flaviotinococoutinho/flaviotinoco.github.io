@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
 import { glossary, initialOf } from '../../../src/core/ontology/glossary.ts';
+import { closestByLin, lin } from '../../../src/core/ontology/measures.ts';
 import {
   backlinks,
   bestMatchAverage,
   relatedWorks,
+  relationReason,
   sharedConcepts,
   shortTitleOf,
   type Work,
@@ -42,6 +44,40 @@ describe('related works (best-match average of Lin)', () => {
     expect(ranked[0]?.work.key).toBe('lab:prefix');
     expect(ranked.every((r) => r.work.key !== huffman.key)).toBe(true);
     expect(bestMatchAverage(o.taxonomy, o.ic, [], [cid('entropy')])).toBe(0);
+  });
+});
+
+describe('the reason two works are related', () => {
+  it('names shared concepts, most specific (highest IC) first', () => {
+    const a = work('essay:a', ['information', 'huffman-code', 'entropy']);
+    const b = work('lab:b', ['entropy', 'information']);
+    const r = relationReason(o.taxonomy, o.ic, a, b);
+    expect(r.kind).toBe('shared');
+    if (r.kind !== 'shared') return;
+    expect([...r.concepts].sort()).toEqual(['entropy', 'information']);
+    const ics = r.concepts.map((c) => o.ic.get(c) ?? 0);
+    expect(ics).toEqual([...ics].sort((x, y) => y - x));
+  });
+
+  it('falls back to the closest pair by Lin when nothing is shared', () => {
+    // The concept closest to entropy by Lin (same category tree), paired with an unrelated one.
+    const nearest = closestByLin(o.taxonomy, o.ic, cid('entropy'), 1, [...ids])[0];
+    expect(nearest).toBeDefined();
+    if (nearest === undefined) return;
+    const other = ids.find((c) => lin(o.taxonomy, o.ic, cid('entropy'), c) === 0) ?? ids[0];
+    const r = relationReason(o.taxonomy, o.ic, work('essay:h', ['entropy']), work('lab:p', [nearest.id, other ?? nearest.id]));
+    expect(r).toMatchObject({ kind: 'closest', a: 'entropy', b: nearest.id, lin: nearest.lin });
+    // Concepts in different category trees share only the top: no reason at all.
+    expect(relationReason(o.taxonomy, o.ic, work('essay:h', ['entropy']), work('lab:p', [other ?? 'entropy'])).kind).toBe('none');
+  });
+
+  test.prop([conceptSet, conceptSet])('a shared reason lists exactly the intersection', (x, y) => {
+    const r = relationReason(o.taxonomy, o.ic, work('essay:x', x), work('lab:y', y));
+    const both = x.filter((c) => y.includes(c));
+    if (both.length > 0) {
+      expect(r.kind).toBe('shared');
+      if (r.kind === 'shared') expect([...r.concepts].sort()).toEqual([...new Set(both)].sort());
+    } else expect(r.kind).not.toBe('shared');
   });
 });
 
