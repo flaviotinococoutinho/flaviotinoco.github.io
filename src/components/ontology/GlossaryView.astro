@@ -12,7 +12,7 @@ import { glossary } from '../../core/ontology/index.ts';
 import { alternatesForAll } from '../../adapters/astro/content.ts';
 import { href } from '../../adapters/astro/i18n.ts';
 import CategoryMark from './CategoryMark.astro';
-import StratumMark from './StratumMark.astro';
+import StratumMark from '../chrome/StratumMark.astro';
 import { siteOntology } from './data.ts';
 import { ontologyText } from './text.ts';
 
@@ -71,7 +71,7 @@ const letterId = (letter: string): string => `glossary-${letter === '#' ? 'symbo
                   </dt>
                   <dd>
                     <p class="glossary__marks ui">
-                      <StratumMark stratum={e.stratum} locale={locale} />
+                      <StratumMark stratum={e.stratum} locale={locale} size="s" />
                       <CategoryMark category={e.category} locale={locale} />
                     </p>
                     <p>{e.definition[locale]}</p>
