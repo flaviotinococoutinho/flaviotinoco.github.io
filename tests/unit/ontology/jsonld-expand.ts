@@ -64,7 +64,8 @@ export const expandDocument = (doc: Json): Expansion => {
     seen.add(id);
     const types = node['@type'] === undefined ? [] : Array.isArray(node['@type']) ? node['@type'] : [node['@type']];
     for (const t of types) {
-      if (typeof t !== 'string' || expand(t, `${id} @type`) === null) errors.push(`${id}: bad @type ${JSON.stringify(t)}`);
+      if (typeof t !== 'string' || expand(t, `${id} @type`) === null)
+        errors.push(`${id}: bad @type ${JSON.stringify(t)}`);
       else triples += 1;
     }
     for (const [key, raw] of Object.entries(node)) {
@@ -87,7 +88,8 @@ export const expandDocument = (doc: Json): Expansion => {
           if ('@language' in v && (typeof v['@language'] !== 'string' || !LANG.test(v['@language']))) {
             errors.push(`${id} ${key}: malformed language tag ${JSON.stringify(v['@language'])}`);
           }
-          if ('@language' in v && '@type' in v) errors.push(`${id} ${key}: a value cannot have both @language and @type`);
+          if ('@language' in v && '@type' in v)
+            errors.push(`${id} ${key}: a value cannot have both @language and @type`);
           if (typeof v['@type'] === 'string' && expand(v['@type'], `${id} ${key} @type`) === null) continue;
           triples += 1;
         } else {

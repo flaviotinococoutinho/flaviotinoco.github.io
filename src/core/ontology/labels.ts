@@ -21,7 +21,10 @@ export type LabelLookup =
 
 export type LabelIndex = Readonly<Record<Locale, ReadonlyMap<string, readonly ConceptId[]>>>;
 
-export const labelsOf = (e: ConceptEntry, locale: Locale): readonly string[] => [e.prefLabel[locale], ...e.altLabel[locale]];
+export const labelsOf = (e: ConceptEntry, locale: Locale): readonly string[] => [
+  e.prefLabel[locale],
+  ...e.altLabel[locale],
+];
 
 export const buildLabelIndex = (g: ConceptGraph): LabelIndex => {
   const index = {} as Record<Locale, ReadonlyMap<string, readonly ConceptId[]>>;

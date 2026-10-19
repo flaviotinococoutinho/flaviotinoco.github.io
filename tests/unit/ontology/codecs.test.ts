@@ -6,7 +6,12 @@ import { describe, expect, it } from 'vitest';
 import { LOCALES, type Locale } from '../../../src/core/domain/locale.ts';
 import { STRATA } from '../../../src/core/domain/strata.ts';
 import { buildGraph } from '../../../src/core/ontology/graph.ts';
-import { decodeGraphJson, encodeGraphJson, searchConcepts, serializeGraphJson } from '../../../src/core/ontology/graphjson.ts';
+import {
+  decodeGraphJson,
+  encodeGraphJson,
+  searchConcepts,
+  serializeGraphJson,
+} from '../../../src/core/ontology/graphjson.ts';
 import { fromJsonLd, toJsonLd, vocabularyProperties, type JsonLdDocument } from '../../../src/core/ontology/jsonld.ts';
 import { CATEGORIES } from '../../../src/core/ontology/vocabulary.ts';
 import type { Work } from '../../../src/core/ontology/works.ts';
@@ -19,9 +24,36 @@ const seg = (l: Locale): string => (l === 'pt-BR' ? 'pt' : 'en');
 const pageIri = (id: string, l: Locale): string =>
   `https://example.org/base/${seg(l)}/c/${o.graph.concepts.get(cid(id))?.slug[l] ?? id}/`;
 const works: readonly Work[] = [
-  { key: 'essay:x', kind: 'essay', locale: 'pt-BR', title: 'Ensaio X', shortTitle: 'Ensaio X', stratum: 'theory', href: 'https://example.org/base/pt/ensaios/x/', concepts: [cid('entropy'), cid('channel')] },
-  { key: 'essay:x', kind: 'essay', locale: 'en', title: 'Essay X', shortTitle: 'Essay X', stratum: 'theory', href: 'https://example.org/base/en/essays/x/', concepts: [cid('entropy'), cid('channel')] },
-  { key: 'lab:y', kind: 'lab', locale: 'en', title: 'Lab Y', shortTitle: 'Lab Y', stratum: 'formal', href: 'https://example.org/base/en/lab/y/', concepts: [cid('logistic-map')] },
+  {
+    key: 'essay:x',
+    kind: 'essay',
+    locale: 'pt-BR',
+    title: 'Ensaio X',
+    shortTitle: 'Ensaio X',
+    stratum: 'theory',
+    href: 'https://example.org/base/pt/ensaios/x/',
+    concepts: [cid('entropy'), cid('channel')],
+  },
+  {
+    key: 'essay:x',
+    kind: 'essay',
+    locale: 'en',
+    title: 'Essay X',
+    shortTitle: 'Essay X',
+    stratum: 'theory',
+    href: 'https://example.org/base/en/essays/x/',
+    concepts: [cid('entropy'), cid('channel')],
+  },
+  {
+    key: 'lab:y',
+    kind: 'lab',
+    locale: 'en',
+    title: 'Lab Y',
+    shortTitle: 'Lab Y',
+    stratum: 'formal',
+    href: 'https://example.org/base/en/lab/y/',
+    concepts: [cid('logistic-map')],
+  },
 ];
 const per = <T>(f: (l: Locale) => T) => ({ 'pt-BR': f('pt-BR'), en: f('en') });
 
@@ -51,7 +83,9 @@ describe('JSON-LD export', () => {
     expect(partOf?.['rdfs:subPropertyOf']).toEqual({ '@id': 'http://www.w3.org/2004/02/skos/core#related' });
     expect(partOf?.['owl:inverseOf']).toEqual({ '@id': `${DOC}#relation/hasPart` });
     expect(byId.get(`${DOC}#relation/contrastsWith`)?.['@type']).toContain('owl:SymmetricProperty');
-    expect(byId.get(`${DOC}#category/measure`)?.['rdfs:subClassOf']).toEqual({ '@id': 'http://www.w3.org/2004/02/skos/core#Concept' });
+    expect(byId.get(`${DOC}#category/measure`)?.['rdfs:subClassOf']).toEqual({
+      '@id': 'http://www.w3.org/2004/02/skos/core#Concept',
+    });
   });
 
   it('keeps the layers distinct: works are CreativeWorks about concepts, never skos:Concept', () => {
@@ -103,7 +137,9 @@ describe('graph JSON (node-link)', () => {
       expect(model.value.taxonomy.ids).toEqual(o.taxonomy.ids);
       for (const t of o.taxonomy.ids) {
         expect(model.value.ic.get(t)).toBeCloseTo(o.ic.get(t) ?? -1, 6);
-        expect([...(model.value.taxonomy.ancestors.get(t) ?? [])].sort()).toEqual([...(o.taxonomy.ancestors.get(t) ?? [])].sort());
+        expect([...(model.value.taxonomy.ancestors.get(t) ?? [])].sort()).toEqual(
+          [...(o.taxonomy.ancestors.get(t) ?? [])].sort(),
+        );
       }
       expect(model.value.links).toEqual(o.graph.links);
       expect(model.value.concepts.get(cid('entropy'))?.href).toBe(href('entropy', locale));
@@ -117,7 +153,9 @@ describe('graph JSON (node-link)', () => {
   it('searches accent- and case-insensitively', () => {
     const model = decodeGraphJson(parsed, 'pt-BR');
     if (!model.ok) throw new Error(model.error);
-    expect(searchConcepts(model.value, 'informacao')).toEqual(expect.arrayContaining(['information', 'mutual-information']));
+    expect(searchConcepts(model.value, 'informacao')).toEqual(
+      expect.arrayContaining(['information', 'mutual-information']),
+    );
     expect(searchConcepts(model.value, '   ')).toEqual([]);
   });
 
@@ -125,6 +163,8 @@ describe('graph JSON (node-link)', () => {
     expect(decodeGraphJson(null, 'en').ok).toBe(false);
     expect(decodeGraphJson({ ...encoded, version: 99 }, 'en').ok).toBe(false);
     expect(decodeGraphJson({ ...encoded, nodes: [{ id: 'x' }] }, 'en').ok).toBe(false);
-    expect(decodeGraphJson({ ...encoded, edges: [{ source: 'entropy', target: 'nope', type: 'broader' }] }, 'en').ok).toBe(false);
+    expect(
+      decodeGraphJson({ ...encoded, edges: [{ source: 'entropy', target: 'nope', type: 'broader' }] }, 'en').ok,
+    ).toBe(false);
   });
 });

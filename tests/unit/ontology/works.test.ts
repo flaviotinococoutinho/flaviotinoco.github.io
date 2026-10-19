@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
-import type { ConceptId } from '../../../src/core/domain/identifiers.ts';
 import { glossary, initialOf } from '../../../src/core/ontology/glossary.ts';
-import { backlinks, bestMatchAverage, relatedWorks, sharedConcepts, shortTitleOf, type Work } from '../../../src/core/ontology/works.ts';
+import {
+  backlinks,
+  bestMatchAverage,
+  relatedWorks,
+  sharedConcepts,
+  shortTitleOf,
+  type Work,
+} from '../../../src/core/ontology/works.ts';
 import { cid, siteOntology } from './helpers.ts';
 
 const o = siteOntology();
@@ -49,7 +55,9 @@ describe('backlinks and shared concepts', () => {
     expect(map.has(cid('model'))).toBe(false);
   });
   it('lists works sharing at least two concepts', () => {
-    expect(sharedConcepts(a, [a, b, c]).map((s) => [s.work.key, s.shared])).toEqual([['lab:b', ['channel', 'entropy']]]);
+    expect(sharedConcepts(a, [a, b, c]).map((s) => [s.work.key, s.shared])).toEqual([
+      ['lab:b', ['channel', 'entropy']],
+    ]);
     expect(sharedConcepts(a, [a, b, c], 1)).toHaveLength(2);
   });
   it('shortens titles at a colon or an em dash', () => {
@@ -64,7 +72,10 @@ describe('glossary', () => {
     it(`lists every label once, sorted and grouped by initial (${locale})`, () => {
       const sections = glossary(o.graph, locale);
       const entries = sections.flatMap((s) => s.entries);
-      const expected = o.graph.ids.reduce((n, id) => n + 1 + (o.graph.concepts.get(id)?.altLabel[locale].length ?? 0), 0);
+      const expected = o.graph.ids.reduce(
+        (n, id) => n + 1 + (o.graph.concepts.get(id)?.altLabel[locale].length ?? 0),
+        0,
+      );
       expect(entries).toHaveLength(expected);
       const collator = new Intl.Collator(locale, { sensitivity: 'base', numeric: true });
       for (let i = 1; i < entries.length; i += 1) {
@@ -72,7 +83,12 @@ describe('glossary', () => {
       }
       for (const s of sections) for (const e of s.entries) expect(initialOf(e.term, locale)).toBe(s.letter);
       expect(new Set(sections.map((s) => s.letter)).size).toBe(sections.length);
-      expect(entries.filter((e) => e.kind === 'pref').map((e) => e.id).sort()).toEqual([...o.graph.ids].sort() as ConceptId[]);
+      expect(
+        entries
+          .filter((e) => e.kind === 'pref')
+          .map((e) => e.id)
+          .sort(),
+      ).toEqual([...o.graph.ids].sort());
     });
   }
   it('files accented and non-letter initials correctly', () => {

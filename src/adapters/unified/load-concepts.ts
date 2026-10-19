@@ -58,7 +58,9 @@ export const readRawConcepts = async (dir: URL): Promise<readonly RawConcept[]> 
       try {
         return { id: file.slice(0, -'.json'.length), data: JSON.parse(text) as unknown };
       } catch (e: unknown) {
-        throw new Error(`concepts: ${file} is not valid JSON: ${e instanceof Error ? e.message : show(e)}`);
+        throw new Error(`concepts: ${file} is not valid JSON: ${e instanceof Error ? e.message : show(e)}`, {
+          cause: e,
+        });
       }
     }),
   );

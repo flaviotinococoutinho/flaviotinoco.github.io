@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
-import { closeIntent, conceptLattice, contextOf, extentOf, formalConcepts, intentOf } from '../../../src/core/ontology/fca.ts';
+import {
+  closeIntent,
+  conceptLattice,
+  contextOf,
+  extentOf,
+  formalConcepts,
+  intentOf,
+} from '../../../src/core/ontology/fca.ts';
 import { labelLines, latticeLayout, latticeMarkup } from '../../../src/core/ontology/lattice.ts';
 import { renderMarkup, textContent } from '../../../src/core/ontology/markup.ts';
 
@@ -16,7 +23,10 @@ const bruteForce = (k: ReturnType<typeof contextOf<string, string>>): string[] =
 };
 
 const contextArb = fc
-  .array(fc.tuple(fc.constantFrom('g1', 'g2', 'g3', 'g4', 'g5'), fc.subarray(['a', 'b', 'c', 'd', 'e', 'f'])), { minLength: 1, maxLength: 5 })
+  .array(fc.tuple(fc.constantFrom('g1', 'g2', 'g3', 'g4', 'g5'), fc.subarray(['a', 'b', 'c', 'd', 'e', 'f'])), {
+    minLength: 1,
+    maxLength: 5,
+  })
   .map((rows) => contextOf(rows));
 
 describe('NextClosure (Ganter 1984)', () => {
@@ -68,7 +78,8 @@ describe('lattice drawing', () => {
   const layout = latticeLayout(l);
 
   it('draws every cover edge downwards (layer = rank of the intent size)', () => {
-    for (const [lower, upper] of l.covers) expect(layout.positions[lower]!.y).toBeGreaterThan(layout.positions[upper]!.y);
+    for (const [lower, upper] of l.covers)
+      expect(layout.positions[lower]!.y).toBeGreaterThan(layout.positions[upper]!.y);
     expect(layout.layers.flat().sort()).toEqual(l.concepts.map((_, i) => i).sort());
   });
 

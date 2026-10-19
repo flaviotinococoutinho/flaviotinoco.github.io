@@ -52,23 +52,33 @@ export const contextOf = <G extends string, M extends string>(
 };
 
 /** B′: the objects having every attribute of B, in context order. */
-export const extentOf = <G extends string, M extends string>(k: FormalContext<G, M>, intent: Iterable<M>): readonly G[] => {
+export const extentOf = <G extends string, M extends string>(
+  k: FormalContext<G, M>,
+  intent: Iterable<M>,
+): readonly G[] => {
   const b = [...intent];
   return k.objects.filter((g) => b.every((m) => k.incidence.get(g)?.has(m) === true));
 };
 
 /** A′: the attributes shared by every object of A, in context order (all attributes when A = ∅). */
-export const intentOf = <G extends string, M extends string>(k: FormalContext<G, M>, extent: Iterable<G>): readonly M[] => {
+export const intentOf = <G extends string, M extends string>(
+  k: FormalContext<G, M>,
+  extent: Iterable<G>,
+): readonly M[] => {
   const a = [...extent];
   return k.attributes.filter((m) => a.every((g) => k.incidence.get(g)?.has(m) === true));
 };
 
 /** X″, the closure of an attribute set. */
-export const closeIntent = <G extends string, M extends string>(k: FormalContext<G, M>, intent: Iterable<M>): readonly M[] =>
-  intentOf(k, extentOf(k, intent));
+export const closeIntent = <G extends string, M extends string>(
+  k: FormalContext<G, M>,
+  intent: Iterable<M>,
+): readonly M[] => intentOf(k, extentOf(k, intent));
 
 /** Every formal concept, by NextClosure in the lectic order of `k.attributes`. */
-export const formalConcepts = <G extends string, M extends string>(k: FormalContext<G, M>): readonly FormalConcept<G, M>[] => {
+export const formalConcepts = <G extends string, M extends string>(
+  k: FormalContext<G, M>,
+): readonly FormalConcept<G, M>[] => {
   const m = k.attributes;
   const position = new Map(m.map((a, i) => [a, i]));
   const asSet = (xs: readonly M[]): ReadonlySet<M> => new Set(xs);

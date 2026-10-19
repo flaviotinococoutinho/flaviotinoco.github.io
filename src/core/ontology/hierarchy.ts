@@ -60,7 +60,9 @@ export const deriveHierarchy = <Id extends string>(
     broader.set(id, parents);
     for (const p of parents) narrowerLists.get(p)?.push(id);
   }
-  const narrower = new Map<Id, readonly Id[]>(sorted.map((id) => [id, [...(narrowerLists.get(id) ?? [])].sort(byCodeUnit)]));
+  const narrower = new Map<Id, readonly Id[]>(
+    sorted.map((id) => [id, [...(narrowerLists.get(id) ?? [])].sort(byCodeUnit)]),
+  );
   const up = (id: Id): readonly Id[] => broader.get(id) ?? [];
   const down = (id: Id): readonly Id[] => narrower.get(id) ?? [];
 
@@ -109,7 +111,10 @@ export const maxDepth = <Id extends string>(h: Hierarchy<Id>): number =>
  * at its smallest id and closed by repeating it: [a, b, c, a]. Duplicates are
  * removed; the result is deterministic.
  */
-export const findCycles = <Id extends string>(ids: readonly Id[], broaderOf: (id: Id) => readonly Id[]): readonly (readonly Id[])[] => {
+export const findCycles = <Id extends string>(
+  ids: readonly Id[],
+  broaderOf: (id: Id) => readonly Id[],
+): readonly (readonly Id[])[] => {
   const sorted = [...new Set(ids)].sort(byCodeUnit);
   const known = new Set(sorted);
   const colour = new Map<Id, 'grey' | 'black'>();
@@ -143,7 +148,11 @@ export const findCycles = <Id extends string>(ids: readonly Id[], broaderOf: (id
 };
 
 /** Shortest path (breadth-first, ties by id) from `from` to `to` following `next`; null when unreachable. Includes both ends. */
-export const pathBetween = <Id extends string>(from: Id, to: Id, next: (id: Id) => readonly Id[]): readonly Id[] | null => {
+export const pathBetween = <Id extends string>(
+  from: Id,
+  to: Id,
+  next: (id: Id) => readonly Id[],
+): readonly Id[] | null => {
   const previous = new Map<Id, Id | null>([[from, null]]);
   let frontier: readonly Id[] = [from];
   while (frontier.length > 0 && !previous.has(to)) {

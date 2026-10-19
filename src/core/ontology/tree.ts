@@ -36,7 +36,8 @@ export type TreeNode =
 export const taxonomyTree = (graph: ConceptGraph, locale: Locale): readonly TreeNode[] => {
   const collator = new Intl.Collator(locale, { sensitivity: 'base', numeric: true });
   const label = (id: ConceptId): string => graph.concepts.get(id)?.prefLabel[locale] ?? id;
-  const byLabel = (a: ConceptId, b: ConceptId): number => collator.compare(label(a), label(b)) || (a < b ? -1 : a > b ? 1 : 0);
+  const byLabel = (a: ConceptId, b: ConceptId): number =>
+    collator.compare(label(a), label(b)) || (a < b ? -1 : a > b ? 1 : 0);
   const ordinal = (id: ConceptId): number => {
     const e = graph.concepts.get(id);
     return e === undefined ? 0 : STRATUM_SPECS[e.stratum].ordinal;

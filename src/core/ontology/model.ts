@@ -102,7 +102,12 @@ export type OntologyError =
       readonly targetCategory: Category;
     }
   /** A symmetric relation written in both files. */
-  | { readonly kind: 'symmetric-stored-twice'; readonly relation: RelationType; readonly a: ConceptId; readonly b: ConceptId }
+  | {
+      readonly kind: 'symmetric-stored-twice';
+      readonly relation: RelationType;
+      readonly a: ConceptId;
+      readonly b: ConceptId;
+    }
   /** The same unordered pair is linked under two relation types. */
   | {
       readonly kind: 'pair-under-two-types';
@@ -115,14 +120,24 @@ export type OntologyError =
    * associative pairs (including the entailed partOf closure) are disjoint
    * from skos:broaderTransitive.
    */
-  | { readonly kind: 'associative-hierarchical'; readonly id: ConceptId; readonly relation: RelationType; readonly target: ConceptId }
+  | {
+      readonly kind: 'associative-hierarchical';
+      readonly id: ConceptId;
+      readonly relation: RelationType;
+      readonly target: ConceptId;
+    }
   /** A concept with no edge at all. */
   | { readonly kind: 'isolated'; readonly id: ConceptId }
   /** The undirected projection is not connected: `component` is cut off from the main component. */
   | { readonly kind: 'disconnected'; readonly component: readonly ConceptId[] }
   /** A proposition (theorem, law) must cite at least one source. */
   | { readonly kind: 'proposition-without-source'; readonly id: ConceptId }
-  | { readonly kind: 'duplicate-slug'; readonly locale: Locale; readonly slug: Slug; readonly ids: readonly ConceptId[] }
+  | {
+      readonly kind: 'duplicate-slug';
+      readonly locale: Locale;
+      readonly slug: Slug;
+      readonly ids: readonly ConceptId[];
+    }
   /** SKOS S14 (one prefLabel per language) extended to the scheme: no two concepts share a prefLabel. */
   | {
       readonly kind: 'duplicate-pref-label';
@@ -143,7 +158,12 @@ export type OntologyError =
 
 export type OntologyWarning =
   /** A stored broader edge implied by a longer path: the data should be the Hasse diagram (transitive reduction). */
-  | { readonly kind: 'redundant-broader'; readonly id: ConceptId; readonly target: ConceptId; readonly via: readonly ConceptId[] }
+  | {
+      readonly kind: 'redundant-broader';
+      readonly id: ConceptId;
+      readonly target: ConceptId;
+      readonly via: readonly ConceptId[];
+    }
   /** More than two broader parents: a classification smell. */
   | { readonly kind: 'polyhierarchy-excess'; readonly id: ConceptId; readonly parents: readonly ConceptId[] };
 

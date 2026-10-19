@@ -164,7 +164,7 @@ export const shortestPath = (g: LinkGraph, from: ConceptId, to: ConceptId): Type
   const cost = dist.get(to);
   if (cost === undefined) return null;
   const steps: PathStep[] = [];
-  for (let at: ConceptId = to; at !== from; ) {
+  for (let at: ConceptId = to; at !== from;) {
     const step = via.get(at);
     if (step === undefined) return null;
     steps.unshift(step);

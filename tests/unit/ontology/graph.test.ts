@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
-import { buildGraph, components, degreeOf, distancesFrom, edgesOf, linked, neighbourhood } from '../../../src/core/ontology/graph.ts';
+import {
+  buildGraph,
+  components,
+  degreeOf,
+  distancesFrom,
+  edgesOf,
+  linked,
+  neighbourhood,
+} from '../../../src/core/ontology/graph.ts';
 import { describeError, describeWarning, type OntologyError } from '../../../src/core/ontology/model.ts';
 import { buildOntology } from '../../../src/core/ontology/ontology.ts';
 import { parseConceptEntry } from '../../../src/core/ontology/parse.ts';
@@ -14,7 +22,10 @@ const errorsOf = (raws: ReturnType<typeof raw>[]): readonly OntologyError[] => {
 const kinds = (raws: ReturnType<typeof raw>[]): readonly string[] => errorsOf(raws).map((e) => e.kind);
 
 /** A connected pair a — b plus whatever is given. */
-const pair = (a: Spec = {}, b: Spec = {}) => [raw('a', { ...a, relations: [...(a.relations ?? []), ['related', 'b']] }), raw('b', b)];
+const pair = (a: Spec = {}, b: Spec = {}) => [
+  raw('a', { ...a, relations: [...(a.relations ?? []), ['related', 'b']] }),
+  raw('b', b),
+];
 
 describe('the site ontology', () => {
   const o = siteOntology();
@@ -88,7 +99,13 @@ describe('validation reports every violation', () => {
 
   it('rejects unknown references, self relations and repetitions', () => {
     const errors = kinds([
-      raw('a', { broader: ['zzz', 'a'], relations: [['related', 'b'], ['related', 'b']] }),
+      raw('a', {
+        broader: ['zzz', 'a'],
+        relations: [
+          ['related', 'b'],
+          ['related', 'b'],
+        ],
+      }),
       raw('b'),
     ]);
     expect(errors).toContain('unknown-reference');
@@ -126,22 +143,26 @@ describe('validation reports every violation', () => {
     expect(kinds([raw('a', { category: 'quality', relations: [['measures', 'b']] }), raw('b')])).toContain(
       'category-constraint',
     );
-    expect(kinds([raw('a', { category: 'measure', relations: [['measures', 'b']] }), raw('b', { category: 'process' })])).toContain(
-      'category-constraint',
-    );
+    expect(
+      kinds([raw('a', { category: 'measure', relations: [['measures', 'b']] }), raw('b', { category: 'process' })]),
+    ).toContain('category-constraint');
     expect(kinds([raw('a', { category: 'measure', broader: ['b'] }), raw('b', { category: 'entity' })])).toContain(
       'category-constraint',
     );
   });
 
   it('rejects a symmetric relation stored in both files', () => {
-    expect(kinds([raw('a', { relations: [['contrastsWith', 'b']] }), raw('b', { relations: [['contrastsWith', 'a']] })])).toContain(
-      'symmetric-stored-twice',
-    );
+    expect(
+      kinds([raw('a', { relations: [['contrastsWith', 'b']] }), raw('b', { relations: [['contrastsWith', 'a']] })]),
+    ).toContain('symmetric-stored-twice');
   });
 
   it('rejects associative pairs that are also hierarchical (SKOS S27), including the partOf closure', () => {
-    const direct = kinds([raw('a', { broader: ['b'] }), raw('b', { broader: ['c'] }), raw('c', { relations: [['related', 'a']] })]);
+    const direct = kinds([
+      raw('a', { broader: ['b'] }),
+      raw('b', { broader: ['c'] }),
+      raw('c', { relations: [['related', 'a']] }),
+    ]);
     expect(direct).toContain('associative-hierarchical');
     const entailed = kinds([
       raw('a', { broader: ['b'], relations: [['partOf', 'x']] }),
@@ -164,7 +185,9 @@ describe('validation reports every violation', () => {
   });
 
   it('checks slugs and labels per locale', () => {
-    expect(kinds(pair({ pt: 'Mesmo' }, { pt: 'Mesmo' }))).toEqual(expect.arrayContaining(['duplicate-slug', 'duplicate-pref-label']));
+    expect(kinds(pair({ pt: 'Mesmo' }, { pt: 'Mesmo' }))).toEqual(
+      expect.arrayContaining(['duplicate-slug', 'duplicate-pref-label']),
+    );
     expect(kinds(pair({ alt: { pt: ['pt a'] } }))).toContain('pref-alt-overlap');
     const mismatch = raw('a', { relations: [['related', 'b']] });
     (mismatch.data as { slug: Record<string, string> }).slug['en'] = 'wrong';
@@ -181,7 +204,13 @@ describe('validation reports every violation', () => {
   it('describes every error kind in English', () => {
     const samples = errorsOf([
       raw('a', { broader: ['zzz', 'a', 'b', 'b'], category: 'proposition', relations: [['measures', 'c']] }),
-      raw('b', { broader: ['a'], relations: [['related', 'c'], ['contrastsWith', 'a']] }),
+      raw('b', {
+        broader: ['a'],
+        relations: [
+          ['related', 'c'],
+          ['contrastsWith', 'a'],
+        ],
+      }),
       raw('c', { relations: [['related', 'b']] }),
       raw('d'),
     ]);
@@ -216,7 +245,10 @@ describe('cycle detection on random graphs', () => {
     (n, seed) => {
       // A chain n_{i} → n_{i-1}, then close it: n_0 → n_{n-1}.
       const raws = Array.from({ length: n }, (_, i) =>
-        raw(nodeName(i), { broader: i === 0 ? [nodeName(n - 1)] : [nodeName(i - 1)], pt: `pt ${String(i)} ${String(seed)}` }),
+        raw(nodeName(i), {
+          broader: i === 0 ? [nodeName(n - 1)] : [nodeName(i - 1)],
+          pt: `pt ${String(i)} ${String(seed)}`,
+        }),
       );
       const errors = errorsOf(raws);
       const cycle = errors.find((e) => e.kind === 'cycle' && e.scope === 'broader');

@@ -29,7 +29,10 @@ export const mapTextOf = (locale: Locale, title: string, extra: Partial<MapText>
     zoomOut: t('map.zoomOut'),
     reset: t('map.reset'),
     legend: t('map.legend'),
-    relationLegend: Object.fromEntries(RELATION_TYPES.map((r) => [r, t(`legend.${r}`)])) as Record<RelationType, string>,
+    relationLegend: Object.fromEntries(RELATION_TYPES.map((r) => [r, t(`legend.${r}`)])) as Record<
+      RelationType,
+      string
+    >,
     relations: t('map.relations'),
     relationSentence: (type, a, b) => t('rel.sentence', { a, b, rel: relationLabel(locale, type, 'out') }),
     strata: Object.fromEntries(STRATA.map((s) => [s, stratumLabel(locale, s)])) as Record<Stratum, string>,

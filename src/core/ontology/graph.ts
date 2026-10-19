@@ -142,14 +142,28 @@ export const buildGraph = (entries: readonly ConceptEntry[]): Result<ConceptGrap
           continue;
         }
         if (!satisfiesStratum(spec.stratum, e.stratum, target.stratum)) {
-          errors.push({ kind: 'stratum-constraint', id, relation: type, target: t, source: e.stratum, targetStratum: target.stratum });
+          errors.push({
+            kind: 'stratum-constraint',
+            id,
+            relation: type,
+            target: t,
+            source: e.stratum,
+            targetStratum: target.stratum,
+          });
         }
         const categoryOk =
           (spec.sourceCategories === null || spec.sourceCategories.includes(e.category)) &&
           (spec.targetCategories === null || spec.targetCategories.includes(target.category)) &&
           (!spec.sameCategory || e.category === target.category);
         if (!categoryOk) {
-          errors.push({ kind: 'category-constraint', id, relation: type, target: t, source: e.category, targetCategory: target.category });
+          errors.push({
+            kind: 'category-constraint',
+            id,
+            relation: type,
+            target: t,
+            source: e.category,
+            targetCategory: target.category,
+          });
         }
         valid.push({ type, source: id, target: t });
       }
@@ -169,7 +183,8 @@ export const buildGraph = (entries: readonly ConceptEntry[]): Result<ConceptGrap
   // Canonical links: symmetric edges oriented source < target, deduplicated.
   const canonical = new Map<string, Link>();
   for (const l of valid) {
-    const oriented = RELATIONS[l.type].symmetric && l.target < l.source ? { ...l, source: l.target, target: l.source } : l;
+    const oriented =
+      RELATIONS[l.type].symmetric && l.target < l.source ? { ...l, source: l.target, target: l.source } : l;
     canonical.set(`${oriented.type}\u0000${oriented.source}\u0000${oriented.target}`, oriented);
   }
   const typeOrder = new Map(RELATION_TYPES.map((t, i) => [t, i]));
@@ -209,16 +224,17 @@ export const buildGraph = (entries: readonly ConceptEntry[]): Result<ConceptGrap
       inverse[type] = adjacencyOf(ids, converse);
     }
   }
-  const out = (type: RelationType) => (id: ConceptId): readonly ConceptId[] => forward[type].get(id) ?? [];
+  const out =
+    (type: RelationType) =>
+    (id: ConceptId): readonly ConceptId[] =>
+      forward[type].get(id) ?? [];
 
   // Acyclicity of each acyclic type and of the prerequisite order.
   for (const type of RELATION_TYPES.filter((t) => RELATIONS[t].acyclic)) {
     for (const cycle of findCycles(ids, out(type))) errors.push({ kind: 'cycle', scope: type, cycle });
   }
   const prerequisite = (id: ConceptId): readonly ConceptId[] => PREREQUISITE_TYPES.flatMap((t) => out(t)(id));
-  const singleTypeCycles = new Set(
-    errors.flatMap((e) => (e.kind === 'cycle' ? [e.cycle.join(' ')] : [])),
-  );
+  const singleTypeCycles = new Set(errors.flatMap((e) => (e.kind === 'cycle' ? [e.cycle.join(' ')] : [])));
   for (const cycle of findCycles(ids, prerequisite)) {
     if (!singleTypeCycles.has(cycle.join(' '))) errors.push({ kind: 'cycle', scope: 'prerequisite', cycle });
   }
@@ -253,8 +269,12 @@ export const buildGraph = (entries: readonly ConceptEntry[]): Result<ConceptGrap
   }
 
   // Connectedness of the undirected projection.
-  const neighbours = adjacencyOf(ids, links.flatMap((l) => [[l.source, l.target] as const, [l.target, l.source] as const]));
-  for (const id of ids) if ((neighbours.get(id)?.length ?? 0) === 0 && ids.length > 1) errors.push({ kind: 'isolated', id });
+  const neighbours = adjacencyOf(
+    ids,
+    links.flatMap((l) => [[l.source, l.target] as const, [l.target, l.source] as const]),
+  );
+  for (const id of ids)
+    if ((neighbours.get(id)?.length ?? 0) === 0 && ids.length > 1) errors.push({ kind: 'isolated', id });
   for (const component of components(ids, neighbours).slice(1)) {
     if (component.length > 1) errors.push({ kind: 'disconnected', component });
   }
@@ -301,8 +321,12 @@ export const buildGraph = (entries: readonly ConceptEntry[]): Result<ConceptGrap
 export const conceptOf = (g: ConceptGraph, id: ConceptId): ConceptEntry | undefined => g.concepts.get(id);
 
 /** Typed neighbours of a concept in one direction: 'out' follows the stored relation, 'in' its derived inverse. */
-export const linked = (g: ConceptGraph, id: ConceptId, type: RelationType, direction: 'out' | 'in'): readonly ConceptId[] =>
-  (direction === 'out' ? g.forward[type] : g.inverse[type]).get(id) ?? [];
+export const linked = (
+  g: ConceptGraph,
+  id: ConceptId,
+  type: RelationType,
+  direction: 'out' | 'in',
+): readonly ConceptId[] => (direction === 'out' ? g.forward[type] : g.inverse[type]).get(id) ?? [];
 
 /** Stored edges with both ends in `within` (all edges when omitted), canonical order. */
 export const edgesOf = (g: ConceptGraph, within?: ReadonlySet<ConceptId>): readonly Link[] =>

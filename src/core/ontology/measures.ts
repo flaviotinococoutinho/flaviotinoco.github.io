@@ -99,7 +99,12 @@ export interface Comparison<Id extends string> {
 }
 
 /** Everything the "compare two concepts" tool shows, in one pure call. */
-export const compare = <Id extends string>(h: Hierarchy<Id>, ic: InformationContent<Id>, a: Id, b: Id): Comparison<Id> => {
+export const compare = <Id extends string>(
+  h: Hierarchy<Id>,
+  ic: InformationContent<Id>,
+  a: Id,
+  b: Id,
+): Comparison<Id> => {
   const mica = mostInformativeSubsumer(h, ic, a, b);
   return {
     a,

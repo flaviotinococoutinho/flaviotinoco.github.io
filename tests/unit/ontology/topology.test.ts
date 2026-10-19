@@ -5,7 +5,12 @@
 import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
 import { betweenness, bridgeConcepts, normalise } from '../../../src/core/ontology/centrality.ts';
-import { louvain, modularity, mutualInformation, normalizedMutualInformation } from '../../../src/core/ontology/community.ts';
+import {
+  louvain,
+  modularity,
+  mutualInformation,
+  normalizedMutualInformation,
+} from '../../../src/core/ontology/community.ts';
 import { learningPath, prerequisiteClosure, prerequisitesOf, shortestPath } from '../../../src/core/ontology/paths.ts';
 import { buildTaxonomy, taxonomyOf } from '../../../src/core/ontology/taxonomy.ts';
 import { PREREQUISITE_TYPES, RELATIONS, TOP_TAXON, categoryTaxon } from '../../../src/core/ontology/vocabulary.ts';
@@ -26,7 +31,11 @@ describe('extended taxonomy', () => {
     expect(taxonomyOf(o.graph).ids).toEqual(o.taxonomy.ids);
   });
   it('ignores unknown broader targets', () => {
-    const t = buildTaxonomy([cid('a')], () => [cid('zzz')], () => 'entity');
+    const t = buildTaxonomy(
+      [cid('a')],
+      () => [cid('zzz')],
+      () => 'entity',
+    );
     expect(t.broader.get(cid('a'))).toEqual([categoryTaxon('entity')]);
   });
 });
@@ -42,7 +51,8 @@ describe('learning paths (Kahn 1962)', () => {
         expect(path.length).toBe(prerequisiteClosure(o.graph, target).size + 1);
         const position = new Map(path.map((id, i) => [id, i]));
         for (const id of path) {
-          for (const p of prerequisitesOf(o.graph, id)) expect(position.get(p) ?? Infinity).toBeLessThan(position.get(id) ?? -1);
+          for (const p of prerequisitesOf(o.graph, id))
+            expect(position.get(p) ?? Infinity).toBeLessThan(position.get(id) ?? -1);
         }
       }
     }
@@ -107,7 +117,13 @@ describe('betweenness (Brandes 2001)', () => {
     ]);
     expect(Object.fromEntries(betweenness(['a', 'b', 'c', 'd'], path))).toEqual({ a: 0, b: 2, c: 2, d: 0 });
     // Star with 4 leaves: the centre lies on C(4,2) = 6 paths; normalised = 1.
-    const star = new Map<string, string[]>([['o', ['p', 'q', 'r', 's']], ['p', ['o']], ['q', ['o']], ['r', ['o']], ['s', ['o']]]);
+    const star = new Map<string, string[]>([
+      ['o', ['p', 'q', 'r', 's']],
+      ['p', ['o']],
+      ['q', ['o']],
+      ['r', ['o']],
+      ['s', ['o']],
+    ]);
     const b = betweenness(['o', 'p', 'q', 'r', 's'], star);
     expect(b.get('o')).toBe(6);
     expect(normalise(b).get('o')).toBe(1);
@@ -141,7 +157,8 @@ describe('communities (Louvain) and NMI (Strehl & Ghosh 2002)', () => {
     const ids = ['a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'b4'];
     const edges: [string, string, number][] = [];
     for (const side of ['a', 'b'])
-      for (let i = 1; i <= 4; i += 1) for (let j = i + 1; j <= 4; j += 1) edges.push([`${side}${String(i)}`, `${side}${String(j)}`, 1]);
+      for (let i = 1; i <= 4; i += 1)
+        for (let j = i + 1; j <= 4; j += 1) edges.push([`${side}${String(i)}`, `${side}${String(j)}`, 1]);
     edges.push(['a1', 'b1', 1]);
     return [ids, edges];
   };
@@ -164,26 +181,30 @@ describe('communities (Louvain) and NMI (Strehl & Ghosh 2002)', () => {
       const seen = new Set([part[0]]);
       const stack = [part[0]!];
       while (stack.length > 0) {
-        for (const n of o.graph.neighbours.get(stack.pop()!) ?? []) if (inside.has(n) && !seen.has(n)) (seen.add(n), stack.push(n));
+        for (const n of o.graph.neighbours.get(stack.pop()!) ?? [])
+          if (inside.has(n) && !seen.has(n)) {
+            seen.add(n);
+            stack.push(n);
+          }
       }
       expect(seen.size).toBe(part.length);
     }
     expect(o.stats.communities.nmiDomains).toBeGreaterThan(0);
     expect(o.stats.communities.nmiDomains).toBeLessThanOrEqual(1);
   });
-  test.prop([fc.array(fc.constantFrom('x', 'y', 'z'), { minLength: 1, maxLength: 30 }), fc.array(fc.constantFrom('p', 'q'), { minLength: 30, maxLength: 30 })])(
-    'NMI is symmetric, in [0, 1], and 1 for a relabelled copy',
-    (x, ys) => {
-      const y = ys.slice(0, x.length);
-      const v = normalizedMutualInformation(x, y);
-      expect(v).toBeGreaterThanOrEqual(0);
-      expect(v).toBeLessThanOrEqual(1);
-      expect(normalizedMutualInformation(y, x)).toBeCloseTo(v, 12);
-      const relabelled = x.map((l) => `L${l}`);
-      expect(normalizedMutualInformation(x, relabelled)).toBeCloseTo(new Set(x).size > 1 ? 1 : 1, 12);
-      expect(mutualInformation(x, y)).toBeGreaterThanOrEqual(0);
-    },
-  );
+  test.prop([
+    fc.array(fc.constantFrom('x', 'y', 'z'), { minLength: 1, maxLength: 30 }),
+    fc.array(fc.constantFrom('p', 'q'), { minLength: 30, maxLength: 30 }),
+  ])('NMI is symmetric, in [0, 1], and 1 for a relabelled copy', (x, ys) => {
+    const y = ys.slice(0, x.length);
+    const v = normalizedMutualInformation(x, y);
+    expect(v).toBeGreaterThanOrEqual(0);
+    expect(v).toBeLessThanOrEqual(1);
+    expect(normalizedMutualInformation(y, x)).toBeCloseTo(v, 12);
+    const relabelled = x.map((l) => `L${l}`);
+    expect(normalizedMutualInformation(x, relabelled)).toBeCloseTo(new Set(x).size > 1 ? 1 : 1, 12);
+    expect(mutualInformation(x, y)).toBeGreaterThanOrEqual(0);
+  });
   it('is 0 for independent partitions', () => {
     expect(normalizedMutualInformation(['a', 'a', 'b', 'b'], ['x', 'y', 'x', 'y'])).toBeCloseTo(0, 12);
     expect(normalizedMutualInformation(['a', 'a'], ['x', 'y'])).toBe(0);

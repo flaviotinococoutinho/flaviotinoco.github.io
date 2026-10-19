@@ -75,13 +75,17 @@ export const nodeName = (i: number): string => `n${String(i)}`;
  * Arbitrary DAG on n nodes: edges only go from a higher to a lower index
  * (child → parent), which makes acyclicity hold by construction.
  */
-export const dagArb = (maxNodes = 9): fc.Arbitrary<{ readonly n: number; readonly edges: readonly (readonly [number, number])[] }> =>
+export const dagArb = (
+  maxNodes = 9,
+): fc.Arbitrary<{ readonly n: number; readonly edges: readonly (readonly [number, number])[] }> =>
   fc.integer({ min: 1, max: maxNodes }).chain((n) =>
     fc
       .array(fc.tuple(fc.integer({ min: 0, max: n - 1 }), fc.integer({ min: 0, max: n - 1 })), { maxLength: n * 2 })
       .map((pairs) => {
         // Orient every pair from the higher to the lower index; drop loops and duplicates.
-        const oriented = pairs.filter(([a, b]) => a !== b).map(([a, b]) => (a > b ? ([a, b] as const) : ([b, a] as const)));
+        const oriented = pairs
+          .filter(([a, b]) => a !== b)
+          .map(([a, b]) => (a > b ? ([a, b] as const) : ([b, a] as const)));
         return { n, edges: [...new Map(oriented.map((p) => [`${String(p[0])}-${String(p[1])}`, p])).values()] };
       }),
   );

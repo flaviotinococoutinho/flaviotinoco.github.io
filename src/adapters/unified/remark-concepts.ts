@@ -18,7 +18,7 @@
  *   - URLs are base-aware: context.base + encodeRoute (the route codec);
  *   - exports file.data.astro.frontmatter.conceptsUsed (sorted ids used in the body).
  */
-import type { Element, ElementContent, Properties } from 'hast';
+import type { Element, ElementContent } from 'hast';
 import { h, s } from 'hastscript';
 import type { Link, Root, RootContent } from 'mdast';
 import { toString } from 'mdast-util-to-string';
@@ -60,7 +60,7 @@ export const markupToHast = (m: Markup, inSvg = false): ElementContent => {
 };
 
 const documentLocale = (file: VFile): Locale | null => {
-  const lang = file.data.astro?.frontmatter?.['lang'];
+  const lang: unknown = file.data.astro?.frontmatter?.['lang'];
   const r = parseLocale(lang);
   return r.ok ? r.value : null;
 };
@@ -118,7 +118,7 @@ export function remarkConcepts(options: RemarkConceptsOptions) {
     };
 
     // Frontmatter `concepts` must name existing concepts (the content layer only checks the syntax).
-    const declared = file.data.astro?.frontmatter?.['concepts'];
+    const declared: unknown = file.data.astro?.frontmatter?.['concepts'];
     if (Array.isArray(declared)) {
       const unknown = declared.filter((c) => {
         const r = parseConceptId(c);
@@ -181,7 +181,7 @@ export function remarkConcepts(options: RemarkConceptsOptions) {
           type: 'link',
           url: href(id, l),
           title: null,
-          children: node.children as Link['children'],
+          children: node.children,
           data: { hProperties: { className: ['concept-link'], dataConcept: id } },
         };
         node.children = [link];
@@ -249,7 +249,7 @@ export function remarkConcepts(options: RemarkConceptsOptions) {
         node.data = {
           ...node.data,
           hName: root.tagName,
-          hProperties: root.properties as Properties,
+          hProperties: root.properties,
           hChildren: root.children,
         };
         return;

@@ -37,7 +37,9 @@ describe('relation vocabulary (data table)', () => {
     expect(LINK_TYPES).not.toContain('broader');
     expect(PREREQUISITE_TYPES).toEqual(['broader', 'dependsOn']);
     // formal relations are cheaper than the weak one
-    expect(Math.max(...RELATION_TYPES.filter((t) => t !== 'related').map((t) => RELATIONS[t].weight))).toBeLessThan(RELATIONS.related.weight);
+    expect(Math.max(...RELATION_TYPES.filter((t) => t !== 'related').map((t) => RELATIONS[t].weight))).toBeLessThan(
+      RELATIONS.related.weight,
+    );
   });
 
   it('orients the bridge constraints', () => {
@@ -78,7 +80,12 @@ describe('concept parser', () => {
       category: 'thing',
       domains: [],
       broader: ['Bad Id'],
-      relations: [{ type: 'broader', target: 'y' }, { type: 'related' }, { type: 'related', target: 'y', extra: 1 }, 'nope'],
+      relations: [
+        { type: 'broader', target: 'y' },
+        { type: 'related' },
+        { type: 'related', target: 'y', extra: 1 },
+        'nope',
+      ],
       related: ['y'],
       exactMatch: ['ftp://example.org'],
       sources: ['1bad'],
@@ -111,7 +118,10 @@ describe('concept parser', () => {
 
   it('normalises text to NFC at the boundary', () => {
     const decomposed = 'Informação';
-    const r = parseConceptEntry('x', { ...(raw('x').data as object), prefLabel: { 'pt-BR': decomposed, en: 'Information' } });
+    const r = parseConceptEntry('x', {
+      ...(raw('x').data as object),
+      prefLabel: { 'pt-BR': decomposed, en: 'Information' },
+    });
     expect(r.ok && r.value.prefLabel['pt-BR']).toBe('Informação');
   });
 });

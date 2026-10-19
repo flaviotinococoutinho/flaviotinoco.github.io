@@ -160,7 +160,8 @@ export default defineMessages({
       'O que convém conhecer antes, em ordem: todos os conceitos de que este depende ou de que é um tipo, ordenados topologicamente (estrato, depois nome).',
     'concept.pathAlone': 'Este conceito não pressupõe nenhum outro: é um bom ponto de partida.',
     'concept.bridge': 'Conceito-ponte',
-    'concept.bridgeNote': 'Está entre os {k} conceitos por onde passam mais caminhos mínimos entre estratos diferentes ({value}).',
+    'concept.bridgeNote':
+      'Está entre os {k} conceitos por onde passam mais caminhos mínimos entre estratos diferentes ({value}).',
     'concept.community': 'Comunidade temática',
     'concept.communityNote': 'Comunidade {n}, com:',
     'concept.fca': 'Na análise formal das obras',
@@ -250,7 +251,7 @@ export default defineMessages({
     'domain.mathematics': 'matemática',
     'domain.design': 'design',
     'domain.product': 'produto',
-    'jsonld.schemeTitle': 'Esquema de conceitos de Flavio Tinoco',
+    'jsonld.schemeTitle': 'Esquema de conceitos de Flávio Tinoco',
     'jsonld.schemeDescription':
       'Conceitos de filosofia, teoria da informação, sistemas formais e produto, organizados em quatro estratos e nove categorias e ligados por relações tipadas.',
     'jsonld.stratum': 'estrato',
@@ -386,7 +387,8 @@ export default defineMessages({
     'category.proposition': 'Proposition',
     'category.method': 'Method',
     'category.artifact': 'Artefact',
-    'categoryq.proposition': 'Is it a statement that is true or false, established by proof or evidence (theorem, law)?',
+    'categoryq.proposition':
+      'Is it a statement that is true or false, established by proof or evidence (theorem, law)?',
     'categoryq.method': 'Is it a procedure carried out step by step to reach an end (algorithm, technique)?',
     'categoryq.operation': 'Is it a mathematical mapping from inputs to outputs (function, transform, code)?',
     'categoryq.measure': 'Is it a quantity defined by a formula over something else, with a unit?',
@@ -410,7 +412,8 @@ export default defineMessages({
       'What is worth knowing first, in order: every concept this one depends on or is a kind of, topologically sorted (stratum, then name).',
     'concept.pathAlone': 'This concept presupposes no other: it is a good place to start.',
     'concept.bridge': 'Bridge concept',
-    'concept.bridgeNote': 'It is among the {k} concepts crossed by the most shortest paths between different strata ({value}).',
+    'concept.bridgeNote':
+      'It is among the {k} concepts crossed by the most shortest paths between different strata ({value}).',
     'concept.community': 'Thematic community',
     'concept.communityNote': 'Community {n}, with:',
     'concept.fca': 'In the formal analysis of the works',
@@ -466,7 +469,8 @@ export default defineMessages({
     'glossary.title': 'Glossary',
     'glossary.description':
       'Every concept of the site from A to Z, with synonyms, definitions, stratum and category, linked to the concept pages.',
-    'glossary.lede': 'Preferred terms and their synonyms in alphabetical order. A synonym refers to its preferred term, as in a thesaurus.',
+    'glossary.lede':
+      'Preferred terms and their synonyms in alphabetical order. A synonym refers to its preferred term, as in a thesaurus.',
     'glossary.letters': 'Glossary letters',
     'glossary.use': 'see {term}',
     'glossary.count': '{n} terms for {concepts} concepts.',
@@ -499,7 +503,7 @@ export default defineMessages({
     'domain.mathematics': 'mathematics',
     'domain.design': 'design',
     'domain.product': 'product',
-    'jsonld.schemeTitle': 'Flavio Tinoco’s concept scheme',
+    'jsonld.schemeTitle': 'Flávio Tinoco’s concept scheme',
     'jsonld.schemeDescription':
       'Concepts from philosophy, information theory, formal systems and product, organised in four strata and nine categories and linked by typed relations.',
     'jsonld.stratum': 'stratum',

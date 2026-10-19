@@ -18,7 +18,8 @@ const reachable = (n: number, edges: readonly (readonly [number, number])[]): bo
   const r = Array.from({ length: n }, () => Array.from({ length: n }, () => false));
   for (const [a, b] of edges) (r[a] as boolean[])[b] = true;
   for (let k = 0; k < n; k += 1)
-    for (let i = 0; i < n; i += 1) for (let j = 0; j < n; j += 1) if (r[i]?.[k] === true && r[k]?.[j] === true) (r[i] as boolean[])[j] = true;
+    for (let i = 0; i < n; i += 1)
+      for (let j = 0; j < n; j += 1) if (r[i]?.[k] === true && r[k]?.[j] === true) (r[i] as boolean[])[j] = true;
   return r;
 };
 
@@ -50,7 +51,9 @@ describe('hierarchy laws on random DAGs', () => {
 
   test.prop([dagArb()])('the transitive reduction preserves reachability and is minimal', ({ n, edges }) => {
     const reduced = transitiveReduction(names(n), parentsFn(edges));
-    const reducedEdges = [...reduced].flatMap(([a, bs]) => bs.map((b) => [Number(a.slice(1)), Number(b.slice(1))] as const));
+    const reducedEdges = [...reduced].flatMap(([a, bs]) =>
+      bs.map((b) => [Number(a.slice(1)), Number(b.slice(1))] as const),
+    );
     expect(reachable(n, reducedEdges)).toEqual(reachable(n, edges));
     // Minimal: removing any edge of the reduction changes reachability.
     for (const e of reducedEdges) {

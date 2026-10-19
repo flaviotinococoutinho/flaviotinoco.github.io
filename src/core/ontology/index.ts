@@ -6,7 +6,15 @@
  * ontology stats), paths, compilers (scene, lattice → markup, tree, glossary),
  * codecs (jsonld, graphjson) and pure geometry (layout, spatial).
  */
-export type { AuthoredLink, ConceptEntry, CycleScope, Localized, OntologyError, OntologyWarning, RawConcept } from './model.ts';
+export type {
+  AuthoredLink,
+  ConceptEntry,
+  CycleScope,
+  Localized,
+  OntologyError,
+  OntologyWarning,
+  RawConcept,
+} from './model.ts';
 export { describeError, describeWarning } from './model.ts';
 export {
   CATEGORIES,
@@ -120,7 +128,14 @@ export {
 } from './ontology.ts';
 export { buildLabelIndex, labelsOf, lookupLabel, type LabelIndex, type LabelLookup } from './labels.ts';
 export { labelKey, searchKey, slugify, stripDiacritics } from './text.ts';
-export { forceLayout, type Layout, type LayoutEdge, type LayoutNode, type LayoutOptions, type Point } from './layout.ts';
+export {
+  forceLayout,
+  type Layout,
+  type LayoutEdge,
+  type LayoutNode,
+  type LayoutOptions,
+  type Point,
+} from './layout.ts';
 export { mulberry32, seedOf, type Prng, type PrngState } from './prng.ts';
 export { nearestInDirection, type Direction } from './spatial.ts';
 export { el, renderMarkup, text, textContent, type Markup, type MarkupElement } from './markup.ts';

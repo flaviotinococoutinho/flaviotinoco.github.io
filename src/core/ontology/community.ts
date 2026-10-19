@@ -38,7 +38,11 @@ const addWeight = (A: Matrix, i: number, j: number, w: number): void => {
 };
 
 /** One level of local moves; returns the community of each node and whether anything moved. */
-const localMoves = (n: number, A: Matrix, m2: number): { readonly community: readonly number[]; readonly moved: boolean } => {
+const localMoves = (
+  n: number,
+  A: Matrix,
+  m2: number,
+): { readonly community: readonly number[]; readonly moved: boolean } => {
   const community = Array.from({ length: n }, (_, i) => i);
   const k = Array.from({ length: n }, (_, i) => [...(A.get(i)?.values() ?? [])].reduce((s, w) => s + w, 0));
   const tot = [...k];

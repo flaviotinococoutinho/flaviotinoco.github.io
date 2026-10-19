@@ -5,7 +5,15 @@
 import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
 import { forceLayout } from '../../../src/core/ontology/layout.ts';
-import { el, escapeAttribute, escapeText, formatCoordinate, renderMarkup, text, textContent } from '../../../src/core/ontology/markup.ts';
+import {
+  el,
+  escapeAttribute,
+  escapeText,
+  formatCoordinate,
+  renderMarkup,
+  text,
+  textContent,
+} from '../../../src/core/ontology/markup.ts';
 import { draw, mulberry32, seedOf } from '../../../src/core/ontology/prng.ts';
 import {
   conceptMapMarkup,
@@ -38,14 +46,27 @@ const TEXT: MapText = {
   relations: 'Relations',
   relationSentence: (type, a, b) => `${a} ${type} ${b}`,
   strata: { philosophy: 'P', theory: 'T', formal: 'F', value: 'V' },
-  categories: Object.fromEntries(['entity', 'quality', 'measure', 'relation', 'process', 'operation', 'proposition', 'method', 'artifact'].map((c) => [c, c.toUpperCase()])) as never,
-  explorer: { filterLabel: 'Strata', searchLabel: 'Find', layoutLabel: 'Layout', layoutForce: 'Force', layoutGrid: 'Grid' },
+  categories: Object.fromEntries(
+    ['entity', 'quality', 'measure', 'relation', 'process', 'operation', 'proposition', 'method', 'artifact'].map(
+      (c) => [c, c.toUpperCase()],
+    ),
+  ) as never,
+  explorer: {
+    filterLabel: 'Strata',
+    searchLabel: 'Find',
+    layoutLabel: 'Layout',
+    layoutForce: 'Force',
+    layoutGrid: 'Grid',
+  },
 };
 
 describe('force-directed layout (Fruchterman & Reingold 1991)', () => {
   it('is deterministic for a seed and changes with the seed', () => {
     const nodes = ['a', 'b', 'c', 'd'].map((id) => ({ id }));
-    const edges = [{ source: 'a', target: 'b' }, { source: 'b', target: 'c' }];
+    const edges = [
+      { source: 'a', target: 'b' },
+      { source: 'b', target: 'c' },
+    ];
     const opts = { width: 400, height: 300, seed: 7, iterations: 200, tolerance: 0.001, padding: 10 };
     const one = forceLayout(nodes, edges, opts);
     const two = forceLayout([...nodes].reverse(), edges, opts);
@@ -80,7 +101,9 @@ describe('force-directed layout (Fruchterman & Reingold 1991)', () => {
     const again = layoutConcepts(o.graph, o.graph.ids, 'full');
     expect([...layout.positions]).toEqual([...again.positions]);
     const meanX = (s: string) => {
-      const xs = o.graph.ids.filter((id) => o.graph.concepts.get(id)?.stratum === s).map((id) => layout.positions.get(id)!.x);
+      const xs = o.graph.ids
+        .filter((id) => o.graph.concepts.get(id)?.stratum === s)
+        .map((id) => layout.positions.get(id)!.x);
       return xs.reduce((a, b) => a + b, 0) / xs.length;
     };
     expect(meanX('philosophy')).toBeLessThan(meanX('theory'));
@@ -110,7 +133,9 @@ describe('scene markup', () => {
     for (const id of ids) expect(html).toContain(`data-id="${id}"`);
     expect(html).toContain('href="/en/concepts/entropy/"');
     expect(html).toContain('class="cmap-node is-focus"');
-    expect(html).toMatch(/class="cmap-node is-focus" href="\/en\/concepts\/entropy\/" transform="translate\([\d.]+ [\d.]+\)" data-id="entropy" data-stratum="theory"/u);
+    expect(html).toMatch(
+      /class="cmap-node is-focus" href="\/en\/concepts\/entropy\/" transform="translate\([\d.]+ [\d.]+\)" data-id="entropy" data-stratum="theory"/u,
+    );
     expect(html).toContain('data-type="broader"');
     expect(html).toContain('marker-end="url(#cm-test-arrow)"');
     expect(html).not.toContain('data-cmap-search');
@@ -160,7 +185,9 @@ describe('scene markup', () => {
       { x: 10, y: 0 },
       { x: 80, y: 0 },
     ]);
-    expect(edgeEnds({ x: 0, y: 0 }, { x: 100, y: 0 }, 'related')?.[1].x).toBeGreaterThan(edgeEnds({ x: 0, y: 0 }, { x: 100, y: 0 }, 'broader')![1].x);
+    expect(edgeEnds({ x: 0, y: 0 }, { x: 100, y: 0 }, 'related')?.[1].x).toBeGreaterThan(
+      edgeEnds({ x: 0, y: 0 }, { x: 100, y: 0 }, 'broader')![1].x,
+    );
     expect(fnv1a('entropy')).toBe(fnv1a('entropy'));
   });
 });
@@ -204,14 +231,23 @@ describe('PRNG (Mulberry32) and markup', () => {
   });
 
   test.prop([fc.string()])('escapes text injectively (decode ∘ escape = id)', (s) => {
-    const decode = (x: string) => x.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+    const decode = (x: string) =>
+      x
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&amp;/g, '&');
     expect(decode(escapeText(s))).toBe(s);
     expect(decode(escapeAttribute(s))).toBe(s);
   });
 
   it('serialises HTML and SVG differently', () => {
-    expect(renderMarkup(el('p', { class: 'x', hidden: true, gone: null }, 'a < b'))).toBe('<p class="x" hidden>a &lt; b</p>');
-    expect(renderMarkup(el('svg', { viewBox: '0 0 1 1' }, el('circle', { r: 1.234 })))).toBe('<svg viewBox="0 0 1 1"><circle r="1.23" /></svg>');
+    expect(renderMarkup(el('p', { class: 'x', hidden: true, gone: null }, 'a < b'))).toBe(
+      '<p class="x" hidden>a &lt; b</p>',
+    );
+    expect(renderMarkup(el('svg', { viewBox: '0 0 1 1' }, el('circle', { r: 1.234 })))).toBe(
+      '<svg viewBox="0 0 1 1"><circle r="1.23" /></svg>',
+    );
     expect(renderMarkup(el('input', { type: 'search' }))).toBe('<input type="search">');
     expect(formatCoordinate(-0.001)).toBe('0');
     expect(textContent(el('p', {}, text('a'), el('b', {}, 'c')))).toBe('ac');

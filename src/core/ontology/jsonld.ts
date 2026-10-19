@@ -32,7 +32,15 @@ import { STRATA, type Stratum } from '../domain/strata.ts';
 import type { ConceptGraph } from './graph.ts';
 import type { ConceptEntry, Localized, OntologyError, RawConcept } from './model.ts';
 import { parseConceptEntry } from './parse.ts';
-import { CATEGORIES, RELATION_TYPES, RELATIONS, isCategory, isLinkType, type Category, type RelationType } from './vocabulary.ts';
+import {
+  CATEGORIES,
+  RELATION_TYPES,
+  RELATIONS,
+  isCategory,
+  isLinkType,
+  type Category,
+  type RelationType,
+} from './vocabulary.ts';
 import type { Work } from './works.ts';
 
 export const SKOS = 'http://www.w3.org/2004/02/skos/core#';
@@ -73,7 +81,8 @@ export const categoryIri = (doc: string, c: Category): string => `${doc}#categor
 export const relationIri = (doc: string, name: string): string => `${doc}#relation/${name}`;
 export const texDatatypeIri = (doc: string): string => `${doc}#datatype/tex`;
 
-const langValues = (values: Localized<string>): JsonValue => LOCALES.map((l) => ({ '@value': values[l], '@language': l }));
+const langValues = (values: Localized<string>): JsonValue =>
+  LOCALES.map((l) => ({ '@value': values[l], '@language': l }));
 const langLists = (values: Localized<readonly string[]>): JsonValue =>
   LOCALES.flatMap((l) => values[l].map((v) => ({ '@value': v, '@language': l })));
 const refs = (iris: readonly string[]): JsonValue => iris.map((iri) => ({ '@id': iri }));
@@ -82,7 +91,11 @@ const per = <T>(f: (l: Locale) => T): Record<Locale, T> => ({ 'pt-BR': f('pt-BR'
 const byCodeUnit = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 /** Property names of the vocabulary: every associative type and the inverse of each asymmetric one. */
-export const vocabularyProperties = (): readonly { readonly name: string; readonly type: RelationType; readonly inverse: boolean }[] =>
+export const vocabularyProperties = (): readonly {
+  readonly name: string;
+  readonly type: RelationType;
+  readonly inverse: boolean;
+}[] =>
   RELATION_TYPES.filter((t) => t !== 'broader').flatMap((t) => {
     const spec = RELATIONS[t];
     const own = { name: t, type: t, inverse: false };
@@ -108,7 +121,11 @@ export const toJsonLd = (graph: ConceptGraph, o: JsonLdOptions): JsonLdDocument 
 
   const properties: readonly JsonLdNode[] = vocabularyProperties().map((p) => {
     const spec = RELATIONS[p.type];
-    const types = ['owl:ObjectProperty', ...(spec.transitive ? ['owl:TransitiveProperty'] : []), ...(spec.symmetric ? ['owl:SymmetricProperty'] : [])];
+    const types = [
+      'owl:ObjectProperty',
+      ...(spec.transitive ? ['owl:TransitiveProperty'] : []),
+      ...(spec.symmetric ? ['owl:SymmetricProperty'] : []),
+    ];
     const other = p.inverse ? p.type : spec.inverse;
     return {
       '@id': relationIri(doc, p.name),
@@ -145,7 +162,10 @@ export const toJsonLd = (graph: ConceptGraph, o: JsonLdOptions): JsonLdDocument 
     if (e === undefined) return [];
     const associative = [
       ...new Set(
-        RELATION_TYPES.filter((t) => t !== 'broader').flatMap((t) => [...(graph.forward[t].get(id) ?? []), ...(graph.inverse[t].get(id) ?? [])]),
+        RELATION_TYPES.filter((t) => t !== 'broader').flatMap((t) => [
+          ...(graph.forward[t].get(id) ?? []),
+          ...(graph.inverse[t].get(id) ?? []),
+        ]),
       ),
     ].sort(byCodeUnit);
     const node: Record<string, JsonValue> = {
@@ -187,7 +207,10 @@ export const toJsonLd = (graph: ConceptGraph, o: JsonLdOptions): JsonLdDocument 
       'schema:url': { '@id': w.href },
       'schema:about': refs([...new Set(w.concepts)].sort(byCodeUnit).map(c)),
       'schema:workTranslation': refs(
-        works.filter((x) => x.key === w.key && x.locale !== w.locale).map((x) => x.href).sort(byCodeUnit),
+        works
+          .filter((x) => x.key === w.key && x.locale !== w.locale)
+          .map((x) => x.href)
+          .sort(byCodeUnit),
       ),
     }));
 
@@ -199,12 +222,15 @@ export const toJsonLd = (graph: ConceptGraph, o: JsonLdOptions): JsonLdDocument 
 
 // ─── Decoder (canonical form only: the inverse of toJsonLd, not a general JSON-LD processor) ───
 
-const isRecord = (v: unknown): v is Readonly<Record<string, unknown>> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isRecord = (v: unknown): v is Readonly<Record<string, unknown>> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
 const asArray = (v: unknown): readonly unknown[] => (Array.isArray(v) ? v : v === undefined ? [] : [v]);
 const idsOf = (v: unknown): readonly string[] =>
   asArray(v).flatMap((x) => (isRecord(x) && typeof x['@id'] === 'string' ? [x['@id']] : []));
 const literals = (v: unknown, locale: Locale): readonly string[] =>
-  asArray(v).flatMap((x) => (isRecord(x) && x['@language'] === locale && typeof x['@value'] === 'string' ? [x['@value']] : []));
+  asArray(v).flatMap((x) =>
+    isRecord(x) && x['@language'] === locale && typeof x['@value'] === 'string' ? [x['@value']] : [],
+  );
 const strings = (v: unknown): readonly string[] => asArray(v).flatMap((x) => (typeof x === 'string' ? [x] : []));
 
 export interface JsonLdDecodeOptions {
@@ -218,14 +244,18 @@ export interface JsonLdDecodeOptions {
  * Asymmetric relations come back as stored; symmetric ones on their canonical
  * end (the smaller id), so the decoded entries build the same graph.
  */
-export const fromJsonLd = (doc: unknown, o: JsonLdDecodeOptions): Result<readonly ConceptEntry[], readonly OntologyError[]> => {
+export const fromJsonLd = (
+  doc: unknown,
+  o: JsonLdDecodeOptions,
+): Result<readonly ConceptEntry[], readonly OntologyError[]> => {
   if (!isRecord(doc) || !Array.isArray(doc['@graph'])) {
     return err([{ kind: 'malformed', id: '', path: '@graph', message: 'not a JSON-LD document with @graph' }]);
   }
   const conceptPrefix = `${o.documentIri}#concept/`;
   const categoryPrefix = `${o.documentIri}#category/`;
   const stratumPrefix = `${o.documentIri}#stratum/`;
-  const local = (iri: string): string | null => (iri.startsWith(conceptPrefix) ? iri.slice(conceptPrefix.length) : null);
+  const local = (iri: string): string | null =>
+    iri.startsWith(conceptPrefix) ? iri.slice(conceptPrefix.length) : null;
   const nodes = (doc['@graph'] as readonly unknown[]).filter(isRecord);
   const raws: RawConcept[] = nodes
     .filter((n) => asArray(n['@type']).includes('skos:Concept') && typeof n['@id'] === 'string')

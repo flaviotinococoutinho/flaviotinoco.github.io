@@ -15,6 +15,7 @@
  * "compare" tool and the concept pages can never disagree.
  */
 import { err, ok, type Result } from '../algebra/result.ts';
+import { show } from '../algebra/show.ts';
 import { parseConceptId, type ConceptId } from '../domain/identifiers.ts';
 import { LOCALES, type Locale } from '../domain/locale.ts';
 import { isStratum, STRATA, type Stratum } from '../domain/strata.ts';
@@ -176,18 +177,24 @@ export interface ClientModel {
   readonly ic: InformationContent<TaxonId>;
 }
 
-const isRecord = (v: unknown): v is Readonly<Record<string, unknown>> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isRecord = (v: unknown): v is Readonly<Record<string, unknown>> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
 const localizedString = (v: unknown, locale: Locale): string | null =>
   isRecord(v) && typeof v[locale] === 'string' ? v[locale] : null;
 const localizedStrings = (v: unknown, locale: Locale): readonly string[] | null => {
   if (!isRecord(v)) return null;
   const xs = v[locale];
-  return Array.isArray(xs) && xs.every((x) => typeof x === 'string') ? (xs as readonly string[]) : null;
+  return Array.isArray(xs) && xs.every((x) => typeof x === 'string') ? xs : null;
 };
 
 /** Decodes /ontology.graph.json for one locale and rebuilds the taxonomy and IC with the core functions. */
 export const decodeGraphJson = (raw: unknown, locale: Locale): Result<ClientModel, string> => {
-  if (!isRecord(raw) || raw['version'] !== GRAPH_JSON_VERSION || !Array.isArray(raw['nodes']) || !Array.isArray(raw['edges'])) {
+  if (
+    !isRecord(raw) ||
+    raw['version'] !== GRAPH_JSON_VERSION ||
+    !Array.isArray(raw['nodes']) ||
+    !Array.isArray(raw['edges'])
+  ) {
     return err('malformed ontology graph payload');
   }
   const concepts = new Map<ConceptId, ClientConcept>();
@@ -211,7 +218,7 @@ export const decodeGraphJson = (raw: unknown, locale: Locale): Result<ClientMode
       typeof bridge !== 'boolean' ||
       typeof community !== 'number'
     ) {
-      return err(`malformed node ${JSON.stringify(n['id'])}`);
+      return err(`malformed node ${show(n['id'])}`);
     }
     concepts.set(id.value, {
       id: id.value,
@@ -233,15 +240,26 @@ export const decodeGraphJson = (raw: unknown, locale: Locale): Result<ClientMode
     const source = parseConceptId(e['source']);
     const target = parseConceptId(e['target']);
     const type = e['type'];
-    if (!source.ok || !target.ok || !isRelationType(type) || !concepts.has(source.value) || !concepts.has(target.value)) {
-      return err(`malformed edge ${JSON.stringify(e)}`);
+    if (
+      !source.ok ||
+      !target.ok ||
+      !isRelationType(type) ||
+      !concepts.has(source.value) ||
+      !concepts.has(target.value)
+    ) {
+      return err(`malformed edge ${show(e)}`);
     }
     links.push({ type, source: source.value, target: target.value });
   }
   const ids = [...concepts.keys()].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   const broaderOf = new Map<ConceptId, ConceptId[]>();
-  for (const l of links) if (l.type === 'broader') broaderOf.set(l.source, [...(broaderOf.get(l.source) ?? []), l.target]);
-  const taxonomy = buildTaxonomy(ids, (id) => broaderOf.get(id) ?? [], (id) => concepts.get(id)?.category);
+  for (const l of links)
+    if (l.type === 'broader') broaderOf.set(l.source, [...(broaderOf.get(l.source) ?? []), l.target]);
+  const taxonomy = buildTaxonomy(
+    ids,
+    (id) => broaderOf.get(id) ?? [],
+    (id) => concepts.get(id)?.category,
+  );
   return ok({ locale, ids, concepts, links, taxonomy, ic: intrinsicInformationContent(taxonomy) });
 };
 

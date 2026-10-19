@@ -99,7 +99,10 @@ export const strataColumns = (
   ids: readonly ConceptId[],
 ): Readonly<Record<Stratum, { readonly center: number; readonly spread: number }>> => {
   const counts = STRATA.map((s) => ids.filter((id) => graph.concepts.get(id)?.stratum === s).length);
-  const total = Math.max(1, counts.reduce((a, b) => a + b, 0));
+  const total = Math.max(
+    1,
+    counts.reduce((a, b) => a + b, 0),
+  );
   const gutter = 0.015;
   let start = 0;
   const out = {} as Record<Stratum, { readonly center: number; readonly spread: number }>;
@@ -188,7 +191,11 @@ export const gridLayout = (graph: ConceptGraph, ids: readonly ConceptId[], rowHe
     });
   const categories = CATEGORY_DISPLAY_ORDER.filter((c) => STRATA.some((s) => cell(s, c).length > 0));
   const colWidth = STRATA.map(
-    (s) => Math.max(120, ...sorted.filter((id) => graph.concepts.get(id)?.stratum === s).map((id) => labelWidth(graph, id))) + 24,
+    (s) =>
+      Math.max(
+        120,
+        ...sorted.filter((id) => graph.concepts.get(id)?.stratum === s).map((id) => labelWidth(graph, id)),
+      ) + 24,
   );
   const rowHeight = categories.map((c) => Math.max(1, ...STRATA.map((s) => cell(s, c).length)) * slot);
   const gridLeft = pad + rowHeader;
@@ -291,7 +298,8 @@ export const trimSegment = (p: Point, q: Point, a: number, b: number): readonly 
 export const edgeEnds = (p: Point, q: Point, type: RelationType): readonly [Point, Point] | null =>
   trimSegment(p, q, MAP_STYLE.halo, MAP_STYLE.halo + (MARKER[type] === null ? 0 : MAP_STYLE.arrowGap));
 
-const labelOf = (graph: ConceptGraph, id: ConceptId, locale: Locale): string => graph.concepts.get(id)?.prefLabel[locale] ?? id;
+const labelOf = (graph: ConceptGraph, id: ConceptId, locale: Locale): string =>
+  graph.concepts.get(id)?.prefLabel[locale] ?? id;
 
 const markerId = (pfx: string, marker: 'arrow' | 'diamond'): string => `${pfx}-${marker}`;
 
@@ -339,7 +347,11 @@ const nodeMarkup = (input: SceneInput, id: ConceptId, distance: number | undefin
     el('use', { class: 'cmap-node__glyph', href: `#${spec.glyph}`, x: -g / 2, y: -g / 2, width: g, height: g }),
     el(
       'text',
-      { class: 'cmap-node__label', y: MAP_STYLE.halo + MAP_STYLE.labelGap + MAP_STYLE.fontSize * 0.8, 'text-anchor': 'middle' },
+      {
+        class: 'cmap-node__label',
+        y: MAP_STYLE.halo + MAP_STYLE.labelGap + MAP_STYLE.fontSize * 0.8,
+        'text-anchor': 'middle',
+      },
       e.prefLabel[input.locale],
     ),
   );
@@ -409,12 +421,21 @@ const legendMarkup = (input: SceneInput, types: readonly RelationType[]): Markup
         el(
           'li',
           { class: 'cmap__legend-item', 'data-stratum': s },
-          el('svg', { class: 'glyph', viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' }, el('use', { href: `#${STRATUM_SPECS[s].glyph}` })),
+          el(
+            'svg',
+            { class: 'glyph', viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' },
+            el('use', { href: `#${STRATUM_SPECS[s].glyph}` }),
+          ),
           el('span', {}, input.text.strata[s]),
         ),
       ),
       ...types.map((t) =>
-        el('li', { class: 'cmap__legend-item', 'data-type': t }, legendLine(input.idPrefix, t), el('span', {}, input.text.relationLegend[t])),
+        el(
+          'li',
+          { class: 'cmap__legend-item', 'data-type': t },
+          legendLine(input.idPrefix, t),
+          el('span', {}, input.text.relationLegend[t]),
+        ),
       ),
     ),
   );
@@ -432,7 +453,11 @@ const relationsMarkup = (input: SceneInput, edges: readonly Link[]): Markup =>
         el(
           'li',
           { 'data-type': e.type },
-          input.text.relationSentence(e.type, labelOf(input.graph, e.source, input.locale), labelOf(input.graph, e.target, input.locale)),
+          input.text.relationSentence(
+            e.type,
+            labelOf(input.graph, e.source, input.locale),
+            labelOf(input.graph, e.target, input.locale),
+          ),
         ),
       ),
     ),
@@ -443,10 +468,18 @@ const gridLabelsMarkup = (input: SceneInput, grid: GridLayout): MarkupElement =>
     'g',
     { class: 'cmap__grid-labels', 'aria-hidden': 'true' },
     ...grid.columns.map((c) =>
-      el('text', { class: 'cmap__grid-head', 'data-stratum': c.stratum, x: c.x, y: grid.gridTop - 16, 'text-anchor': 'middle' }, input.text.strata[c.stratum]),
+      el(
+        'text',
+        { class: 'cmap__grid-head', 'data-stratum': c.stratum, x: c.x, y: grid.gridTop - 16, 'text-anchor': 'middle' },
+        input.text.strata[c.stratum],
+      ),
     ),
     ...grid.rows.map((r) =>
-      el('text', { class: 'cmap__grid-row', x: grid.gridLeft - 12, y: r.y, 'text-anchor': 'end' }, input.text.categories[r.category]),
+      el(
+        'text',
+        { class: 'cmap__grid-row', x: grid.gridLeft - 12, y: r.y, 'text-anchor': 'end' },
+        input.text.categories[r.category],
+      ),
     ),
   );
 
@@ -468,8 +501,16 @@ const toolbarMarkup = (input: SceneInput): MarkupElement => {
       : el(
           'div',
           { class: 'cmap__group', role: 'group', 'aria-label': ex.layoutLabel },
-          el('button', { type: 'button', class: 'cmap__button', 'data-cmap-layout': 'force', 'aria-pressed': 'true' }, ex.layoutForce),
-          el('button', { type: 'button', class: 'cmap__button', 'data-cmap-layout': 'grid', 'aria-pressed': 'false' }, ex.layoutGrid),
+          el(
+            'button',
+            { type: 'button', class: 'cmap__button', 'data-cmap-layout': 'force', 'aria-pressed': 'true' },
+            ex.layoutForce,
+          ),
+          el(
+            'button',
+            { type: 'button', class: 'cmap__button', 'data-cmap-layout': 'grid', 'aria-pressed': 'false' },
+            ex.layoutGrid,
+          ),
         ),
     ex === undefined
       ? null
@@ -479,8 +520,18 @@ const toolbarMarkup = (input: SceneInput): MarkupElement => {
           ...STRATA.map((s) =>
             el(
               'button',
-              { type: 'button', class: 'cmap__button cmap__filter', 'data-stratum': s, 'data-cmap-filter': s, 'aria-pressed': 'true' },
-              el('svg', { class: 'glyph', viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' }, el('use', { href: `#${STRATUM_SPECS[s].glyph}` })),
+              {
+                type: 'button',
+                class: 'cmap__button cmap__filter',
+                'data-stratum': s,
+                'data-cmap-filter': s,
+                'aria-pressed': 'true',
+              },
+              el(
+                'svg',
+                { class: 'glyph', viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' },
+                el('use', { href: `#${STRATUM_SPECS[s].glyph}` }),
+              ),
               el('span', {}, input.text.strata[s]),
             ),
           ),
@@ -491,7 +542,14 @@ const toolbarMarkup = (input: SceneInput): MarkupElement => {
           'div',
           { class: 'cmap__group cmap__search' },
           el('label', { for: `${pfx}-search` }, ex.searchLabel),
-          el('input', { type: 'search', id: `${pfx}-search`, class: 'cmap__search-input', 'data-cmap-search': true, autocomplete: 'off', spellcheck: 'false' }),
+          el('input', {
+            type: 'search',
+            id: `${pfx}-search`,
+            class: 'cmap__search-input',
+            'data-cmap-search': true,
+            autocomplete: 'off',
+            spellcheck: 'false',
+          }),
         ),
   );
 };
@@ -506,7 +564,8 @@ export const typesOf = (edges: readonly Link[]): readonly RelationType[] => {
 export const conceptMapMarkup = (input: SceneInput): MarkupElement => {
   const within = new Set(input.ids);
   const edges = edgesOf(input.graph, within);
-  const distances = input.focus === null ? new Map<ConceptId, number>() : distancesFrom(input.graph, input.focus, input.ids.length);
+  const distances =
+    input.focus === null ? new Map<ConceptId, number>() : distancesFrom(input.graph, input.focus, input.ids.length);
   const { width, height } = input.layout;
   const pfx = input.idPrefix;
   const ordered = [...input.ids].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
@@ -539,11 +598,17 @@ export const conceptMapMarkup = (input: SceneInput): MarkupElement => {
         el('title', { id: `${pfx}-title` }, input.text.title),
         markerDefs(pfx),
         grid === undefined ? null : gridLabelsMarkup(input, grid),
-        el('g', { class: 'cmap__edges', 'aria-hidden': 'true' }, ...edges.map((e) => edgeMarkup(input, e)).filter((m): m is MarkupElement => m !== null)),
+        el(
+          'g',
+          { class: 'cmap__edges', 'aria-hidden': 'true' },
+          ...edges.map((e) => edgeMarkup(input, e)).filter((m): m is MarkupElement => m !== null),
+        ),
         el(
           'g',
           { class: 'cmap__nodes' },
-          ...ordered.map((id) => nodeMarkup(input, id, distances.get(id))).filter((m): m is MarkupElement => m !== null),
+          ...ordered
+            .map((id) => nodeMarkup(input, id, distances.get(id)))
+            .filter((m): m is MarkupElement => m !== null),
         ),
       ),
     ),

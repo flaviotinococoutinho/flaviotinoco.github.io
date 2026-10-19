@@ -62,4 +62,8 @@ export const buildTaxonomy = (
 
 /** The extended taxonomy of a validated graph. */
 export const taxonomyOf = (g: ConceptGraph): Hierarchy<TaxonId> =>
-  buildTaxonomy(g.ids, (id) => g.hierarchy.broader.get(id) ?? [], (id) => g.concepts.get(id)?.category);
+  buildTaxonomy(
+    g.ids,
+    (id) => g.hierarchy.broader.get(id) ?? [],
+    (id) => g.concepts.get(id)?.category,
+  );

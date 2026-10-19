@@ -53,17 +53,20 @@ describe('Lin (1998) and Resnik (1995) similarity', () => {
     expect(resnik(h, ic, a, b)).toBeCloseTo(resnik(h, ic, b, a), 12);
   });
 
-  test.prop([dagArb(), fc.nat(), fc.nat()])('lowest common subsumers are minimal common subsumers', ({ n, edges }, i, j) => {
-    const h = deriveHierarchy(names(n), parentsFn(edges));
-    const a = nodeName(i % n);
-    const b = nodeName(j % n);
-    const common = commonSubsumers(h, a, b);
-    const lcs = lowestCommonSubsumers(h, a, b);
-    for (const c of lcs) {
-      expect(common.has(c)).toBe(true);
-      for (const d of h.descendants.get(c) ?? []) expect(common.has(d)).toBe(false);
-    }
-  });
+  test.prop([dagArb(), fc.nat(), fc.nat()])(
+    'lowest common subsumers are minimal common subsumers',
+    ({ n, edges }, i, j) => {
+      const h = deriveHierarchy(names(n), parentsFn(edges));
+      const a = nodeName(i % n);
+      const b = nodeName(j % n);
+      const common = commonSubsumers(h, a, b);
+      const lcs = lowestCommonSubsumers(h, a, b);
+      for (const c of lcs) {
+        expect(common.has(c)).toBe(true);
+        for (const d of h.descendants.get(c) ?? []) expect(common.has(d)).toBe(false);
+      }
+    },
+  );
 
   it('uses the most informative of several lowest common subsumers (polyhierarchy)', () => {
     // a and b share two parents p (specific) and q (general).
@@ -96,12 +99,15 @@ describe('Lin (1998) and Resnik (1995) similarity', () => {
 });
 
 describe('Shannon entropy', () => {
-  test.prop([fc.array(fc.integer({ min: 0, max: 50 }), { maxLength: 12 })])('is between 0 and log2 of the support', (counts) => {
-    const h = shannonEntropy(counts);
-    const support = counts.filter((c) => c > 0).length;
-    expect(h).toBeGreaterThanOrEqual(0);
-    expect(h).toBeLessThanOrEqual(Math.log2(Math.max(1, support)) + 1e-12);
-  });
+  test.prop([fc.array(fc.integer({ min: 0, max: 50 }), { maxLength: 12 })])(
+    'is between 0 and log2 of the support',
+    (counts) => {
+      const h = shannonEntropy(counts);
+      const support = counts.filter((c) => c > 0).length;
+      expect(h).toBeGreaterThanOrEqual(0);
+      expect(h).toBeLessThanOrEqual(Math.log2(Math.max(1, support)) + 1e-12);
+    },
+  );
   it('matches worked values', () => {
     expect(shannonEntropy([1, 1])).toBeCloseTo(1, 12);
     expect(shannonEntropy([1, 1, 1, 1])).toBeCloseTo(2, 12);

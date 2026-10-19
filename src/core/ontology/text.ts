@@ -17,7 +17,7 @@ import type { Locale } from '../domain/locale.ts';
 const TYPOGRAPHIC: Readonly<Record<string, string>> = {
   '‘': "'",
   '’': "'",
-  'ʼ': "'",
+  ʼ: "'",
   '“': '"',
   '”': '"',
   '‐': '-',
@@ -26,10 +26,10 @@ const TYPOGRAPHIC: Readonly<Record<string, string>> = {
   '–': '-',
   '—': '-',
   '−': '-',
-  ' ': ' ',
-  ' ': ' ',
+  '\u00a0': ' ',
+  '\u202f': ' ',
 };
-const TYPOGRAPHIC_RE = /[‘’ʼ“”‐-—−  ]/gu;
+const TYPOGRAPHIC_RE = /[‘’ʼ“”‐-—−\u00a0\u202f]/gu;
 
 /** Key for exact (accent-sensitive, case-insensitive) label lookup in one locale. */
 export const labelKey = (label: string, locale: Locale): string =>

@@ -145,8 +145,10 @@ export const forceLayout = <Id extends string>(
       ys[i] = node.pin.y;
       return;
     }
-    const bx = node.band !== undefined && axis === 'x' ? padding + node.band * innerW + (u - 0.5) * k : padding + u * innerW;
-    const by = node.band !== undefined && axis === 'y' ? padding + node.band * innerH + (v - 0.5) * k : padding + v * innerH;
+    const bx =
+      node.band !== undefined && axis === 'x' ? padding + node.band * innerW + (u - 0.5) * k : padding + u * innerW;
+    const by =
+      node.band !== undefined && axis === 'y' ? padding + node.band * innerH + (v - 0.5) * k : padding + v * innerH;
     xs[i] = inBand(node, 'x', bx);
     ys[i] = inBand(node, 'y', by);
   });
@@ -206,7 +208,8 @@ export const forceLayout = <Id extends string>(
     // Bands and gravity (springs proportional to the displacement from their targets).
     order.forEach((node, i) => {
       if (node.band !== undefined && bandStrength > 0) {
-        if (axis === 'x') dispX[i] = (dispX[i] as number) + bandStrength * (padding + node.band * innerW - (xs[i] as number));
+        if (axis === 'x')
+          dispX[i] = (dispX[i] as number) + bandStrength * (padding + node.band * innerW - (xs[i] as number));
         else dispY[i] = (dispY[i] as number) + bandStrength * (padding + node.band * innerH - (ys[i] as number));
       }
       if (gravity > 0) {
@@ -257,7 +260,8 @@ export const forceLayout = <Id extends string>(
         const nu = order[u] as LayoutNode<Id>;
         const nv = order[v] as LayoutNode<Id>;
         // Two nodes held in band windows can only be separated across the band axis.
-        const banded = nu.band !== undefined && nv.band !== undefined && spreadOf(nu) !== undefined && spreadOf(nv) !== undefined;
+        const banded =
+          nu.band !== undefined && nv.band !== undefined && spreadOf(nu) !== undefined && spreadOf(nv) !== undefined;
         const alongX = banded ? axis === 'y' : ox < oy;
         if (alongX) {
           const sign = ux < vx || (ux === vx && u < v) ? -1 : 1;

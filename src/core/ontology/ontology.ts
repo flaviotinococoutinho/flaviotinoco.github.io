@@ -17,7 +17,13 @@ import { louvain, normalizedMutualInformation, type Communities } from './commun
 import { buildGraph, degreeOf, type ConceptGraph } from './graph.ts';
 import { maxDepth, type Hierarchy } from './hierarchy.ts';
 import { buildLabelIndex, type LabelIndex } from './labels.ts';
-import { degreeEntropy, intrinsicInformationContent, shannonEntropy, tally, type InformationContent } from './measures.ts';
+import {
+  degreeEntropy,
+  intrinsicInformationContent,
+  shannonEntropy,
+  tally,
+  type InformationContent,
+} from './measures.ts';
 import type { ConceptEntry, OntologyError, RawConcept } from './model.ts';
 import { parseConceptEntry } from './parse.ts';
 import { taxonomyOf, type TaxonId } from './taxonomy.ts';

@@ -62,7 +62,10 @@ export const latticeLayout = <G extends string, M extends string>(lattice: Conce
     }
   };
   const topDown = layers.map((_, l) => l).slice(1);
-  const bottomUp = layers.map((_, l) => l).reverse().slice(1);
+  const bottomUp = layers
+    .map((_, l) => l)
+    .reverse()
+    .slice(1);
   sweep(topDown, up);
   sweep(bottomUp, down);
   sweep(topDown, up);
@@ -103,7 +106,12 @@ export interface LatticeInput<G extends string, M extends string> {
 }
 
 /** Joins labels into at most `lines` lines of about `width` characters, with a "+k" suffix for the rest. */
-export const labelLines = (labels: readonly string[], width: number, lines: number, more: (n: number) => string): readonly string[] => {
+export const labelLines = (
+  labels: readonly string[],
+  width: number,
+  lines: number,
+  more: (n: number) => string,
+): readonly string[] => {
   const out: string[] = [];
   let current = '';
   let used = 0;
@@ -125,7 +133,9 @@ export const labelLines = (labels: readonly string[], width: number, lines: numb
   return out;
 };
 
-export const latticeMarkup = <G extends string, M extends string>(input: LatticeInput<G, M>): readonly MarkupElement[] => {
+export const latticeMarkup = <G extends string, M extends string>(
+  input: LatticeInput<G, M>,
+): readonly MarkupElement[] => {
   const { lattice, layout, text } = input;
   const pfx = input.idPrefix;
   const attrsAt = new Map<number, M[]>();
@@ -135,7 +145,9 @@ export const latticeMarkup = <G extends string, M extends string>(input: Lattice
   const edges = lattice.covers.flatMap(([lower, upper]) => {
     const p = layout.positions[lower];
     const q = layout.positions[upper];
-    return p === undefined || q === undefined ? [] : [el('line', { class: 'fca__edge', x1: p.x, y1: p.y, x2: q.x, y2: q.y })];
+    return p === undefined || q === undefined
+      ? []
+      : [el('line', { class: 'fca__edge', x1: p.x, y1: p.y, x2: q.x, y2: q.y })];
   });
   const nodes = lattice.concepts.map((_, i) => {
     const p = layout.positions[i] ?? { x: 0, y: 0 };
@@ -199,7 +211,10 @@ export const latticeMarkup = <G extends string, M extends string>(input: Lattice
             el('strong', {}, `${text.extentLabel}: `),
             ...(c.extent.length === 0
               ? [text.emptyExtent]
-              : c.extent.flatMap((g, k) => [k === 0 ? '' : ', ', el('a', { href: input.objectHref(g) }, input.objectLabel(g))])),
+              : c.extent.flatMap((g, k) => [
+                  k === 0 ? '' : ', ',
+                  el('a', { href: input.objectHref(g) }, input.objectLabel(g)),
+                ])),
           ),
           el(
             'p',
@@ -207,7 +222,10 @@ export const latticeMarkup = <G extends string, M extends string>(input: Lattice
             el('strong', {}, `${text.intentLabel}: `),
             ...(c.intent.length === 0
               ? [text.emptyIntent]
-              : c.intent.flatMap((m, k) => [k === 0 ? '' : ', ', el('a', { href: input.attributeHref(m) }, input.attributeLabel(m))])),
+              : c.intent.flatMap((m, k) => [
+                  k === 0 ? '' : ', ',
+                  el('a', { href: input.attributeHref(m) }, input.attributeLabel(m)),
+                ])),
           ),
         ),
       ),

@@ -29,14 +29,34 @@ export type Markup = MarkupElement | MarkupText;
 
 export const text = (value: string): MarkupText => ({ type: 'text', value });
 
-export const el = (tag: string, attrs: Attributes = {}, ...children: readonly (Markup | string | null | false)[]): MarkupElement => ({
+export const el = (
+  tag: string,
+  attrs: Attributes = {},
+  ...children: readonly (Markup | string | null | false)[]
+): MarkupElement => ({
   type: 'element',
   tag,
   attrs,
-  children: children.filter((c): c is Markup | string => c !== null && c !== false).map((c) => (typeof c === 'string' ? text(c) : c)),
+  children: children
+    .filter((c): c is Markup | string => c !== null && c !== false)
+    .map((c) => (typeof c === 'string' ? text(c) : c)),
 });
 
-const VOID = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr']);
+const VOID = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'source',
+  'track',
+  'wbr',
+]);
 
 export const escapeText = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 export const escapeAttribute = (s: string): string => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
@@ -50,7 +70,9 @@ export const formatCoordinate = (n: number): string => {
 const attributeString = (attrs: Attributes): string =>
   Object.entries(attrs)
     .filter(([, v]) => v !== null && v !== undefined && v !== false)
-    .map(([k, v]) => (v === true ? ` ${k}` : ` ${k}="${escapeAttribute(typeof v === 'number' ? formatCoordinate(v) : String(v))}"`))
+    .map(([k, v]) =>
+      v === true ? ` ${k}` : ` ${k}="${escapeAttribute(typeof v === 'number' ? formatCoordinate(v) : String(v))}"`,
+    )
     .join('');
 
 export const renderMarkup = (node: Markup, inSvg = false): string => {
