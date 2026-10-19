@@ -12,6 +12,7 @@
  * form of colour-vision deficiency and greyscale printing.
  */
 import { err, ok, type Result } from '../algebra/result.ts';
+import { show } from '../algebra/show.ts';
 
 export const STRATA = ['philosophy', 'theory', 'formal', 'value'] as const;
 export type Stratum = (typeof STRATA)[number];
@@ -41,7 +42,7 @@ export const isStratum = (value: unknown): value is Stratum =>
   typeof value === 'string' && (STRATA as readonly string[]).includes(value);
 
 export const parseStratum = (value: unknown): Result<Stratum, string> =>
-  isStratum(value) ? ok(value) : err(`unknown stratum "${String(value)}" (expected one of ${STRATA.join(', ')})`);
+  isStratum(value) ? ok(value) : err(`unknown stratum "${show(value)}" (expected one of ${STRATA.join(', ')})`);
 
 /** Total order on strata (the direction of the bridge). */
 export const compareStrata = (a: Stratum, b: Stratum): number => STRATUM_SPECS[a].ordinal - STRATUM_SPECS[b].ordinal;

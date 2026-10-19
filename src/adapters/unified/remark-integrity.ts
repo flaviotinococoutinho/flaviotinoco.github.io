@@ -17,6 +17,7 @@ import type { Root, Parent, RootContent } from 'mdast';
 import type { VFile } from 'vfile';
 import { SKIP, visit } from 'unist-util-visit';
 import type { PipelineContext } from './context.ts';
+import { fileLineColumn } from './source-lines.ts';
 
 export interface RemarkIntegrityOptions {
   readonly context: PipelineContext;
@@ -41,10 +42,30 @@ export function remarkIntegrity(_options: RemarkIntegrityOptions) {
         file.fail(`unknown ${node.type === 'leafDirective' ? 'leaf' : 'container'} directive "${node.name}"`, node);
       }
       if (/[[{]/.test(raw)) {
-        file.message(`unknown text directive ":${node.name}" kept as literal text`, node, 'integrity:unknown-directive');
+        file.message(
+          `unknown text directive ":${node.name}" kept as literal text`,
+          node,
+          'integrity:unknown-directive',
+        );
       }
       parent.children.splice(index, 1, { type: 'text', value: raw } as RootContent);
       return [SKIP, index + 1];
     });
+    reportWarnings(file);
   };
 }
+
+/**
+ * Astro does not print non-fatal vfile messages of Markdown files, so the
+ * advisory lints of earlier stages (abnt:*, reading:*, integrity:*) would be
+ * invisible. As the last remark stage, surface them in the build log with a
+ * stable prefix the CLI and CI can grep.
+ */
+const reportWarnings = (file: VFile): void => {
+  for (const m of file.messages) {
+    if (m.fatal === true) continue;
+    const where = `${file.path}:${fileLineColumn(file, m.line, m.column)}`;
+    const rule = [m.source, m.ruleId].filter(Boolean).join(':');
+    console.warn(`[content-lint] ${where} ${rule} ${m.reason}`);
+  }
+};

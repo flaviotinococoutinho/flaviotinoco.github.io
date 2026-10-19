@@ -1,0 +1,6 @@
+term	lang	case	expansion_pt	expansion_en	lang_of_expansion
+FFT	mul	exact	transformada rápida de Fourier	fast Fourier transform	en
+ABNT	mul	exact	Associação Brasileira de Normas Técnicas	Brazilian Association of Technical Standards	pt-BR
+CPU	mul	exact	unidade central de processamento	central processing unit	en
+CLT	en	exact	teorema central do limite	central limit theorem	en
+TCL	pt-BR	exact	teorema central do limite	central limit theorem	pt-BR

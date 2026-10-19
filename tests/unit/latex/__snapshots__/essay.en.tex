@@ -1,0 +1,171 @@
+% !TEX program = lualatex
+% Generated from Markdown by src/core/latex/export.ts. Edit the Markdown source, not this file.
+\documentclass[11pt,a4paper]{article}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{lmodern}
+\else
+  \usepackage{fontspec}
+\fi
+\usepackage[brazilian,main=english]{babel}
+\usepackage{csquotes}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage[normalem]{ulem}
+\usepackage{fancyvrb}
+\usepackage{newfloat}
+\usepackage{caption}
+% ABNT NBR 14724:2024 §5.8: designation, number, dash and title ABOVE; source below.
+\DeclareCaptionLabelSeparator{ft}{ – }
+\captionsetup{labelsep=ft,position=top}
+\DeclareFloatingEnvironment[fileext=lgr,name={Chart},listname={List of charts}]{ftchart}
+\DeclareFloatingEnvironment[fileext=lqd,name={Box},listname={List of boxes}]{ftframe}
+\newcommand{\ftsource}[1]{\par\smallskip{\footnotesize Source: #1\par}}
+\usepackage[backend=biber,style=apa]{biblatex}
+\addbibresource{bibliography.bib}
+\usepackage{hyperref}
+\hypersetup{hidelinks,pdftitle={Sampling and aliasing},pdfauthor={Flávio Tinoco},pdflang={en}}
+
+% Theorem-like environments: one shared counter (amsthm \newtheorem{x}[theorem]).
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{axiom}[theorem]{Axiom}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\renewcommand{\qedsymbol}{\ensuremath{\blacksquare}}
+
+% Markup of the abnt stage (semantic wrappers; see docs/guia-latex.md).
+\newcommand{\ftforeign}[2]{\textit{#2}}
+\newcommand{\ftname}[1]{#1}
+\newcommand{\ftabbr}[2]{#1}
+% KaTeX-only HTML extensions degrade to their content.
+\providecommand{\htmlClass}[2]{#2}
+\providecommand{\htmlData}[2]{#2}
+\providecommand{\htmlId}[2]{#2}
+\providecommand{\htmlStyle}[2]{#2}
+
+% Site notation (src/core/latex/macros.ts) and document macros.
+\makeatletter
+\newcommand*{\ftmacro}[3]{%
+  \ifdefined#1%
+    \expandafter\NewCommandCopy\csname fttext\string#1\endcsname#1%
+    \expandafter\newcommand\csname ftmath\string#1\endcsname[#2]{#3}%
+    \DeclareRobustCommand{#1}{%
+      \ifmmode\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi
+      {\csname ftmath\string#1\endcsname}{\csname fttext\string#1\endcsname}}%
+  \else
+    \newcommand{#1}[#2]{#3}%
+  \fi}
+\makeatother
+\ftmacro{\N}{0}{\mathbb{N}}
+\ftmacro{\Z}{0}{\mathbb{Z}}
+\ftmacro{\Q}{0}{\mathbb{Q}}
+\ftmacro{\R}{0}{\mathbb{R}}
+\ftmacro{\C}{0}{\mathbb{C}}
+\ftmacro{\E}{0}{\operatorname{\mathbb{E}}}
+\ftmacro{\Var}{0}{\operatorname{Var}}
+\ftmacro{\Prob}{0}{\operatorname{P}}
+\ftmacro{\H}{0}{\operatorname{H}}
+\ftmacro{\I}{0}{\operatorname{I}}
+\ftmacro{\KL}{0}{D_{\mathrm{KL}}\infdivx}
+\ftmacro{\infdivx}{2}{\left(#1\,\middle\|\,#2\right)}
+\ftmacro{\d}{0}{\mathop{}\!\mathrm{d}}
+\ftmacro{\e}{0}{\mathrm{e}}
+\ftmacro{\i}{0}{\mathrm{i}}
+\ftmacro{\sinc}{0}{\operatorname{sinc}}
+\ftmacro{\abs}{1}{\left\lvert #1 \right\rvert}
+\ftmacro{\norm}{1}{\left\lVert #1 \right\rVert}
+\ftmacro{\set}{1}{\left\{ #1 \right\}}
+\ftmacro{\F}{0}{\mathcal{F}}
+\ftmacro{\defeq}{0}{\coloneqq}
+\ftmacro{\entails}{0}{\vDash}
+\ftmacro{\proves}{0}{\vdash}
+
+\title{Sampling and aliasing}
+\author{Flávio Tinoco}
+\date{October 1, 2026}
+
+\begin{document}
+\maketitle
+
+\section{Sampling and aliasing}\label{sampling}
+
+Sampling a signal at rate $f_s$ folds every frequency above $f_s/2$ back into the band
+\parencites[{p.~11}]{shannon1949}[{see}][{}]{nyquist1928}. As \textcite[{ch.~2}]{kotelnikov1933} showed earlier, the
+condition is also sufficient. Prices such as \$5 \& 10\% off, the path C:\textbackslash{}temp\textbackslash{}new and
+50\_000 samples \textasciitilde{} 1 s must survive; so must x\textasciicircum{}2 written as text and a \#hashtag.
+
+\begin{definition}[{Alias}]\label{def:alias}
+A frequency $f$ is an \emph{alias} of $f + k f_s$ for every integer $k$.
+\end{definition}
+
+\begin{theorem}[{Nyquist–Shannon}]\label{thm:sampling}
+A signal band-limited to $B$ is determined by its samples whenever $f_s > 2B$, see
+\eqref{eq:rate} and Figure~\ref{fig:alias}.
+\end{theorem}
+
+\begin{proof}[{Proof of Theorem~\ref{thm:sampling}}]
+Combine Definition~\ref{def:alias} with the reconstruction formula \eqref{eq:sinc}.
+\end{proof}
+
+\begin{equation}
+f_s > 2B \label{eq:rate}
+\end{equation}
+
+\begin{align}
+x(t) &= \sum_{n} x(nT)\,\sinc\!\left(\frac{t - nT}{T}\right) \label{eq:sinc}
+\end{align}
+
+\begin{gather*}
+\text{an unnumbered display}
+\end{gather*}
+
+\begin{figure}[htbp]
+\centering
+\caption{Spectral folding}\label{fig:alias}
+\includegraphics[width=\linewidth,alt={Spectrum folded around half the sampling rate}]{./alias}
+\ftsource{Author’s own work (2026).}
+\end{figure}
+
+\begin{ftframe}[htbp]
+\centering
+\caption{Rules of thumb}\label{frm:rules}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Rule & Why \\
+\midrule
+Filter first & avoids \texttt{aliasing} \\
+Oversample 2.5× & margin \& safety \\
+\bottomrule
+\end{tabular}
+\ftsource{Adapted from \parencite{shannon1949}.}
+\end{ftframe}
+
+% stretch: Why a factor of two?
+Because a real sinusoid occupies two points of the spectrum.
+
+\begin{remark}
+Remarks are unnumbered\footnote{like in amsthm.} and so are proofs; ratios like 3:2 stay.
+\end{remark}
+
+\begin{itemize}
+\item item with [a bracket] at the start
+\item \href{https://example.org/a_b?x=1\&y=2\#frag}{link} and \url{https://example.org/\~user}
+\end{itemize}
+
+\printbibliography
+
+\end{document}

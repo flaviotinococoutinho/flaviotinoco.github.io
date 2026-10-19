@@ -1,0 +1,19 @@
+{
+  "$comment": "Samples for countWords, counted by hand word by word: a word is a UAX #29 word segment; hyphenated compounds count once; apostrophes, decimal commas and thousands separators stay inside a word; dashes and en dashes separate.",
+  "pt-BR": [
+    {
+      "text": "A informação, segundo Shannon, é a redução da incerteza: guarda-chuva, d’água e disse-lhe contam como uma palavra cada.",
+      "words": 18
+    },
+    { "text": "Em 2026, 3,14 e 10.000 são números.", "words": 7 },
+    { "text": "— Será? — perguntou ela… «Talvez.»", "words": 4 },
+    { "text": "Pré-socráticos e pós-modernos discordam sobre o ser-em-si.", "words": 7 },
+    { "text": "", "words": 0 }
+  ],
+  "en": [
+    { "text": "Information is the resolution of uncertainty — a well-known claim; it isn't new.", "words": 12 },
+    { "text": "Shannon's 1948 paper (pp. 379–423) runs to 45 pages.", "words": 10 },
+    { "text": "U.S. readers and e-mail users don’t count dots or hyphens twice.", "words": 11 },
+    { "text": "   ", "words": 0 }
+  ]
+}

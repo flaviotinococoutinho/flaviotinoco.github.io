@@ -9,6 +9,7 @@
  */
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { parseLanguageTag } from './core/lexicon/language-tag.ts';
 import { z } from 'astro/zod';
 import type { Result } from './core/algebra/result.ts';
 import { LOCALES } from './core/domain/locale.ts';
@@ -88,7 +89,7 @@ const work = z.object({
   lexicon: z
     .object({
       ignore: z.array(z.string().min(1)).default([]),
-      foreign: z.array(z.object({ term: z.string().min(1), lang: z.string().min(2) }).strict()).default([]),
+      foreign: z.array(z.object({ term: z.string().min(1), lang: parsed(parseLanguageTag) }).strict()).default([]),
     })
     .strict()
     .optional(),
@@ -98,12 +99,12 @@ const work = z.object({
 });
 
 const essays = defineCollection({
-  loader: glob({ pattern: '{pt,en}/**/*.md', base: './src/content/essays' }),
+  loader: glob({ pattern: '{pt,en}/**/*.md', base: './src/content/essays', generateId: pathId }),
   schema: work.extend({ form: z.literal('essay').default('essay') }).strict(),
 });
 
 const labs = defineCollection({
-  loader: glob({ pattern: '{pt,en}/**/*.md', base: './src/content/labs' }),
+  loader: glob({ pattern: '{pt,en}/**/*.md', base: './src/content/labs', generateId: pathId }),
   schema: work
     .extend({
       form: z.literal('lab').default('lab'),
@@ -116,7 +117,7 @@ const labs = defineCollection({
 });
 
 const strata = defineCollection({
-  loader: glob({ pattern: '{pt,en}/*.md', base: './src/content/strata' }),
+  loader: glob({ pattern: '{pt,en}/*.md', base: './src/content/strata', generateId: pathId }),
   schema: z
     .object({
       stratum,
@@ -132,7 +133,7 @@ const strata = defineCollection({
 });
 
 const pages = defineCollection({
-  loader: glob({ pattern: '{pt,en}/*.md', base: './src/content/pages' }),
+  loader: glob({ pattern: '{pt,en}/*.md', base: './src/content/pages', generateId: pathId }),
   schema: z
     .object({
       title: z.string().min(1),

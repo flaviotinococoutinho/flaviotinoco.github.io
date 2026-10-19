@@ -30,6 +30,7 @@ const t = useTranslations(common, locale);
 const siteName = t('site.name');
 const fullTitle = title === siteName ? siteName : `${title} · ${siteName}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+if (Astro.csp === undefined) throw new Error('BaseLayout requires security.csp (astro.config.ts).');
 Astro.csp.insertScriptHash(PREFS_INIT_HASH);
 ---
 
@@ -66,7 +67,7 @@ Astro.csp.insertScriptHash(PREFS_INIT_HASH);
     <slot name="head" />
   </head>
   <body>
-    <a class="skip-link ui" href="#content">{t('skip.toContent')}</a>
+    <a class="skip-link ui" href="#content" data-pagefind-ignore>{t('skip.toContent')}</a>
     <Glyphs />
     <SiteHeader locale={locale} alternates={alternates} />
     <main id="content" tabindex="-1">

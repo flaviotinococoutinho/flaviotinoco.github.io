@@ -59,6 +59,13 @@ describe('locale', () => {
     expect(localeCodec.decode(localeCodec.encode(locale))).toEqual({ ok: true, value: locale });
   });
 
+  test('inherited property names are not locale segments', () => {
+    for (const s of ['toString', 'constructor', '__proto__', 'hasOwnProperty', 'valueOf']) {
+      expect(localeCodec.decode(s).ok).toBe(false);
+      expect(decodeRoute(`/${s}/`).ok).toBe(false);
+    }
+  });
+
   test('negotiation follows RFC 4647 lookup on the primary subtag', () => {
     expect(negotiate(['pt-PT', 'en'])).toBe('pt-BR');
     expect(negotiate(['de', 'en-GB'])).toBe('en');

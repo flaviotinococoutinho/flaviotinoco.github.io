@@ -1,15 +1,96 @@
 ---
-/** Site footer — minimal placeholder; refined by the chrome workstream. */
-import type { Locale } from '../core/domain/locale.ts';
+/**
+ * Site footer — static. Copyright line (no licence claim: licensing is the
+ * author's decision, stated in the colophon when made), the path of the four
+ * strata, pages about the site, open data (RSS per language, the ontology as
+ * JSON-LD) and the source repository.
+ *
+ * The year honours SOURCE_DATE_EPOCH (reproducible builds); otherwise the
+ * build clock is used.
+ */
+import { LOCALES, type Locale } from '../core/domain/locale.ts';
+import { STRATA } from '../core/domain/strata.ts';
 import common from '../core/i18n/catalogs/common.ts';
-import { useTranslations } from '../adapters/astro/i18n.ts';
+import chrome from '../core/i18n/catalogs/chrome.ts';
+import { asset, href, useTranslations } from '../adapters/astro/i18n.ts';
+import { copyrightYear } from '../core/chrome/nav.ts';
+import { localeCodec } from '../core/domain/locale.ts';
+import StratumMark from './chrome/StratumMark.astro';
 
 export interface Props {
   readonly locale: Locale;
 }
-const t = useTranslations(common, Astro.props.locale);
+
+const { locale } = Astro.props;
+const t = useTranslations(common, locale);
+const c = useTranslations(chrome, locale);
+const year = copyrightYear(process.env['SOURCE_DATE_EPOCH'], new Date().getUTCFullYear());
+const SOURCE = 'https://github.com/flaviotinococoutinho/flaviotinoco.github.io';
+const feeds = LOCALES.map((l) => ({
+  locale: l,
+  label: useTranslations(common, l)('lang.name'),
+  href: asset(`${localeCodec.encode(l)}/rss.xml`),
+}));
 ---
 
-<footer class="site-footer ui">
-  <p>{t('footer.copyright', { year: new Date().getUTCFullYear() })}</p>
+<footer class="site-footer ui" data-pagefind-ignore="all">
+  <div class="site-footer__inner">
+    <nav class="site-footer__strata" aria-label={c('footer.strata')}>
+      <ol class="site-footer__path" role="list">
+        {STRATA.map((s) => (
+          <li>
+            <a href={href({ kind: 'stratum', stratum: s }, locale)}>
+              <StratumMark stratum={s} locale={locale} size="s" />
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+
+    <nav class="site-footer__links" aria-label={c('footer.label')}>
+      <div class="site-footer__group">
+        <h2 class="site-footer__heading">{c('footer.pages')}</h2>
+        <ul role="list">
+          <li>
+            <a href={href({ kind: 'about' }, locale)}>{t('nav.about')}</a>
+          </li>
+          <li>
+            <a href={href({ kind: 'colophon' }, locale)}>{t('nav.colophon')}</a>
+          </li>
+          <li>
+            <a href={SOURCE} rel="external">
+              {t('footer.source')}
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="site-footer__group">
+        <h2 class="site-footer__heading">{c('footer.data')}</h2>
+        <ul role="list">
+          {feeds.map((f) => (
+            <li>
+              <a href={f.href} type="application/rss+xml" hreflang={f.locale}>
+                <svg class="site-footer__icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                  <use href="#ui-feed" />
+                </svg>
+                {t('footer.feed')} · <span lang={f.locale}>{f.label}</span>
+              </a>
+            </li>
+          ))}
+          <li>
+            <a href={asset('ontology.jsonld')} type="application/ld+json">
+              {c('footer.ontologyData')}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <p class="site-footer__copyright">
+      <svg class="site-footer__mark" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+        <use href="#simplex-3"></use>
+      </svg>
+      {t('footer.copyright', { year })}
+    </p>
+  </div>
 </footer>

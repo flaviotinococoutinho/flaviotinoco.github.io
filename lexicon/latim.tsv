@@ -1,0 +1,91 @@
+# Locuções latinas — marcadas como <i lang="la" class="locution">.
+# Esquema: term	lang	case	variants	vernacular_in	note   (lang sempre "la")
+# vernacular_in: "en" = locução corrente em inglês (critério do APA 7: verbete do dicionário geral),
+#   em redondo nos textos em inglês; continua em itálico nos textos em português (prática da ABNT).
+# Abreviaturas latinas de uso corrente que a tradição tipográfica mantém em redondo
+# (etc., e.g., i.e.) e latinismos aportuguesados (vice-versa) ficam de fora: ver README.
+term	lang	case	variants	vernacular_in	note
+a priori	la	sentence		en	anterior à experiência
+a posteriori	la	sentence		en	posterior à experiência
+a fortiori	la	sentence		en	com mais razão
+ad hoc	la	sentence		en	para este fim
+ad hominem	la	sentence		en	contra a pessoa (falácia)
+ad infinitum	la	sentence		en	indefinidamente
+ad nauseam	la	sentence		en	até a exaustão
+ad libitum	la	sentence		en	à vontade
+ab initio	la	sentence		en	desde o início
+apud	la	sentence			citado por (NBR 10520:2023, 7.3)
+et al.	la	sentence		en	e outros (NBR 10520:2023, 6.1.2)
+et seq.	la	sentence		en	e seguintes (NBR 10520:2023, 8.1.2.2)
+ibidem	la	sentence		en	na mesma obra
+ibid.	la	sentence		en	abreviatura de ibidem (NBR 10520:2023, 8.1.2.2)
+Idem	la	exact			o mesmo autor (em minúsculas é homógrafo: ver homografos.tsv)
+Id.	la	exact			abreviatura de idem (NBR 10520:2023, 8.1.2.2)
+op. cit.	la	sentence		en	na obra citada (NBR 10520:2023, 8.1.2.2)
+loc. cit.	la	sentence		en	no lugar citado (NBR 10520:2023, 8.1.2.2)
+passim	la	sentence		en	aqui e ali (NBR 10520:2023, 8.1.2.2)
+cf.	la	sentence		en	confira (NBR 10520:2023, 8.1.2.2)
+sic	la	sentence			assim mesmo, no original
+per se	la	sentence		en	por si mesmo
+sui generis	la	sentence		en	único em seu gênero
+de facto	la	sentence		en	de fato
+de jure	la	sentence		en	de direito
+ceteris paribus	la	sentence		en	tudo o mais constante
+mutatis mutandis	la	sentence		en	mudando-se o que deve ser mudado
+modus ponens	la	sentence		en	afirmação do antecedente
+modus tollens	la	sentence		en	negação do consequente
+modus operandi	la	sentence		en	modo de operar
+modus vivendi	la	sentence		en	modo de convivência
+reductio ad absurdum	la	sentence		en	redução ao absurdo
+non sequitur	la	sentence		en	conclusão que não se segue
+petitio principii	la	sentence		en	petição de princípio
+post hoc ergo propter hoc	la	sentence		en	depois disso, logo por causa disso (falácia)
+post hoc	la	sentence		en	depois disso
+ex ante	la	sentence		en	antes do fato
+ex post	la	sentence		en	depois do fato
+ex nihilo	la	sentence		en	do nada
+ex officio	la	sentence		en	por dever do cargo
+ipso facto	la	sentence		en	pelo próprio fato
+prima facie	la	sentence		en	à primeira vista
+sine qua non	la	sentence		en	condição indispensável
+conditio sine qua non	la	sentence			condição sem a qual não
+bona fide	la	sentence		en	de boa-fé
+pari passu	la	sentence		en	em igual passo
+quid pro quo	la	sentence		en	uma coisa pela outra
+in vitro	la	sentence		en	em ambiente controlado
+in vivo	la	sentence		en	no organismo vivo
+in situ	la	sentence		en	no próprio local
+in loco	la	sentence			no lugar
+in natura	la	sentence			em estado natural
+in silico	la	sentence		en	por simulação computacional (latim moderno)
+in extenso	la	sentence		en	por extenso
+in fine	la	sentence			no fim
+in memoriam	la	sentence		en	em memória de
+ipsis litteris	la	sentence			com as mesmas letras
+ipsis verbis	la	sentence			com as mesmas palavras
+verbatim	la	sentence		en	palavra por palavra
+stricto sensu	la	sentence			em sentido estrito
+lato sensu	la	sentence			em sentido amplo
+sensu stricto	la	sentence			em sentido estrito
+sensu lato	la	sentence			em sentido amplo
+grosso modo	la	sentence			de modo aproximado
+status quo	la	sentence		en	estado atual das coisas
+per capita	la	sentence		en	por pessoa
+inter alia	la	sentence		en	entre outras coisas
+pro forma	la	sentence		en	por formalidade
+alter ego	la	sentence		en	outro eu
+tabula rasa	la	sentence		en	tábua rasa
+terra incognita	la	sentence		en	território desconhecido
+cogito ergo sum	la	sentence	cogito, ergo sum		penso, logo existo (Descartes)
+cogito	la	sentence		en	penso (Descartes)
+lex parsimoniae	la	sentence			lei da parcimônia (navalha de Ockham)
+quod erat demonstrandum	la	sentence			como se queria demonstrar
+nota bene	la	sentence		en	observe bem
+exempli gratia	la	sentence			por exemplo
+id est	la	sentence			isto é
+habitus	la	sentence		en	disposições incorporadas (Bourdieu)
+thesaurus	la	sentence		en	vocabulário controlado (forma aportuguesada: tesauro)
+corpus	la	sentence	corpora	en	conjunto de textos ou dados
+caput	la	sentence		en	cabeça de artigo de lei (exemplo da NBR 10520:2023)
+curriculum vitae	la	sentence		en	currículo
+data venia	la	sentence			com a devida permissão

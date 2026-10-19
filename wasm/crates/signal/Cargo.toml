@@ -1,0 +1,18 @@
+[package]
+name = "kernel-signal"
+description = "signal.wasm: FFT, windows, Fourier partial sums (Gibbs), sampling and sinc reconstruction."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lib]
+name = "signal"
+crate-type = ["cdylib"]
+
+[dependencies]
+kernel-core.workspace = true
+libm.workspace = true
+
+[lints]
+workspace = true

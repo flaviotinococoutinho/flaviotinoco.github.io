@@ -1,0 +1,18 @@
+---
+/**
+ * One JSON-LD data block. Usage inside <BaseLayout>: `<JsonLd slot="head" value={…} />`.
+ *
+ * A data block (type="application/ld+json") is not executed, so CSP script-src
+ * does not govern it (CSP Level 3, §6.1.11 applies to script *execution*); the
+ * text is escaped by serializeJsonLd so no `</script>` can end it early.
+ */
+import { serializeJsonLd, type JsonLdValue } from '../core/web/json-ld.ts';
+
+export interface Props {
+  readonly value: JsonLdValue;
+}
+
+const { value } = Astro.props;
+---
+
+<script type="application/ld+json" is:inline set:html={serializeJsonLd(value)} />

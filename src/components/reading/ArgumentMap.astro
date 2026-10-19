@@ -1,0 +1,115 @@
+---
+/**
+ * Argument map of an essay (Toulmin, 1958): the sections declared with a kind
+ * (## T {#id .claim depends="…"}) drawn as a layered DAG — every dependency
+ * above what rests on it (Sugiyama layout, src/core/reading/layout.ts).
+ *
+ * Progressive enhancement, inside <ft-argument-map>:
+ *   - no JS: a disclosure holding an ORDERED LIST of the argument, kinds as text,
+ *     each item a link to its section (non-linear navigation) with its dependencies;
+ *   - JS (src/islands/elements/ft-argument-map.ts): the precomputed SVG replaces
+ *     the list, the current section is highlighted (IntersectionObserver), and
+ *     on wide screens the disclosure opens in the sticky margin column (unless
+ *     the margin belongs to side notes).
+ * Kinds are encoded by SHAPE (symbols of ArgumentGlyphs.astro) + label, never colour.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import reading from '../../core/i18n/catalogs/reading.ts';
+import type { ArgumentMeta } from '../../core/fold/meta.ts';
+import { ARGUMENT_KINDS, glyphSymbolId } from '../../core/reading/argument.ts';
+import { DEFAULT_MAP_OPTIONS, drawArgumentMap } from '../../core/reading/argument-map.ts';
+import { useTranslations } from '../../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly argument: ArgumentMeta;
+  /** Number of side/margin notes of the essay (the margin is theirs when > 0). */
+  readonly notes: number;
+  readonly id: string;
+  readonly titleId: string;
+}
+
+const { locale, argument, notes, id, titleId } = Astro.props;
+const t = useTranslations(reading, locale);
+const drawing = drawArgumentMap(argument, DEFAULT_MAP_OPTIONS);
+if (!drawing.ok) throw new Error(`argument map: ${drawing.error}`);
+const { width, height, nodes, edges } = drawing.value;
+const glyph = DEFAULT_MAP_OPTIONS.glyph;
+const titleOf = new Map(argument.nodes.map((n) => [n.id, n.title]));
+const list = new Intl.ListFormat(locale, { type: 'conjunction' });
+const kinds = ARGUMENT_KINDS.filter((k) => argument.nodes.some((n) => n.kind === k));
+---
+
+<ft-argument-map class="argmap" id={id} data-notes={notes}>
+  <details class="argmap__disclosure">
+    <summary class="argmap__summary">
+      <span class="argmap__title" id={titleId}>
+        {t('argument.title')}
+      </span>
+      <span class="argmap__current" data-template={t('argument.current', { title: '{title}' })}></span>
+    </summary>
+    <div class="argmap__body">
+      <div class="argmap__figure" hidden>
+        <svg class="argmap__svg" viewBox={`0 0 ${width} ${height}`} role="group" aria-labelledby={titleId}>
+          <g class="argmap__edges" aria-hidden="true">
+            {edges.map((e) => (
+              <g class="argmap__edge" data-from={e.from} data-to={e.to}>
+                <path class="argmap__line" d={e.d} />
+                <path class="argmap__head" d={e.head} />
+              </g>
+            ))}
+          </g>
+          {nodes.map((n) => (
+            <a
+              class="argmap__node"
+              href={`#${n.id}`}
+              data-id={n.id}
+              data-kind={n.kind}
+              aria-label={t('argument.node', { kind: t(`kind.${n.kind}`), title: n.title })}
+            >
+              <title>{t('argument.node', { kind: t(`kind.${n.kind}`), title: n.title })}</title>
+              <circle class="argmap__hit" cx={n.cx} cy={n.cy} r={glyph} />
+              <use
+                href={`#${glyphSymbolId(n.kind)}`}
+                x={n.cx - glyph / 2}
+                y={n.cy - glyph / 2}
+                width={glyph}
+                height={glyph}
+              />
+              <text class="argmap__label" x={n.cx} y={n.cy + glyph / 2 + 13} text-anchor="middle">
+                {n.label}
+              </text>
+            </a>
+          ))}
+        </svg>
+        <ul class="argmap__legend" role="list" aria-label={t('argument.legend')}>
+          {kinds.map((k) => (
+            <li>
+              <svg class="argmap__legend-glyph" aria-hidden="true" focusable="false" viewBox="0 0 16 16">
+                <use href={`#${glyphSymbolId(k)}`} />
+              </svg>
+              {t(`kind.${k}`)}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <ol class="argmap__list" aria-label={t('argument.list')}>
+        {argument.nodes.map((n) => (
+          <li class="argmap__item" data-id={n.id} data-kind={n.kind}>
+            <a class="argmap__link" href={`#${n.id}`}>
+              <svg class="argmap__item-glyph" aria-hidden="true" focusable="false" viewBox="0 0 16 16">
+                <use href={`#${glyphSymbolId(n.kind)}`} />
+              </svg>
+              <span class="argmap__kind">{t(`kind.${n.kind}`)}:</span> {n.title}
+            </a>
+            {n.depends.length > 0 && (
+              <span class="argmap__deps">
+                — {t('argument.dependsOn', { list: list.format(n.depends.map((d) => titleOf.get(d) ?? d)) })}
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </details>
+</ft-argument-map>

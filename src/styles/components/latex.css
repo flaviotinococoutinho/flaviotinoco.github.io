@@ -1,1 +1,234 @@
-/* Component styles: latex workstream. Wrapped in the components cascade layer by global.css. */
+/*
+ * Component styles: latex workstream. Wrapped in the components cascade layer by global.css.
+ *
+ * Markup produced by src/core/latex/transform.ts (see docs/guia-latex.md):
+ *   section.env.env--<kind>.env--<style>  > p.env__head + body
+ *   figure.figure.figure--<kind>          > figcaption.figure__caption + body + p.figure__source
+ *   div.figure__scroll                    > table (kind="table": the table's scroll box)
+ *   div.equation                          > KaTeX display (every display: its scroll box)
+ *   a.xref.xref--<kind>                   cross-reference (span.xref inside an author's link)
+ *
+ * Theorem styles follow amsthm (M. Downes, B. Beeton, "Using the amsthm
+ * package", AMS, §4 "Theorem styles"):
+ *   plain       bold upright head, italic body     theorem, lemma, proposition, corollary, conjecture, axiom
+ *   definition  bold upright head, upright body    definition, example
+ *   remark      italic head, upright body          remark
+ *   proof       italic head, upright body, ∎ flush right at the end (Halmos tombstone)
+ * Like amsthm, the head is run in: "Teorema 2 (Título). Texto…".
+ *
+ * KaTeX's own stylesheet (MathAssets.astro) is NOT layered, so it wins over
+ * every layer for the properties it declares; the rules below only add
+ * properties KaTeX leaves unset (overflow, spacing of our wrappers).
+ */
+
+/* ── environments ─────────────────────────────────────────────────────────── */
+
+.env {
+  display: flow-root; /* contains the floated tombstone */
+  margin-block: var(--space-1);
+}
+.env .env {
+  margin-block: var(--space-0);
+}
+.env > * + * {
+  margin-block-start: var(--space-n1);
+}
+
+/* Run-in head: the head and the first paragraph share the first line. */
+.env__head,
+.env__head + p {
+  display: inline;
+}
+.env__head {
+  margin-inline-end: var(--space-n2);
+  font-style: normal;
+}
+.env__name,
+.env__number {
+  font-weight: 700;
+}
+.env__title {
+  font-weight: normal;
+}
+
+/* plain: italic body; \emph inside it toggles back to upright, as in LaTeX. */
+.env--plain {
+  font-style: italic;
+}
+.env--plain > :not(.env, .env__head) :is(em, i, cite, dfn) {
+  font-style: normal;
+}
+
+/* definition, remark and proof: upright body. */
+.env--definition,
+.env--remark,
+.env--proof {
+  font-style: normal;
+}
+
+/* remark and proof: italic, normal-weight head. */
+.env--remark > .env__head,
+.env--proof > .env__head {
+  font-style: italic;
+}
+.env--remark > .env__head :is(.env__name, .env__number),
+.env--proof > .env__head .env__name {
+  font-weight: normal;
+}
+
+/* ∎ at the end of the last line, flush right (amsthm \qedhere behaviour). */
+.qed {
+  float: inline-end;
+  margin-inline-start: var(--space-0);
+  font-style: normal;
+}
+.qed-line {
+  min-block-size: 1lh;
+}
+
+/* ── equations ────────────────────────────────────────────────────────────── */
+
+/*
+ * ABNT NBR 14724:2024 §5.7: numbers in arabic numerals, in parentheses,
+ * right-aligned — KaTeX's \tag does exactly that. Long displays scroll
+ * horizontally instead of widening the page (KaTeX docs, "Browser support").
+ *
+ * The scroll container is div.equation, which wraps every display and is
+ * focusable and named (tabindex="0", role="group", aria-label: transform.ts),
+ * so a keyboard can scroll it (WCAG 2.1.1; axe scrollable-region-focusable).
+ * A display outside it (none is expected) still scrolls rather than overflow.
+ */
+.equation,
+:not(.equation) > .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: var(--space-n4);
+}
+
+/*
+ * The equation number scrolls with the formula and never covers it. KaTeX
+ * (0.19: .katex-tag, .katex-base) places the number absolutely at the right
+ * edge of the display box, so a formula wider than the column runs under its
+ * number (on a phone both become illegible). Here the display is a row:
+ * spacer, formula, number. Spacer and number share the free space equally
+ * (both flex-basis 0), which keeps the formula centred while there is room;
+ * the number never shrinks below its own width, so when room runs out the
+ * formula moves left; and once the column is narrower than formula + number,
+ * the row keeps its max-content width and scrolls inside .equation, the
+ * number at its end. The least gap between them is part of the number's own
+ * width (an inline box), not of its flex basis, so it does not decentre the
+ * formula.
+ *
+ * KaTeX's stylesheet is unlayered and declares `display` and `position` for
+ * these boxes; an unlayered normal declaration beats any layered one, and a
+ * layered !important beats it (CSS Cascade 5 §6.4), hence the two !important.
+ */
+.equation .katex-display > .katex > .katex-html:has(> .katex-tag) {
+  display: flex !important;
+  align-items: baseline;
+  min-inline-size: max-content;
+}
+.equation .katex-display > .katex > .katex-html:has(> .katex-tag)::before {
+  content: '';
+  flex: 1 0 0;
+}
+.equation .katex-display > .katex > .katex-html > .katex-tag {
+  position: static !important;
+  flex: 1 0 0;
+  text-align: end;
+}
+.equation .katex-display > .katex > .katex-html > .katex-tag::before {
+  content: '';
+  display: inline-block;
+  inline-size: var(--space-0);
+}
+
+/* ── figures and tables (ABNT NBR 14724:2024 §5.8–5.9) ────────────────────── */
+
+.figure {
+  margin-block: var(--space-1);
+}
+.figure > * + * {
+  margin-block-start: var(--space-n2);
+}
+
+/* Designation, number, dash and title ABOVE the illustration. */
+.figure__caption {
+  font-size: var(--step-n1);
+  text-align: start;
+}
+.figure__label {
+  font-weight: 700;
+}
+
+/* Source BELOW, smaller (NBR 14724 §5.8: "Fonte"). */
+.figure__source {
+  font-family: var(--font-ui);
+  font-size: var(--step-n2);
+  line-height: var(--leading-ui);
+  color: var(--ink-muted);
+}
+
+.figure img {
+  margin-inline: auto;
+}
+
+/*
+ * Tables in the IBGE/ABNT manner (Normas de apresentação tabular, 1993), the
+ * same rules as booktabs: no vertical lines, a strong rule above and below,
+ * a thin rule under the header.
+ */
+/* A wide table scrolls in its own focusable box (div.figure__scroll), so the caption and source stay put. */
+.figure__scroll {
+  overflow-x: auto;
+}
+.figure--table table {
+  border-collapse: collapse;
+  border-block: 2px solid var(--rule-strong);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.figure--table thead th {
+  border-block-end: 1px solid var(--rule-strong);
+  font-weight: 700;
+}
+.figure--table :is(th, td) {
+  padding-block: var(--space-n3);
+  padding-inline: var(--space-n1);
+  vertical-align: baseline;
+  /* Whole words: the table scrolls in its box instead of breaking words letter by letter. */
+  overflow-wrap: normal;
+}
+
+/* ── cross-references ─────────────────────────────────────────────────────── */
+
+.xref {
+  font-variant-numeric: lining-nums;
+}
+
+/* Where a reference lands: a brief highlight (instant when motion is off). */
+:is(.env, .figure, .equation):target {
+  background-color: var(--mark);
+  transition: background-color calc(var(--duration-5) * var(--motion)) var(--ease-standard);
+}
+
+@media (forced-colors: active) {
+  :is(.env, .figure, .equation):target {
+    outline: 2px solid Highlight;
+    outline-offset: var(--space-n3);
+  }
+}
+
+@media print {
+  .equation,
+  :not(.equation) > .katex-display,
+  .figure__scroll {
+    break-inside: avoid;
+    overflow: visible;
+  }
+  :is(.env, .figure, .equation):target {
+    background-color: transparent;
+  }
+}

@@ -34,7 +34,7 @@
  * Depth (parallax): elements declare data-depth ∈ {-3 … 3}. Positive values
  * recede (move slower than the page), negative values approach.
  * Compositor-driven where scroll-driven animations exist; elsewhere
- * src/islands/depth.ts writes --scroll-progress (0 → 1) on each element.
+ * <ft-depth-scene> (src/islands/elements/ft-depth-scene.ts) writes --scroll-progress (0 → 1).
  */
 [data-depth] {
   --scroll-progress: 0.5;
@@ -63,7 +63,10 @@
 }
 @supports (animation-timeline: view()) {
   [data-depth] {
-    animation: depth-progress linear both;
+    /* Longhands on purpose: minified shorthand + animation-timeline is rejected by browsers. */
+    animation-name: depth-progress;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
     animation-timeline: view();
     animation-range: cover;
   }
@@ -73,7 +76,9 @@
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     :root:not([data-motion='reduce']) [data-reveal] {
-      animation: reveal linear both;
+      animation-name: reveal;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
       animation-timeline: view();
       animation-range: entry 0% entry 38.2%;
     }
