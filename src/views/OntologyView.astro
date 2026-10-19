@@ -1,11 +1,211 @@
 ---
-/** STUB view — replaced by the owning workstream (ontology). */
+/**
+ * Ontology page (route kind "ontology"): the layered ontology made explicit.
+ *
+ *   top level   strata × categories as a table (#category-… anchors);
+ *   domain      the full concept map — a static SVG laid out at build (works
+ *               without JS) enhanced by <ft-concept-map>: pan/zoom, focus+context,
+ *               stratum filters, search, force ↔ grid layout — and the taxonomy
+ *               tree (<ft-concept-tree>), kept in sync; the compare tool;
+ *               bridge concepts, communities + NMI, the relation vocabulary;
+ *   application the formal concept lattice of the works;
+ *   export      /ontology.jsonld (linked as rel=alternate) and /ontology.graph.json.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import MathAssets from '../components/MathAssets.astro';
+import ComparePanel from '../components/ontology/ComparePanel.astro';
+import ConceptLink from '../components/ontology/ConceptLink.astro';
+import ConceptTree from '../components/ontology/ConceptTree.astro';
+import FcaSection from '../components/ontology/FcaSection.astro';
+import Markup from '../components/ontology/Markup.astro';
+import MeasuresNote from '../components/ontology/MeasuresNote.astro';
+import OntologyStats from '../components/ontology/OntologyStats.astro';
+import TopLevelGrid from '../components/ontology/TopLevelGrid.astro';
+import VocabularyTable from '../components/ontology/VocabularyTable.astro';
+import { siteOntology } from '../components/ontology/data.ts';
+import { ontologyText } from '../components/ontology/text.ts';
 import type { Locale } from '../core/domain/locale.ts';
-export interface Props { readonly locale: Locale;  }
+import { conceptMapMarkup, gridLayout, layoutConcepts } from '../core/ontology/index.ts';
+import { alternatesForAll } from '../adapters/astro/content.ts';
+import { asset, href } from '../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+}
+
 const { locale } = Astro.props;
+const site = await siteOntology();
+const { ontology } = site;
+const g = ontology.graph;
+const tx = ontologyText(locale);
+const { t } = tx;
+const jsonldHref = asset('ontology.jsonld');
+const graphHref = asset('ontology.graph.json');
+
+const map = conceptMapMarkup({
+  graph: g,
+  locale,
+  ids: g.ids,
+  layout: layoutConcepts(g, g.ids, 'full'),
+  grid: gridLayout(g, g.ids),
+  kind: 'full',
+  focus: null,
+  href: (id) => site.conceptHref(id, locale),
+  idPrefix: 'cmap-ontology',
+  graphUrl: graphHref,
+  text: tx.map(t('map.label'), {
+    explorer: {
+      filterLabel: t('map.filterLabel'),
+      searchLabel: t('map.searchLabel'),
+      layoutLabel: t('map.layoutLabel'),
+      layoutForce: t('map.layoutForce'),
+      layoutGrid: t('map.layoutGrid'),
+    },
+  }),
+  data: { 'data-i18n': JSON.stringify(tx.islandMessages()), 'data-locale': locale },
+});
+
+const crossValue = (id: (typeof ontology.bridges)[number]) => ontology.centrality.crossStrata.get(id) ?? 0;
+const nmi = ontology.stats.communities;
+const ids = {
+  toplevel: 'ontology-toplevel',
+  map: 'ontology-map',
+  tree: 'ontology-tree',
+  compare: 'ontology-compare',
+  bridges: 'ontology-bridges',
+  communities: 'ontology-communities',
+  fca: 'ontology-fca',
+  vocabulary: 'ontology-vocabulary',
+  stats: 'ontology-stats',
+  measures: 'ontology-measures',
+  detail: 'ontology-detail',
+} as const;
 ---
 
-<BaseLayout locale={locale} title="OntologyView" description="Placeholder page rendered by a view stub until its workstream lands." alternates={{}} noindex>
-  <div class="page-grid"><h1>OntologyView</h1></div>
+<BaseLayout
+  locale={locale}
+  title={t('ontology.title')}
+  description={t('ontology.description')}
+  alternates={alternatesForAll(() => ({ kind: 'ontology' }))}
+>
+  <Fragment slot="head">
+    <MathAssets />
+    <link rel="alternate" type="application/ld+json" href={jsonldHref} title={t('ontology.export')} />
+    <link rel="alternate" type="application/json" href={graphHref} title={t('ontology.graphExport')} />
+  </Fragment>
+  <div class="page-grid ontology">
+    <header class="ontology__header">
+      <h1>{t('ontology.title')}</h1>
+      <p class="ontology__lede">{t('ontology.lede')}</p>
+      <ul class="ontology__links ui" role="list">
+        <li><a href={href({ kind: 'glossary' }, locale)}>{t('ontology.glossaryLink')}</a></li>
+        <li><a href={jsonldHref} type="application/ld+json">{t('ontology.export')}</a></li>
+        <li><a href={graphHref} type="application/json">{t('ontology.graphExport')}</a></li>
+      </ul>
+    </header>
+
+    <section class="ontology__stats" aria-labelledby={ids.stats}>
+      <h2 id={ids.stats}>{t('ontology.statsHeading')}</h2>
+      <OntologyStats locale={locale} />
+    </section>
+
+    <section class="ontology__toplevel wide" aria-labelledby={ids.toplevel}>
+      <h2 id={ids.toplevel}>{t('ontology.topLevelHeading')}</h2>
+      <p>{t('ontology.topLevelIntro')}</p>
+      <TopLevelGrid locale={locale} />
+    </section>
+
+    <section class="ontology__explorer full" aria-labelledby={ids.map} data-ontology-explorer>
+      <div class="ontology__explorer-head">
+        <h2 id={ids.map}>{t('ontology.mapHeading')}</h2>
+        <p>{t('ontology.mapIntro')}</p>
+        <noscript><p class="ui">{t('ontology.noscript')}</p></noscript>
+      </div>
+      <div class="explorer">
+        <div class="explorer__map">
+          <Markup markup={map} />
+        </div>
+        <aside class="explorer__detail" aria-labelledby={ids.detail}>
+          <h3 id={ids.detail}>{t('detail.heading')}</h3>
+          <div class="explorer__detail-body" data-detail aria-live="polite">
+            <p class="ui">{t('detail.empty')}</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="ontology__tree" aria-labelledby={ids.tree} data-ontology-explorer-tree>
+      <h2 id={ids.tree}>{t('ontology.treeHeading')}</h2>
+      <p>{t('ontology.treeIntro')}</p>
+      <ConceptTree locale={locale} labelledBy={ids.tree} />
+    </section>
+
+    <section class="ontology__compare" aria-labelledby={ids.compare}>
+      <h2 id={ids.compare}>{t('ontology.compareHeading')}</h2>
+      <ComparePanel locale={locale} />
+      <MeasuresNote locale={locale} measures={['ic', 'resnik', 'lin']} />
+    </section>
+
+    <section class="ontology__bridges" aria-labelledby={ids.bridges}>
+      <h2 id={ids.bridges}>{t('ontology.bridgesHeading')}</h2>
+      <p>{t('ontology.bridgesIntro')}</p>
+      <ol class="bridge-list">
+        {
+          ontology.bridges.map((id) => (
+            <li>
+              <ConceptLink id={id} locale={locale} showStratum />
+              <span class="bridge-list__value ui">{tx.number(crossValue(id))}</span>
+            </li>
+          ))
+        }
+      </ol>
+      <MeasuresNote locale={locale} measures={['betweenness']} />
+    </section>
+
+    <section class="ontology__communities wide" aria-labelledby={ids.communities}>
+      <h2 id={ids.communities}>{t('ontology.communitiesHeading')}</h2>
+      <p>{t('ontology.communitiesIntro')}</p>
+      <p class="ui ontology__nmi">{t('ontology.nmi', { q: tx.number(nmi.modularity), nmi: tx.number(nmi.nmiDomains) })}</p>
+      <ol class="community-list">
+        {
+          ontology.communities.members.map((members, i) => (
+            <li class="community-list__item">
+              <h3>{t('ontology.communityName', { n: i + 1 })}</h3>
+              <ul class="chip-list" role="list">
+                {members.map((id) => (
+                  <li>
+                    <ConceptLink id={id} locale={locale} />
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))
+        }
+      </ol>
+      <MeasuresNote locale={locale} measures={['nmi']} />
+    </section>
+
+    <section class="ontology__fca full" aria-labelledby={ids.fca}>
+      <div class="ontology__fca-head">
+        <h2 id={ids.fca}>{t('ontology.fcaHeading')}</h2>
+        <p>{t('ontology.fcaIntro')}</p>
+      </div>
+      <FcaSection locale={locale} />
+    </section>
+
+    <section class="ontology__vocabulary wide" aria-labelledby={ids.vocabulary}>
+      <h2 id={ids.vocabulary}>{t('ontology.vocabularyHeading')}</h2>
+      <p>{t('ontology.vocabularyIntro')}</p>
+      <VocabularyTable locale={locale} />
+    </section>
+
+    <section class="ontology__export" aria-labelledby={ids.measures}>
+      <h2 id={ids.measures}>{t('ontology.export')}</h2>
+      <p>{t('ontology.exportNote')}</p>
+      <ul class="ui">
+        <li><a href={jsonldHref} type="application/ld+json">ontology.jsonld</a></li>
+        <li><a href={graphHref} type="application/json">ontology.graph.json</a></li>
+      </ul>
+    </section>
+  </div>
 </BaseLayout>

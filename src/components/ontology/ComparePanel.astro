@@ -1,0 +1,54 @@
+---
+/**
+ * "Compare two concepts" — an ontology-mapping tool computed in the browser by
+ * <ft-concept-compare> with the SAME core functions as the build (lowest common
+ * subsumers, IC, Lin and Resnik, typed shortest path), from /ontology.graph.json.
+ * The selects are filled by the island from the same payload. Without
+ * JavaScript the form stays hidden and a note says why; the per-concept
+ * tables of closest concepts remain available on every concept page.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import { asset } from '../../adapters/astro/i18n.ts';
+import { ontologyText } from './text.ts';
+
+export interface Props {
+  readonly locale: Locale;
+}
+const { locale } = Astro.props;
+const tx = ontologyText(locale);
+const { t } = tx;
+// The options are filled by the island from /ontology.graph.json (the form is hidden without JavaScript).
+const messages = JSON.stringify({
+  ...tx.labelMessages(),
+  lcs: t('compare.lcs'),
+  mica: t('compare.mica'),
+  none: t('compare.none'),
+  ic: t('compare.ic'),
+  lin: t('compare.lin'),
+  resnik: t('compare.resnik'),
+  result: t('compare.result'),
+  path: t('compare.path'),
+  pathCost: t('compare.pathCost'),
+  noPath: t('compare.noPath'),
+  same: t('compare.same'),
+  loading: t('compare.loading'),
+  error: t('compare.error'),
+});
+---
+
+<ft-concept-compare class="compare" data-graph={asset('ontology.graph.json')} data-locale={locale} data-i18n={messages}>
+  <p class="compare__intro">{t('compare.intro')}</p>
+  <p class="compare__needs-js ui" data-needs-js>{t('compare.needsJs')}</p>
+  <form class="compare__form ui" hidden>
+    <div class="compare__field">
+      <label for="compare-a">{t('compare.a')}</label>
+      <select id="compare-a" name="a" data-default="entropy"></select>
+    </div>
+    <div class="compare__field">
+      <label for="compare-b">{t('compare.b')}</label>
+      <select id="compare-b" name="b" data-default="lyapunov-exponent"></select>
+    </div>
+    <button type="submit" class="compare__submit">{t('compare.submit')}</button>
+  </form>
+  <div class="compare__output" role="status" aria-live="polite" data-output></div>
+</ft-concept-compare>

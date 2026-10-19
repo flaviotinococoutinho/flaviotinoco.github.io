@@ -1,0 +1,60 @@
+---
+/**
+ * "Read next" for an essay or lab: the 3 works closest by the best-match
+ * average of Lin similarity between their concept sets, and the works sharing
+ * at least two concepts. Public component for the essay and lab views:
+ *
+ *   <RelatedWorks locale={locale} kind="essay" translationKey={data.translationKey} />
+ *
+ * Renders nothing when the work is unknown or has no related work.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import { relatedWorks, sharedConcepts, type WorkKind } from '../../core/ontology/index.ts';
+import { siteOntology } from './data.ts';
+import { ontologyText } from './text.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly kind: WorkKind;
+  readonly translationKey: string;
+  /** Heading level of the section title (default 2). */
+  readonly level?: 2 | 3;
+}
+const { locale, kind, translationKey, level = 2 } = Astro.props;
+const site = await siteOntology();
+const work = site.workByKey(`${kind}:${translationKey}`, locale);
+const tx = ontologyText(locale);
+const { t } = tx;
+const related = work === undefined ? [] : relatedWorks(site.ontology.taxonomy, site.ontology.ic, work, site.works[locale], 3);
+const shared = work === undefined ? [] : sharedConcepts(work, site.works[locale], 2).filter((s) => !related.some((r) => r.work.key === s.work.key));
+const Heading = `h${String(level)}` as 'h2' | 'h3';
+const headingId = `related-works-${translationKey}`;
+---
+
+{
+  related.length > 0 && (
+    <section class="related-works" aria-labelledby={headingId}>
+      <Heading id={headingId}>{t('works.related')}</Heading>
+      <p class="related-works__note ui">{t('works.relatedNote')}</p>
+      <ol class="related-works__list">
+        {related.map((r) => (
+          <li>
+            <a href={r.work.href}>{r.work.title}</a> <span class="ui related-works__score">{t('works.score', { score: tx.number(r.score, 2) })}</span>
+          </li>
+        ))}
+      </ol>
+      {shared.length > 0 && (
+        <>
+          <p class="ui related-works__shared">{t('works.shared')}</p>
+          <ul>
+            {shared.map((s) => (
+              <li>
+                <a href={s.work.href}>{s.work.title}</a> <span class="ui">({tx.plurals('works.sharedCount', s.shared.length)})</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </section>
+  )
+}

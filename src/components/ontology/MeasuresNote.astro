@@ -1,0 +1,49 @@
+---
+/**
+ * Stretchtext (T. Nelson) explaining the information measures, with their
+ * formulas rendered by KaTeX at build time. Folded by default; a native
+ * <details>, so it works without JavaScript.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import { BETWEENNESS_TEX, ENTROPY_TEX, IC_TEX, LIN_TEX, NMI_TEX, RESNIK_TEX } from '../../core/ontology/index.ts';
+import Tex from './Tex.astro';
+import { ontologyText } from './text.ts';
+
+type Measure = 'ic' | 'resnik' | 'lin' | 'entropy' | 'nmi' | 'betweenness';
+export interface Props {
+  readonly locale: Locale;
+  readonly measures: readonly Measure[];
+  /** Open by default (used where the explanation is the content itself). */
+  readonly open?: boolean;
+}
+const { locale, measures, open = false } = Astro.props;
+const { t } = ontologyText(locale);
+const FORMULA: Readonly<Record<Measure, string>> = {
+  ic: IC_TEX,
+  resnik: RESNIK_TEX,
+  lin: LIN_TEX,
+  entropy: ENTROPY_TEX,
+  nmi: NMI_TEX,
+  betweenness: BETWEENNESS_TEX,
+};
+const TEXT: Readonly<Record<Measure, string>> = {
+  ic: t('measure.ic'),
+  resnik: t('measure.resnik'),
+  lin: t('measure.lin'),
+  entropy: t('measure.entropy'),
+  nmi: t('measure.nmi'),
+  betweenness: t('measure.betweenness'),
+};
+---
+
+<details class="measures-note" open={open}>
+  <summary class="ui">{t('measure.explain')}</summary>
+  {
+    measures.map((m) => (
+      <div class="measures-note__item" data-measure={m}>
+        <p>{TEXT[m]}</p>
+        <Tex tex={FORMULA[m]} display />
+      </div>
+    ))
+  }
+</details>

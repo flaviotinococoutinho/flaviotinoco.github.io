@@ -140,12 +140,14 @@ export {
   type MapText,
   type SceneInput,
 } from './scene.ts';
+export { categoryLabel, mapTextOf, relationLabel, stratumLabel } from './strings.ts';
 export { latticeLayout, latticeMarkup, type LatticeLayout, type LatticeText } from './lattice.ts';
 export { flattenTree, taxonomyTree, type TreeNode } from './tree.ts';
 export {
   decodeGraphJson,
   encodeGraphJson,
   GRAPH_JSON_VERSION,
+  jsonForScript,
   searchConcepts,
   serializeGraphJson,
   type ClientConcept,

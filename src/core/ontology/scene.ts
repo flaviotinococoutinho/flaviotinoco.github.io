@@ -23,7 +23,7 @@ import type { Locale } from '../domain/locale.ts';
 import { STRATA, STRATUM_SPECS, type Stratum } from '../domain/strata.ts';
 import { distancesFrom, edgesOf, neighbourhood, type ConceptGraph, type Link } from './graph.ts';
 import { forceLayout, type Layout, type LayoutNode, type Point } from './layout.ts';
-import { el, type Markup, type MarkupElement } from './markup.ts';
+import { el, formatCoordinate, type Markup, type MarkupElement } from './markup.ts';
 import { CATEGORY_DISPLAY_ORDER, RELATION_TYPES, RELATIONS, type Category, type RelationType } from './vocabulary.ts';
 
 /** Geometry of the drawing, in SVG user units. */
@@ -269,6 +269,8 @@ export interface SceneInput {
   readonly text: MapText;
   /** Base-aware URL of /ontology.graph.json, for the explorer's detail and search data. */
   readonly graphUrl?: string;
+  /** Extra data-* attributes for the <ft-concept-map> element (e.g. localised island messages). */
+  readonly data?: Readonly<Record<`data-${string}`, string>>;
 }
 
 /** Shortens segment p→q by `a` at p and `b` at q (so lines start and end at the node halos). */
@@ -302,7 +304,7 @@ const edgeMarkup = (input: SceneInput, e: Link): MarkupElement | null => {
   const [a, b] = seg;
   const marker = MARKER[e.type];
   return el('line', {
-    class: `cmap-edge cmap-edge--${e.type}`,
+    class: 'cmap-edge',
     x1: a.x,
     y1: a.y,
     x2: b.x,
@@ -324,15 +326,12 @@ const nodeMarkup = (input: SceneInput, id: ConceptId, distance: number | undefin
   return el(
     'a',
     {
-      class: `cmap-node cmap-node--${e.stratum}${id === input.focus ? ' is-focus' : ''}`,
+      class: id === input.focus ? 'cmap-node is-focus' : 'cmap-node',
       href: input.href(id),
-      transform: `translate(${String(p.x)} ${String(p.y)})`,
+      transform: `translate(${formatCoordinate(p.x)} ${formatCoordinate(p.y)})`,
       'data-id': id,
       'data-stratum': e.stratum,
-      'data-category': e.category,
       'data-distance': distance,
-      'data-x': p.x,
-      'data-y': p.y,
       'data-gx': gp?.x,
       'data-gy': gp?.y,
     },
@@ -387,7 +386,8 @@ const legendLine = (pfx: string, type: RelationType): MarkupElement => {
     { class: 'cmap__legend-line', viewBox: '0 0 36 12', 'aria-hidden': 'true', focusable: 'false' },
     markerDefs(`${pfx}-legend-${type}`),
     el('line', {
-      class: `cmap-edge cmap-edge--${type}`,
+      class: 'cmap-edge',
+      'data-type': type,
       x1: 2,
       y1: 6,
       x2: marker === null ? 34 : 26,
@@ -408,7 +408,7 @@ const legendMarkup = (input: SceneInput, types: readonly RelationType[]): Markup
       ...STRATA.map((s) =>
         el(
           'li',
-          { class: `cmap__legend-item cmap-node--${s}` },
+          { class: 'cmap__legend-item', 'data-stratum': s },
           el('svg', { class: 'glyph', viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' }, el('use', { href: `#${STRATUM_SPECS[s].glyph}` })),
           el('span', {}, input.text.strata[s]),
         ),
@@ -443,7 +443,7 @@ const gridLabelsMarkup = (input: SceneInput, grid: GridLayout): MarkupElement =>
     'g',
     { class: 'cmap__grid-labels', 'aria-hidden': 'true' },
     ...grid.columns.map((c) =>
-      el('text', { class: `cmap__grid-head cmap-node--${c.stratum}`, x: c.x, y: grid.gridTop - 16, 'text-anchor': 'middle' }, input.text.strata[c.stratum]),
+      el('text', { class: 'cmap__grid-head', 'data-stratum': c.stratum, x: c.x, y: grid.gridTop - 16, 'text-anchor': 'middle' }, input.text.strata[c.stratum]),
     ),
     ...grid.rows.map((r) =>
       el('text', { class: 'cmap__grid-row', x: grid.gridLeft - 12, y: r.y, 'text-anchor': 'end' }, input.text.categories[r.category]),
@@ -479,7 +479,7 @@ const toolbarMarkup = (input: SceneInput): MarkupElement => {
           ...STRATA.map((s) =>
             el(
               'button',
-              { type: 'button', class: `cmap__button cmap__filter cmap-node--${s}`, 'data-cmap-filter': s, 'aria-pressed': 'true' },
+              { type: 'button', class: 'cmap__button cmap__filter', 'data-stratum': s, 'data-cmap-filter': s, 'aria-pressed': 'true' },
               el('svg', { class: 'glyph', viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' }, el('use', { href: `#${STRATUM_SPECS[s].glyph}` })),
               el('span', {}, input.text.strata[s]),
             ),
@@ -519,6 +519,7 @@ export const conceptMapMarkup = (input: SceneInput): MarkupElement => {
       'data-focus': input.focus,
       'data-graph': input.graphUrl,
       'data-grid-viewbox': grid === undefined ? null : `0 0 ${String(grid.width)} ${String(grid.height)}`,
+      ...input.data,
     },
     toolbarMarkup(input),
     el('p', { class: 'cmap__help ui', id: `${pfx}-help`, hidden: true }, input.text.instructions),

@@ -71,18 +71,18 @@ describe('hierarchy laws on random DAGs', () => {
 
 describe('helpers', () => {
   it('computes subsumers, depth and paths', () => {
-    const h = deriveHierarchy(['a', 'b', 'c'], (id) => (id === 'a' ? ['b'] : id === 'b' ? ['c'] : []));
+    const h = deriveHierarchy<string>(['a', 'b', 'c'], (id) => (id === 'a' ? ['b'] : id === 'b' ? ['c'] : []));
     expect([...subsumers(h, 'a')].sort()).toEqual(['a', 'b', 'c']);
     expect(maxDepth(h)).toBe(2);
-    expect(pathBetween('a', 'c', (id) => h.broader.get(id) ?? [])).toEqual(['a', 'b', 'c']);
-    expect(pathBetween('c', 'a', (id) => h.broader.get(id) ?? [])).toBeNull();
+    expect(pathBetween<string>('a', 'c', (id) => h.broader.get(id) ?? [])).toEqual(['a', 'b', 'c']);
+    expect(pathBetween<string>('c', 'a', (id) => h.broader.get(id) ?? [])).toBeNull();
     expect(redundantEdges(['a', 'b', 'c'], (id) => (id === 'a' ? ['b', 'c'] : id === 'b' ? ['c'] : []))).toEqual([
       { source: 'a', target: 'c', via: ['b'] },
     ]);
   });
 
   it('terminates on cyclic input and ignores unknown targets', () => {
-    const h = deriveHierarchy(['a', 'b'], (id) => (id === 'a' ? ['b', 'zzz'] : ['a']));
+    const h = deriveHierarchy<string>(['a', 'b'], (id) => (id === 'a' ? ['b', 'zzz'] : ['a']));
     expect(h.ancestors.get('a')?.has('b')).toBe(true);
     expect(h.broader.get('a')).toEqual(['b']);
     expect(Number.isFinite(h.depth.get('a'))).toBe(true);

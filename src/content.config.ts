@@ -13,13 +13,21 @@ import { z } from 'astro/zod';
 import type { Result } from './core/algebra/result.ts';
 import { LOCALES } from './core/domain/locale.ts';
 import { STRATA } from './core/domain/strata.ts';
+import { CATEGORIES, LINK_TYPES } from './core/ontology/vocabulary.ts';
 import { DOMAINS } from './core/domain/facets.ts';
 import { CONFIDENCE_LEVELS, EVIDENCE_KINDS } from './core/domain/epistemic.ts';
 import { parseConceptId, parseSlug, parseTranslationKey } from './core/domain/identifiers.ts';
-import { CATEGORIES, LINK_TYPES } from './core/ontology/vocabulary.ts';
+
+/**
+ * Entry identity = file path relative to the collection base, without extension
+ * ("pt/do-signo-a-informacao", "entropy"). Astro's default uses `data.slug`, which
+ * would make a pt and an en entry with the same slug collide, and turns the
+ * per-locale slug object of a concept into "[object Object]" for every concept.
+ */
+const pathId = ({ entry }: { readonly entry: string }): string => entry.replace(/\.(md|json)$/, '');
 
 /** Lifts a core parser into a zod transform that reports the parser's own message. */
-const parsed = <T>(parse: (v: unknown) => Result<T, string>) =>
+const parsed = <T>(parse: (v: string) => Result<T, string>) =>
   z.string().transform((value, ctx): T => {
     const r = parse(value);
     if (r.ok) return r.value;
@@ -144,17 +152,11 @@ const pages = defineCollection({
  * done by the core (src/core/ontology/graph.ts) at build time; this schema
  * checks the shape.
  *
- * The language-neutral concept id is the file name, e.g. entropy.json → "entropy".
- * `generateId` is explicit because the glob loader would otherwise use the
- * `slug` field (here a per-locale object) as the entry id, collapsing every
- * concept into one entry ("[object Object]").
+ * The language-neutral concept id is the file name, e.g. entropy.json → "entropy"
+ * (`pathId`: the glob loader would otherwise use the per-locale `slug` object).
  */
 const concepts = defineCollection({
-  loader: glob({
-    pattern: '*.json',
-    base: './src/content/concepts',
-    generateId: ({ entry }) => entry.replace(/\.json$/u, ''),
-  }),
+  loader: glob({ pattern: '*.json', base: './src/content/concepts', generateId: pathId }),
   schema: z
     .object({
       slug: localized(slug),

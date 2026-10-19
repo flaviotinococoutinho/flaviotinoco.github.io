@@ -9,13 +9,14 @@ import { encodeRoute, type Route } from '../../../core/i18n/routes.ts';
 import EssaysIndexView from '../../../views/EssaysIndexView.astro';
 import LabsIndexView from '../../../views/LabsIndexView.astro';
 import OntologyView from '../../../views/OntologyView.astro';
+import GlossaryView from '../../../components/ontology/GlossaryView.astro';
 import PageView from '../../../views/PageView.astro';
 
-type IndexRoute = Extract<Route, { kind: 'essays' | 'labs' | 'ontology' | 'about' | 'colophon' }>;
+type IndexRoute = Extract<Route, { kind: 'essays' | 'labs' | 'ontology' | 'glossary' | 'about' | 'colophon' }>;
 
 export function getStaticPaths() {
   // getStaticPaths is hoisted and isolated by Astro: it cannot see other frontmatter bindings.
-  const KINDS: readonly IndexRoute['kind'][] = ['essays', 'labs', 'ontology', 'about', 'colophon'];
+  const KINDS: readonly IndexRoute['kind'][] = ['essays', 'labs', 'ontology', 'glossary', 'about', 'colophon'];
   return LOCALES.flatMap((locale) =>
     KINDS.map((kind) => {
       const [lang, section] = encodeRoute({ kind }, locale).split('/').filter(Boolean);
@@ -30,4 +31,5 @@ const { locale, route } = Astro.props;
 {route.kind === 'essays' && <EssaysIndexView locale={locale} />}
 {route.kind === 'labs' && <LabsIndexView locale={locale} />}
 {route.kind === 'ontology' && <OntologyView locale={locale} />}
+{route.kind === 'glossary' && <GlossaryView locale={locale} />}
 {(route.kind === 'about' || route.kind === 'colophon') && <PageView locale={locale} pageKey={route.kind} />}

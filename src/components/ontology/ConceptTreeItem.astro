@@ -1,0 +1,49 @@
+---
+/** One item of the taxonomy outline (recursive through Astro.self). */
+import type { Locale } from '../../core/domain/locale.ts';
+import type { TreeNode } from '../../core/ontology/index.ts';
+import { siteOntology } from './data.ts';
+import { ontologyText } from './text.ts';
+
+export interface Props {
+  readonly node: TreeNode;
+  readonly locale: Locale;
+}
+const { node, locale } = Astro.props;
+const site = await siteOntology();
+const g = site.ontology.graph;
+const { category } = ontologyText(locale);
+const entry = node.kind === 'concept' ? g.concepts.get(node.id) : undefined;
+---
+
+<li
+  class:list={['ctree__item', `ctree__item--${node.kind}`]}
+  data-level={node.level}
+  data-id={node.kind === 'concept' ? node.id : `@${node.category}`}
+>
+  {
+    node.kind === 'category' ? (
+      <span class="ctree__label ctree__label--category" id={`tree-category-${node.category}`}>
+        {category(node.category)}
+      </span>
+    ) : (
+      <a
+        class="ctree__label"
+        href={site.conceptHref(node.id, locale)}
+        data-stratum={entry?.stratum}
+        data-repeat={node.repeat ? 'true' : undefined}
+      >
+        {entry?.prefLabel[locale] ?? node.id}
+      </a>
+    )
+  }
+  {
+    node.children.length > 0 && (
+      <ul class="ctree__group">
+        {node.children.map((child) => (
+          <Astro.self node={child} locale={locale} />
+        ))}
+      </ul>
+    )
+  }
+</li>

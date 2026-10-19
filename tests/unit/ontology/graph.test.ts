@@ -5,7 +5,7 @@ import { describeError, describeWarning, type OntologyError } from '../../../src
 import { buildOntology } from '../../../src/core/ontology/ontology.ts';
 import { parseConceptEntry } from '../../../src/core/ontology/parse.ts';
 import { RELATION_TYPES, RELATIONS } from '../../../src/core/ontology/vocabulary.ts';
-import { cid, nodeName, raw, siteOntology, siteRaws, type Spec } from './helpers.ts';
+import { cid, nodeName, raw, siteOntology, type Spec } from './helpers.ts';
 
 const errorsOf = (raws: ReturnType<typeof raw>[]): readonly OntologyError[] => {
   const r = buildOntology(raws);

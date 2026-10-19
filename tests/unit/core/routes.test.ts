@@ -19,6 +19,7 @@ const routeArb: fc.Arbitrary<Route> = fc.oneof(
   fc.constant<Route>({ kind: 'essays' }),
   fc.constant<Route>({ kind: 'labs' }),
   fc.constant<Route>({ kind: 'ontology' }),
+  fc.constant<Route>({ kind: 'glossary' }),
   fc.constant<Route>({ kind: 'about' }),
   fc.constant<Route>({ kind: 'colophon' }),
   slugArb.map((slug): Route => ({ kind: 'essay', slug })),
@@ -48,6 +49,8 @@ describe('route codec', () => {
     expect(decodeRoute('/pt/essays/').ok).toBe(false); // English segment under pt
     expect(decodeRoute('/fr/').ok).toBe(false);
     expect(decodeRoute('/pt/ensaios/a/b/').ok).toBe(false);
+    expect(decodeRoute('/pt/glossary/').ok).toBe(false); // English segment under pt
+    expect(decodeRoute('/pt/glossario/x/').ok).toBe(false); // the glossary takes no parameter
   });
 });
 

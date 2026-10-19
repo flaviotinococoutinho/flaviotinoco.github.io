@@ -1,0 +1,64 @@
+---
+/** The relation vocabulary as a table: each type with its derived inverse, algebraic properties and constraint. */
+import type { Locale } from '../../core/domain/locale.ts';
+import { RELATION_TYPES, RELATIONS, type RelationType } from '../../core/ontology/index.ts';
+import { siteOntology } from './data.ts';
+import { ontologyText } from './text.ts';
+
+export interface Props {
+  readonly locale: Locale;
+}
+const { locale } = Astro.props;
+const { ontology } = await siteOntology();
+const { t, relation, count } = ontologyText(locale);
+const properties = (r: RelationType): string =>
+  [
+    RELATIONS[r].symmetric ? t('ontology.property.symmetric') : null,
+    RELATIONS[r].transitive ? t('ontology.property.transitive') : null,
+    RELATIONS[r].acyclic ? t('ontology.property.acyclic') : null,
+  ]
+    .filter((x) => x !== null)
+    .join(', ');
+const constraint = (r: RelationType): string => {
+  const spec = RELATIONS[r];
+  const parts = [
+    spec.stratum === 'none' ? null : t(`ontology.constraint.${spec.stratum}`),
+    spec.sameCategory ? t('ontology.constraint.sameCategory') : null,
+    spec.sourceCategories !== null ? t('ontology.constraint.measure') : null,
+  ].filter((x) => x !== null);
+  return parts.length === 0 ? t('ontology.constraint.none') : parts.join('; ');
+};
+---
+
+<div class="vocabulary-table" role="region" aria-labelledby="vocabulary-caption" tabindex="0">
+  <table class="ui">
+    <caption id="vocabulary-caption">{t('ontology.vocabularyHeading')}</caption>
+    <thead>
+      <tr>
+        <th scope="col">{t('ontology.vocabulary.relation')}</th>
+        <th scope="col">{t('ontology.vocabulary.inverse')}</th>
+        <th scope="col">{t('ontology.vocabulary.properties')}</th>
+        <th scope="col">{t('ontology.vocabulary.constraint')}</th>
+        <th scope="col">{t('ontology.vocabulary.count')}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        RELATION_TYPES.map((r) => (
+          <tr data-type={r}>
+            <th scope="row">
+              <svg class="relation-swatch" viewBox="0 0 36 12" aria-hidden="true" focusable="false">
+                <line class="cmap-edge" data-type={r} x1="2" y1="6" x2="34" y2="6" />
+              </svg>
+              {relation(r, 'out')}
+            </th>
+            <td>{RELATIONS[r].symmetric ? '—' : relation(r, 'in')}</td>
+            <td>{properties(r)}</td>
+            <td>{constraint(r)}</td>
+            <td class="num">{count(ontology.stats.relations[r])}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>

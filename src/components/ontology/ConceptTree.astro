@@ -1,0 +1,26 @@
+---
+/**
+ * The taxonomy as nested lists (categories → is-a hierarchy). Without
+ * JavaScript it is a plain, fully navigable outline; <ft-concept-tree> upgrades
+ * it to a WAI-ARIA tree (role=tree, roving tabindex, arrow keys per the APG
+ * "Navigation Treeview" pattern) kept in sync with the map.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import { taxonomyTree } from '../../core/ontology/index.ts';
+import ConceptTreeItem from './ConceptTreeItem.astro';
+import { siteOntology } from './data.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly labelledBy: string;
+}
+const { locale, labelledBy } = Astro.props;
+const site = await siteOntology();
+const forest = taxonomyTree(site.ontology.graph, locale);
+---
+
+<ft-concept-tree class="ctree">
+  <ul class="ctree__root" aria-labelledby={labelledBy}>
+    {forest.map((node) => <ConceptTreeItem node={node} locale={locale} />)}
+  </ul>
+</ft-concept-tree>

@@ -27,22 +27,11 @@ import type { VFile } from 'vfile';
 import type {} from '@astrojs/markdown-remark';
 import { parseConceptId, type ConceptId } from '../../core/domain/identifiers.ts';
 import { parseLocale, type Locale } from '../../core/domain/locale.ts';
-import { STRATA, type Stratum } from '../../core/domain/strata.ts';
 import common from '../../core/i18n/catalogs/common.ts';
 import ontologyCatalog from '../../core/i18n/catalogs/ontology.ts';
 import { format, translator } from '../../core/i18n/messages.ts';
 import { encodeRoute } from '../../core/i18n/routes.ts';
-import {
-  CATEGORIES,
-  RELATION_TYPES,
-  conceptMapMarkup,
-  layoutConcepts,
-  localMapIds,
-  type Category,
-  type MapText,
-  type Markup,
-  type RelationType,
-} from '../../core/ontology/index.ts';
+import { conceptMapMarkup, layoutConcepts, localMapIds, mapTextOf, type Markup } from '../../core/ontology/index.ts';
 import { formatCoordinate } from '../../core/ontology/markup.ts';
 import type { PipelineContext } from './context.ts';
 
@@ -68,28 +57,6 @@ export const markupToHast = (m: Markup, inSvg = false): ElementContent => {
   }
   const children = m.children.map((c) => markupToHast(c, svg && m.tag !== 'foreignObject'));
   return svg ? s(m.tag, props, children) : h(m.tag, props, children);
-};
-
-/** Text for the map widgets of one locale, from the catalogs. */
-export const mapTextFor = (locale: Locale, title: string, caption?: string): MapText => {
-  const t = translator(ontologyCatalog, locale);
-  const c = translator(common, locale);
-  const relationOut = (type: RelationType): string => t(`rel.${type}.out`);
-  return {
-    title,
-    instructions: t('map.instructions'),
-    toolbar: t('map.toolbar'),
-    zoomIn: t('map.zoomIn'),
-    zoomOut: t('map.zoomOut'),
-    reset: t('map.reset'),
-    legend: t('map.legend'),
-    relationLegend: Object.fromEntries(RELATION_TYPES.map((r) => [r, t(`legend.${r}`)])) as Record<RelationType, string>,
-    relations: t('map.relations'),
-    relationSentence: (type, a, b) => t('rel.sentence', { a, b, rel: relationOut(type) }),
-    strata: Object.fromEntries(STRATA.map((st) => [st, c(`strata.${st}`)])) as Record<Stratum, string>,
-    categories: Object.fromEntries(CATEGORIES.map((k) => [k, t(`category.${k}`)])) as Record<Category, string>,
-    ...(caption === undefined ? {} : { caption }),
-  };
 };
 
 const documentLocale = (file: VFile): Locale | null => {
@@ -233,7 +200,7 @@ export function remarkConcepts(options: RemarkConceptsOptions) {
           focus,
           href: (id) => href(id, l),
           idPrefix: `cmap-${focus}-${String(maps)}`,
-          text: mapTextFor(l, format(t('map.localLabel'), { label: focusLabel }), caption),
+          text: mapTextOf(l, format(t('map.localLabel'), { label: focusLabel }), { caption }),
         });
         const root = markupToHast(markup) as Element;
         node.data = {

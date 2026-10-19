@@ -145,7 +145,10 @@ export const encodeGraphJson = (o: Ontology, href: (id: ConceptId, locale: Local
  * escaped as < so the data can never close a script element (HTML
  * §4.12.1.3); JSON.parse restores it exactly.
  */
-export const serializeGraphJson = (payload: GraphJson): string => JSON.stringify(payload).replace(/</g, '\\u003c');
+export const serializeGraphJson = (payload: GraphJson): string => jsonForScript(payload);
+
+/** JSON for a <script type="application/ld+json"> data block or a static file, with "<" escaped (see above). */
+export const jsonForScript = (value: unknown): string => JSON.stringify(value).replace(/</g, '\\u003c');
 
 // ─── Client model ───────────────────────────────────────────────────────────
 

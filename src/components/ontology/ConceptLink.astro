@@ -1,0 +1,45 @@
+---
+/**
+ * Link to a concept page with its stratum glyph (from the page's SVG sprite).
+ * The stratum label is in the accessibility tree unless the context already
+ * states it (e.g. a column of the strata table): glyph + label, never colour alone.
+ * Kept small on purpose: the ontology page lists every concept several times.
+ */
+import type { ConceptId } from '../../core/domain/identifiers.ts';
+import type { Locale } from '../../core/domain/locale.ts';
+import { STRATUM_SPECS } from '../../core/domain/strata.ts';
+import { stratumLabel } from '../../core/ontology/index.ts';
+import { siteOntology } from './data.ts';
+
+export interface Props {
+  readonly id: ConceptId;
+  readonly locale: Locale;
+  /** Show the stratum label next to the glyph (default: visually hidden). */
+  readonly showStratum?: boolean;
+  /** Omit the stratum label entirely when the surrounding structure already gives it. */
+  readonly stratumInContext?: boolean;
+  /** Omit the glyph (plain link). */
+  readonly plain?: boolean;
+}
+const { id, locale, showStratum = false, stratumInContext = false, plain = false } = Astro.props;
+const site = await siteOntology();
+const entry = site.ontology.graph.concepts.get(id);
+if (entry === undefined) throw new Error(`ConceptLink: unknown concept "${id}"`);
+const label = stratumLabel(locale, entry.stratum);
+---
+
+{
+  plain ? (
+    <a href={site.conceptHref(id, locale)}>{entry.prefLabel[locale]}</a>
+  ) : (
+    <a class="concept-chip" href={site.conceptHref(id, locale)} data-stratum={entry.stratum}>
+      <svg class="glyph" aria-hidden="true"><use href={`#${STRATUM_SPECS[entry.stratum].glyph}`} /></svg>
+      {stratumInContext ? null : showStratum ? (
+        <span class="concept-chip__stratum">{label}</span>
+      ) : (
+        <span class="visually-hidden">{label}: </span>
+      )}
+      {entry.prefLabel[locale]}
+    </a>
+  )
+}

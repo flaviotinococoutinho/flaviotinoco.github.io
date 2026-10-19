@@ -109,7 +109,8 @@ describe('scene markup', () => {
   it('renders one linked node per concept and one edge per link, typed', () => {
     for (const id of ids) expect(html).toContain(`data-id="${id}"`);
     expect(html).toContain('href="/en/concepts/entropy/"');
-    expect(html).toContain('class="cmap-node cmap-node--theory is-focus"');
+    expect(html).toContain('class="cmap-node is-focus"');
+    expect(html).toMatch(/class="cmap-node is-focus" href="\/en\/concepts\/entropy\/" transform="translate\([\d.]+ [\d.]+\)" data-id="entropy" data-stratum="theory"/u);
     expect(html).toContain('data-type="broader"');
     expect(html).toContain('marker-end="url(#cm-test-arrow)"');
     expect(html).not.toContain('data-cmap-search');

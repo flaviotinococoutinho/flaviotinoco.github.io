@@ -1,11 +1,394 @@
 ---
-/** STUB view — replaced by the owning workstream (ontology). */
+/**
+ * Concept page (route kind "concept").
+ *
+ * Navigation topology derived from the ontology: breadcrumbs stratum ›
+ * category › concept (with BreadcrumbList JSON-LD), relations grouped by TYPE
+ * and direction with localised semantic labels, the learning path (Kahn order
+ * of the prerequisites), bridge-concept badge, community, the formal concept of
+ * the works that discuss it, information measures (IC and closest concepts by
+ * Lin, explained in a stretch), sources, works and a local map.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import MathAssets from '../components/MathAssets.astro';
+import CategoryMark from '../components/ontology/CategoryMark.astro';
+import ConceptLink from '../components/ontology/ConceptLink.astro';
+import Markup from '../components/ontology/Markup.astro';
+import MeasuresNote from '../components/ontology/MeasuresNote.astro';
+import StratumMark from '../components/ontology/StratumMark.astro';
+import Tex from '../components/ontology/Tex.astro';
+import { siteOntology } from '../components/ontology/data.ts';
+import { ontologyText } from '../components/ontology/text.ts';
+import type { ConceptId } from '../core/domain/identifiers.ts';
 import type { Locale } from '../core/domain/locale.ts';
-export interface Props { readonly locale: Locale; readonly id: string; }
+import {
+  BRIDGE_COUNT,
+  RELATIONS,
+  RELATION_TYPES,
+  closestByLin,
+  conceptMapMarkup,
+  isConceptTaxon,
+  layoutConcepts,
+  learningPath,
+  linked,
+  localMapIds,
+  jsonForScript,
+  type RelationType,
+} from '../core/ontology/index.ts';
+import { alternatesForAll, routeOfConcept } from '../adapters/astro/content.ts';
+import { asset, href } from '../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly id: string;
+}
+
 const { locale } = Astro.props;
+const id = Astro.props.id as ConceptId;
+const site = await siteOntology();
+const { ontology } = site;
+const g = ontology.graph;
+const e = g.concepts.get(id);
+const entry = site.entries.get(id);
+if (e === undefined || entry === undefined) throw new Error(`ConceptView: no concept "${id}"`);
+const tx = ontologyText(locale);
+const { t } = tx;
+const label = e.prefLabel[locale];
+
+// Relations by type and direction (symmetric types have one, merged, direction).
+const sections = RELATION_TYPES.flatMap((type: RelationType) => {
+  const directions: readonly ('out' | 'in')[] = RELATIONS[type].symmetric ? ['out'] : ['out', 'in'];
+  return directions.flatMap((direction) => {
+    const ids = linked(g, id, type, direction);
+    return ids.length === 0 ? [] : [{ type, direction, ids, label: tx.relation(type, direction) }];
+  });
+});
+const isTop = (g.hierarchy.broader.get(id) ?? []).length === 0;
+
+// Learning path (prerequisites in topological order, the target last).
+const path = learningPath(g, id, locale);
+const prerequisites = path.slice(0, -1);
+
+// Local map: depth 1, or 2 when the immediate neighbourhood is small.
+const depth = localMapIds(g, id, 1).length < 5 ? 2 : 1;
+const mapIds = localMapIds(g, id, depth);
+const mapId = `cmap-${id}`;
+const mapMarkup = conceptMapMarkup({
+  graph: g,
+  locale,
+  ids: mapIds,
+  layout: layoutConcepts(g, mapIds, 'local', id),
+  kind: 'local',
+  focus: id,
+  href: (c) => site.conceptHref(c, locale),
+  idPrefix: mapId,
+  text: tx.map(t('map.localLabel', { label }), { caption: t('map.localCaption', { label, depth }) }),
+});
+
+// Measures.
+const icValue = ontology.ic.get(id) ?? 0;
+const hypo = ontology.taxonomy.descendants.get(id)?.size ?? 0;
+const nodes = ontology.taxonomy.ids.length;
+const closest = closestByLin(ontology.taxonomy, ontology.ic, id, 5, ontology.taxonomy.ids.filter(isConceptTaxon));
+const subsumerLabel = (taxon: string | null): string => {
+  if (taxon === null) return t('compare.none');
+  if (taxon.startsWith('@')) return taxon === '@top' ? t('compare.none') : tx.category(taxon.slice(1) as never);
+  return g.concepts.get(taxon as ConceptId)?.prefLabel[locale] ?? taxon;
+};
+const bridgeRank = ontology.bridges.indexOf(id);
+const crossValue = ontology.centrality.crossStrata.get(id) ?? 0;
+const community = ontology.communities.of.get(id);
+const peers = community === undefined ? [] : (ontology.communities.members[community] ?? []).filter((c) => c !== id);
+
+// Works (application layer) and the formal concept μ(m) of this attribute.
+const works = site.backlinks[locale].get(id) ?? [];
+const essays = works.filter((w) => w.kind === 'essay');
+const labs = works.filter((w) => w.kind === 'lab');
+const lattice = site.lattice[locale];
+const mu = lattice.attributeConcept.get(id);
+const formal = mu === undefined ? undefined : lattice.concepts[mu];
+const coDiscussed = formal?.intent.filter((c) => c !== id) ?? [];
+const workTitles = (formal?.extent ?? []).map((k) => site.workByKey(k, locale)?.title ?? k);
+
+const alternates = alternatesForAll((l) => routeOfConcept(entry, l));
+const jsonldHref = asset('ontology.jsonld');
+const ontologyHref = href({ kind: 'ontology' }, locale);
+const stratumHref = href({ kind: 'stratum', stratum: e.stratum }, locale);
+const categoryHref = `${ontologyHref}#category-${e.category}`;
+const absolute = (p: string): string => new URL(p, Astro.site).href;
+const breadcrumbs = [
+  { name: tx.stratum(e.stratum), item: absolute(stratumHref) },
+  { name: tx.category(e.category), item: absolute(categoryHref) },
+  { name: label, item: absolute(site.conceptHref(id, locale)) },
+];
+const breadcrumbJson = jsonForScript({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbs.map((b, i) => ({ '@type': 'ListItem', position: i + 1, name: b.name, item: b.item })),
+});
+const definedTermJson = jsonForScript({
+  '@context': 'https://schema.org',
+  '@type': 'DefinedTerm',
+  '@id': `${absolute(jsonldHref)}#concept/${id}`,
+  name: label,
+  description: e.definition[locale],
+  inDefinedTermSet: `${absolute(jsonldHref)}#scheme`,
+  url: absolute(site.conceptHref(id, locale)),
+  ...(e.exactMatch.length > 0 ? { sameAs: e.exactMatch } : {}),
+});
+const hasMath = e.notation !== null;
+const sectionId = (s: string): string => `concept-${s}`;
 ---
 
-<BaseLayout locale={locale} title="ConceptView" description="Placeholder page rendered by a view stub until its workstream lands." alternates={{}} noindex>
-  <div class="page-grid"><h1>ConceptView</h1></div>
+<BaseLayout locale={locale} title={label} description={e.definition[locale]} alternates={alternates} ogType="article">
+  <Fragment slot="head">
+    {hasMath && <MathAssets />}
+    <link rel="alternate" type="application/ld+json" href={jsonldHref} />
+    <script type="application/ld+json" is:inline set:html={breadcrumbJson} />
+    <script type="application/ld+json" is:inline set:html={definedTermJson} />
+  </Fragment>
+  <div class="page-grid concept" data-stratum={e.stratum} data-category={e.category}>
+    <nav class="breadcrumbs ui" aria-label={t('breadcrumb.label')}>
+      <ol>
+        <li><a href={stratumHref}><StratumMark stratum={e.stratum} locale={locale} /></a></li>
+        <li><a href={categoryHref}><CategoryMark category={e.category} locale={locale} /></a></li>
+        <li><span aria-current="page">{label}</span></li>
+      </ol>
+    </nav>
+
+    <header class="concept__header">
+      <h1 class="concept__title">{label}</h1>
+      {
+        e.altLabel[locale].length > 0 && (
+          <p class="concept__alt ui">
+            <span class="concept__alt-label">{t('concept.alsoCalled')}:</span> {e.altLabel[locale].join('; ')}
+          </p>
+        )
+      }
+      <p class="concept__badges ui">
+        <StratumMark stratum={e.stratum} locale={locale} />
+        <CategoryMark category={e.category} locale={locale} />
+        {bridgeRank >= 0 && <span class="concept-badge concept-badge--bridge">{t('concept.bridge')}</span>}
+      </p>
+    </header>
+
+    <section class="concept__definition-block" aria-labelledby={sectionId('definition')}>
+      <h2 class="visually-hidden" id={sectionId('definition')}>{t('concept.definition')}</h2>
+      <p class="concept__definition">{e.definition[locale]}</p>
+      {
+        e.notation !== null && (
+          <figure class="concept__notation">
+            <figcaption class="ui">{t('concept.notation')}</figcaption>
+            <Tex tex={e.notation} display />
+          </figure>
+        )
+      }
+      <dl class="concept__facets ui">
+        <dt>{t('concept.domains')}</dt>
+        <dd>{e.domains.map((d) => tx.domain(d)).join(', ')}</dd>
+      </dl>
+    </section>
+
+    <section class="concept__relations" aria-labelledby={sectionId('relations')}>
+      <h2 id={sectionId('relations')}>{t('concept.relations')}</h2>
+      {isTop && <p class="concept__note ui">{t('concept.topConcept')}</p>}
+      <dl class="relation-list">
+        {
+          sections.map((s) => (
+            <div class="relation-list__group" data-type={s.type} data-direction={s.direction}>
+              <dt>{s.label}</dt>
+              <dd>
+                <ul role="list">
+                  {s.ids.map((target) => (
+                    <li>
+                      <ConceptLink id={target} locale={locale} />
+                    </li>
+                  ))}
+                </ul>
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    <section class="concept__path" aria-labelledby={sectionId('path')}>
+      <h2 id={sectionId('path')}>{t('concept.path')}</h2>
+      {
+        prerequisites.length === 0 ? (
+          <p class="concept__note ui">{t('concept.pathAlone')}</p>
+        ) : (
+          <>
+            <p class="concept__note ui">{t('concept.pathIntro')}</p>
+            <ol class="learning-path">
+              {prerequisites.map((p) => (
+                <li>
+                  <ConceptLink id={p} locale={locale} />
+                </li>
+              ))}
+              <li aria-current="step" class="learning-path__target">
+                <ConceptLink id={id} locale={locale} />
+              </li>
+            </ol>
+          </>
+        )
+      }
+    </section>
+
+    <section class="concept__map wide" aria-labelledby={sectionId('map')}>
+      <h2 id={sectionId('map')}>{t('concept.map')}</h2>
+      <Markup markup={mapMarkup} />
+    </section>
+
+    <section class="concept__measures" aria-labelledby={sectionId('measures')}>
+      <h2 id={sectionId('measures')}>{t('concept.measures')}</h2>
+      <p class="ui">
+        {t('concept.ic', { ic: tx.number(icValue), hypo: tx.count(hypo), n: tx.count(nodes) })}
+      </p>
+      {
+        bridgeRank >= 0 && (
+          <p class="ui concept__bridge">
+            <span class="concept-badge concept-badge--bridge">{t('concept.bridge')}</span>{' '}
+            {t('concept.bridgeNote', { k: BRIDGE_COUNT, value: tx.number(crossValue) })}
+          </p>
+        )
+      }
+      {
+        closest.length === 0 ? (
+          <p class="concept__note ui">{t('concept.noClosest')}</p>
+        ) : (
+          <table class="measure-table ui">
+            <caption>{t('concept.closest')}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{t('concept.closestConcept')}</th>
+                <th scope="col">{t('concept.closestLin')}</th>
+                <th scope="col">{t('concept.closestMica')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {closest.map((n) => (
+                <tr>
+                  <th scope="row">
+                    <ConceptLink id={n.id as ConceptId} locale={locale} />
+                  </th>
+                  <td class="num">{tx.number(n.lin)}</td>
+                  <td>{subsumerLabel(n.mica)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )
+      }
+      <MeasuresNote locale={locale} measures={['ic', 'resnik', 'lin']} />
+      {
+        community !== undefined && (
+          <div class="concept__community">
+            <h3>{t('concept.community')}</h3>
+            <p class="ui">{t('concept.communityNote', { n: community + 1 })}</p>
+            <ul class="chip-list" role="list">
+              {peers.map((p) => (
+                <li>
+                  <ConceptLink id={p} locale={locale} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    </section>
+
+    <section class="concept__works" aria-labelledby={sectionId('works')}>
+      <h2 id={sectionId('works')}>{t('concept.works')}</h2>
+      {works.length === 0 && <p class="concept__note ui">{t('concept.noWorks')}</p>}
+      {
+        essays.length > 0 && (
+          <>
+            <h3>{t('concept.essays')}</h3>
+            <ul>
+              {essays.map((w) => (
+                <li>
+                  <a href={w.href}>{w.title}</a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )
+      }
+      {
+        labs.length > 0 && (
+          <>
+            <h3>{t('concept.labs')}</h3>
+            <ul>
+              {labs.map((w) => (
+                <li>
+                  <a href={w.href}>{w.title}</a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )
+      }
+      {
+        formal !== undefined && formal.extent.length > 0 && (
+          <div class="concept__fca">
+            <h3>{t('concept.fca')}</h3>
+            <p class="ui">{t('concept.fcaNote', { works: workTitles.join('; ') })}</p>
+            {coDiscussed.length === 0 ? (
+              <p class="concept__note ui">{t('concept.fcaAlone')}</p>
+            ) : (
+              <ul class="chip-list" role="list">
+                {coDiscussed.map((c) => (
+                  <li>
+                    <ConceptLink id={c} locale={locale} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )
+      }
+    </section>
+
+    {
+      (e.sources.length > 0 || e.exactMatch.length > 0) && (
+        <section class="concept__sources" aria-labelledby={sectionId('sources')}>
+          <h2 id={sectionId('sources')}>{t('concept.sources')}</h2>
+          {e.sources.length > 0 && (
+            <ul class="source-keys ui" role="list">
+              {e.sources.map((k) => (
+                <li>
+                  <cite class="source-key" data-citation-key={k}>
+                    {k}
+                  </cite>
+                </li>
+              ))}
+            </ul>
+          )}
+          {e.exactMatch.length > 0 && (
+            <>
+              <h3>{t('concept.exactMatch')}</h3>
+              <ul class="ui">
+                {e.exactMatch.map((iri) => (
+                  <li>
+                    <a href={iri} rel="external" translate="no">
+                      {iri.replace(/^https?:\/\//u, '')}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+      )
+    }
+
+    <p class="concept__footer ui">
+      <a href={ontologyHref}>{t('concept.backToOntology')}</a>
+      <span aria-hidden="true"> · </span>
+      <a href={href({ kind: 'glossary' }, locale)}>{t('ontology.glossaryLink')}</a>
+      <span aria-hidden="true"> · </span>
+      <a href={jsonldHref} type="application/ld+json">{t('concept.jsonld')}</a>
+    </p>
+  </div>
 </BaseLayout>
