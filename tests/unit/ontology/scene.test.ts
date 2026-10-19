@@ -58,6 +58,7 @@ const TEXT: MapText = {
     layoutForce: 'Force',
     layoutGrid: 'Grid',
   },
+  island: { selected: 'Selected: {label}' },
 };
 
 describe('force-directed layout (Fruchterman & Reingold 1991)', () => {

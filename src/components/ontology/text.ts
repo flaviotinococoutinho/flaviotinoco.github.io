@@ -46,29 +46,16 @@ export const ontologyText = (locale: Locale) => {
   const labelMessages = (): Readonly<Record<string, string>> => ({
     ...Object.fromEntries(STRATA.map((s) => [`stratum.${s}`, stratum(s)])),
     ...Object.fromEntries(CATEGORIES.map((k) => [`category.${k}`, category(k)])),
-    ...Object.fromEntries(RELATION_TYPES.flatMap((r) => [[`rel.${r}.out`, relation(r, 'out')], [`rel.${r}.in`, relation(r, 'in')]])),
-  });
-  /** Strings the map island needs at run time. */
-  const islandMessages = (): Readonly<Record<string, string>> => ({
-    selected: t('map.selected'),
-    neighboursOne: t('map.neighbours.one'),
-    neighboursOther: t('map.neighbours.other'),
-    cleared: t('map.cleared'),
-    visibleOne: t('map.visible.one'),
-    visibleOther: t('map.visible.other'),
-    matchesOne: t('map.matches.one'),
-    matchesOther: t('map.matches.other'),
-    noMatch: t('map.noMatch'),
-    layoutChanged: t('map.layoutChanged'),
-    layoutForce: t('map.layoutForce'),
-    layoutGrid: t('map.layoutGrid'),
-    open: t('map.open'),
-    detailEmpty: t('detail.empty'),
-    ...labelMessages(),
+    ...Object.fromEntries(
+      RELATION_TYPES.flatMap((r) => [
+        [`rel.${r}.out`, relation(r, 'out')],
+        [`rel.${r}.in`, relation(r, 'in')],
+      ]),
+    ),
   });
   const plurals = (key: 'map.neighbours' | 'works.sharedCount', n: number): string =>
     plural(locale, n, { one: t(`${key}.one`), other: t(`${key}.other`) });
-  return { t, c, stratum, category, domain, relation, number, count, map, lattice, labelMessages, islandMessages, plurals };
+  return { t, c, stratum, category, domain, relation, number, count, map, lattice, labelMessages, plurals };
 };
 
 export type OntologyText = ReturnType<typeof ontologyText>;
@@ -79,7 +66,12 @@ export const relationNames = (locale: Locale): Readonly<Record<string, string>> 
   return Object.fromEntries(
     RELATION_TYPES.flatMap((r) => {
       const inverse = RELATIONS[r].inverse;
-      return inverse === null ? [[r, relation(r, 'out')]] : [[r, relation(r, 'out')], [inverse, relation(r, 'in')]];
+      return inverse === null
+        ? [[r, relation(r, 'out')]]
+        : [
+            [r, relation(r, 'out')],
+            [inverse, relation(r, 'in')],
+          ];
     }),
   );
 };

@@ -62,7 +62,6 @@ const map = conceptMapMarkup({
       layoutGrid: t('map.layoutGrid'),
     },
   }),
-  data: { 'data-i18n': JSON.stringify(tx.islandMessages()), 'data-locale': locale },
 });
 
 const crossValue = (id: (typeof ontology.bridges)[number]) => ontology.centrality.crossStrata.get(id) ?? 0;
@@ -98,9 +97,19 @@ const ids = {
       <h1>{t('ontology.title')}</h1>
       <p class="ontology__lede">{t('ontology.lede')}</p>
       <ul class="ontology__links ui" role="list">
-        <li><a href={href({ kind: 'glossary' }, locale)}>{t('ontology.glossaryLink')}</a></li>
-        <li><a href={jsonldHref} type="application/ld+json">{t('ontology.export')}</a></li>
-        <li><a href={graphHref} type="application/json">{t('ontology.graphExport')}</a></li>
+        <li>
+          <a href={href({ kind: 'glossary' }, locale)}>{t('ontology.glossaryLink')}</a>
+        </li>
+        <li>
+          <a href={jsonldHref} type="application/ld+json">
+            {t('ontology.export')}
+          </a>
+        </li>
+        <li>
+          <a href={graphHref} type="application/json">
+            {t('ontology.graphExport')}
+          </a>
+        </li>
       </ul>
     </header>
 
@@ -119,7 +128,9 @@ const ids = {
       <div class="ontology__explorer-head">
         <h2 id={ids.map}>{t('ontology.mapHeading')}</h2>
         <p>{t('ontology.mapIntro')}</p>
-        <noscript><p class="ui">{t('ontology.noscript')}</p></noscript>
+        <noscript>
+          <p class="ui">{t('ontology.noscript')}</p>
+        </noscript>
       </div>
       <div class="explorer">
         <div class="explorer__map">
@@ -150,14 +161,12 @@ const ids = {
       <h2 id={ids.bridges}>{t('ontology.bridgesHeading')}</h2>
       <p>{t('ontology.bridgesIntro')}</p>
       <ol class="bridge-list">
-        {
-          ontology.bridges.map((id) => (
-            <li>
-              <ConceptLink id={id} locale={locale} showStratum />
-              <span class="bridge-list__value ui">{tx.number(crossValue(id))}</span>
-            </li>
-          ))
-        }
+        {ontology.bridges.map((id) => (
+          <li>
+            <ConceptLink id={id} locale={locale} showStratum />
+            <span class="bridge-list__value ui">{tx.number(crossValue(id))}</span>
+          </li>
+        ))}
       </ol>
       <MeasuresNote locale={locale} measures={['betweenness']} />
     </section>
@@ -165,22 +174,22 @@ const ids = {
     <section class="ontology__communities wide" aria-labelledby={ids.communities}>
       <h2 id={ids.communities}>{t('ontology.communitiesHeading')}</h2>
       <p>{t('ontology.communitiesIntro')}</p>
-      <p class="ui ontology__nmi">{t('ontology.nmi', { q: tx.number(nmi.modularity), nmi: tx.number(nmi.nmiDomains) })}</p>
+      <p class="ui ontology__nmi">
+        {t('ontology.nmi', { q: tx.number(nmi.modularity), nmi: tx.number(nmi.nmiDomains) })}
+      </p>
       <ol class="community-list">
-        {
-          ontology.communities.members.map((members, i) => (
-            <li class="community-list__item">
-              <h3>{t('ontology.communityName', { n: i + 1 })}</h3>
-              <ul class="chip-list" role="list">
-                {members.map((id) => (
-                  <li>
-                    <ConceptLink id={id} locale={locale} />
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))
-        }
+        {ontology.communities.members.map((members, i) => (
+          <li class="community-list__item">
+            <h3>{t('ontology.communityName', { n: i + 1 })}</h3>
+            <ul class="chip-list" role="list">
+              {members.map((id) => (
+                <li>
+                  <ConceptLink id={id} locale={locale} />
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
       </ol>
       <MeasuresNote locale={locale} measures={['nmi']} />
     </section>
@@ -203,8 +212,16 @@ const ids = {
       <h2 id={ids.measures}>{t('ontology.export')}</h2>
       <p>{t('ontology.exportNote')}</p>
       <ul class="ui">
-        <li><a href={jsonldHref} type="application/ld+json">ontology.jsonld</a></li>
-        <li><a href={graphHref} type="application/json">ontology.graph.json</a></li>
+        <li>
+          <a href={jsonldHref} type="application/ld+json">
+            ontology.jsonld
+          </a>
+        </li>
+        <li>
+          <a href={graphHref} type="application/json">
+            ontology.graph.json
+          </a>
+        </li>
       </ul>
     </section>
   </div>

@@ -167,7 +167,7 @@ describe('::concept-map', () => {
   it('renders the neighbourhood as an inline SVG inside <ft-concept-map>', () => {
     const { html, file } = run('::concept-map{focus=information depth=2}');
     expect(html).toMatch(
-      /^<ft-concept-map class="cmap cmap--local" data-map-id="cmap-information-1" data-focus="information">/u,
+      /^<ft-concept-map class="cmap cmap--local" data-map-id="cmap-information-1" data-focus="information" data-locale="pt-BR" data-i18n="\{[^"]*&#x22;selected&#x22;:&#x22;Selecionado: \{label\}/u,
     );
     expect(html).toContain('<svg class="cmap__svg" viewBox=');
     expect(html).toContain('href="/site/pt/conceitos/informacao/"');

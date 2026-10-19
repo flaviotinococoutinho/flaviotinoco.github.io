@@ -138,6 +138,36 @@ export {
 } from './layout.ts';
 export { mulberry32, seedOf, type Prng, type PrngState } from './prng.ts';
 export { nearestInDirection, type Direction } from './spatial.ts';
+export {
+  MAX_SCALE,
+  MIN_SCALE,
+  PAN_STEP,
+  ZOOM_STEP,
+  clampToBase,
+  clientToUser,
+  ensureVisible,
+  panBy,
+  parseTranslate,
+  parseViewBox,
+  pixelsToUser,
+  scaleOf,
+  viewBoxString,
+  zoomAt,
+  zoomCentre,
+  type ViewBox,
+} from './viewport.ts';
+export {
+  ancestorsOf,
+  isParent,
+  parentOf,
+  siblingsOf,
+  treeKey,
+  typeahead,
+  visibleItems,
+  type TreeAction,
+  type TreeItem,
+  type TreeKey,
+} from './treenav.ts';
 export { el, renderMarkup, text, textContent, type Markup, type MarkupElement } from './markup.ts';
 export {
   conceptMapMarkup,
@@ -155,7 +185,7 @@ export {
   type MapText,
   type SceneInput,
 } from './scene.ts';
-export { categoryLabel, mapTextOf, relationLabel, stratumLabel } from './strings.ts';
+export { categoryLabel, mapIslandMessages, mapTextOf, relationLabel, stratumLabel } from './strings.ts';
 export { latticeLayout, latticeMarkup, type LatticeLayout, type LatticeText } from './lattice.ts';
 export { flattenTree, taxonomyTree, type TreeNode } from './tree.ts';
 export {

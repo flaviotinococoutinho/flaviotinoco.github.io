@@ -18,6 +18,39 @@ export const stratumLabel = (locale: Locale, s: Stratum): string => translator(c
 
 export const categoryLabel = (locale: Locale, c: Category): string => translator(ontology, locale)(`category.${c}`);
 
+/**
+ * Messages <ft-concept-map> announces at run time (aria-live), with the names of
+ * strata, categories and relations it composes them with. Keys are the island's.
+ */
+export const mapIslandMessages = (locale: Locale): Readonly<Record<string, string>> => {
+  const t = translator(ontology, locale);
+  return {
+    selected: t('map.selected'),
+    neighboursOne: t('map.neighbours.one'),
+    neighboursOther: t('map.neighbours.other'),
+    cleared: t('map.cleared'),
+    visibleOne: t('map.visible.one'),
+    visibleOther: t('map.visible.other'),
+    matchesOne: t('map.matches.one'),
+    matchesOther: t('map.matches.other'),
+    noMatch: t('map.noMatch'),
+    layoutChanged: t('map.layoutChanged'),
+    layoutForce: t('map.layoutForce'),
+    layoutGrid: t('map.layoutGrid'),
+    open: t('map.open'),
+    detailEmpty: t('detail.empty'),
+    detailLinks: t('detail.links'),
+    ...Object.fromEntries(STRATA.map((s) => [`stratum.${s}`, stratumLabel(locale, s)])),
+    ...Object.fromEntries(CATEGORIES.map((c) => [`category.${c}`, categoryLabel(locale, c)])),
+    ...Object.fromEntries(
+      RELATION_TYPES.flatMap((r) => [
+        [`rel.${r}.out`, relationLabel(locale, r, 'out')],
+        [`rel.${r}.in`, relationLabel(locale, r, 'in')],
+      ]),
+    ),
+  };
+};
+
 /** The text of a concept map in `locale`; `extra` adds a caption or the explorer controls. */
 export const mapTextOf = (locale: Locale, title: string, extra: Partial<MapText> = {}): MapText => {
   const t = translator(ontology, locale);
@@ -37,6 +70,7 @@ export const mapTextOf = (locale: Locale, title: string, extra: Partial<MapText>
     relationSentence: (type, a, b) => t('rel.sentence', { a, b, rel: relationLabel(locale, type, 'out') }),
     strata: Object.fromEntries(STRATA.map((s) => [s, stratumLabel(locale, s)])) as Record<Stratum, string>,
     categories: Object.fromEntries(CATEGORIES.map((c) => [c, categoryLabel(locale, c)])) as Record<Category, string>,
+    island: mapIslandMessages(locale),
     ...extra,
   };
 };

@@ -258,6 +258,8 @@ export interface MapText {
     readonly layoutForce: string;
     readonly layoutGrid: string;
   };
+  /** Run-time messages of <ft-concept-map> (announcements), written as a data-i18n JSON attribute. */
+  readonly island: Readonly<Record<string, string>>;
 }
 
 export interface SceneInput {
@@ -339,6 +341,7 @@ const nodeMarkup = (input: SceneInput, id: ConceptId, distance: number | undefin
       transform: `translate(${formatCoordinate(p.x)} ${formatCoordinate(p.y)})`,
       'data-id': id,
       'data-stratum': e.stratum,
+      'data-category': e.category,
       'data-distance': distance,
       'data-gx': gp?.x,
       'data-gy': gp?.y,
@@ -578,6 +581,8 @@ export const conceptMapMarkup = (input: SceneInput): MarkupElement => {
       'data-focus': input.focus,
       'data-graph': input.graphUrl,
       'data-grid-viewbox': grid === undefined ? null : `0 0 ${String(grid.width)} ${String(grid.height)}`,
+      'data-locale': input.locale,
+      'data-i18n': JSON.stringify(input.text.island),
       ...input.data,
     },
     toolbarMarkup(input),
