@@ -1,0 +1,64 @@
+{
+  "source": "https://github.com/google/fonts",
+  "commit": "47d54ca1ebb14fd864695f1d39dc734f39017c33",
+  "fonts": [
+    {
+      "file": "literata-display-600.ttf",
+      "family": "Literata",
+      "style": "normal",
+      "weight": 600,
+      "location": {
+        "opsz": 36,
+        "wght": 600
+      },
+      "unicodeRange": "U+0020-007E, U+00A0-017F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0300-030C, U+0327-0328, U+2000-206F, U+20AC, U+2116, U+2122, U+2190-2193, U+21D2, U+21D4, U+2212, U+2215, U+2219, U+221E, U+2248, U+2260, U+2264-2265, U+25CC, U+FEFF, U+FFFD",
+      "source": "https://raw.githubusercontent.com/google/fonts/47d54ca1ebb14fd864695f1d39dc734f39017c33/ofl/literata/Literata%5Bopsz,wght%5D.ttf",
+      "sourceSha256": "b41138c9373112f32abb589cc22e8674b06ed4048b0c513be922bdd26f274440",
+      "bytes": 96664,
+      "sha256": "24e68f9400ce16a6a1edb9f05660ab0087fcf53d84f0655c764f90040f688efa"
+    },
+    {
+      "file": "literata-text-400.ttf",
+      "family": "Literata",
+      "style": "normal",
+      "weight": 400,
+      "location": {
+        "opsz": 18,
+        "wght": 400
+      },
+      "unicodeRange": "U+0020-007E, U+00A0-017F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0300-030C, U+0327-0328, U+2000-206F, U+20AC, U+2116, U+2122, U+2190-2193, U+21D2, U+21D4, U+2212, U+2215, U+2219, U+221E, U+2248, U+2260, U+2264-2265, U+25CC, U+FEFF, U+FFFD",
+      "source": "https://raw.githubusercontent.com/google/fonts/47d54ca1ebb14fd864695f1d39dc734f39017c33/ofl/literata/Literata%5Bopsz,wght%5D.ttf",
+      "sourceSha256": "b41138c9373112f32abb589cc22e8674b06ed4048b0c513be922bdd26f274440",
+      "bytes": 96368,
+      "sha256": "1d0456bcad6e406cd2972abe351edd02ccc3d92609064c3a07fb7acd7601c58e"
+    },
+    {
+      "file": "atkinson-next-400.ttf",
+      "family": "Atkinson Hyperlegible Next",
+      "style": "normal",
+      "weight": 400,
+      "location": {
+        "wght": 400
+      },
+      "unicodeRange": "U+0020-007E, U+00A0-017F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0300-030C, U+0327-0328, U+2000-206F, U+20AC, U+2116, U+2122, U+2190-2193, U+21D2, U+21D4, U+2212, U+2215, U+2219, U+221E, U+2248, U+2260, U+2264-2265, U+25CC, U+FEFF, U+FFFD",
+      "source": "https://raw.githubusercontent.com/google/fonts/47d54ca1ebb14fd864695f1d39dc734f39017c33/ofl/atkinsonhyperlegiblenext/AtkinsonHyperlegibleNext%5Bwght%5D.ttf",
+      "sourceSha256": "5a455d1cfa099b601ab70751bb9673e8fe1854dc4500c80e1a220d0d75e31745",
+      "bytes": 42132,
+      "sha256": "81f0b719158fbdb56bb4c08df28a35587b8e4ffffa676bb14cfb5c566d646347"
+    },
+    {
+      "file": "atkinson-next-700.ttf",
+      "family": "Atkinson Hyperlegible Next",
+      "style": "normal",
+      "weight": 700,
+      "location": {
+        "wght": 700
+      },
+      "unicodeRange": "U+0020-007E, U+00A0-017F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0300-030C, U+0327-0328, U+2000-206F, U+20AC, U+2116, U+2122, U+2190-2193, U+21D2, U+21D4, U+2212, U+2215, U+2219, U+221E, U+2248, U+2260, U+2264-2265, U+25CC, U+FEFF, U+FFFD",
+      "source": "https://raw.githubusercontent.com/google/fonts/47d54ca1ebb14fd864695f1d39dc734f39017c33/ofl/atkinsonhyperlegiblenext/AtkinsonHyperlegibleNext%5Bwght%5D.ttf",
+      "sourceSha256": "5a455d1cfa099b601ab70751bb9673e8fe1854dc4500c80e1a220d0d75e31745",
+      "bytes": 42068,
+      "sha256": "cba6a0a7bd535f6bb0ae730a4fdd78b2edd02b1378ee170baf8e73b835239d2d"
+    }
+  ]
+}
