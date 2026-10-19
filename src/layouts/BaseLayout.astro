@@ -5,6 +5,7 @@
  * alternates, Open Graph), fonts, pre-paint preferences, landmarks.
  */
 import { Font } from 'astro:assets';
+import { SITE_INDEXING } from 'astro:env/server';
 import '../styles/global.css';
 import Glyphs from '../components/Glyphs.astro';
 import SiteHeader from '../components/SiteHeader.astro';
@@ -22,10 +23,13 @@ export interface Props {
   readonly alternates: Partial<Record<Locale, string>>;
   /** Open Graph type. */
   readonly ogType?: 'website' | 'article';
+  /** Keep this page out of search indexes even after launch (404, placeholders). */
   readonly noindex?: boolean;
 }
 
 const { locale, title, description, alternates, ogType = 'website', noindex = false } = Astro.props;
+// Until launch (SITE_INDEXING off, ADR 0008) no page may be indexed; after it, only `noindex` pages stay out.
+const robots = !SITE_INDEXING ? 'noindex, nofollow' : noindex ? 'noindex' : null;
 const t = useTranslations(common, locale);
 const siteName = t('site.name');
 const fullTitle = title === siteName ? siteName : `${title} · ${siteName}`;
@@ -49,7 +53,7 @@ Astro.csp.insertScriptHash(PREFS_INIT_HASH);
     {alternates['pt-BR'] && (
       <link rel="alternate" hreflang="x-default" href={new URL(alternates['pt-BR'], Astro.site)} />
     )}
-    {noindex && <meta name="robots" content="noindex" />}
+    {robots !== null && <meta name="robots" content={robots} />}
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f9f6f2" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1c1915" media="(prefers-color-scheme: dark)" />
