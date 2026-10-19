@@ -1,7 +1,9 @@
 /**
  * Open Graph card rasteriser (imperative shell): the pure layout tree of
  * src/core/addons/og.ts → SVG (satori, text converted to outlines with the
- * site's own typefaces) → PNG (resvg). Build time only; nothing reaches the client.
+ * site's own typefaces) → pixels (resvg) → PNG (src/core/addons/png.ts: lossless
+ * indexed colour, zlib level 9 from node:zlib). Build time only; nothing reaches
+ * the client.
  *
  * Fonts: static TrueType instances in src/assets/fonts/og/ (satori reads neither
  * WOFF2 nor variation axes), cut from the same pinned upstream sources as the
@@ -15,9 +17,11 @@
  */
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { deflateSync } from 'node:zlib';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import { OG_HEIGHT, OG_MAX_BYTES, OG_WIDTH, type OgElement } from '../../core/addons/og.ts';
+import { encodePng } from '../../core/addons/png.ts';
 
 type FontSpec = { readonly file: string; readonly name: string; readonly weight: 400 | 600 | 700 };
 
@@ -54,9 +58,12 @@ export const renderOgSvg = async (tree: OgElement, root: string = process.cwd())
 /** The PNG of a card; fails loudly when it exceeds the size budget (OG_MAX_BYTES). */
 export const renderOgPng = async (tree: OgElement, root: string = process.cwd()): Promise<Uint8Array> => {
   const svg = await renderOgSvg(tree, root);
-  const png = new Resvg(svg, { fitTo: { mode: 'original' } }).render().asPng();
+  const image = new Resvg(svg, { fitTo: { mode: 'original' } }).render();
+  const png = encodePng(new Uint8Array(image.pixels), image.width, image.height, (data) =>
+    deflateSync(data, { level: 9 }),
+  );
   if (png.byteLength > OG_MAX_BYTES) {
     throw new Error(`[og] card is ${png.byteLength} bytes, above the ${OG_MAX_BYTES}-byte budget`);
   }
-  return new Uint8Array(png);
+  return png;
 };
