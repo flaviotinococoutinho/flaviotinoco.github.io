@@ -39,7 +39,7 @@ widget: clt
 theorem: Teorema central do limite
 ---
 
-Some $$n$$ números sorteados uniformemente entre 0 e 1, padronize o resultado e repita muitas vezes. O histograma dessas somas tem uma forma que não depende do detalhe das parcelas — ou quase não depende. Essa é a afirmação do :concept[teorema central do limite]{id=central-limit-theorem}.
+Some $$n$$ números sorteados uniformemente entre 0 e 1, padronize o resultado e repita muitas vezes. O histograma dessas somas tem uma forma que não depende do detalhe das parcelas — ou quase não depende. Essa é a afirmação do :concept[teorema central do limite]{ref=central-limit-theorem}.
 
 ::::theorem{#thm:tcl title="Lindeberg–Lévy"}
 Sejam $$X_1, X_2, \ldots$$ variáveis aleatórias independentes e identicamente distribuídas, com média $$\mu$$ e variância $$\sigma^2$$, $$0 < \sigma^2 < \infty$$. Seja $$S_n = X_1 + \cdots + X_n$$ e
@@ -76,6 +76,6 @@ O controle é o número $$n$$ de parcelas somadas.
 
 ## Limites do modelo
 
-A hipótese de variância finita não é um detalhe. Se as parcelas seguem a distribuição de Cauchy, a média de $$n$$ delas tem exatamente a mesma distribuição de Cauchy, para todo $$n$$, e nenhuma aproximação normal aparece. Dependência entre as parcelas também pode impedir a convergência. Distribuições muito assimétricas convergem mais devagar que a uniforme, que é simétrica. E o laboratório usa um gerador pseudoaleatório e um número finito de sorteios: as alturas das barras flutuam em torno da forma limite, com desvios que crescem, aproximadamente, com a raiz quadrada da contagem de cada barra. Um :concept[modelo]{id=model} normal é, portanto, uma aproximação cuja qualidade depende de $$n$$, das caudas e da independência — não uma lei automática para qualquer soma.
+A hipótese de variância finita não é um detalhe. Se as parcelas seguem a distribuição de Cauchy, a média de $$n$$ delas tem exatamente a mesma distribuição de Cauchy, para todo $$n$$, e nenhuma aproximação normal aparece. Dependência entre as parcelas também pode impedir a convergência. Distribuições muito assimétricas convergem mais devagar que a uniforme, que é simétrica. E o laboratório usa um gerador pseudoaleatório e um número finito de sorteios: as alturas das barras flutuam em torno da forma limite, com desvios que crescem, aproximadamente, com a raiz quadrada da contagem de cada barra. Um :concept[modelo]{ref=model} normal é, portanto, uma aproximação cuja qualidade depende de $$n$$, das caudas e da independência — não uma lei automática para qualquer soma.
 
 ::bibliography

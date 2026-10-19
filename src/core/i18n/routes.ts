@@ -25,6 +25,7 @@ export type Route =
   | { readonly kind: 'stratum'; readonly stratum: Stratum }
   | { readonly kind: 'ontology' }
   | { readonly kind: 'concept'; readonly slug: Slug }
+  | { readonly kind: 'glossary' }
   | { readonly kind: 'about' }
   | { readonly kind: 'colophon' };
 
@@ -37,6 +38,7 @@ export const SEGMENTS = {
   strata: { 'pt-BR': 'estratos', en: 'strata' },
   ontology: { 'pt-BR': 'ontologia', en: 'ontology' },
   concepts: { 'pt-BR': 'conceitos', en: 'concepts' },
+  glossary: { 'pt-BR': 'glossario', en: 'glossary' },
   about: { 'pt-BR': 'sobre', en: 'about' },
   colophon: { 'pt-BR': 'colofao', en: 'colophon' },
 } as const satisfies Record<string, Record<Locale, string>>;
@@ -70,6 +72,8 @@ export const encodeRoute = (route: Route, locale: Locale): string => {
       return join(l, SEGMENTS.ontology[locale]);
     case 'concept':
       return join(l, SEGMENTS.concepts[locale], route.slug);
+    case 'glossary':
+      return join(l, SEGMENTS.glossary[locale]);
     case 'about':
       return join(l, SEGMENTS.about[locale]);
     case 'colophon':
@@ -128,6 +132,7 @@ export const decodeRoute = (path: string): Result<Located, string> => {
         : ok({ route: { kind: 'stratum', stratum }, locale });
     }
     case 'ontology':
+    case 'glossary':
     case 'about':
     case 'colophon':
       return item === undefined ? ok({ route: { kind: key }, locale }) : err(`"${key}" takes no parameter`);

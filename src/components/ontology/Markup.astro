@@ -1,0 +1,16 @@
+---
+/**
+ * Serialises core markup (src/core/ontology/markup.ts) into the page. The core
+ * escapes every text and attribute value (injective escaping, tested), so the
+ * HTML is safe to inline.
+ */
+import { renderMarkup, type Markup } from '../../core/ontology/index.ts';
+
+export interface Props {
+  readonly markup: Markup | readonly Markup[];
+}
+const { markup } = Astro.props;
+const html = (Array.isArray(markup) ? markup : [markup]).map((m) => renderMarkup(m)).join('');
+---
+
+<Fragment set:html={html} />

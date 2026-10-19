@@ -1,0 +1,40 @@
+---
+/** Summary statistics of the ontology (counts, depths, entropies in bits, communities). */
+import type { Locale } from '../../core/domain/locale.ts';
+import MeasuresNote from './MeasuresNote.astro';
+import { siteOntology } from './data.ts';
+import { ontologyText } from './text.ts';
+
+export interface Props {
+  readonly locale: Locale;
+}
+const { locale } = Astro.props;
+const { ontology } = await siteOntology();
+const s = ontology.stats;
+const { t, number, count } = ontologyText(locale);
+const bits = (h: number, max: number) => t('stats.bits', { h: number(h, 2), max: number(max, 2) });
+const rows: readonly (readonly [string, string])[] = [
+  [t('stats.concepts'), count(s.concepts)],
+  [t('stats.links'), count(s.links)],
+  [t('stats.topConcepts'), count(s.topConcepts)],
+  [t('stats.depth'), count(s.maxDepth)],
+  [t('stats.taxonomyDepth'), count(s.taxonomyDepth)],
+  [t('stats.meanDegree'), number(s.degree.mean, 2)],
+  [t('stats.stratumEntropy'), bits(s.strata.bits, s.strata.maxBits)],
+  [t('stats.categoryEntropy'), bits(s.categories.bits, s.categories.maxBits)],
+  [t('stats.domainEntropy'), bits(s.domains.bits, s.domains.maxBits)],
+  [t('stats.degreeEntropy'), t('stats.bitsOnly', { h: number(s.degree.entropy, 2) })],
+  [t('stats.communities'), count(s.communities.count)],
+];
+---
+
+<dl class="ontology-stats ui">
+  {rows.map(([k, v]) => (
+    <div class="ontology-stats__item">
+      <dt>{k}</dt>
+      <dd>{v}</dd>
+    </div>
+  ))}
+</dl>
+<p class="ontology-stats__note ui">{t('stats.entropyNote')}</p>
+<MeasuresNote locale={locale} measures={['entropy']} />

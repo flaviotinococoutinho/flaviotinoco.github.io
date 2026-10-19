@@ -1,0 +1,40 @@
+---
+/**
+ * One work (essay or lab) in a list: its title as a link, its form (typographic
+ * glyph + label) and its stratum (simplex glyph + label — never colour alone),
+ * and an optional one-line reason below. Stateless; used by RelatedWorks and
+ * Backlinks.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import { FORM_GLYPH } from '../../core/domain/facets.ts';
+import common from '../../core/i18n/catalogs/common.ts';
+import { translator } from '../../core/i18n/messages.ts';
+import type { Work } from '../../core/ontology/index.ts';
+import StratumMark from '../chrome/StratumMark.astro';
+
+export interface Props {
+  readonly work: Work;
+  readonly locale: Locale;
+  /** Block class prefix of the list that hosts the item (BEM). */
+  readonly block: 'related-works' | 'backlinks';
+  readonly reason?: string | undefined;
+}
+const { work, locale, block, reason } = Astro.props;
+const c = translator(common, locale);
+---
+
+<li class={`${block}__item`}>
+  <a class={`${block}__title`} href={work.href}>
+    {work.title}
+  </a>
+  <p class={`${block}__meta ui`}>
+    <span class="form-mark" data-form={work.kind}>
+      <svg class="form-mark__glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <use href={`#${FORM_GLYPH[work.kind]}`}></use>
+      </svg>
+      <span class="form-mark__label">{c(`form.${work.kind}`)}</span>
+    </span>
+    <StratumMark stratum={work.stratum} locale={locale} size="s" />
+  </p>
+  {reason !== undefined && <p class={`${block}__reason`}>{reason}</p>}
+</li>

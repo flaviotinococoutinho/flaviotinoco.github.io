@@ -1,0 +1,24 @@
+{
+  "slug": {
+    "pt-BR": "comunicacao",
+    "en": "communication"
+  },
+  "prefLabel": {
+    "pt-BR": "Comunicação",
+    "en": "Communication"
+  },
+  "definition": {
+    "pt-BR": "Processo pelo qual uma mensagem selecionada em um ponto é reproduzida, exata ou aproximadamente, em outro, através de um canal sujeito a ruído; na teoria de Shannon, sem levar em conta o significado.",
+    "en": "The process by which a message selected at one point is reproduced, exactly or approximately, at another, through a channel subject to noise; in Shannon’s theory, without regard to meaning."
+  },
+  "stratum": "theory",
+  "category": "process",
+  "domains": [
+    "information-theory",
+    "semiotics"
+  ],
+  "sources": [
+    "shannon1948",
+    "weaver1949"
+  ]
+}

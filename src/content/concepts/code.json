@@ -1,0 +1,30 @@
+{
+  "slug": {
+    "pt-BR": "codigo",
+    "en": "code"
+  },
+  "prefLabel": {
+    "pt-BR": "Código",
+    "en": "Code"
+  },
+  "definition": {
+    "pt-BR": "Regra que associa a cada símbolo de uma fonte uma sequência de símbolos de um alfabeto, a palavra de código, de modo que as mensagens possam ser representadas, transmitidas e decodificadas.",
+    "en": "A rule that assigns to each symbol of a source a string of symbols from an alphabet, its codeword, so that messages can be represented, transmitted and decoded."
+  },
+  "notation": "C : \\mathcal{X} \\to \\mathcal{D}^{*}",
+  "stratum": "theory",
+  "category": "operation",
+  "domains": [
+    "information-theory",
+    "semiotics"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "symbol"
+    }
+  ],
+  "sources": [
+    "cover2006"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "slug": {
+    "pt-BR": "transformada-rapida-de-fourier",
+    "en": "fast-fourier-transform"
+  },
+  "prefLabel": {
+    "pt-BR": "Transformada rápida de Fourier",
+    "en": "Fast Fourier transform"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "FFT"
+    ],
+    "en": [
+      "FFT"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Família de algoritmos que calculam a transformada discreta de Fourier de N pontos em O(N log N) operações, em vez de O(N²), explorando a fatoração de N.",
+    "en": "A family of algorithms that compute the N-point discrete Fourier transform in O(N log N) operations instead of O(N²), by exploiting the factorisation of N."
+  },
+  "notation": "T(N) = 2\\,T(N/2) + O(N) = O(N \\log N)",
+  "stratum": "formal",
+  "category": "method",
+  "domains": [
+    "computer-science",
+    "signal-processing"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "discrete-fourier-transform"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q623950"
+  ],
+  "sources": [
+    "cooley1965"
+  ]
+}

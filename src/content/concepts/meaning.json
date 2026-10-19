@@ -1,0 +1,39 @@
+{
+  "slug": {
+    "pt-BR": "significado",
+    "en": "meaning"
+  },
+  "prefLabel": {
+    "pt-BR": "Significado",
+    "en": "Meaning"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "significação"
+    ],
+    "en": [
+      "signification"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Aquilo que um signo comunica ou permite a seu intérprete inferir; em Saussure, o significado é a face conceitual do signo.",
+    "en": "What a sign conveys, or lets its interpreter infer; for Saussure, the signified is the conceptual side of the sign."
+  },
+  "stratum": "philosophy",
+  "category": "entity",
+  "domains": [
+    "semiotics"
+  ],
+  "relations": [
+    {
+      "type": "partOf",
+      "target": "sign"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q183046"
+  ],
+  "sources": [
+    "saussure1916"
+  ]
+}
