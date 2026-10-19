@@ -6,7 +6,7 @@
  * objects as every other reference: the box under an essay can never drift from
  * the reference lists. Output:
  *
- *   ABNT  TINOCO, Flavio. Título: subtítulo. **Nome do site**, 2026. Disponível em:
+ *   ABNT  TINOCO, Flávio. Título: subtítulo. **Nome do site**, 2026. Disponível em:
  *         URL. Acesso em: 17 out. 2026.     (destaque on the site name, NBR 6023
  *         §7.20 Ex. 10; with `date: 'full'` the day and month are printed too)
  *   APA   Tinoco, F. (2026, October 17). *Title: Subtitle*. Site Name. URL
@@ -32,8 +32,8 @@ import type { CitationStyle } from './style/style.ts';
 /** A person responsible for a work of the site. */
 export type SiteAuthor = { readonly given: string; readonly family: string };
 
-/** The author of the site's works (surname Tinoco, given name Flavio). */
-export const SITE_AUTHOR: SiteAuthor = { given: 'Flavio', family: 'Tinoco' };
+/** The author of the site's works (surname Tinoco, given name Flávio). */
+export const SITE_AUTHOR: SiteAuthor = { given: 'Flávio', family: 'Tinoco' };
 
 /** What the shell knows about a work of the site (from its frontmatter and route). */
 export type SiteWork = {
@@ -50,7 +50,7 @@ export type SiteWork = {
 };
 
 export type SelfCitationOptions = {
-  /** Name of the website, e.g. "Flavio Tinoco" (the site's own catalog, key site.name). */
+  /** Name of the website, e.g. "Flávio Tinoco" (the site's own catalog, key site.name). */
   readonly siteName: string;
   /** Canonical absolute URL of the work. */
   readonly url: string;

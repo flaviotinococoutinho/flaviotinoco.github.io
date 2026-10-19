@@ -159,7 +159,7 @@ const standaloneTitle = (t: Title, lang: string | undefined, notes: readonly str
   );
 };
 
-/** Names of the authors as written in running text ("Flavio Tinoco", "World Wide Web Consortium"). */
+/** Names of the authors as written in running text ("Flávio Tinoco", "World Wide Web Consortium"). */
 const authorNames = (ref: Reference): readonly string[] =>
   ref.authors.names.map((n) =>
     n.kind === 'corporate'

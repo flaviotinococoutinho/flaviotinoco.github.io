@@ -37,7 +37,7 @@ const essayEn: SiteWork = {
   id: 'to-sample-is-to-decide',
 };
 const options = (url: string, extra: Partial<SelfCitationOptions> = {}): SelfCitationOptions => ({
-  siteName: 'Flavio Tinoco',
+  siteName: 'Flávio Tinoco',
   url,
   accessed: { year: 2026, month: 10, day: 17 },
   ...extra,
@@ -55,18 +55,18 @@ describe('ABNT (NBR 6023:2025 §7.20; NBR 10520:2023)', () => {
 
   it('follows the template SOBRENOME, Prenome. Título: subtítulo. Nome do site, ano. Disponível em… Acesso em…', () => {
     expect(plain(c)).toBe(
-      `TINOCO, Flavio. Amostrar é decidir: o teorema de Nyquist–Shannon. Flavio Tinoco, 2026. Disponível em: ${URL_PT}. Acesso em: 17 out. 2026.`,
+      `TINOCO, Flávio. Amostrar é decidir: o teorema de Nyquist–Shannon. Flávio Tinoco, 2026. Disponível em: ${URL_PT}. Acesso em: 17 out. 2026.`,
     );
   });
 
   it('puts the destaque on the site name and marks the access date up', () => {
     expect(toHtml(c.entry)).toBe(
-      `TINOCO, Flavio. Amostrar é decidir: o teorema de Nyquist–Shannon. <cite>Flavio Tinoco</cite>, 2026. Disponível em: <a href="${URL_PT}">${URL_PT}</a>. Acesso em: <time datetime="2026-10-17">17\u00A0out.\u00A02026</time>.`,
+      `TINOCO, Flávio. Amostrar é decidir: o teorema de Nyquist–Shannon. <cite>Flávio Tinoco</cite>, 2026. Disponível em: <a href="${URL_PT}">${URL_PT}</a>. Acesso em: <time datetime="2026-10-17">17\u00A0out.\u00A02026</time>.`,
     );
   });
 
   it('prints day and month when asked (NBR 6023 §7.20, Ex. 10)', () => {
-    expect(plain(cite(essayPt, abnt, options(URL_PT, { date: 'full' })))).toContain('Flavio Tinoco, 3 maio 2026.');
+    expect(plain(cite(essayPt, abnt, options(URL_PT, { date: 'full' })))).toContain('Flávio Tinoco, 3 maio 2026.');
   });
 
   it('gives the in-text calls of NBR 10520 without links', () => {
@@ -80,9 +80,9 @@ describe('ABNT (NBR 6023:2025 §7.20; NBR 10520:2023)', () => {
       abnt,
       options(URL_PT),
     );
-    expect(plain(two)).toMatch(/^TINOCO, Flavio; GARCÍA MÁRQUEZ, Gabriel\. /u);
+    expect(plain(two)).toMatch(/^TINOCO, Flávio; GARCÍA MÁRQUEZ, Gabriel\. /u);
     expect(toPlainText(two.parenthetical)).toBe('(Tinoco; García Márquez, 2026)');
-    expect(two.bibtex).toContain('author       = {Tinoco, Flavio and García Márquez, Gabriel},');
+    expect(two.bibtex).toContain('author       = {Tinoco, Flávio and García Márquez, Gabriel},');
   });
 });
 
@@ -109,10 +109,10 @@ describe('BibTeX (biblatex @online)', () => {
     expect(cite(essayPt, abnt, options(URL_PT)).bibtex).toBe(
       [
         '@online{tinoco2026-amostrar-e-decidir,',
-        '  author       = {Tinoco, Flavio},',
+        '  author       = {Tinoco, Flávio},',
         '  title        = {Amostrar é decidir},',
         '  subtitle     = {o teorema de {Nyquist–Shannon}},',
-        '  organization = {Flavio Tinoco},',
+        '  organization = {Flávio Tinoco},',
         '  date         = {2026-05-03},',
         `  url          = {${URL_PT}},`,
         '  urldate      = {2026-10-17},',
@@ -207,7 +207,7 @@ describe('invalid input is an error value, never an exception', () => {
   });
 
   it('rejects an author without a surname and a URL that would break BibTeX', () => {
-    const r = citeSelf({ ...essayPt, authors: [{ given: 'Flavio', family: '' }] }, abnt, options('https://a.b/{x}'));
+    const r = citeSelf({ ...essayPt, authors: [{ given: 'Flávio', family: '' }] }, abnt, options('https://a.b/{x}'));
     expect(r.ok ? [] : r.error).toEqual([
       'every author needs a given name and a surname',
       'url "https://a.b/{x}" must be an absolute http(s) URL',
