@@ -92,3 +92,27 @@ export const previewKey = (href: string, page: string, index: PreviewIndex): str
   if (path === (here.pathname.endsWith('/') ? here.pathname : `${here.pathname}/`)) return null;
   return Object.hasOwn(index.items, path) ? path : null;
 };
+
+export type Box = { readonly top: number; readonly left: number; readonly width: number; readonly height: number };
+
+/**
+ * Where to put the card (viewport coordinates): below the link, left-aligned with
+ * it, kept inside the viewport with a margin; above the link when there is no
+ * room below. The card never covers the link itself, so the pointer can travel
+ * from the link to the card (WCAG 2.2 SC 1.4.13 "hoverable").
+ */
+export const placePreview = (
+  link: Box,
+  card: { readonly width: number; readonly height: number },
+  viewport: { readonly width: number; readonly height: number },
+  gap = 8,
+  margin = 8,
+): { readonly top: number; readonly left: number } => {
+  const below = link.top + link.height + gap;
+  const above = link.top - gap - card.height;
+  const fitsBelow = below + card.height <= viewport.height - margin;
+  const top = fitsBelow || above < margin ? below : above;
+  const maxLeft = Math.max(margin, viewport.width - margin - card.width);
+  const left = Math.min(Math.max(link.left, margin), maxLeft);
+  return { top, left };
+};

@@ -5,7 +5,13 @@
  */
 import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
-import { parsePreviewIndex, previewIndex, previewKey, type Preview } from '../../../src/core/addons/previews.ts';
+import {
+  parsePreviewIndex,
+  placePreview,
+  previewIndex,
+  previewKey,
+  type Preview,
+} from '../../../src/core/addons/previews.ts';
 
 const preview = (title: string): Preview => ({
   title,
@@ -65,5 +71,35 @@ describe('previewKey', () => {
     expect(previewKey('/site/pt/ensaios/zzz/', page, index)).toBeNull();
     expect(previewKey('http://[', page, index)).toBeNull();
     expect(previewKey('/x', 'not a url', index)).toBeNull();
+  });
+});
+
+describe('placePreview', () => {
+  const viewport = { width: 1000, height: 800 };
+  const card = { width: 300, height: 120 };
+
+  it('goes below the link, aligned with it', () => {
+    expect(placePreview({ top: 100, left: 50, width: 80, height: 20 }, card, viewport)).toEqual({ top: 128, left: 50 });
+  });
+
+  it('goes above when there is no room below, and stays inside the viewport horizontally', () => {
+    expect(placePreview({ top: 750, left: 900, width: 80, height: 20 }, card, viewport)).toEqual({
+      top: 622,
+      left: 692,
+    });
+    expect(placePreview({ top: 10, left: -40, width: 80, height: 20 }, card, viewport).left).toBe(8);
+  });
+
+  test.prop([
+    fc.record({
+      top: fc.integer({ min: -500, max: 1500 }),
+      left: fc.integer({ min: -500, max: 1500 }),
+      width: fc.integer({ min: 1, max: 400 }),
+      height: fc.integer({ min: 1, max: 60 }),
+    }),
+  ])('never overlaps the link', (link) => {
+    const p = placePreview(link, card, viewport);
+    const overlapsVertically = p.top < link.top + link.height && p.top + card.height > link.top;
+    expect(overlapsVertically).toBe(false);
   });
 });

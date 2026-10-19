@@ -3,9 +3,17 @@
  * Document shell shared by every page.
  * Responsibilities: language & direction, metadata (canonical, hreflang
  * alternates, Open Graph), fonts, pre-paint preferences, landmarks.
+ *
+ * Add-ons (docs/complementos.md): theme-color from the tokens, the share card
+ * (og:image, twitter:card), the JSON Feed link and the page's JSON-LD graph
+ * (components/addons/HeadMeta.astro); a polite live region shared by the
+ * islands that announce results (#ft-announce: "Copiado"…); link previews
+ * (<ft-link-preview>, loaded at once, fetches its index on first hover/focus);
+ * the add-on styles (styles/components/addons.css, in the components layer).
  */
 import { Font } from 'astro:assets';
 import '../styles/global.css';
+import '../styles/components/addons.css';
 import Glyphs from '../components/Glyphs.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
@@ -13,6 +21,9 @@ import { direction, ogLocale, type Locale } from '../core/domain/locale.ts';
 import common from '../core/i18n/catalogs/common.ts';
 import { useTranslations } from '../adapters/astro/i18n.ts';
 import { PREFS_INIT_HASH, PREFS_INIT_SCRIPT } from '../adapters/astro/prefs-init.ts';
+import HeadMeta from '../components/addons/HeadMeta.astro';
+import LinkPreview from '../components/addons/LinkPreview.astro';
+import type { JsonLdNode } from '../core/addons/structured-data.ts';
 
 export interface Props {
   readonly locale: Locale;
@@ -23,9 +34,11 @@ export interface Props {
   /** Open Graph type. */
   readonly ogType?: 'website' | 'article';
   readonly noindex?: boolean;
+  /** The page's own schema.org nodes (src/core/addons/structured-data.ts); default: a WebPage. */
+  readonly structuredData?: readonly JsonLdNode[];
 }
 
-const { locale, title, description, alternates, ogType = 'website', noindex = false } = Astro.props;
+const { locale, title, description, alternates, ogType = 'website', noindex = false, structuredData } = Astro.props;
 const t = useTranslations(common, locale);
 const siteName = t('site.name');
 const fullTitle = title === siteName ? siteName : `${title} · ${siteName}`;
@@ -51,14 +64,19 @@ Astro.csp.insertScriptHash(PREFS_INIT_HASH);
     {alternates['pt-BR'] && <link rel="alternate" hreflang="x-default" href={new URL(alternates['pt-BR'], Astro.site)} />}
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#f9f6f2" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1c1915" media="(prefers-color-scheme: dark)" />
     <meta property="og:site_name" content={siteName} />
     <meta property="og:type" content={ogType} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:locale" content={ogLocale[locale]} />
+    <HeadMeta
+      locale={locale}
+      title={title}
+      description={description}
+      canonical={canonical}
+      structuredData={structuredData}
+    />
     <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.svg`} type="image/svg+xml" />
     <link rel="sitemap" href={`${import.meta.env.BASE_URL}sitemap-index.xml`} />
     <Font cssVariable="--font-text" preload={[{ subset: 'latin', style: 'normal' }]} />
@@ -74,6 +92,8 @@ Astro.csp.insertScriptHash(PREFS_INIT_HASH);
       <slot />
     </main>
     <SiteFooter locale={locale} />
+    <p id="ft-announce" class="visually-hidden" role="status" aria-live="polite" data-pagefind-ignore></p>
+    <LinkPreview locale={locale} />
     <script>
       import '../islands/registry.ts';
     </script>

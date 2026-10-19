@@ -1,0 +1,101 @@
+---
+/**
+ * Head metadata of the add-ons, rendered by BaseLayout inside <head>:
+ *
+ *   theme-color   the paper of the light and dark schemes, derived from the design
+ *                 tokens (src/core/addons/color.ts), never hard-coded
+ *   og:image      the share card of the page (src/core/addons/og.ts: own card for
+ *                 home, essays, labs and strata; the home card elsewhere) with its
+ *                 width, height and alternative text; twitter:card summary_large_image
+ *   JSON Feed     <link rel="alternate" type="application/feed+json"> of the locale
+ *   JSON-LD       one graph: WebSite + Person on every page, then the page's own
+ *                 nodes (a view passes them; otherwise a WebPage) — through <JsonLd>
+ *
+ * The page's route is decoded from its URL with the core codec, so every view —
+ * including those of other workstreams — gets the right card without passing it.
+ */
+import JsonLd from '../JsonLd.astro';
+import tokensJson from '../../core/design/tokens.json' with { type: 'json' };
+import { parseTokens } from '../../core/design/tokens.ts';
+import { themeColors } from '../../core/addons/color.ts';
+import { OG_HEIGHT, OG_WIDTH, ogImageFile, ogRouteFor } from '../../core/addons/og.ts';
+import { pageGraph, webPageNodes, type JsonLdNode, type SiteIdentity } from '../../core/addons/structured-data.ts';
+import { JSON_FEED_MEDIA_TYPE } from '../../core/addons/feed.ts';
+import { SITE_AUTHOR } from '../../core/bibliography/self.ts';
+import { localeCodec, type Locale } from '../../core/domain/locale.ts';
+import { decodeRoute, encodeRoute, type Route } from '../../core/i18n/routes.ts';
+import { jsonLdGraph } from '../../core/web/json-ld.ts';
+import common from '../../core/i18n/catalogs/common.ts';
+import addons from '../../core/i18n/catalogs/addons.ts';
+import { asset, href, useTranslations } from '../../adapters/astro/i18n.ts';
+import { essays, labs } from '../../adapters/astro/content.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly title: string;
+  readonly description: string;
+  /** Absolute canonical URL of the page. */
+  readonly canonical: URL;
+  /** The page's own JSON-LD nodes (default: a WebPage). */
+  readonly structuredData?: readonly JsonLdNode[] | undefined;
+}
+
+const { locale, title, description, canonical, structuredData } = Astro.props;
+if (Astro.site === undefined) throw new Error('HeadMeta: `site` must be set in astro.config.ts (absolute URLs).');
+const site = Astro.site;
+const t = useTranslations(common, locale);
+const a = useTranslations(addons, locale);
+
+const tokens = parseTokens(tokensJson as Parameters<typeof parseTokens>[0]);
+if (!tokens.ok) throw new Error(`HeadMeta: design tokens: ${tokens.error.join('; ')}`);
+const theme = themeColors(tokens.value);
+if (!theme.ok) throw new Error(`HeadMeta: ${theme.error}`);
+
+/** The route of this page (null for pages outside the codec, e.g. 404). */
+const BASE = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
+const local = Astro.url.pathname.startsWith(BASE) ? `/${Astro.url.pathname.slice(BASE.length)}` : Astro.url.pathname;
+const decoded = decodeRoute(local);
+const route: Route = decoded.ok && decoded.value.locale === locale ? decoded.value.route : { kind: 'home' };
+const cardRoute = ogRouteFor(route);
+const image = new URL(asset(ogImageFile(encodeRoute(cardRoute, locale))), site).href;
+
+/** Alternative text of the card: what it shows (title, stratum, author), not what the page is about. */
+const altFor = async (r: Route): Promise<string> => {
+  const author = `${SITE_AUTHOR.given} ${SITE_AUTHOR.family}`;
+  if (r.kind === 'essay' || r.kind === 'lab') {
+    const entries = r.kind === 'essay' ? await essays(locale) : await labs(locale);
+    const entry = entries.find((e) => e.data.slug === r.slug);
+    if (entry !== undefined)
+      return a('og.alt', { title: entry.data.title, stratum: t(`strata.${entry.data.stratum}`), author });
+  }
+  if (r.kind === 'stratum') return a('og.alt', { title, stratum: t(`strata.${r.stratum}`), author });
+  return a('og.altHome', { site: t('site.name'), tagline: t('site.tagline') });
+};
+const imageAlt = await altFor(cardRoute);
+
+const root = new URL(BASE, site).href;
+const identity: SiteIdentity = {
+  root,
+  name: t('site.name'),
+  description: t('site.description'),
+  locale,
+  author: SITE_AUTHOR,
+  authorUrl: new URL(href({ kind: 'about' }, locale), site).href,
+};
+const own =
+  structuredData ?? webPageNodes(identity, { url: canonical.href, name: title, description, locale, image });
+const graph = jsonLdGraph(pageGraph(identity, own));
+const jsonFeed = asset(`${localeCodec.encode(locale)}/feed.json`);
+---
+
+<meta name="theme-color" content={theme.value.light} media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content={theme.value.dark} media="(prefers-color-scheme: dark)" />
+<meta property="og:image" content={image} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content={String(OG_WIDTH)} />
+<meta property="og:image:height" content={String(OG_HEIGHT)} />
+<meta property="og:image:alt" content={imageAlt} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image:alt" content={imageAlt} />
+<link rel="alternate" type={JSON_FEED_MEDIA_TYPE} title={a('feed.jsonTitle')} href={jsonFeed} />
+<JsonLd value={graph} />
