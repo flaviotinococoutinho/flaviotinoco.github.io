@@ -1,0 +1,39 @@
+{
+  "slug": {
+    "pt-BR": "codigo-de-prefixo",
+    "en": "prefix-code"
+  },
+  "prefLabel": {
+    "pt-BR": "Código de prefixo",
+    "en": "Prefix code"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "código livre de prefixo",
+      "código instantâneo"
+    ],
+    "en": [
+      "prefix-free code",
+      "instantaneous code"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Código em que nenhuma palavra é prefixo de outra, de modo que uma sequência codificada pode ser decodificada sem ambiguidade e sem esperar pelo símbolo seguinte.",
+    "en": "A code in which no codeword is a prefix of another, so that an encoded sequence can be decoded unambiguously and without waiting for the next symbol."
+  },
+  "stratum": "formal",
+  "category": "operation",
+  "domains": [
+    "information-theory",
+    "computer-science"
+  ],
+  "broader": [
+    "code"
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q1278039"
+  ],
+  "sources": [
+    "cover2006"
+  ]
+}

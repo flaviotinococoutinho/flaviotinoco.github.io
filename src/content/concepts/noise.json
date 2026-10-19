@@ -1,0 +1,33 @@
+{
+  "slug": {
+    "pt-BR": "ruido",
+    "en": "noise"
+  },
+  "prefLabel": {
+    "pt-BR": "Ruído",
+    "en": "Noise"
+  },
+  "definition": {
+    "pt-BR": "Perturbação aleatória que se soma ao sinal no canal e torna incerta a mensagem recebida; o ruído branco gaussiano é o modelo canônico.",
+    "en": "A random disturbance added to the signal in a channel, which makes the received message uncertain; white Gaussian noise is the canonical model."
+  },
+  "stratum": "theory",
+  "category": "entity",
+  "domains": [
+    "signal-processing",
+    "information-theory"
+  ],
+  "relations": [
+    {
+      "type": "partOf",
+      "target": "channel"
+    },
+    {
+      "type": "contrastsWith",
+      "target": "signal"
+    }
+  ],
+  "sources": [
+    "shannon1948"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "slug": {
+    "pt-BR": "sentido-e-referencia",
+    "en": "sense-and-reference"
+  },
+  "prefLabel": {
+    "pt-BR": "Sentido e referência",
+    "en": "Sense and reference"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "distinção de Frege"
+    ],
+    "en": [
+      "Frege’s distinction"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Distinção de Frege entre o modo como uma expressão apresenta seu objeto (sentido) e o objeto que ela designa (referência): “estrela da manhã” e “estrela da tarde” têm sentidos diferentes e a mesma referência.",
+    "en": "Frege’s distinction between the way an expression presents its object (sense) and the object it designates (reference): “the morning star” and “the evening star” differ in sense but share a reference."
+  },
+  "stratum": "philosophy",
+  "category": "relation",
+  "domains": [
+    "semiotics",
+    "logic"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "meaning"
+    }
+  ],
+  "sources": [
+    "frege1892"
+  ]
+}

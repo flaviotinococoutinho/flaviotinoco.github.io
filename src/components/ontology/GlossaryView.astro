@@ -1,0 +1,93 @@
+---
+/**
+ * Glossary page (route kind "glossary"): every prefLabel and altLabel of the
+ * scheme in the locale, A–Z with the locale's collation; an altLabel is a
+ * non-preferred entry pointing to its preferred term (thesaurus "USE",
+ * ANSI/NISO Z39.19). Each preferred entry carries its definition and the
+ * stratum and category marks.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { Locale } from '../../core/domain/locale.ts';
+import { glossary } from '../../core/ontology/index.ts';
+import { alternatesForAll } from '../../adapters/astro/content.ts';
+import { href } from '../../adapters/astro/i18n.ts';
+import CategoryMark from './CategoryMark.astro';
+import StratumMark from '../chrome/StratumMark.astro';
+import { siteOntology } from './data.ts';
+import { ontologyText } from './text.ts';
+
+export interface Props {
+  readonly locale: Locale;
+}
+const { locale } = Astro.props;
+const site = await siteOntology();
+const g = site.ontology.graph;
+const { t, count } = ontologyText(locale);
+const sections = glossary(g, locale);
+const terms = sections.reduce((n, s) => n + s.entries.length, 0);
+const letterId = (letter: string): string => `glossary-${letter === '#' ? 'symbols' : letter.toLowerCase()}`;
+---
+
+<BaseLayout
+  locale={locale}
+  title={t('glossary.title')}
+  description={t('glossary.description')}
+  alternates={alternatesForAll(() => ({ kind: 'glossary' }))}
+>
+  <div class="page-grid glossary">
+    <header class="glossary__header">
+      <h1>{t('glossary.title')}</h1>
+      <p>{t('glossary.lede')}</p>
+      <p class="ui glossary__count">{t('glossary.count', { n: count(terms), concepts: count(g.ids.length) })}</p>
+      <nav class="glossary__letters ui" aria-label={t('glossary.letters')}>
+        <ul role="list">
+          {sections.map((s) => (
+            <li>
+              <a href={`#${letterId(s.letter)}`}>{s.letter}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </header>
+    {sections.map((s) => (
+      <section class="glossary__section" aria-labelledby={letterId(s.letter)}>
+        <h2 id={letterId(s.letter)} class="glossary__letter">
+          {s.letter}
+        </h2>
+        <dl class="glossary__entries">
+          {s.entries.map((entry) => {
+            const e = g.concepts.get(entry.id);
+            if (e === undefined) return null;
+            const target = site.conceptHref(entry.id, locale);
+            return entry.kind === 'pref' ? (
+              <div class="glossary__entry" id={`term-${entry.id}`}>
+                <dt>
+                  <dfn>
+                    <a href={target}>{entry.term}</a>
+                  </dfn>
+                </dt>
+                <dd>
+                  <p class="glossary__marks ui">
+                    <StratumMark stratum={e.stratum} locale={locale} size="s" />
+                    <CategoryMark category={e.category} locale={locale} />
+                  </p>
+                  <p>{e.definition[locale]}</p>
+                </dd>
+              </div>
+            ) : (
+              <div class="glossary__entry glossary__entry--alt">
+                <dt>{entry.term}</dt>
+                <dd class="ui">
+                  <a href={`#term-${entry.id}`}>{t('glossary.use', { term: e.prefLabel[locale] })}</a>
+                </dd>
+              </div>
+            );
+          })}
+        </dl>
+      </section>
+    ))}
+    <p class="glossary__footer ui">
+      <a href={href({ kind: 'ontology' }, locale)}>{t('glossary.backToOntology')}</a>
+    </p>
+  </div>
+</BaseLayout>

@@ -1,0 +1,30 @@
+{
+  "slug": {
+    "pt-BR": "bifurcacao",
+    "en": "bifurcation"
+  },
+  "prefLabel": {
+    "pt-BR": "Bifurcação",
+    "en": "Bifurcation"
+  },
+  "definition": {
+    "pt-BR": "Mudança qualitativa no comportamento de um sistema dinâmico quando um parâmetro cruza um valor crítico, como a duplicação de período no mapa logístico.",
+    "en": "A qualitative change in the behaviour of a dynamical system when a parameter crosses a critical value, such as period doubling in the logistic map."
+  },
+  "notation": "\\delta = \\lim_{n\\to\\infty} \\frac{r_{n} - r_{n-1}}{r_{n+1} - r_{n}}",
+  "stratum": "formal",
+  "category": "process",
+  "domains": [
+    "dynamical-systems"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "dynamical-system"
+    }
+  ],
+  "sources": [
+    "feigenbaum1978",
+    "may1976"
+  ]
+}

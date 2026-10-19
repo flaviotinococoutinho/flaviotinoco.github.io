@@ -1,0 +1,28 @@
+{
+  "slug": {
+    "pt-BR": "simbolo",
+    "en": "symbol"
+  },
+  "prefLabel": {
+    "pt-BR": "Símbolo",
+    "en": "Symbol"
+  },
+  "definition": {
+    "pt-BR": "Signo que se liga a seu objeto por convenção ou lei, e não por semelhança (ícone) nem por conexão física (índice).",
+    "en": "A sign related to its object by convention or law, rather than by resemblance (icon) or by physical connection (index)."
+  },
+  "stratum": "philosophy",
+  "category": "entity",
+  "domains": [
+    "semiotics"
+  ],
+  "broader": [
+    "sign"
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q80071"
+  ],
+  "sources": [
+    "peirce1931"
+  ]
+}

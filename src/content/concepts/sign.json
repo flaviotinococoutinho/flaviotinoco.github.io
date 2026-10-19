@@ -1,0 +1,23 @@
+{
+  "slug": {
+    "pt-BR": "signo",
+    "en": "sign"
+  },
+  "prefLabel": {
+    "pt-BR": "Signo",
+    "en": "Sign"
+  },
+  "definition": {
+    "pt-BR": "Algo que está por outra coisa para alguém, sob algum aspecto (Peirce), ou a união de um significante e um significado (Saussure).",
+    "en": "Something that stands to somebody for something else in some respect (Peirce), or the union of a signifier and a signified (Saussure)."
+  },
+  "stratum": "philosophy",
+  "category": "entity",
+  "domains": [
+    "semiotics"
+  ],
+  "sources": [
+    "peirce1931",
+    "saussure1916"
+  ]
+}

@@ -53,7 +53,7 @@ A série da :eqref[eq:interpolacao] é a função cardinal estudada por @whittak
 
 ## Intuição
 
-Um sinal sem frequências acima de $$B$$ não consegue mudar substancialmente de valor em menos de meio ciclo de sua frequência mais alta [@shannon1949]. Duas amostras por ciclo dessa frequência capturam, então, tudo o que ele pode fazer. Abaixo desse ritmo, frequências diferentes passam a produzir as mesmas amostras, e a reconstrução escolhe a mais baixa: é o :concept[aliasing]{id=aliasing}. Para uma senoide de frequência $$f$$, a frequência aparente é
+Um sinal sem frequências acima de $$B$$ não consegue mudar substancialmente de valor em menos de meio ciclo de sua frequência mais alta [@shannon1949]. Duas amostras por ciclo dessa frequência capturam, então, tudo o que ele pode fazer. Abaixo desse ritmo, frequências diferentes passam a produzir as mesmas amostras, e a reconstrução escolhe a mais baixa: é o :concept[aliasing]{ref=aliasing}. Para uma senoide de frequência $$f$$, a frequência aparente é
 
 $$
 f_a = \left| f - k f_s \right|, \qquad k = \operatorname{round}\!\left(\frac{f}{f_s}\right).
@@ -74,6 +74,6 @@ O controle principal é a taxa de amostragem $$f_s$$; a frequência $$f$$ da sen
 
 ## Limites do modelo
 
-O :concept[teorema da amostragem]{id=sampling-theorem} supõe um sinal limitado em banda; uma senoide pura não tem energia finita, e nenhum sinal real é limitado em banda e no tempo ao mesmo tempo. A soma de interpolação exige amostras de todo o passado e de todo o futuro; o laboratório a trunca, e por isso as bordas erram. Amostras reais são quantizadas num número finito de bits e afetadas por ruído. Por fim, componentes acima de $$f_s/2$$ que cheguem ao conversor se dobram sobre a faixa útil e não podem ser separadas depois; por isso, na prática, filtra-se o sinal antes de amostrá-lo.
+O :concept[teorema da amostragem]{ref=sampling-theorem} supõe um sinal limitado em banda; uma senoide pura não tem energia finita, e nenhum sinal real é limitado em banda e no tempo ao mesmo tempo. A soma de interpolação exige amostras de todo o passado e de todo o futuro; o laboratório a trunca, e por isso as bordas erram. Amostras reais são quantizadas num número finito de bits e afetadas por ruído. Por fim, componentes acima de $$f_s/2$$ que cheguem ao conversor se dobram sobre a faixa útil e não podem ser separadas depois; por isso, na prática, filtra-se o sinal antes de amostrá-lo.
 
 ::bibliography

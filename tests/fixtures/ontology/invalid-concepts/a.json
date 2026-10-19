@@ -1,0 +1,10 @@
+{
+  "slug": { "pt-BR": "a", "en": "a" },
+  "prefLabel": { "pt-BR": "A", "en": "A" },
+  "definition": { "pt-BR": "Definição de A.", "en": "Definition of A." },
+  "stratum": "value",
+  "category": "entity",
+  "domains": ["design"],
+  "broader": ["b"],
+  "relations": [{ "type": "formalizes", "target": "b" }]
+}

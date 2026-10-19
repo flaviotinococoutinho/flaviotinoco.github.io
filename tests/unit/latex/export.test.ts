@@ -222,7 +222,7 @@ describe('every construct of the authoring language', () => {
     '',
     'Referência de caractere: [@ana &#91;x].',
     '',
-    'HTML <kbd>x</kbd>, :marginnote[margem], :concept[entropia]{id=entropy}, :raw[data], :sc[Versalete],',
+    'HTML <kbd>x</kbd>, :marginnote[margem], :concept[entropia]{ref=entropy}, :raw[data], :sc[Versalete],',
     ':foreign[deadline]{lang=en}, :foreign[Zeitgeist]{lang=de}, [ref][def], ![fig][img], nota[^falta],',
     '![remota](https://x.org/a.png) e [rel](docs/a.md).',
     '',

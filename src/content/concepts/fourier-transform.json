@@ -1,0 +1,34 @@
+{
+  "slug": {
+    "pt-BR": "transformada-de-fourier",
+    "en": "fourier-transform"
+  },
+  "prefLabel": {
+    "pt-BR": "Transformada de Fourier",
+    "en": "Fourier transform"
+  },
+  "definition": {
+    "pt-BR": "Operação que decompõe um sinal em suas componentes de frequência, levando-o do domínio do tempo ao da frequência sem perda de informação, pois é invertível.",
+    "en": "An operation that decomposes a signal into its frequency components, taking it from the time domain to the frequency domain without loss of information, since it is invertible."
+  },
+  "notation": "\\hat{x}(f) = \\int_{-\\infty}^{\\infty} x(t)\\,\\e^{-2\\pi\\i f t}\\,\\d t",
+  "stratum": "formal",
+  "category": "operation",
+  "domains": [
+    "signal-processing",
+    "mathematics"
+  ],
+  "relations": [
+    {
+      "type": "formalizes",
+      "target": "frequency"
+    },
+    {
+      "type": "dependsOn",
+      "target": "signal"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q6520159"
+  ]
+}

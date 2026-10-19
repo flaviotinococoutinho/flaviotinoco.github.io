@@ -1,0 +1,29 @@
+{
+  "slug": {
+    "pt-BR": "fenomeno-de-gibbs",
+    "en": "gibbs-phenomenon"
+  },
+  "prefLabel": {
+    "pt-BR": "Fenômeno de Gibbs",
+    "en": "Gibbs phenomenon"
+  },
+  "definition": {
+    "pt-BR": "Oscilação persistente das somas parciais de uma série de Fourier junto a uma descontinuidade: o pico excede o salto em cerca de 9 %, por mais termos que se somem.",
+    "en": "The persistent overshoot of the partial sums of a Fourier series next to a jump discontinuity: the peak exceeds the jump by about 9%, however many terms are added."
+  },
+  "notation": "\\frac{1}{\\pi}\\int_{0}^{\\pi}\\frac{\\sin u}{u}\\,\\d u - \\frac{1}{2}",
+  "stratum": "formal",
+  "category": "quality",
+  "domains": [
+    "mathematics"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "fourier-series"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q5374"
+  ]
+}

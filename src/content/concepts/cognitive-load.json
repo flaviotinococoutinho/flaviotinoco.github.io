@@ -1,0 +1,32 @@
+{
+  "slug": {
+    "pt-BR": "carga-cognitiva",
+    "en": "cognitive-load"
+  },
+  "prefLabel": {
+    "pt-BR": "Carga cognitiva",
+    "en": "Cognitive load"
+  },
+  "definition": {
+    "pt-BR": "Quantidade de recursos da memória de trabalho que uma tarefa exige; uma interface a reduz ao eliminar escolhas e informações irrelevantes.",
+    "en": "The amount of working-memory resources a task demands; an interface reduces it by removing irrelevant choices and information."
+  },
+  "stratum": "value",
+  "category": "quality",
+  "domains": [
+    "design"
+  ],
+  "relations": [
+    {
+      "type": "related",
+      "target": "interface"
+    },
+    {
+      "type": "related",
+      "target": "hick-hyman-law"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q1107019"
+  ]
+}

@@ -44,7 +44,7 @@ A microphone turns changes in air pressure into a voltage that varies continuous
 
 ## Signal, frequency and transform {#signal-and-frequency .definition}
 
-A :concept[signal]{id=signal} is a quantity that varies over time — the pressure in front of a microphone, the voltage on a cable — represented by a function $$x(t)$$. The :concept[frequency]{id=frequency} of a periodic oscillation is its number of cycles per unit of time, measured in hertz (Hz). The idea that organises everything else is that a signal can be described in two equivalent ways: by the value it takes at each instant, or by how much of each frequency it contains.
+A :concept[signal]{ref=signal} is a quantity that varies over time — the pressure in front of a microphone, the voltage on a cable — represented by a function $$x(t)$$. The :concept[frequency]{ref=frequency} of a periodic oscillation is its number of cycles per unit of time, measured in hertz (Hz). The idea that organises everything else is that a signal can be described in two equivalent ways: by the value it takes at each instant, or by how much of each frequency it contains.
 
 :::definition{#def:fourier title="Fourier transform"}
 The Fourier transform of a finite-energy signal $$x$$ is
@@ -57,7 +57,7 @@ $$
 and the signal is recovered by the inverse transform, $$x(t) = \int_{-\infty}^{\infty} X(f)\, \e^{\i 2\pi f t} \d f$$. The signal $$x$$ is *band-limited* to $$B$$ when $$X(f) = 0$$ for every $$|f| > B$$.
 :::
 
-Equation :eqref[eq:fourier] defines the :concept[Fourier transform]{id=fourier-transform}:sidenote[For finite-energy signals the integral is to be read in the mean-square sense (Plancherel's theorem); for absolutely integrable signals, both readings agree.] and describes the spectrum of the signal: how much of each frequency it contains, and with which phase. In practice, the spectrum of a finite run of samples is computed by the discrete Fourier transform, which the algorithm of Cooley and Tukey made fast enough for everyday use [@cooley1965] — the :concept[fast Fourier transform]{id=fast-fourier-transform}.
+Equation :eqref[eq:fourier] defines the :concept[Fourier transform]{ref=fourier-transform}:sidenote[For finite-energy signals the integral is to be read in the mean-square sense (Plancherel's theorem); for absolutely integrable signals, both readings agree.] and describes the spectrum of the signal: how much of each frequency it contains, and with which phase. In practice, the spectrum of a finite run of samples is computed by the discrete Fourier transform, which the algorithm of Cooley and Tukey made fast enough for everyday use [@cooley1965] — the :concept[fast Fourier transform]{ref=fast-fourier-transform}.
 
 Describing signals by frequency is not a mathematical whim. Linear time-invariant systems, such as filters and many transmission media, treat each frequency separately: they multiply each sinusoidal component by a factor that depends only on its frequency. For such systems the useful question is not what value the signal takes right now, but how high its frequencies go — and that is exactly the question the sampling theorem turns into a design rule.
 
@@ -89,7 +89,7 @@ If $$f_s \geq 2B$$, the copies in :eqref[eq:replicas] do not overlap (at most th
 The limiting case $$f_s = 2B$$ holds for finite-energy signals, but not for a pure sinusoid at exactly $$B$$, which does not have finite energy: sampled at its zero crossings, it yields nothing but zeros. This is why, in practice, signals are sampled with some margin above $$2B$$.
 :::
 
-The intuition Shannon offers is simple: a signal with no frequencies above $$B$$ cannot change to a substantially new value in less than half a cycle of its highest frequency, that is, in less than $$1/(2B)$$ seconds, so samples taken at that spacing miss nothing essential [@shannon1949]. The proof shows that the intuition is not merely approximately but exactly right — and the :concept[sampling theorem]{id=sampling-theorem} becomes a design rule: to keep everything up to $$B$$ hertz, $$2B$$ numbers per second suffice.
+The intuition Shannon offers is simple: a signal with no frequencies above $$B$$ cannot change to a substantially new value in less than half a cycle of its highest frequency, that is, in less than $$1/(2B)$$ seconds, so samples taken at that spacing miss nothing essential [@shannon1949]. The proof shows that the intuition is not merely approximately but exactly right — and the :concept[sampling theorem]{ref=sampling-theorem} becomes a design rule: to keep everything up to $$B$$ hertz, $$2B$$ numbers per second suffice.
 
 ## A discovery with many names {#attribution .premise}
 
@@ -99,7 +99,7 @@ Compound names — Whittaker–Kotelnikov–Shannon, Nyquist–Shannon and other
 
 ## When sampling deceives {#aliasing .claim depends="the-theorem"}
 
-If $$f_s < 2B$$, the copies in :eqref[eq:replicas] overlap and no filter can pull them apart afterwards: components above $$f_s/2$$ come back “folded” below that limit. This is :concept[aliasing]{id=aliasing}. For a sinusoid of frequency $$f$$, the apparent frequency is
+If $$f_s < 2B$$, the copies in :eqref[eq:replicas] overlap and no filter can pull them apart afterwards: components above $$f_s/2$$ come back “folded” below that limit. This is :concept[aliasing]{ref=aliasing}. For a sinusoid of frequency $$f$$, the apparent frequency is
 
 $$
 f_a = \left| f - k f_s \right|, \qquad k = \operatorname{round}\!\left(\frac{f}{f_s}\right),
@@ -131,18 +131,18 @@ that is, the distance from $$f$$ to the nearest multiple of $$f_s$$. The sequenc
 This is why analogue-to-digital converters are usually preceded by a filter that attenuates everything above $$f_s/2$$ before sampling: once the samples are taken, the folding can no longer be undone.
 
 :::aside
-**The Gibbs phenomenon.** The ideal low-pass filter in the proof cuts the spectrum off abruptly, and abrupt cuts have a price. When a function with a jump, such as a square wave, is approximated by the first $$N$$ terms of its :concept[Fourier series]{id=fourier-series}, the partial sum overshoots the jump by about 9 % of its height near the discontinuity, and that overshoot does not shrink as $$N$$ grows — it only gets narrower. This is the :concept[Gibbs phenomenon]{id=gibbs-phenomenon}. The same mechanism shows up in sinc reconstruction, whose side lobes decay slowly: sharp transitions rebuilt from a truncated spectrum come with ripples. The [Fourier and Gibbs lab](../../lab/fourier-and-gibbs/) lets you raise $$N$$ and watch the overshoot persist.
+**The Gibbs phenomenon.** The ideal low-pass filter in the proof cuts the spectrum off abruptly, and abrupt cuts have a price. When a function with a jump, such as a square wave, is approximated by the first $$N$$ terms of its :concept[Fourier series]{ref=fourier-series}, the partial sum overshoots the jump by about 9 % of its height near the discontinuity, and that overshoot does not shrink as $$N$$ grows — it only gets narrower. This is the :concept[Gibbs phenomenon]{ref=gibbs-phenomenon}. The same mechanism shows up in sinc reconstruction, whose side lobes decay slowly: sharp transitions rebuilt from a truncated spectrum come with ripples. The [Fourier and Gibbs lab](../../lab/fourier-and-gibbs/) lets you raise $$N$$ and watch the overshoot persist.
 :::
 
 ## What “deterministic” means here {#deterministic .claim depends="the-theorem"}
 
 The theorem is deterministic in a precise sense: its conclusion follows necessarily from its assumptions. There is no probability or estimate in it; given the samples, every intermediate value of the signal is fixed by :eqref[eq:interpolation].:sidenote[Deterministic does not mean decidable. @godel1931 showed that consistent, sufficiently expressive formal systems contain sentences they can neither prove nor refute, and @turing1936 showed that there is no general mechanical procedure for deciding certain properties of computing machines themselves.] But the determinism belongs to the implication, not to the world, and the assumptions are idealisations.
 
-No non-zero signal is both band-limited and time-limited: if it were zero outside an interval of time, its transform would extend to a function analytic on the whole complex plane, and such a function that vanishes on an interval vanishes everywhere. Real signals start and stop, so none of them meets the assumption of :ref[thm:sampling] exactly. Moreover, the sum in :eqref[eq:interpolation] needs samples from the entire past and the entire future, and every real sample is stored with a finite number of bits and corrupted by :concept[noise]{id=noise}. In practice one filters before sampling, samples with a margin, and accepts a small, controlled error. The theorem does not describe the real converter; it describes the limit the converter approaches, and serves as the reference for measuring how far it falls short.
+No non-zero signal is both band-limited and time-limited: if it were zero outside an interval of time, its transform would extend to a function analytic on the whole complex plane, and such a function that vanishes on an interval vanishes everywhere. Real signals start and stop, so none of them meets the assumption of :ref[thm:sampling] exactly. Moreover, the sum in :eqref[eq:interpolation] needs samples from the entire past and the entire future, and every real sample is stored with a finite number of bits and corrupted by :concept[noise]{ref=noise}. In practice one filters before sampling, samples with a margin, and accepts a small, controlled error. The theorem does not describe the real converter; it describes the limit the converter approaches, and serves as the reference for measuring how far it falls short.
 
 ## Deciding what matters {#deciding .conclusion depends="deterministic,aliasing"}
 
-To sample is to decide twice. First one decides on a :concept[model]{id=model}: which frequencies matter, that is, the $$B$$ below which everything worth keeping lies. Then one decides on a cost: $$2B$$ numbers per second, each with some precision. The theorem guarantees that once these choices are made nothing more is lost; it does not guarantee that the choices were good.
+To sample is to decide twice. First one decides on a :concept[model]{ref=model}: which frequencies matter, that is, the $$B$$ below which everything worth keeping lies. Then one decides on a cost: $$2B$$ numbers per second, each with some precision. The theorem guarantees that once these choices are made nothing more is lost; it does not guarantee that the choices were good.
 
 Shannon used exactly this count — a signal of band $$W$$ and duration $$T$$ is specified by $$2TW$$ numbers — to work out how many bits per second a band-limited channel with white noise can carry [@shannon1949]:
 
@@ -151,6 +151,6 @@ C = W \log_2 \frac{P + N}{N},
 \label{eq:capacity}
 $$
 
-where $$P$$ is the average signal power and $$N$$ the noise power in the band. Equation :eqref[eq:capacity] is a :concept[channel capacity]{id=channel-capacity}: the sampling theorem turns a modelling choice into an account of costs. The next essay on the bridge, [Choosing costs bits](../choosing-costs-bits/), carries that accounting from signals to the choices made by the people who use a product.
+where $$P$$ is the average signal power and $$N$$ the noise power in the band. Equation :eqref[eq:capacity] is a :concept[channel capacity]{ref=channel-capacity}: the sampling theorem turns a modelling choice into an account of costs. The next essay on the bridge, [Choosing costs bits](../choosing-costs-bits/), carries that accounting from signals to the choices made by the people who use a product.
 
 ::bibliography

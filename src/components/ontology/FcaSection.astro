@@ -1,0 +1,37 @@
+---
+/**
+ * The formal concept lattice of the works (works × concepts discussed),
+ * drawn at build time as a layered Hasse diagram with reduced labelling, plus
+ * its complete textual equivalent.
+ */
+import type { ConceptId } from '../../core/domain/identifiers.ts';
+import type { Locale } from '../../core/domain/locale.ts';
+import { latticeLayout, latticeMarkup } from '../../core/ontology/index.ts';
+import Markup from './Markup.astro';
+import { siteOntology } from './data.ts';
+import { ontologyText } from './text.ts';
+
+export interface Props {
+  readonly locale: Locale;
+}
+const { locale } = Astro.props;
+const site = await siteOntology();
+const lattice = site.lattice[locale];
+const tx = ontologyText(locale);
+const g = site.ontology.graph;
+const markup =
+  lattice.concepts.length <= 1
+    ? null
+    : latticeMarkup<string, ConceptId>({
+        lattice,
+        layout: latticeLayout(lattice),
+        objectLabel: (k) => site.workByKey(k, locale)?.shortTitle ?? k,
+        attributeLabel: (m) => g.concepts.get(m)?.prefLabel[locale] ?? m,
+        objectHref: (k) => site.workByKey(k, locale)?.href ?? '#',
+        attributeHref: (m) => site.conceptHref(m, locale),
+        idPrefix: 'fca',
+        text: tx.lattice(lattice.concepts.length),
+      });
+---
+
+{markup !== null && <Markup markup={markup} />}

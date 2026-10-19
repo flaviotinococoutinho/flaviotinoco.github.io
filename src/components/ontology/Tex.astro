@@ -1,0 +1,12 @@
+---
+/** TeX rendered with KaTeX at build time (HTML + MathML, site macros). Include <MathAssets /> on the page. */
+import { renderTex } from './text.ts';
+
+export interface Props {
+  readonly tex: string;
+  readonly display?: boolean;
+}
+const { tex, display = false } = Astro.props;
+---
+
+<span class:list={['ontology-tex', { 'ontology-tex--display': display }]} set:html={renderTex(tex, display)} />

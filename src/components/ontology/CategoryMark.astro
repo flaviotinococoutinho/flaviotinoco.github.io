@@ -1,0 +1,15 @@
+---
+/** Category mark: the ontological kind of a concept, as a small-caps label. */
+import type { Locale } from '../../core/domain/locale.ts';
+import { categoryLabel, type Category } from '../../core/ontology/index.ts';
+
+export interface Props {
+  readonly category: Category;
+  readonly locale: Locale;
+}
+const { category, locale } = Astro.props;
+---
+
+<span class="category-mark" data-category={category}>
+  {categoryLabel(locale, category)}
+</span>

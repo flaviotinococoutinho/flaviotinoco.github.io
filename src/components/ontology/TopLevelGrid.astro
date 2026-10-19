@@ -1,0 +1,69 @@
+---
+/**
+ * The top level as a table: categories (rows) × strata (columns), each cell
+ * listing its concepts. It is the static, accessible form of the grid layout
+ * of the map, and the anchor target of the category breadcrumbs (#category-…).
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import { STRATA } from '../../core/domain/strata.ts';
+import { CATEGORY_DISPLAY_ORDER } from '../../core/ontology/index.ts';
+import ConceptLink from './ConceptLink.astro';
+import StratumMark from '../chrome/StratumMark.astro';
+import { siteOntology } from './data.ts';
+import { ontologyText } from './text.ts';
+
+export interface Props {
+  readonly locale: Locale;
+}
+const { locale } = Astro.props;
+const { ontology } = await siteOntology();
+const g = ontology.graph;
+const { t, category } = ontologyText(locale);
+const collator = new Intl.Collator(locale, { sensitivity: 'base' });
+const cell = (s: string, c: string) =>
+  g.ids
+    .filter((id) => g.concepts.get(id)?.stratum === s && g.concepts.get(id)?.category === c)
+    .sort((a, b) =>
+      collator.compare(g.concepts.get(a)?.prefLabel[locale] ?? a, g.concepts.get(b)?.prefLabel[locale] ?? b),
+    );
+const rows = CATEGORY_DISPLAY_ORDER.filter((c) => STRATA.some((s) => cell(s, c).length > 0));
+---
+
+<div class="toplevel-grid" role="region" aria-labelledby="toplevel-caption" tabindex="0">
+  <table>
+    <caption id="toplevel-caption" class="ui">
+      {t('ontology.gridCaption')}
+    </caption>
+    <thead>
+      <tr>
+        <td></td>
+        {STRATA.map((s) => (
+          <th scope="col" class="ui">
+            <StratumMark stratum={s} locale={locale} />
+          </th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((c) => (
+        <tr id={`category-${c}`}>
+          <th scope="row" class="ui">
+            {category(c)}
+            <span class="toplevel-grid__question">{t(`categoryq.${c}`)}</span>
+          </th>
+          {STRATA.map((s) => (
+            <td data-stratum={s}>
+              <ul role="list">
+                {cell(s, c).map((id) => (
+                  <li>
+                    <ConceptLink id={id} locale={locale} stratumInContext />
+                  </li>
+                ))}
+              </ul>
+            </td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>

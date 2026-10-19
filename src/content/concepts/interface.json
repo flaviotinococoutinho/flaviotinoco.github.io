@@ -1,0 +1,42 @@
+{
+  "slug": {
+    "pt-BR": "interface",
+    "en": "interface"
+  },
+  "prefLabel": {
+    "pt-BR": "Interface",
+    "en": "Interface"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "interface de usuário"
+    ],
+    "en": [
+      "user interface"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Fronteira em que uma pessoa e um sistema trocam signos: o que o sistema mostra, o que aceita como ação e como responde.",
+    "en": "The boundary at which a person and a system exchange signs: what the system shows, what it accepts as action, and how it responds."
+  },
+  "stratum": "value",
+  "category": "artifact",
+  "domains": [
+    "design",
+    "product",
+    "semiotics"
+  ],
+  "relations": [
+    {
+      "type": "partOf",
+      "target": "product"
+    },
+    {
+      "type": "dependsOn",
+      "target": "sign"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q47146"
+  ]
+}
