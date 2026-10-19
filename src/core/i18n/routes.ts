@@ -123,7 +123,9 @@ export const decodeRoute = (path: string): Result<Located, string> => {
     case 'strata': {
       if (item === undefined) return err('strata index is not a route');
       const stratum = stratumFromSlug(item, locale);
-      return stratum === null ? err(`unknown stratum slug "${item}"`) : ok({ route: { kind: 'stratum', stratum }, locale });
+      return stratum === null
+        ? err(`unknown stratum slug "${item}"`)
+        : ok({ route: { kind: 'stratum', stratum }, locale });
     }
     case 'ontology':
     case 'about':

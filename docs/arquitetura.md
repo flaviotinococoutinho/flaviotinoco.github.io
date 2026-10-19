@@ -6,16 +6,16 @@ Este documento define a arquitetura pretendida e os contratos entre as partes. A
 
 A árvore contém páginas, componentes, estilos, adaptadores do pipeline Markdown e parte do núcleo funcional. As pesquisas de 11/10/2026 estão em `docs/research/` e mantêm suas datas e limites originais.
 
-| Área | Estado no código versionado |
-|---|---|
-| `src/core/` | Contém `algebra`, `domain`, `i18n`, `design` e `latex/macros.ts` |
-| Núcleo de bibliografia, léxico, ABNT, ontologia e folds | Diretórios ainda ausentes |
-| Pipeline Markdown | Ordem declarada em `src/adapters/unified/pipeline.ts`; existem adaptadores para os estágios |
-| Ilhas | `src/islands/registry.ts` existe; `src/islands/elements/` ainda não existe |
-| Conteúdo, bibliografia e léxicos | `src/content/`, `bibliography/` e `lexicon/` ainda não existem |
-| WebAssembly e CLI | `wasm/`, `src/adapters/wasm/`, `cli/` e `scripts/build-wasm.mjs` ainda não existem |
-| Verificações | Existem testes de rotas e integridade, `scripts/tokens.ts` e `scripts/verify-palette.ts` |
-| Automação e decisões | `.github/workflows/ci.yml`, `CLAUDE.md` e `docs/adr/` ainda não existem |
+| Área                                                    | Estado no código versionado                                                                 |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `src/core/`                                             | Contém `algebra`, `domain`, `i18n`, `design` e `latex/macros.ts`                            |
+| Núcleo de bibliografia, léxico, ABNT, ontologia e folds | Diretórios ainda ausentes                                                                   |
+| Pipeline Markdown                                       | Ordem declarada em `src/adapters/unified/pipeline.ts`; existem adaptadores para os estágios |
+| Ilhas                                                   | `src/islands/registry.ts` existe; `src/islands/elements/` ainda não existe                  |
+| Conteúdo, bibliografia e léxicos                        | `src/content/`, `bibliography/` e `lexicon/` ainda não existem                              |
+| WebAssembly e CLI                                       | `wasm/`, `src/adapters/wasm/`, `cli/` e `scripts/build-wasm.mjs` ainda não existem          |
+| Verificações                                            | Existem testes de rotas e integridade, `scripts/tokens.ts` e `scripts/verify-palette.ts`    |
+| Automação e decisões                                    | `.github/workflows/ci.yml`, `CLAUDE.md` e `docs/adr/` ainda não existem                     |
 
 O `package.json` declara comandos que dependem desses arquivos ausentes. `pnpm dev`, `pnpm build` e a cadeia completa de verificações ainda precisam de implementação. A organização e os contratos das seções seguintes descrevem o destino dessas partes.
 
@@ -23,18 +23,18 @@ O `package.json` declara comandos que dependem desses arquivos ausentes. `pnpm d
 
 O conteúdo do site segue quatro estratos nesta ordem:
 
-| Estrato | Pergunta-guia | Método | Símbolo (k-simplexo) |
-|---|---|---|---|
-| Filosofia | O que é isto, e como sabemos? | análise conceitual | ponto (0-simplexo) |
-| Teoria | Que modelo explica isto? | modelagem, abstração | segmento (1-simplexo) |
-| Formal | O que se segue necessariamente? | prova, algoritmo, determinismo | triângulo (2-simplexo) |
-| Valor | Para que serve, a quem, a que custo? | projeto, produto, ética | tetraedro (3-simplexo) |
+| Estrato   | Pergunta-guia                        | Método                         | Símbolo (k-simplexo)   |
+| --------- | ------------------------------------ | ------------------------------ | ---------------------- |
+| Filosofia | O que é isto, e como sabemos?        | análise conceitual             | ponto (0-simplexo)     |
+| Teoria    | Que modelo explica isto?             | modelagem, abstração           | segmento (1-simplexo)  |
+| Formal    | O que se segue necessariamente?      | prova, algoritmo, determinismo | triângulo (2-simplexo) |
+| Valor     | Para que serve, a quem, a que custo? | projeto, produto, ética        | tetraedro (3-simplexo) |
 
 A representação associa cada estrato a uma forma, uma posição, um rótulo e uma luminosidade. Essa redundância permite identificar os estratos sem depender apenas da cor. Discromatopsia, impressão em tons de cinza e leitores de tela exigem validação específica.
 
 ## 2. Princípios da arquitetura-alvo
 
-1. Núcleo funcional, casca imperativa (G. Bernhardt, *Boundaries*, 2012). Toda regra de negócio vive em
+1. Núcleo funcional, casca imperativa (G. Bernhardt, _Boundaries_, 2012). Toda regra de negócio vive em
    `src/core/**`: funções puras, determinísticas, sem E/S, sem DOM, sem Astro. A casca (`src/adapters`,
    `src/islands`, `src/pages`, `scripts`, `cli`) só lê, escreve e desenha.
 2. Analise, não valide (A. King, 2019). Dados não tipados (frontmatter, `.bib`, `.tsv`, JSON) são
@@ -44,11 +44,11 @@ A representação associa cada estrato a uma forma, uma posição, um rótulo e 
    em vez de exceções no núcleo, `readonly` por padrão. Erros de conteúdo são acumulados (validação aplicativa)
    para que o autor veja todos de uma vez.
 4. Preservação de informação (injetividade). Toda transformação de texto `T` admite uma recuperação `R` com
-   `R(T(x)) = x`: ou o texto plano é preservado (marcações só *acrescentam* estrutura), ou o original fica
+   `R(T(x)) = x`: ou o texto plano é preservado (marcações só _acrescentam_ estrutura), ou o original fica
    registrado (`data-*`). Essa propriedade deve ser verificada por testes de propriedade com fast-check. Exemplos de perda evitada:
    - `remark-directive` transformaria "às 10:30" em "às 10" → estágio `integrity` restaura o trecho literal;
    - `$` simples transformaria "R$ 5,00 e R$ 10,00" em fórmula → só `$$…$$` é matemática;
-   - YAML 1.1 interpreta `no`/`yes`/`on` como booleanos (*Norway problem*) → léxicos em TSV com esquema explícito;
+   - YAML 1.1 interpreta `no`/`yes`/`on` como booleanos (_Norway problem_) → léxicos em TSV com esquema explícito;
    - Astro 7 apagaria o espaço entre elementos inline (`compressHTML: 'jsx'`) → `compressHTML: true`;
    - BibTeX decodificado não sai em NFC (`é` = `e` + U+0301) → normalização NFC na fronteira.
 5. Conteúdo declarativo. Os textos usam Markdown (`.md`) e diretivas, sem JSX. O contrato prevê exportação para Pandoc e LaTeX sem executar código do conteúdo.
@@ -56,7 +56,7 @@ A representação associa cada estrato a uma forma, uma posição, um rótulo e 
    CSS gerado. Relações SKOS derivadas (`narrower`) são calculadas a partir das inversas (`broader`), nunca
    armazenadas.
 7. Leveza como requisito. HTML estático; nenhum framework de UI no cliente; cada comportamento é um
-   *custom element* carregado sob demanda; WebAssembly sem `wasm-bindgen`, sem importações.
+   _custom element_ carregado sob demanda; WebAssembly sem `wasm-bindgen`, sem importações.
 
 ## 3. Organização pretendida por padrão funcional
 
@@ -88,14 +88,14 @@ src/
 
 Padrões funcionais por pasta (o nome diz o que a função é):
 
-| Padrão | Assinatura | Propriedades exigidas |
-|---|---|---|
-| parser (`parse*`) | `unknown → Result<T, E>` | aceita exatamente a linguagem especificada |
-| codec | `encode: A → B`, `decode: B → Result<A>` | `decode ∘ encode = id` |
-| transform | `Tree → Tree` | preservação do texto (ou recuperação), idempotência |
-| fold | `Tree → Summary` | determinismo; invariância a reordenação quando aplicável |
-| compiler | `Spec → Artefact` (TSV → regex, tokens → CSS) | equivalência com a especificação ingênua |
-| formatter | `Model × Style → string` | exemplos trabalhados da norma (ABNT/APA) |
+| Padrão            | Assinatura                                    | Propriedades exigidas                                    |
+| ----------------- | --------------------------------------------- | -------------------------------------------------------- |
+| parser (`parse*`) | `unknown → Result<T, E>`                      | aceita exatamente a linguagem especificada               |
+| codec             | `encode: A → B`, `decode: B → Result<A>`      | `decode ∘ encode = id`                                   |
+| transform         | `Tree → Tree`                                 | preservação do texto (ou recuperação), idempotência      |
+| fold              | `Tree → Summary`                              | determinismo; invariância a reordenação quando aplicável |
+| compiler          | `Spec → Artefact` (TSV → regex, tokens → CSS) | equivalência com a especificação ingênua                 |
+| formatter         | `Model × Style → string`                      | exemplos trabalhados da norma (ABNT/APA)                 |
 
 ## 4. Pipeline de Markdown
 
@@ -161,36 +161,36 @@ Título acima ("Figura 1 – Título"), fonte abaixo ("Fonte: …"). Referência
 
 ### 5.5 Leitura não linear (estágios `reading`, `concepts`, `embeds`)
 
-| Sintaxe | Resultado |
-|---|---|
-| `:::stretch{label="Por que logaritmo?"}` … `:::` | *stretchtext* (T. Nelson): expansão no fluxo do texto |
-| `:sidenote[texto]` | nota lateral numerada (margem em telas largas; alternável em telas estreitas) |
-| `:marginnote[texto]` | nota de margem não numerada |
-| `::::scrolly` + `:::step{state="…"}` | figura fixa cujo estado acompanha a rolagem por etapas |
-| `::::horizontal{label="…"}` + `:::panel` | sequência horizontal dentro da rolagem vertical |
-| `:::epigraph{source="@chave"}` | epígrafe |
-| `:::aside` | digressão destacada |
-| `::toc` | sumário do documento |
-| `## Título {#id .claim depends="def-1,premissa-2"}` | nó do grafo argumentativo (Toulmin, 1958) |
-| `:concept[entropia]{id=entropy}` | link ao conceito com prévia da definição |
-| `::concept-map{focus=entropy depth=2}` | subgrafo da ontologia |
-| `::lab{widget=sampling}` | laboratório interativo (WebAssembly) embutido |
+| Sintaxe                                             | Resultado                                                                     |
+| --------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `:::stretch{label="Por que logaritmo?"}` … `:::`    | _stretchtext_ (T. Nelson): expansão no fluxo do texto                         |
+| `:sidenote[texto]`                                  | nota lateral numerada (margem em telas largas; alternável em telas estreitas) |
+| `:marginnote[texto]`                                | nota de margem não numerada                                                   |
+| `::::scrolly` + `:::step{state="…"}`                | figura fixa cujo estado acompanha a rolagem por etapas                        |
+| `::::horizontal{label="…"}` + `:::panel`            | sequência horizontal dentro da rolagem vertical                               |
+| `:::epigraph{source="@chave"}`                      | epígrafe                                                                      |
+| `:::aside`                                          | digressão destacada                                                           |
+| `::toc`                                             | sumário do documento                                                          |
+| `## Título {#id .claim depends="def-1,premissa-2"}` | nó do grafo argumentativo (Toulmin, 1958)                                     |
+| `:concept[entropia]{id=entropy}`                    | link ao conceito com prévia da definição                                      |
+| `::concept-map{focus=entropy depth=2}`              | subgrafo da ontologia                                                         |
+| `::lab{widget=sampling}`                            | laboratório interativo (WebAssembly) embutido                                 |
 
 Tipos de nó argumentativo: `question`, `definition`, `premise`, `claim`, `proof`, `example`, `objection`,
-`reply`, `application`, `conclusion` (`premise` ≈ *grounds*, `objection` ≈ *rebuttal* no modelo de Toulmin).
+`reply`, `application`, `conclusion` (`premise` ≈ _grounds_, `objection` ≈ _rebuttal_ no modelo de Toulmin).
 
 ### 5.6 Marcação normativa explícita (estágio `abnt`)
 
 A marcação automática (dicionários em `lexicon/*.tsv`) pode ser sobreposta, com precedência
 diretiva explícita > frontmatter > dicionário:
 
-| Sintaxe | Efeito |
-|---|---|
-| `:foreign[Zeitgeist]{lang=de}` | `<i lang="de">` para estrangeirismo (WCAG 3.1.2, *Language of Parts*) |
-| `:name[Ferdinand de Saussure]` | nome próprio: sem hifenização, `translate="no"` |
-| `:abbr[FFT]{title="Fast Fourier Transform"}` | sigla com expansão |
-| `:raw[data]` | suprime qualquer marcação automática (homógrafos: "data" em português) |
-| `:sc[texto]` | versaletes |
+| Sintaxe                                      | Efeito                                                                 |
+| -------------------------------------------- | ---------------------------------------------------------------------- |
+| `:foreign[Zeitgeist]{lang=de}`               | `<i lang="de">` para estrangeirismo (WCAG 3.1.2, _Language of Parts_)  |
+| `:name[Ferdinand de Saussure]`               | nome próprio: sem hifenização, `translate="no"`                        |
+| `:abbr[FFT]{title="Fast Fourier Transform"}` | sigla com expansão                                                     |
+| `:raw[data]`                                 | suprime qualquer marcação automática (homógrafos: "data" em português) |
+| `:sc[texto]`                                 | versaletes                                                             |
 
 ## 6. Interface
 
@@ -199,7 +199,7 @@ diretiva explícita > frontmatter > dicionário:
   medida de 66 caracteres. Hifenização por idioma (`lang`), desligável pelo leitor.
 - Espaço: potências de φ; coluna de leitura e coluna de margem na razão φ:1.
 - Tempo: durações em milissegundos de Fibonacci; toda animação tem estado final como padrão; preferências
-  do leitor sobrepõem as do sistema; *view transitions* nativas entre páginas.
+  do leitor sobrepõem as do sistema; _view transitions_ nativas entre páginas.
 - Cor: o projeto prevê verificar a paleta com `scripts/verify-palette.ts`, considerando contraste WCAG AAA para texto, APCA,
   gama sRGB, separabilidade CIEDE2000 sob protanopia/deuteranopia/tritanopia e luminosidade monótona sob
   acromatopsia. Cor nunca é o único portador de significado.
@@ -218,4 +218,3 @@ diretiva explícita > frontmatter > dicionário:
 O `package.json` declara verificações de tipos, lint, formatação, tokens, paleta, i18n, testes, WebAssembly, links, tamanho e acessibilidade. A árvore ainda não contém todos os arquivos necessários para executá-las.
 
 A implementação da automação deve distinguir os checks disponíveis dos checks pendentes. Uma declaração de script não comprova execução nem aprovação. Este documento não registra execução de build, testes ou auditoria de acessibilidade.
-

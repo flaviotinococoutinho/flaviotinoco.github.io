@@ -107,15 +107,13 @@ const alternates = alternatesForAll(() => ({ kind: 'stratum', stratum }));
   <article class="page-grid stratum" data-stratum={stratum}>
     <nav class="stratum-path" aria-label={t('strata.label')}>
       <ol role="list">
-        {
-          STRATA.map((s) => (
-            <li>
-              <a href={href({ kind: 'stratum', stratum: s }, locale)} aria-current={s === stratum ? 'page' : undefined}>
-                <StratumMark stratum={s} locale={locale} size="s" />
-              </a>
-            </li>
-          ))
-        }
+        {STRATA.map((s) => (
+          <li>
+            <a href={href({ kind: 'stratum', stratum: s }, locale)} aria-current={s === stratum ? 'page' : undefined}>
+              <StratumMark stratum={s} locale={locale} size="s" />
+            </a>
+          </li>
+        ))}
       </ol>
     </nav>
 
@@ -140,58 +138,54 @@ const alternates = alternatesForAll(() => ({ kind: 'stratum', stratum }));
     </div>
 
     <section class="stratum-items" aria-labelledby="stratum-items-title" data-pagefind-ignore>
-      <h2 id="stratum-items-title" class="section-title">{c('stratum.items')}</h2>
+      <h2 id="stratum-items-title" class="section-title">
+        {c('stratum.items')}
+      </h2>
       {groups.length === 0 && <p class="stratum-items__empty">{c('stratum.items.empty')}</p>}
-      {
-        groups.map((g) => (
-          <section class="stratum-items__group" aria-labelledby={`stratum-items-${g.id}`}>
-            <h3 class="stratum-items__heading" id={`stratum-items-${g.id}`}>
-              <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
-                <use href={`#${g.glyph}`} />
-              </svg>
-              {g.heading}
-            </h3>
-            <ul class="stratum-items__list" role="list">
-              {g.items.map((item) => (
-                <li>
-                  <a href={item.href}>{item.title}</a>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))
-      }
+      {groups.map((g) => (
+        <section class="stratum-items__group" aria-labelledby={`stratum-items-${g.id}`}>
+          <h3 class="stratum-items__heading" id={`stratum-items-${g.id}`}>
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+              <use href={`#${g.glyph}`} />
+            </svg>
+            {g.heading}
+          </h3>
+          <ul class="stratum-items__list" role="list">
+            {g.items.map((item) => (
+              <li>
+                <a href={item.href}>{item.title}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
     </section>
 
     <nav class="stratum-pager" aria-label={c('stratum.pager')} data-pagefind-ignore>
       <ul role="list">
-        {
-          previous !== null && (
-            <li>
-              <a href={href({ kind: 'stratum', stratum: previous }, locale)} rel="prev">
-                <span class="stratum-pager__dir">{c('stratum.previous')}</span>
-                <StratumMark stratum={previous} locale={locale} size="l" />
-              </a>
-            </li>
-          )
-        }
-        {
-          next !== null ? (
-            <li>
-              <a href={href({ kind: 'stratum', stratum: next }, locale)} rel="next">
-                <span class="stratum-pager__dir">{c('stratum.next')}</span>
-                <StratumMark stratum={next} locale={locale} size="l" />
-              </a>
-            </li>
-          ) : (
-            <li>
-              <a href={href({ kind: 'stratum', stratum: first }, locale)}>
-                <span class="stratum-pager__dir">{c('stratum.end')}</span>
-                <StratumMark stratum={first} locale={locale} size="l" />
-              </a>
-            </li>
-          )
-        }
+        {previous !== null && (
+          <li>
+            <a href={href({ kind: 'stratum', stratum: previous }, locale)} rel="prev">
+              <span class="stratum-pager__dir">{c('stratum.previous')}</span>
+              <StratumMark stratum={previous} locale={locale} size="l" />
+            </a>
+          </li>
+        )}
+        {next !== null ? (
+          <li>
+            <a href={href({ kind: 'stratum', stratum: next }, locale)} rel="next">
+              <span class="stratum-pager__dir">{c('stratum.next')}</span>
+              <StratumMark stratum={next} locale={locale} size="l" />
+            </a>
+          </li>
+        ) : (
+          <li>
+            <a href={href({ kind: 'stratum', stratum: first }, locale)}>
+              <span class="stratum-pager__dir">{c('stratum.end')}</span>
+              <StratumMark stratum={first} locale={locale} size="l" />
+            </a>
+          </li>
+        )}
       </ul>
     </nav>
   </article>

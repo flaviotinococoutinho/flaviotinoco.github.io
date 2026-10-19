@@ -334,7 +334,10 @@ mod tests {
         assert!((kl_divergence(&big_p, &big_q) - kl_divergence(&p, &q)).abs() < 1e-12);
         assert!((js_divergence(&big_p, &big_q) - js_divergence(&p, &q)).abs() < 1e-12);
         assert_eq!(js_divergence(&[f64::MAX, 0.0], &[0.0, f64::MAX]), 1.0);
-        assert_eq!(kl_divergence(&[f64::MAX, 1.0], &[f64::MAX, 0.0]), f64::INFINITY);
+        assert_eq!(
+            kl_divergence(&[f64::MAX, 1.0], &[f64::MAX, 0.0]),
+            f64::INFINITY
+        );
     }
 
     #[test]
@@ -390,7 +393,11 @@ mod tests {
         for k in [-1000, -1, 3, 1000, 1021] {
             let s = libm::scalbn(1.0, k);
             let scaled = joint.map(|x| x * s);
-            assert_eq!(mutual_information(&scaled, 2, 2, &mut scratch), mi, "k = {k}");
+            assert_eq!(
+                mutual_information(&scaled, 2, 2, &mut scratch),
+                mi,
+                "k = {k}"
+            );
         }
         let big = joint.map(|x| x * 1.7e308);
         assert!((mutual_information(&big, 2, 2, &mut scratch) - mi).abs() < 1e-12);
