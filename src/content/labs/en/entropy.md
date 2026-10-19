@@ -5,7 +5,7 @@ lang: en
 translationKey: entropy
 slug: entropy
 stratum: formal
-domains: [information-theory, computation]
+domains: [information-theory, computer-science]
 concepts: [entropy, prefix-code, huffman-code, kraft-inequality, redundancy]
 published: 2026-10-11
 revisions:

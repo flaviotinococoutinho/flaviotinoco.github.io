@@ -6,7 +6,7 @@
  *
  *   stratum  — epistemic level (see strata.ts)           : exactly one
  *   form     — kind of document (genre)                  : exactly one
- *   domain   — field of knowledge                        : one or more
+ *   domain   — field of knowledge                        : one or more (listed along the bridge)
  *   concepts — SKOS concepts the item discusses          : zero or more (ontology)
  */
 import { err, ok, type Result } from '../algebra/result.ts';
@@ -30,16 +30,26 @@ export const FORM_GLYPH: Readonly<Record<Form, `form-${Form}`>> = {
 };
 
 export const DOMAINS = [
+  // philosophy
   'ontology',
   'epistemology',
   'semiotics',
   'logic',
+  'applied-philosophy',
+  // theory
   'information-theory',
   'signal-processing',
   'dynamical-systems',
   'probability',
-  'computation',
+  'behavior',
+  // formal
   'mathematics',
+  'computer-science',
+  // value
+  'information-systems',
+  'software-engineering',
+  'technology',
+  'methodology',
   'design',
   'product',
 ] as const;
