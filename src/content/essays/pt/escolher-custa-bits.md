@@ -37,7 +37,7 @@ provenance:
 draft: false
 ---
 
-Toda interface pede escolhas: qual botão, qual item do menu, qual das opções de envio. Cada escolha consome tempo e atenção de quem usa o produto. Este ensaio pergunta se esse custo pode ser medido em bits — e responde que, em parte e sob hipóteses explícitas, pode. É a terceira travessia do site, do estrato formal ao do :concept[valor]{id=value}: do que se segue necessariamente ao que serve a alguém, e a que custo.
+Toda interface pede escolhas: qual botão, qual item do menu, qual das opções de envio. Cada escolha consome tempo e atenção de quem usa o produto. Este ensaio pergunta se esse custo pode ser medido em bits — e responde que, em parte e sob hipóteses explícitas, pode. É a terceira travessia do site, do estrato formal ao do :concept[valor]{ref=value}: do que se segue necessariamente ao que serve a alguém, e a que custo.
 
 ::toc
 
@@ -59,7 +59,7 @@ $$
 \label{eq:hyman}
 $$
 
-Para alternativas equiprováveis, $$\H(X) = \log_2 n$$, e a :eqref[eq:hyman] difere da :eqref[eq:hick] só pelo termo $$+1$$. Juntas, as duas formulações compõem a :concept[lei de Hick–Hyman]{id=hick-hyman-law}: o que pesa na :concept[decisão]{id=decision} não é o número de opções, mas a incerteza que elas representam para quem escolhe.
+Para alternativas equiprováveis, $$\H(X) = \log_2 n$$, e a :eqref[eq:hyman] difere da :eqref[eq:hick] só pelo termo $$+1$$. Juntas, as duas formulações compõem a :concept[lei de Hick–Hyman]{ref=hick-hyman-law}: o que pesa na :concept[decisão]{ref=decision} não é o número de opções, mas a incerteza que elas representam para quem escolhe.
 
 ## Ressalvas {#ressalvas .objection depends="lei-de-hick-hyman"}
 
@@ -70,7 +70,7 @@ A lei é empírica e local. As constantes $$a$$ e $$b$$ são estimadas por regre
 Um menu hierárquico se parece com um código. Cada item é alcançado por uma sequência de escolhas, e nenhum caminho completo é o começo de outro — exatamente a propriedade que define os códigos de prefixo.
 
 :::definition{#def:prefixo title="Código de prefixo"}
-Um código $$k$$-ário atribui a cada símbolo de uma fonte uma palavra sobre um alfabeto de $$k$$ letras. Ele é um :concept[código de prefixo]{id=prefix-code} quando nenhuma palavra é prefixo de outra; assim, cada palavra pode ser decodificada assim que termina, sem olhar adiante.
+Um código $$k$$-ário atribui a cada símbolo de uma fonte uma palavra sobre um alfabeto de $$k$$ letras. Ele é um :concept[código de prefixo]{ref=prefix-code} quando nenhuma palavra é prefixo de outra; assim, cada palavra pode ser decodificada assim que termina, sem olhar adiante.
 :::
 
 ::::theorem{#thm:kraft title="Desigualdade de Kraft"}
@@ -86,7 +86,7 @@ Esboço. As palavras de um código de prefixo são folhas de uma árvore $$k$$-�
 :::
 ::::
 
-A :concept[desigualdade de Kraft]{id=kraft-inequality} funciona como um orçamento: caminhos curtos são caros, e não há espaço para que todos o sejam. O teorema seguinte diz quanto, em média, esse orçamento permite economizar.
+A :concept[desigualdade de Kraft]{ref=kraft-inequality} funciona como um orçamento: caminhos curtos são caros, e não há espaço para que todos o sejam. O teorema seguinte diz quanto, em média, esse orçamento permite economizar.
 
 :::theorem{#thm:fonte title="Codificação de fonte"}
 Seja $$X$$ uma fonte com probabilidades $$p_i$$, e seja $$L^*$$ o menor comprimento médio $$\sum_i p_i \ell_i$$ entre os códigos de prefixo $$k$$-ários para $$X$$. Então
@@ -98,7 +98,7 @@ $$
 e o algoritmo de Huffman constrói um código que atinge $$L^*$$ [@huffman1952; @cover2006, cap. 5].
 :::
 
-O :concept[código de Huffman]{id=huffman-code} dá palavras curtas aos símbolos frequentes e longas aos raros. Num menu, a tradução é direta: o que se usa muito deve ficar perto; o que se usa pouco pode ficar longe.
+O :concept[código de Huffman]{ref=huffman-code} dá palavras curtas aos símbolos frequentes e longas aos raros. Num menu, a tradução é direta: o que se usa muito deve ficar perto; o que se usa pouco pode ficar longe.
 
 ## O menu como código {#menu-como-codigo .claim depends="escolher-e-codificar"}
 
@@ -168,10 +168,10 @@ O laboratório abaixo calcula a entropia de um texto qualquer e o comprimento m�
 
 A :eqref[eq:entropia-cruzada] tem uma leitura incômoda: quem projeta a interface escolhe os pesos $$w$$, e com eles escolhe quanto excesso cada intenção de quem usa vai custar. Esconder a opção de cancelar uma assinatura no fundo de uma árvore é dar um caminho longo a algo que a pessoa quer fazer; acrescentar opções-isca aumenta o número de alternativas; pré-selecionar o que convém ao negócio transforma a opção predefinida numa armadilha. Práticas desse tipo, às vezes chamadas de padrões obscuros (:foreign[dark patterns]{lang=en}), não são erros de projeto: são custos de decisão transferidos deliberadamente para o usuário, sem o seu consentimento.
 
-O modelo não basta para condená-las — a condenação é ética —, mas ajuda a torná-las visíveis e, em princípio, mensuráveis. E a :concept[carga cognitiva]{id=cognitive-load} não se distribui igualmente: um excesso que custa frações de segundo a quem está descansado e conhece o produto pode custar bem mais — plausivelmente também em erros — a quem tem pouco tempo, pouca atenção disponível ou pouca familiaridade com a :concept[interface]{id=interface}.
+O modelo não basta para condená-las — a condenação é ética —, mas ajuda a torná-las visíveis e, em princípio, mensuráveis. E a :concept[carga cognitiva]{ref=cognitive-load} não se distribui igualmente: um excesso que custa frações de segundo a quem está descansado e conhece o produto pode custar bem mais — plausivelmente também em erros — a quem tem pouco tempo, pouca atenção disponível ou pouca familiaridade com a :concept[interface]{ref=interface}.
 
 ## Valor como redução de incerteza {#valor .conclusion depends="redesenho,custo-imposto"}
 
-O percurso termina onde a ponte foi pensada para terminar. A filosofia perguntou para quem um signo significa; a teoria ofereceu um modelo de escolha; o formalismo estabeleceu um limite — a entropia é o mínimo que qualquer organização pode cobrar de quem já aprendeu —; e o estrato do valor pergunta o que fazer com isso. A resposta proposta aqui é modesta: um :concept[produto]{id=product} tem valor, neste sentido estreito, quando reduz a incerteza de alguém a um custo que essa pessoa aceitaria pagar. Os bits medem parte do custo; não dizem quem deve pagá-lo. Essa decisão continua sendo nossa — e é por isso que a ponte volta, no fim, ao [primeiro ensaio](../do-signo-a-informacao/): o significado que a teoria pôs entre parênteses reaparece como a pergunta sobre para quem, afinal, a escolha importa.
+O percurso termina onde a ponte foi pensada para terminar. A filosofia perguntou para quem um signo significa; a teoria ofereceu um modelo de escolha; o formalismo estabeleceu um limite — a entropia é o mínimo que qualquer organização pode cobrar de quem já aprendeu —; e o estrato do valor pergunta o que fazer com isso. A resposta proposta aqui é modesta: um :concept[produto]{ref=product} tem valor, neste sentido estreito, quando reduz a incerteza de alguém a um custo que essa pessoa aceitaria pagar. Os bits medem parte do custo; não dizem quem deve pagá-lo. Essa decisão continua sendo nossa — e é por isso que a ponte volta, no fim, ao [primeiro ensaio](../do-signo-a-informacao/): o significado que a teoria pôs entre parênteses reaparece como a pergunta sobre para quem, afinal, a escolha importa.
 
 ::bibliography

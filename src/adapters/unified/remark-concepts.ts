@@ -1,7 +1,7 @@
 /**
  * Remark stage "concepts" (see pipeline.ts for its place in the pipeline).
  *
- *   :concept[texto]{id=entropy}   → <ft-concept-preview data-…><a href="…/conceitos/entropia/">texto</a></ft-concept-preview>
+ *   :concept[texto]{ref=entropy}   → <ft-concept-preview data-…><a href="…/conceitos/entropia/">texto</a></ft-concept-preview>
  *   :concept[entropia]            → the same, the id found by label/altLabel in the document locale
  *   ::concept-map{focus=entropy depth=2}
  *                                 → <ft-concept-map> with an inline SVG of the neighbourhood, laid out at build
@@ -42,7 +42,7 @@ export interface RemarkConceptsOptions {
 type Directive = Extract<RootContent, { type: 'textDirective' | 'leafDirective' | 'containerDirective' }>;
 
 const ATTRIBUTES: Readonly<Record<string, readonly string[]>> = {
-  concept: ['id'],
+  concept: ['ref'],
   'concept-map': ['focus', 'depth'],
 };
 
@@ -73,7 +73,8 @@ export function remarkConcepts(options: RemarkConceptsOptions) {
     let maps = 0;
     const locale = (node: Directive): Locale => {
       const l = documentLocale(file);
-      if (l === null) file.fail('concepts: the document has no valid `lang` in its frontmatter', node, 'concepts:no-locale');
+      if (l === null)
+        file.fail('concepts: the document has no valid `lang` in its frontmatter', node, 'concepts:no-locale');
       return l;
     };
     const href = (id: ConceptId, l: Locale): string => {
@@ -86,7 +87,10 @@ export function remarkConcepts(options: RemarkConceptsOptions) {
       const parsed = parseConceptId(raw);
       if (!parsed.ok || !index.entries.has(parsed.value)) {
         const suggestions = index.lookup(raw, 'en');
-        const hint = suggestions.kind === 'unknown' && suggestions.suggestions.length > 0 ? ` (did you mean ${suggestions.suggestions.join(', ')}?)` : '';
+        const hint =
+          suggestions.kind === 'unknown' && suggestions.suggestions.length > 0
+            ? ` (did you mean ${suggestions.suggestions.join(', ')}?)`
+            : '';
         file.fail(`concepts: unknown concept ${attribute} "${raw}"${hint}`, node, 'concepts:unknown-id');
       }
       return parsed.value;
@@ -94,8 +98,21 @@ export function remarkConcepts(options: RemarkConceptsOptions) {
     const checkAttributes = (node: Directive): void => {
       const allowed = ATTRIBUTES[node.name] ?? [];
       for (const key of Object.keys(node.attributes ?? {})) {
+        // `id` is the element-id namespace of the reading stage ({#id}); a concept
+        // reference is a different thing, so it has its own attribute name.
+        if (node.name === 'concept' && key === 'id') {
+          file.fail(
+            `concepts: :concept takes {ref=…}, not {id=…} (id is an HTML element id): write :concept[${toString(node)}]{ref=${node.attributes?.['id'] ?? '…'}}`,
+            node,
+            'concepts:id-attribute',
+          );
+        }
         if (!allowed.includes(key)) {
-          file.fail(`concepts: :${node.name} does not accept the attribute "${key}" (allowed: ${allowed.join(', ')})`, node, 'concepts:unknown-attribute');
+          file.fail(
+            `concepts: :${node.name} does not accept the attribute "${key}" (allowed: ${allowed.join(', ')})`,
+            node,
+            'concepts:unknown-attribute',
+          );
         }
       }
     };
@@ -108,7 +125,11 @@ export function remarkConcepts(options: RemarkConceptsOptions) {
         return !r.ok || !index.entries.has(r.value);
       });
       if (unknown.length > 0) {
-        file.fail(`concepts: frontmatter lists unknown concept(s): ${unknown.map(String).join(', ')}`, undefined, 'concepts:unknown-frontmatter');
+        file.fail(
+          `concepts: frontmatter lists unknown concept(s): ${unknown.map(String).join(', ')}`,
+          undefined,
+          'concepts:unknown-frontmatter',
+        );
       }
     }
 
@@ -121,20 +142,33 @@ export function remarkConcepts(options: RemarkConceptsOptions) {
           file.fail('concepts: :concept cannot be placed inside a link', node, 'concepts:nested-link');
         }
         const label = toString(node);
-        if (label.trim().length === 0) file.fail('concepts: :concept needs a visible label, e.g. :concept[entropia]{id=entropy}', node, 'concepts:empty-label');
+        if (label.trim().length === 0)
+          file.fail(
+            'concepts: :concept needs a visible label, e.g. :concept[entropia]{ref=entropy}',
+            node,
+            'concepts:empty-label',
+          );
         const l = locale(node);
-        const explicit = node.attributes?.['id'];
+        const explicit = node.attributes?.['ref'];
         let id: ConceptId;
         if (typeof explicit === 'string' && explicit.length > 0) {
-          id = resolveId(explicit, node, 'id');
+          id = resolveId(explicit, node, 'ref');
         } else {
           const found = index.lookup(label, l);
           if (found.kind === 'ambiguous') {
-            file.fail(`concepts: "${label}" is ambiguous in ${l} (${found.ids.join(', ')}); add {id=…}`, node, 'concepts:ambiguous-label');
+            file.fail(
+              `concepts: "${label}" is ambiguous in ${l} (${found.ids.join(', ')}); add {ref=…}`,
+              node,
+              'concepts:ambiguous-label',
+            );
           }
           if (found.kind === 'unknown') {
             const hint = found.suggestions.length > 0 ? ` (did you mean ${found.suggestions.join(', ')}?)` : '';
-            file.fail(`concepts: no concept is labelled "${label}" in ${l}${hint}; add {id=…}`, node, 'concepts:unknown-label');
+            file.fail(
+              `concepts: no concept is labelled "${label}" in ${l}${hint}; add {ref=…}`,
+              node,
+              'concepts:unknown-label',
+            );
           }
           id = found.id;
         }
@@ -170,17 +204,26 @@ export function remarkConcepts(options: RemarkConceptsOptions) {
       }
       if (node.name === 'concept-map') {
         if (node.type !== 'leafDirective') {
-          file.fail('concepts: concept-map is a leaf directive: write ::concept-map{focus=… depth=…}', node, 'concepts:map-kind');
+          file.fail(
+            'concepts: concept-map is a leaf directive: write ::concept-map{focus=… depth=…}',
+            node,
+            'concepts:map-kind',
+          );
         }
         checkAttributes(node);
         const l = locale(node);
         const focusRaw = node.attributes?.['focus'];
         if (typeof focusRaw !== 'string' || focusRaw.length === 0) {
-          file.fail('concepts: ::concept-map needs a focus, e.g. ::concept-map{focus=entropy depth=2}', node, 'concepts:map-focus');
+          file.fail(
+            'concepts: ::concept-map needs a focus, e.g. ::concept-map{focus=entropy depth=2}',
+            node,
+            'concepts:map-focus',
+          );
         }
         const focus = resolveId(focusRaw, node, 'focus');
         const depthRaw = node.attributes?.['depth'] ?? '1';
-        if (!/^[1-3]$/u.test(depthRaw)) file.fail(`concepts: ::concept-map depth must be 1, 2 or 3 (got "${depthRaw}")`, node, 'concepts:map-depth');
+        if (!/^[1-3]$/u.test(depthRaw))
+          file.fail(`concepts: ::concept-map depth must be 1, 2 or 3 (got "${depthRaw}")`, node, 'concepts:map-depth');
         const depth = Number(depthRaw);
         const graph = index.ontology.graph;
         const ids = localMapIds(graph, focus, depth);

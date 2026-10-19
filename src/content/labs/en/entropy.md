@@ -38,10 +38,10 @@ widget: entropy
 theorem: Source coding theorem
 ---
 
-Type a text. The lab counts how often each symbol occurs, computes the :concept[entropy]{id=entropy} of that distribution and builds a :concept[Huffman code]{id=huffman-code} for it. The question is how much a code can save — and the theorem gives a precise answer.
+Type a text. The lab counts how often each symbol occurs, computes the :concept[entropy]{ref=entropy} of that distribution and builds a :concept[Huffman code]{ref=huffman-code} for it. The question is how much a code can save — and the theorem gives a precise answer.
 
 ::::theorem{#thm:source title="Source coding"}
-Let $$X$$ be a source with probabilities $$p_1, \dots, p_m$$ and entropy $$\H(X) = -\sum_i p_i \log_2 p_i$$. The smallest mean length $$L^* = \min \sum_i p_i \ell_i$$ among binary :concept[prefix codes]{id=prefix-code} for $$X$$ satisfies
+Let $$X$$ be a source with probabilities $$p_1, \dots, p_m$$ and entropy $$\H(X) = -\sum_i p_i \log_2 p_i$$. The smallest mean length $$L^* = \min \sum_i p_i \ell_i$$ among binary :concept[prefix codes]{ref=prefix-code} for $$X$$ satisfies
 
 $$
 \H(X) \leq L^* < \H(X) + 1,
@@ -51,7 +51,7 @@ $$
 and Huffman's algorithm constructs a code with mean length $$L^*$$ [@huffman1952].
 
 :::proof
-Sketch. The lengths of any binary prefix code obey :concept[Kraft's inequality]{id=kraft-inequality}, $$\sum_i 2^{-\ell_i} \leq 1$$; together with the information inequality this gives $$\sum_i p_i \ell_i \geq \H(X)$$. In the other direction, the lengths $$\ell_i = \lceil \log_2 (1/p_i) \rceil$$ satisfy Kraft's inequality and have a mean below $$\H(X) + 1$$ [@cover2006, ch. 5].
+Sketch. The lengths of any binary prefix code obey :concept[Kraft's inequality]{ref=kraft-inequality}, $$\sum_i 2^{-\ell_i} \leq 1$$; together with the information inequality this gives $$\sum_i p_i \ell_i \geq \H(X)$$. In the other direction, the lengths $$\ell_i = \lceil \log_2 (1/p_i) \rceil$$ satisfy Kraft's inequality and have a mean below $$\H(X) + 1$$ [@cover2006, ch. 5].
 :::
 ::::
 
@@ -71,6 +71,6 @@ The control is the text box.
 
 ## Limits of the model
 
-The lab treats each symbol in isolation, as if it were drawn afresh at every position. Natural languages do not work that way: much of their :concept[redundancy]{id=redundancy} lies in the dependencies between neighbouring symbols, which only models with context can capture [@shannon1948]. A short text, moreover, is a noisy estimate of the source that produced it. Coding symbol by symbol can waste up to 1 bit; coding blocks of $$n$$ symbols reduces the waste to less than $$1/n$$ bits per symbol [@cover2006, ch. 5]. Finally, the receiver has to know the code, and sending the table costs something too. Depending on how the text is split into symbols, accented letters may count as one symbol or as two. The essay [Choosing costs bits](../../essays/choosing-costs-bits/) applies these ideas to the organisation of menus.
+The lab treats each symbol in isolation, as if it were drawn afresh at every position. Natural languages do not work that way: much of their :concept[redundancy]{ref=redundancy} lies in the dependencies between neighbouring symbols, which only models with context can capture [@shannon1948]. A short text, moreover, is a noisy estimate of the source that produced it. Coding symbol by symbol can waste up to 1 bit; coding blocks of $$n$$ symbols reduces the waste to less than $$1/n$$ bits per symbol [@cover2006, ch. 5]. Finally, the receiver has to know the code, and sending the table costs something too. Depending on how the text is split into symbols, accented letters may count as one symbol or as two. The essay [Choosing costs bits](../../essays/choosing-costs-bits/) applies these ideas to the organisation of menus.
 
 ::bibliography

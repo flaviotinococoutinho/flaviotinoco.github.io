@@ -13,7 +13,12 @@ import { unified } from 'unified';
 import { VFile } from 'vfile';
 import type { Root } from 'mdast';
 import { toString } from 'mdast-util-to-string';
-import { CONCEPTS_DIR, indexConcepts, loadConcepts, readRawConcepts } from '../../../src/adapters/unified/load-concepts.ts';
+import {
+  CONCEPTS_DIR,
+  indexConcepts,
+  loadConcepts,
+  readRawConcepts,
+} from '../../../src/adapters/unified/load-concepts.ts';
 import { markupToHast, remarkConcepts } from '../../../src/adapters/unified/remark-concepts.ts';
 import type { PipelineContext } from '../../../src/adapters/unified/context.ts';
 import { el } from '../../../src/core/ontology/markup.ts';
@@ -33,7 +38,10 @@ const run = (markdown: string, frontmatter: Record<string, unknown> = { lang: 'p
   const tree = processor.runSync(processor.parse(file), file) as unknown;
   return { html: processor.stringify(tree as never, file), file };
 };
-const mdast = (markdown: string, frontmatter: Record<string, unknown> = { lang: 'pt-BR' }): { tree: Root; file: VFile } => {
+const mdast = (
+  markdown: string,
+  frontmatter: Record<string, unknown> = { lang: 'pt-BR' },
+): { tree: Root; file: VFile } => {
   const file = new VFile({ value: markdown, data: { astro: { frontmatter } } });
   const processor = unified().use(remarkParse).use(remarkDirective).use(remarkConcepts, { context });
   return { tree: processor.runSync(processor.parse(file), file) as Root, file };
@@ -60,7 +68,9 @@ describe('loader', () => {
     expect(error).toContain('broader cycle: a → b → a');
     expect(error).toContain('formalizes');
     expect(error).toContain('a proposition');
-    await expect(readRawConcepts(new URL('tests/fixtures/ontology/invalid-json/', ROOT))).rejects.toThrow(/not valid JSON/u);
+    await expect(readRawConcepts(new URL('tests/fixtures/ontology/invalid-json/', ROOT))).rejects.toThrow(
+      /not valid JSON/u,
+    );
   });
 
   it('prints topological warnings without failing', () => {
@@ -85,43 +95,48 @@ describe('loader', () => {
 describe(':concept', () => {
   it('links to the concept route (base-aware) and keeps the label verbatim', () => {
     const { html, file } = run(readFileSync(new URL('tests/fixtures/ontology/docs/pt.md', ROOT), 'utf8'));
-    expect(html).toContain('<a href="/site/pt/conceitos/entropia/" class="concept-link" data-concept="entropy">entropia</a>');
+    expect(html).toContain(
+      '<a href="/site/pt/conceitos/entropia/" class="concept-link" data-concept="entropy">entropia</a>',
+    );
     expect(html).toContain('<ft-concept-preview class="concept-ref" data-concept="entropy" data-label="Entropia"');
     expect(html).toContain('data-stratum-label="Teoria"');
     expect(html).toContain('data-category-label="Medida"');
     // Without id: found by altLabel in the document locale.
     expect(html).toContain('data-concept="entropy">Entropia de Shannon</a>');
     // Inline code is never touched.
-    expect(html).toContain('<code>:concept[x]{id=nada}</code>');
-    expect(file.data.astro?.frontmatter?.['conceptsUsed']).toEqual(expect.arrayContaining(['entropy', 'information', 'mutual-information']));
+    expect(html).toContain('<code>:concept[x]{ref=nada}</code>');
+    expect(file.data.astro?.frontmatter?.['conceptsUsed']).toEqual(
+      expect.arrayContaining(['entropy', 'information', 'mutual-information']),
+    );
   });
 
   it('uses the English route in English documents', () => {
-    const { html } = run(':concept[entropy]{id=entropy}', { lang: 'en' });
+    const { html } = run(':concept[entropy]{ref=entropy}', { lang: 'en' });
     expect(html).toContain('href="/site/en/concepts/entropy/"');
     expect(html).toContain('data-open-label="Open the concept"');
   });
 
-  test.prop([fc.stringMatching(/^[A-Za-zÀ-ú0-9 ,.;'"!?()-]{1,40}$/u).filter((s) => s.trim().length > 0 && !/[[\]\\]/u.test(s))])(
-    'leaves the plain text of the document unchanged (information preservation)',
-    (label) => {
-      const source = `Antes :concept[${label}]{id=entropy} depois.`;
-      const before = toString(unified().use(remarkParse).use(remarkDirective).parse(source));
-      const { tree } = mdast(source);
-      expect(toString(tree)).toBe(before);
-      const node = (tree.children[0] as { children: { data?: { hName?: string } }[] }).children.find(
-        (c) => c.data?.hName === 'ft-concept-preview',
-      );
-      expect(node).toBeDefined();
-    },
-  );
+  test.prop([
+    fc.stringMatching(/^[A-Za-zÀ-ú0-9 ,.;'"!?()-]{1,40}$/u).filter((s) => s.trim().length > 0 && !/[[\]\\]/u.test(s)),
+  ])('leaves the plain text of the document unchanged (information preservation)', (label) => {
+    const source = `Antes :concept[${label}]{ref=entropy} depois.`;
+    const before = toString(unified().use(remarkParse).use(remarkDirective).parse(source));
+    const { tree } = mdast(source);
+    expect(toString(tree)).toBe(before);
+    const node = (tree.children[0] as { children: { data?: { hName?: string } }[] }).children.find(
+      (c) => c.data?.hName === 'ft-concept-preview',
+    );
+    expect(node).toBeDefined();
+  });
 
   it.each([
-    [':concept[x]{id=nada}', /unknown concept id "nada"/u],
+    [':concept[x]{ref=nada}', /unknown concept ref "nada"/u],
     [':concept[coisa inexistente]', /no concept is labelled "coisa inexistente"/u],
-    [':concept[]{id=entropy}', /needs a visible label/u],
-    [':concept[entropia]{id=entropy kind=x}', /does not accept the attribute "kind"/u],
-    ['[ver :concept[entropia]{id=entropy}](https://example.org)', /inside a link/u],
+    [':concept[]{ref=entropy}', /needs a visible label/u],
+    [':concept[entropia]{ref=entropy kind=x}', /does not accept the attribute "kind"/u],
+    // `id` is the element-id namespace (reading stage): the message names the right attribute.
+    [':concept[entropia]{id=entropy}', /takes \{ref=…\}, not \{id=…\}.*:concept\[entropia\]\{ref=entropy\}/u],
+    ['[ver :concept[entropia]{ref=entropy}](https://example.org)', /inside a link/u],
   ])('fails the build on %s', (markdown, message) => {
     expect(() => run(markdown)).toThrow(message);
   });
@@ -132,13 +147,18 @@ describe(':concept', () => {
       lookup: () => ({ kind: 'ambiguous' as const, key: 'x', ids: ['a', 'b'] as never }),
     };
     const file = new VFile({ value: ':concept[x]', data: { astro: { frontmatter: { lang: 'pt-BR' } } } });
-    const processor = unified().use(remarkParse).use(remarkDirective).use(remarkConcepts, { context: { ...context, concepts: ambiguous } });
+    const processor = unified()
+      .use(remarkParse)
+      .use(remarkDirective)
+      .use(remarkConcepts, { context: { ...context, concepts: ambiguous } });
     expect(() => processor.runSync(processor.parse(file), file)).toThrow(/ambiguous/u);
-    expect(() => run(':concept[entropia]{id=entropy}', {})).toThrow(/no valid `lang`/u);
+    expect(() => run(':concept[entropia]{ref=entropy}', {})).toThrow(/no valid `lang`/u);
   });
 
   it('validates the frontmatter `concepts` list', () => {
-    expect(() => run('Texto.', { lang: 'pt-BR', concepts: ['entropy', 'nada'] })).toThrow(/unknown concept\(s\): nada/u);
+    expect(() => run('Texto.', { lang: 'pt-BR', concepts: ['entropy', 'nada'] })).toThrow(
+      /unknown concept\(s\): nada/u,
+    );
     expect(() => run('Texto.', { lang: 'pt-BR', concepts: ['entropy'] })).not.toThrow();
   });
 });
@@ -146,7 +166,9 @@ describe(':concept', () => {
 describe('::concept-map', () => {
   it('renders the neighbourhood as an inline SVG inside <ft-concept-map>', () => {
     const { html, file } = run('::concept-map{focus=information depth=2}');
-    expect(html).toMatch(/^<ft-concept-map class="cmap cmap--local" data-map-id="cmap-information-1" data-focus="information">/u);
+    expect(html).toMatch(
+      /^<ft-concept-map class="cmap cmap--local" data-map-id="cmap-information-1" data-focus="information">/u,
+    );
     expect(html).toContain('<svg class="cmap__svg" viewBox=');
     expect(html).toContain('href="/site/pt/conceitos/informacao/"');
     expect(html).toContain('Vizinhança de “Informação”, até 2 passos de distância.');
@@ -169,7 +191,9 @@ describe('::concept-map', () => {
   });
 
   it('converts markup to hast in the right namespace', () => {
-    const node = markupToHast(el('div', { class: 'x', hidden: true }, el('svg', { viewBox: '0 0 1 1' }, el('use', { href: '#g' }))));
+    const node = markupToHast(
+      el('div', { class: 'x', hidden: true }, el('svg', { viewBox: '0 0 1 1' }, el('use', { href: '#g' }))),
+    );
     expect(node).toMatchObject({ type: 'element', tagName: 'div', properties: { className: ['x'], hidden: true } });
     const svg = (node as { children: { tagName: string; properties: Record<string, unknown> }[] }).children[0];
     expect(svg?.properties['viewBox']).toBe('0 0 1 1');

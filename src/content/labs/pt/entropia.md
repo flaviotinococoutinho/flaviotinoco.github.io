@@ -38,10 +38,10 @@ widget: entropy
 theorem: Teorema da codificação de fonte
 ---
 
-Digite um texto. O laboratório conta quantas vezes cada símbolo aparece, calcula a :concept[entropia]{id=entropy} dessa distribuição e constrói um :concept[código de Huffman]{id=huffman-code} para ela. A pergunta é quanto um código pode economizar — e o teorema responde com precisão.
+Digite um texto. O laboratório conta quantas vezes cada símbolo aparece, calcula a :concept[entropia]{ref=entropy} dessa distribuição e constrói um :concept[código de Huffman]{ref=huffman-code} para ela. A pergunta é quanto um código pode economizar — e o teorema responde com precisão.
 
 ::::theorem{#thm:fonte title="Codificação de fonte"}
-Seja $$X$$ uma fonte com probabilidades $$p_1, \dots, p_m$$ e entropia $$\H(X) = -\sum_i p_i \log_2 p_i$$. O menor comprimento médio $$L^* = \min \sum_i p_i \ell_i$$ entre os :concept[códigos de prefixo]{id=prefix-code} binários para $$X$$ satisfaz
+Seja $$X$$ uma fonte com probabilidades $$p_1, \dots, p_m$$ e entropia $$\H(X) = -\sum_i p_i \log_2 p_i$$. O menor comprimento médio $$L^* = \min \sum_i p_i \ell_i$$ entre os :concept[códigos de prefixo]{ref=prefix-code} binários para $$X$$ satisfaz
 
 $$
 \H(X) \leq L^* < \H(X) + 1,
@@ -51,7 +51,7 @@ $$
 e o algoritmo de Huffman constrói um código com comprimento médio $$L^*$$ [@huffman1952].
 
 :::proof
-Esboço. Os comprimentos de qualquer código de prefixo binário obedecem à :concept[desigualdade de Kraft]{id=kraft-inequality}, $$\sum_i 2^{-\ell_i} \leq 1$$; daí e da desigualdade da informação resulta $$\sum_i p_i \ell_i \geq \H(X)$$. Na outra direção, os comprimentos $$\ell_i = \lceil \log_2 (1/p_i) \rceil$$ satisfazem a desigualdade de Kraft e têm média menor que $$\H(X) + 1$$ [@cover2006, cap. 5].
+Esboço. Os comprimentos de qualquer código de prefixo binário obedecem à :concept[desigualdade de Kraft]{ref=kraft-inequality}, $$\sum_i 2^{-\ell_i} \leq 1$$; daí e da desigualdade da informação resulta $$\sum_i p_i \ell_i \geq \H(X)$$. Na outra direção, os comprimentos $$\ell_i = \lceil \log_2 (1/p_i) \rceil$$ satisfazem a desigualdade de Kraft e têm média menor que $$\H(X) + 1$$ [@cover2006, cap. 5].
 :::
 ::::
 
@@ -71,6 +71,6 @@ O controle é a caixa de texto.
 
 ## Limites do modelo
 
-O laboratório trata cada símbolo isoladamente, como se fosse sorteado de novo a cada posição. As línguas não funcionam assim: boa parte de sua :concept[redundância]{id=redundancy} está nas dependências entre símbolos vizinhos, que só modelos com contexto capturam [@shannon1948]. Um texto curto, além disso, é uma estimativa ruidosa da fonte que o produziu. Codificar símbolo a símbolo pode desperdiçar até 1 bit; codificar blocos de $$n$$ símbolos reduz esse desperdício para menos de $$1/n$$ bit por símbolo [@cover2006, cap. 5]. Por fim, quem recebe a mensagem precisa conhecer o código, e transmitir a tabela também custa. Conforme o modo como o texto é dividido em símbolos, letras acentuadas podem contar como um ou como dois símbolos. O ensaio [Escolher custa bits](../../ensaios/escolher-custa-bits/) aplica essas ideias à organização de menus.
+O laboratório trata cada símbolo isoladamente, como se fosse sorteado de novo a cada posição. As línguas não funcionam assim: boa parte de sua :concept[redundância]{ref=redundancy} está nas dependências entre símbolos vizinhos, que só modelos com contexto capturam [@shannon1948]. Um texto curto, além disso, é uma estimativa ruidosa da fonte que o produziu. Codificar símbolo a símbolo pode desperdiçar até 1 bit; codificar blocos de $$n$$ símbolos reduz esse desperdício para menos de $$1/n$$ bit por símbolo [@cover2006, cap. 5]. Por fim, quem recebe a mensagem precisa conhecer o código, e transmitir a tabela também custa. Conforme o modo como o texto é dividido em símbolos, letras acentuadas podem contar como um ou como dois símbolos. O ensaio [Escolher custa bits](../../ensaios/escolher-custa-bits/) aplica essas ideias à organização de menus.
 
 ::bibliography

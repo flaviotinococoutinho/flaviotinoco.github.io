@@ -206,9 +206,9 @@ export const checkDocument = (doc: Doc, corpus: readonly Doc[]): string[] => {
         return 'skip';
       }
       case 'concept': {
-        const id = attr('id');
+        const id = attr('ref');
         if (id === undefined || !CONCEPT_IDS.has(id))
-          report(node, `concept id "${id ?? ''}" is not in the ontology list`);
+          report(node, `concept ref "${id ?? ''}" is not in the ontology list`);
         if (label.trim().length === 0) report(node, ':concept needs a visible label');
         break;
       }

@@ -172,7 +172,7 @@ Título acima ("Figura 1 – Título"), fonte abaixo ("Fonte: …"). Referência
 | `:::aside` | digressão destacada |
 | `::toc` | sumário do documento |
 | `## Título {#id .claim depends="def-1,premissa-2"}` | nó do grafo argumentativo (Toulmin, 1958) |
-| `:concept[entropia]{id=entropy}` | link ao conceito com prévia da definição |
+| `:concept[entropia]{ref=entropy}` | link ao conceito com prévia da definição |
 | `::concept-map{focus=entropy depth=2}` | subgrafo da ontologia |
 | `::lab{widget=sampling}` | laboratório interativo (WebAssembly) embutido |
 

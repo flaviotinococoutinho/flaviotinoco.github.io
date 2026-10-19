@@ -48,7 +48,7 @@ S_N(x) = \frac{4}{\pi} \sum_{j=1}^{N} \frac{\sin\big((2j - 1)x\big)}{2j - 1}
 \label{eq:soma-parcial}
 $$
 
-a soma parcial de sua :concept[série de Fourier]{id=fourier-series} com as $$N$$ primeiras harmônicas ímpares. Então $$S_N(x) \to q(x)$$ em todo ponto de continuidade, mas a crista de $$S_N$$ mais próxima do salto em $$x = 0$$ satisfaz
+a soma parcial de sua :concept[série de Fourier]{ref=fourier-series} com as $$N$$ primeiras harmônicas ímpares. Então $$S_N(x) \to q(x)$$ em todo ponto de continuidade, mas a crista de $$S_N$$ mais próxima do salto em $$x = 0$$ satisfaz
 
 $$
 \lim_{N \to \infty} S_N\!\left(\frac{\pi}{2N}\right) = \frac{2}{\pi} \int_0^{\pi} \frac{\sin t}{t} \d t \approx 1{,}17898.
@@ -64,7 +64,7 @@ O excesso é de cerca de $$0{,}179$$ sobre o patamar $$1$$, isto é, aproximadam
 
 ## Intuição
 
-Cada harmônica acrescenta detalhe numa escala menor. Para subir de $$-1$$ a $$1$$ numa distância da ordem de $$\pi/N$$, a soma finita precisa oscilar, e a primeira oscilação ultrapassa o alvo. Quando $$N$$ cresce, as oscilações se comprimem em direção ao salto, mas sua altura tende a um valor fixo: a convergência é pontual, não uniforme. Esse é o :concept[fenômeno de Gibbs]{id=gibbs-phenomenon}.
+Cada harmônica acrescenta detalhe numa escala menor. Para subir de $$-1$$ a $$1$$ numa distância da ordem de $$\pi/N$$, a soma finita precisa oscilar, e a primeira oscilação ultrapassa o alvo. Quando $$N$$ cresce, as oscilações se comprimem em direção ao salto, mas sua altura tende a um valor fixo: a convergência é pontual, não uniforme. Esse é o :concept[fenômeno de Gibbs]{ref=gibbs-phenomenon}.
 
 ## O que observar
 

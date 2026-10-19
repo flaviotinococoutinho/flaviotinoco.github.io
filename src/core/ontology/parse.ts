@@ -15,6 +15,7 @@
  * beyond canonical equivalence.
  */
 import { err, ok, type Result } from '../algebra/result.ts';
+import { show } from '../algebra/show.ts';
 import { parseCitationKey, parseConceptId, parseSlug, type ConceptId } from '../domain/identifiers.ts';
 import { LOCALES, type Locale } from '../domain/locale.ts';
 import { parseStratum } from '../domain/strata.ts';
@@ -69,7 +70,8 @@ const reporter = (id: string) => {
     if (!isRecord(v)) return fail(path, `expected an object with keys ${LOCALES.join(', ')}`);
     const errors: OntologyError[] = [];
     for (const key of Object.keys(v)) {
-      if (!(LOCALES as readonly string[]).includes(key)) errors.push({ kind: 'malformed', id, path, message: `unknown locale "${key}"` });
+      if (!(LOCALES as readonly string[]).includes(key))
+        errors.push({ kind: 'malformed', id, path, message: `unknown locale "${key}"` });
     }
     const out: Partial<Record<Locale, T>> = {};
     for (const locale of LOCALES) {
@@ -93,7 +95,7 @@ const reporter = (id: string) => {
 
   const iri = (v: unknown, path: string): Field<string> => {
     if (typeof v !== 'string' || !/^https?:\/\/\S+$/u.test(v) || !URL.canParse(v)) {
-      return fail(path, `expected an absolute http(s) IRI, got ${JSON.stringify(v)}`);
+      return fail(path, `expected an absolute http(s) IRI, got "${show(v)}"`);
     }
     return ok(v);
   };
@@ -103,7 +105,8 @@ const reporter = (id: string) => {
     if (!isRecord(v)) return fail(path, 'expected an object { "type", "target" }');
     const errors: OntologyError[] = [];
     for (const key of Object.keys(v)) {
-      if (key !== 'type' && key !== 'target') errors.push({ kind: 'malformed', id, path: `${path}.${key}`, message: 'unknown key' });
+      if (key !== 'type' && key !== 'target')
+        errors.push({ kind: 'malformed', id, path: `${path}.${key}`, message: 'unknown key' });
     }
     const type = lift(parseLinkType)(v['type'], `${path}.type`);
     const target = lift(parseConceptId)(v['target'], `${path}.target`);
@@ -121,14 +124,15 @@ const reporter = (id: string) => {
  */
 export const parseConceptEntry = (id: unknown, raw: unknown): Result<ConceptEntry, readonly OntologyError[]> => {
   const conceptId = parseConceptId(id);
-  const name = typeof id === 'string' ? id : String(id);
+  const name = show(id);
   const p = reporter(name);
   if (!conceptId.ok) return p.fail('', conceptId.error);
   if (!isRecord(raw)) return p.fail('', 'expected a JSON object');
 
   const errors: OntologyError[] = [];
   for (const key of Object.keys(raw)) {
-    if (!(KEYS as readonly string[]).includes(key)) errors.push({ kind: 'malformed', id: name, path: key, message: 'unknown key' });
+    if (!(KEYS as readonly string[]).includes(key))
+      errors.push({ kind: 'malformed', id: name, path: key, message: 'unknown key' });
   }
   for (const key of REQUIRED) {
     if (!(key in raw)) errors.push({ kind: 'malformed', id: name, path: key, message: 'required' });

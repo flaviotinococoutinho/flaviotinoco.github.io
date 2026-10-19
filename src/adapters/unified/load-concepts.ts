@@ -13,6 +13,7 @@
  * an id (NFC, case-insensitive, per locale; see src/core/ontology/labels.ts).
  */
 import { readdir, readFile } from 'node:fs/promises';
+import { show } from '../../core/algebra/show.ts';
 import type { ConceptId, Slug } from '../../core/domain/identifiers.ts';
 import type { Locale } from '../../core/domain/locale.ts';
 import type { Stratum } from '../../core/domain/strata.ts';
@@ -57,14 +58,17 @@ export const readRawConcepts = async (dir: URL): Promise<readonly RawConcept[]> 
       try {
         return { id: file.slice(0, -'.json'.length), data: JSON.parse(text) as unknown };
       } catch (e: unknown) {
-        throw new Error(`concepts: ${file} is not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
+        throw new Error(`concepts: ${file} is not valid JSON: ${e instanceof Error ? e.message : show(e)}`);
       }
     }),
   );
 };
 
 /** Builds the index from raw concepts, throwing one error that lists every problem. */
-export const indexConcepts = (raws: readonly RawConcept[], warn: (message: string) => void = console.warn): ConceptIndex => {
+export const indexConcepts = (
+  raws: readonly RawConcept[],
+  warn: (message: string) => void = console.warn,
+): ConceptIndex => {
   const built = buildOntology(raws);
   if (!built.ok) {
     const lines = built.error.map((e) => `  - ${describeError(e)}`);

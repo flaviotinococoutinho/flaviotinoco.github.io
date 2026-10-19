@@ -27,6 +27,7 @@
  */
 import { absurd } from '../algebra/match.ts';
 import { err, ok, type Result } from '../algebra/result.ts';
+import { show } from '../algebra/show.ts';
 import { STRATUM_SPECS, type Stratum } from '../domain/strata.ts';
 
 // ─── Categories (ontological kinds) ─────────────────────────────────────────
@@ -52,7 +53,7 @@ export const isCategory = (v: unknown): v is Category =>
   typeof v === 'string' && (CATEGORIES as readonly string[]).includes(v);
 
 export const parseCategory = (v: unknown): Result<Category, string> =>
-  isCategory(v) ? ok(v) : err(`unknown category "${String(v)}" (expected one of ${CATEGORIES.join(', ')})`);
+  isCategory(v) ? ok(v) : err(`unknown category "${show(v)}" (expected one of ${CATEGORIES.join(', ')})`);
 
 /** Display order of categories (from the most concrete kind to the most abstract one, as in a top-level ontology). */
 export const CATEGORY_DISPLAY_ORDER: readonly Category[] = [
@@ -104,7 +105,7 @@ export const parseLinkType = (v: unknown): Result<LinkType, string> => {
   if (v === 'narrower' || v === 'hasPart' || v === 'prerequisiteOf' || v === 'formalizedBy' || v === 'appliedFrom') {
     return err(`"${v}" is a derived inverse and is never stored; write the relation on the other concept`);
   }
-  return err(`unknown relation type "${String(v)}" (expected one of ${LINK_TYPES.join(', ')})`);
+  return err(`unknown relation type "${show(v)}" (expected one of ${LINK_TYPES.join(', ')})`);
 };
 
 /**

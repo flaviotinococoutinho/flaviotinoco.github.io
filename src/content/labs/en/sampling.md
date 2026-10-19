@@ -53,7 +53,7 @@ The series in :eqref[eq:interpolation] is the cardinal function studied by @whit
 
 ## Intuition
 
-A signal with no frequencies above $$B$$ cannot change to a substantially new value in less than half a cycle of its highest frequency [@shannon1949]. Two samples per cycle of that frequency therefore capture everything it can do. Below that pace, different frequencies start producing the same samples, and reconstruction picks the lowest of them: this is :concept[aliasing]{id=aliasing}. For a sinusoid of frequency $$f$$, the apparent frequency is
+A signal with no frequencies above $$B$$ cannot change to a substantially new value in less than half a cycle of its highest frequency [@shannon1949]. Two samples per cycle of that frequency therefore capture everything it can do. Below that pace, different frequencies start producing the same samples, and reconstruction picks the lowest of them: this is :concept[aliasing]{ref=aliasing}. For a sinusoid of frequency $$f$$, the apparent frequency is
 
 $$
 f_a = \left| f - k f_s \right|, \qquad k = \operatorname{round}\!\left(\frac{f}{f_s}\right).
@@ -74,6 +74,6 @@ The main control is the sampling rate $$f_s$$; the frequency $$f$$ of the sinuso
 
 ## Limits of the model
 
-The :concept[sampling theorem]{id=sampling-theorem} assumes a band-limited signal; a pure sinusoid does not have finite energy, and no real signal is limited in both band and time. The interpolation sum needs samples from the entire past and future; the lab truncates it, which is why the edges go wrong. Real samples are quantised to a finite number of bits and corrupted by noise. Finally, any components above $$f_s/2$$ that reach the converter fold onto the useful band and cannot be separated afterwards, which is why, in practice, signals are filtered before they are sampled.
+The :concept[sampling theorem]{ref=sampling-theorem} assumes a band-limited signal; a pure sinusoid does not have finite energy, and no real signal is limited in both band and time. The interpolation sum needs samples from the entire past and future; the lab truncates it, which is why the edges go wrong. Real samples are quantised to a finite number of bits and corrupted by noise. Finally, any components above $$f_s/2$$ that reach the converter fold onto the useful band and cannot be separated afterwards, which is why, in practice, signals are filtered before they are sampled.
 
 ::bibliography
