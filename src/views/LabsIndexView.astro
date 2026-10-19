@@ -1,21 +1,67 @@
 ---
-/** STUB view — replaced by the owning workstream (labs). */
+/**
+ * Labs index (route kind "labs"): the labs of a locale grouped by stratum in
+ * bridge order (philosophy → theory → formal → value), each with a static
+ * preview drawn at build time from the same pure functions as the lab
+ * (src/core/labs/thumbnails.ts), the result it makes tangible and its
+ * description. Works without JavaScript: the previews are inline SVG.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import LabCard from '../components/labs/LabCard.astro';
+import StratumLabel from '../components/reading/StratumLabel.astro';
 import type { Locale } from '../core/domain/locale.ts';
+import common from '../core/i18n/catalogs/common.ts';
+import labsCatalog from '../core/i18n/catalogs/labs.ts';
+import { groupByStratum } from '../core/reading/essay.ts';
+import { alternatesForAll, labs, routeOfLab } from '../adapters/astro/content.ts';
+import { href, useTranslations } from '../adapters/astro/i18n.ts';
+
 export interface Props {
   readonly locale: Locale;
 }
+
 const { locale } = Astro.props;
+const t = useTranslations(labsCatalog, locale);
+const tc = useTranslations(common, locale);
+const all = await labs(locale);
+const groups = groupByStratum(all, (l) => l.data.stratum);
+const alternates = alternatesForAll(() => ({ kind: 'labs' }));
+const title = tc('nav.labs');
 ---
 
-<BaseLayout
-  locale={locale}
-  title="LabsIndexView"
-  description="Placeholder page rendered by a view stub until its workstream lands."
-  alternates={{}}
-  noindex
->
-  <div class="page-grid">
-    <h1>LabsIndexView</h1>
+<BaseLayout locale={locale} title={title} description={t('index.lede')} alternates={alternates}>
+  <div class="page-grid labs-index">
+    <header class="labs-index__header">
+      <h1>{title}</h1>
+      <p class="labs-index__lede">{t('index.lede')}</p>
+    </header>
+    {all.length === 0 ? (
+      <p class="labs-index__empty">{t('index.empty')}</p>
+    ) : (
+      groups.map((g) => (
+        <section class="labs-index__stratum wide" data-stratum={g.stratum} aria-labelledby={`labs-${g.stratum}`}>
+          <h2 class="labs-index__stratum-title" id={`labs-${g.stratum}`}>
+            <a href={href({ kind: 'stratum', stratum: g.stratum }, locale)}>
+              <StratumLabel stratum={g.stratum} locale={locale} />
+            </a>
+          </h2>
+          <ul class="labs-index__list" role="list">
+            {g.items.map((l) => (
+              <li>
+                <LabCard
+                  locale={locale}
+                  href={href(routeOfLab(l), locale)}
+                  title={l.data.title}
+                  theorem={l.data.theorem}
+                  description={l.data.description}
+                  stratum={l.data.stratum}
+                  widget={l.data.widget}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    )}
   </div>
 </BaseLayout>
