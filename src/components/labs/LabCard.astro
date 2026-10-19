@@ -1,0 +1,45 @@
+---
+/**
+ * One lab in the labs index: build-time preview, simplex glyph of its stratum,
+ * title (link), the result the lab makes tangible and its description.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import type { Stratum } from '../../core/domain/strata.ts';
+import labsCatalog from '../../core/i18n/catalogs/labs.ts';
+import type { Widget } from '../../core/labs/widgets.ts';
+import { useTranslations } from '../../adapters/astro/i18n.ts';
+import StratumLabel from '../reading/StratumLabel.astro';
+import LabThumbnail from './LabThumbnail.astro';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly href: string;
+  readonly title: string;
+  /** Name of the theorem or law the lab makes tangible. */
+  readonly theorem: string;
+  readonly description: string;
+  readonly stratum: Stratum;
+  readonly widget: Widget;
+  /** Heading level of the title inside its list. */
+  readonly level?: 2 | 3 | 4;
+}
+
+const { locale, href, title, theorem, description, stratum, widget, level = 3 } = Astro.props;
+const t = useTranslations(labsCatalog, locale);
+const Heading = `h${level}` as const;
+---
+
+<article class="lab-card" data-stratum={stratum} data-widget={widget}>
+  <LabThumbnail widget={widget} />
+  <div class="lab-card__body">
+    <StratumLabel stratum={stratum} locale={locale} quiet />
+    <Heading class="lab-card__title">
+      <a href={href}>{title}</a>
+    </Heading>
+    <p class="lab-card__theorem">
+      <span class="lab-card__theorem-label">{t('lab.theorem')}:</span>
+      {theorem}
+    </p>
+    <p class="lab-card__description">{description}</p>
+  </div>
+</article>

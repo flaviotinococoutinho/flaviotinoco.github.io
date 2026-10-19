@@ -1,0 +1,22 @@
+---
+/**
+ * Static preview of a lab for the labs index, drawn at build time by the same
+ * pure functions that shape the lab's plots (src/core/labs/thumbnails.ts).
+ * Decorative: the card's title, result and description carry the meaning.
+ */
+import { thumbnail } from '../../core/labs/thumbnails.ts';
+import type { Widget } from '../../core/labs/widgets.ts';
+
+export interface Props {
+  readonly widget: Widget;
+}
+
+const { widget } = Astro.props;
+const { width, height, shapes } = thumbnail(widget);
+---
+
+<svg class="lab-thumb" viewBox={`0 0 ${String(width)} ${String(height)}`} aria-hidden="true" focusable="false">
+  {shapes.map((s) => (
+    <path class={`lab-thumb__${s.role}`} d={s.d} />
+  ))}
+</svg>

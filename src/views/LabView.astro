@@ -1,22 +1,141 @@
 ---
-/** STUB view — replaced by the owning workstream (labs). */
+/**
+ * Lab page (route kind "lab").
+ *
+ * The result the lab makes tangible comes first, with its stratum; then the
+ * interactive element at full width, built from the entry's `widget` (never
+ * from the body) and keeping its state in the URL hash so a configuration can
+ * be linked; then the text, as on an essay page: epistemic status and
+ * provenance, abstract, body (theory, what to observe, references), the
+ * concepts the lab discusses and the related works of the ontology.
+ *
+ * Without JavaScript the element shows its fallback (what the lab shows and why
+ * it needs a script) and the text below stays complete. Ids used here are
+ * reserved for headings by src/core/reading/records.ts (PAGE_IDS).
+ */
+import { getEntry, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import MathAssets from '../components/MathAssets.astro';
+import RelatedWorks from '../components/ontology/RelatedWorks.astro';
+import AbstractBlock from '../components/reading/AbstractBlock.astro';
+import EpistemicStatus from '../components/reading/EpistemicStatus.astro';
+import StratumLabel from '../components/reading/StratumLabel.astro';
 import type { Locale } from '../core/domain/locale.ts';
+import { parseDocumentMeta } from '../core/fold/meta.ts';
+import common from '../core/i18n/catalogs/common.ts';
+import labsCatalog from '../core/i18n/catalogs/labs.ts';
+import reading from '../core/i18n/catalogs/reading.ts';
+import { labElementModel } from '../core/labs/embed.ts';
+import { isoDate, lastRevision } from '../core/reading/essay.ts';
+import { alternatesByKey, concepts, routeOfConcept } from '../adapters/astro/content.ts';
+import { formatDate, href, useTranslations } from '../adapters/astro/i18n.ts';
+
 export interface Props {
   readonly locale: Locale;
   readonly id: string;
 }
-const { locale } = Astro.props;
+
+const { locale, id } = Astro.props;
+const entry = await getEntry('labs', id);
+if (entry === undefined) throw new Error(`LabView: no lab with id "${id}"`);
+const { Content, remarkPluginFrontmatter } = await render(entry);
+const decoded = parseDocumentMeta(remarkPluginFrontmatter);
+if (!decoded.ok) throw new Error(`LabView: lab "${id}" has no reading metadata: ${decoded.error.join('; ')}`);
+const meta = decoded.value;
+const data = entry.data;
+
+const t = useTranslations(labsCatalog, locale);
+const tr = useTranslations(reading, locale);
+const tc = useTranslations(common, locale);
+const alternates = await alternatesByKey('labs', data.translationKey, (slug) => ({ kind: 'lab', slug }));
+const revised = lastRevision(data.published, data.revisions);
+
+// The element at full size: no link to itself, its state in the URL hash.
+const model = labElementModel(data.widget, locale, { state: '', link: null, permalink: true, title: data.theorem });
+const Widget = model.tag;
+const attributes = { ...model.attributes, class: `${model.attributes['class'] ?? 'lab'} lab--page` };
+
+// Concepts discussed: concept routes use the concept's slug in this locale.
+const conceptIndex = new Map((await concepts()).map((c) => [c.id, c]));
+const discussed = data.concepts.flatMap((cid) => {
+  const c = conceptIndex.get(cid);
+  return c === undefined ? [] : [{ href: href(routeOfConcept(c, locale), locale), label: c.data.prefLabel[locale] }];
+});
+
+const IDS = {
+  title: 'lab-title',
+  status: 'lab-status',
+  abstract: 'lab-abstract',
+  article: 'lab-article',
+  concepts: 'lab-concepts',
+} as const;
 ---
 
-<BaseLayout
-  locale={locale}
-  title="LabView"
-  description="Placeholder page rendered by a view stub until its workstream lands."
-  alternates={{}}
-  noindex
->
-  <div class="page-grid">
-    <h1>LabView</h1>
+<BaseLayout locale={locale} title={data.title} description={data.description} alternates={alternates} ogType="article">
+  {meta.hasMath && <MathAssets slot="head" />}
+  <div class="page-grid lab-page" data-stratum={data.stratum}>
+    <header class="lab-page__header">
+      <p class="lab-page__stratum">
+        <span class="visually-hidden">{tr('essay.stratum')}:</span>
+        <a class="lab-page__stratum-link" href={href({ kind: 'stratum', stratum: data.stratum }, locale)}>
+          <StratumLabel stratum={data.stratum} locale={locale} />
+        </a>
+      </p>
+      <h1 class="lab-page__title" id={IDS.title}>
+        {data.title}
+      </h1>
+      <p class="lab-page__theorem">
+        <span class="lab-page__theorem-label">{t('lab.theorem')}:</span>
+        {data.theorem}
+      </p>
+      <p class="lab-page__meta">
+        <time datetime={isoDate(data.published)}>
+          {tc('date.published', { date: formatDate(locale, data.published) })}
+        </time>
+        {revised !== null && (
+          <time datetime={isoDate(revised)}>{tc('date.revised', { date: formatDate(locale, revised) })}</time>
+        )}
+      </p>
+    </header>
+
+    <div class="lab-page__widget wide">
+      <Widget {...attributes}>
+        <div class="lab__fallback">
+          <p class="lab__description">{model.description}</p>
+          <p class="lab__noscript">{model.noscript}</p>
+        </div>
+      </Widget>
+    </div>
+
+    <EpistemicStatus
+      locale={locale}
+      confidence={data.epistemic.confidence}
+      evidence={data.epistemic.evidence}
+      provenance={data.provenance}
+      headingId={IDS.status}
+    />
+    <AbstractBlock locale={locale} abstract={data.abstract} keywords={data.keywords} headingId={IDS.abstract} />
+
+    <article class="prose lab-page__article" id={IDS.article} lang={data.lang} aria-labelledby={IDS.title}>
+      <Content />
+    </article>
+
+    <footer class="lab-page__footer">
+      {discussed.length > 0 && (
+        <nav class="lab-page__concepts" aria-labelledby={IDS.concepts}>
+          <h2 class="lab-page__footer-title" id={IDS.concepts}>
+            {tr('concepts.title')}
+          </h2>
+          <ul class="lab-page__concept-list" role="list">
+            {discussed.map((c) => (
+              <li>
+                <a href={c.href}>{c.label}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+      <RelatedWorks locale={locale} work={{ collection: 'labs', id: entry.id }} />
+    </footer>
   </div>
 </BaseLayout>
