@@ -1,4 +1,4 @@
-import { defineConfig, passthroughImageService } from 'astro/config';
+import { defineConfig, envField, passthroughImageService } from 'astro/config';
 import { unified } from '@astrojs/markdown-remark';
 import sitemap from '@astrojs/sitemap';
 import { loadPipelineContext } from './src/adapters/unified/context.ts';
@@ -26,6 +26,16 @@ export default defineConfig({
   site: SITE,
   base,
   trailingSlash: 'always',
+  env: {
+    schema: {
+      /**
+       * Search-engine indexing (ADR 0008). Off until launch: every page carries
+       * <meta name="robots" content="noindex, nofollow">; `pnpm check:robots`
+       * verifies dist/ against the same switch (scripts/lib/robots.ts).
+       */
+      SITE_INDEXING: envField.boolean({ context: 'server', access: 'public', default: false }),
+    },
+  },
   build: {
     format: 'directory',
     // Component styles inside Markdown-rendered pages must be external to be covered by the CSP.
