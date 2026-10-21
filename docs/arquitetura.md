@@ -1,23 +1,29 @@
-# Arquitetura-alvo e estado de implementação
+# Arquitetura e estado da implementação
 
-Este documento define a arquitetura pretendida e os contratos entre as partes. A implementação está parcial. Os requisitos abaixo não comprovam que um recurso funciona ou que passou por testes.
+Este documento define a arquitetura do site e os contratos entre as partes, e registra, com data e comando,
+o que está implementado. Decisões: [ADRs](adr/); requisitos não funcionais: [requisitos-nao-funcionais.md](requisitos-nao-funcionais.md).
 
-## Estado inspecionado em 15/10/2026
+## Estado da implementação
 
-A árvore contém páginas, componentes, estilos, adaptadores do pipeline Markdown e parte do núcleo funcional. As pesquisas de 11/10/2026 estão em `docs/research/` e mantêm suas datas e limites originais.
+Inspeção de 21/10/2026 sobre a `main`. Cada linha diz o que existe no código versionado e o comando que o
+comprova; "verificado" significa que o comando passou nessa data (CI: `.github/workflows/ci.yml`). As pesquisas
+de 11/10/2026 em `docs/research/` mantêm suas datas e limites originais.
 
-| Área                                                    | Estado no código versionado                                                                 |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `src/core/`                                             | Contém `algebra`, `domain`, `i18n`, `design` e `latex/macros.ts`                            |
-| Núcleo de bibliografia, léxico, ABNT, ontologia e folds | Diretórios ainda ausentes                                                                   |
-| Pipeline Markdown                                       | Ordem declarada em `src/adapters/unified/pipeline.ts`; existem adaptadores para os estágios |
-| Ilhas                                                   | `src/islands/registry.ts` existe; `src/islands/elements/` ainda não existe                  |
-| Conteúdo, bibliografia e léxicos                        | `src/content/`, `bibliography/` e `lexicon/` ainda não existem                              |
-| WebAssembly e CLI                                       | `wasm/`, `src/adapters/wasm/`, `cli/` e `scripts/build-wasm.mjs` ainda não existem          |
-| Verificações                                            | Existem testes de rotas e integridade, `scripts/tokens.ts` e `scripts/verify-palette.ts`    |
-| Automação e decisões                                    | `.github/workflows/ci.yml`, `CLAUDE.md` e `docs/adr/` ainda não existem                     |
+| Área                                        | Estado no código versionado                                                                                                                                    | Comprovação                                                                        |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Núcleo funcional (`src/core/`)              | `algebra`, `domain`, `i18n`, `design`, `latex`, `bibliography`, `lexicon`, `abnt`, `ontology`, `reading`, `fold`, `chrome`, `labs`, `web` — 150+ módulos puros | `pnpm check:lint` (pureza, camadas); `pnpm test` com cobertura                     |
+| Pipeline Markdown (`src/adapters/unified/`) | estágios `integrity`, `latex`, `citations`, `reading`, `concepts`, `embeds`, `abnt`, `meta`, na ordem de `pipeline.ts`                                         | testes de cada estágio; `pnpm build:site` (estrito)                                |
+| Ilhas (`src/islands/elements/`)             | 23 elementos `ft-*` carregados sob demanda pelo `registry.ts`                                                                                                  | e2e (`chrome`, `labs`, `keyboard`, `motion`)                                       |
+| Conteúdo                                    | 3 ensaios, 6 laboratórios, 4 estratos e 2 páginas por língua; 53 conceitos; `bibliography/main.bib`; 5 léxicos                                                 | `pnpm check:i18n`; testes de `content`, `bibliography/seed`, `ontology`, `lexicon` |
+| WebAssembly (`wasm/`, `src/adapters/wasm/`) | três núcleos `no_std` (`signal`, `information`, `dynamics`), ABI v1, sem importações                                                                           | `pnpm check:wasm`; `pnpm test:wasm`; orçamento ≤ 48 KiB                            |
+| Vistas e rotas                              | `src/pages` só despacha; `src/views` compõe; codec de rotas bijetivo com as páginas da ontologia                                                               | `routes.test.ts`; `pnpm check:links`                                               |
+| Verificações                                | tokens, paleta, tipos, lint, formatação, i18n, testes, wasm, links, orçamentos, `robots`, e2e (axe nos dois temas)                                             | `pnpm check`; jobs `quality`, `wasm`, `build`, `e2e`                               |
+| Automação e decisões                        | `ci.yml`, `deploy.yml`, `codeql.yml`, `release.yml`; Dependabot; ADRs 0001–0010; `CLAUDE.md`                                                                   | `tests/unit/guardrails/workflows.test.ts`                                          |
+| Publicação                                  | Pages com origem "GitHub Actions"; `main` protegida por conjunto de regras; `noindex` até o lançamento (ADR 0008)                                              | job `Deploy`; `pnpm check:robots`                                                  |
+| Pendente                                    | CLI `ft` (`cli/`, issue #20); complementos de leitura (#19); resenhas (#17, #18); camada de acidentes (#14)                                                    | branches `ws/*`                                                                    |
 
-O `package.json` declara comandos que dependem desses arquivos ausentes. `pnpm dev`, `pnpm build` e a cadeia completa de verificações ainda precisam de implementação. A organização e os contratos das seções seguintes descrevem o destino dessas partes.
+Os requisitos abaixo definem a arquitetura pretendida e os contratos entre as partes. Um requisito não comprova
+que um recurso funciona: a tabela acima, os ADRs e o CI comprovam.
 
 ## 1. Conceito
 
@@ -71,7 +77,11 @@ src/
 │   ├── bibliography/        analisador BibTeX (árvore sintática), modelo de referência, estilos NBR 6023/10520 e APA
 │   ├── lexicon/             TSV → trie → regex compilada; filtro de Bloom; casamento sobre nós de texto
 │   ├── abnt/                regras tipográficas e normativas como dados + aplicadores puros
-│   ├── ontology/            grafo SKOS: fechamento, ciclos, LCS, conteúdo informacional, JSON-LD
+│   ├── ontology/            grafo SKOS tipado: topologia, medidas, reticulado, cena do mapa, JSON-LD
+│   ├── reading/             leitura não linear: transformação, recuperação, layout do argumento, rolagem
+│   ├── chrome/              moldura: navegação, preferências, paleta, atalhos, documentos sob demanda
+│   ├── labs/                laboratórios: eixos, escalas, caminhos, resumos em texto, codec do estado
+│   ├── web/                 JSON-LD seguro para páginas
 │   └── fold/                catamorfismos sobre árvores: contagem de palavras, tempo de leitura, grafo argumentativo
 ├── adapters/                Adaptadores que ligam o núcleo a ferramentas
 │   ├── unified/             estágios remark/rehype (um arquivo por estágio) + carregadores de contexto
@@ -81,10 +91,14 @@ src/
 ├── views/                   composição de páginas (Astro), uma por tipo de rota
 ├── components/              componentes de apresentação (Astro, sem estado)
 ├── layouts/                 documento base
-├── pages/                   despachantes de rota gerados pelo codec do núcleo
+├── pages/                   despachantes de rota gerados pelo codec do núcleo; endpoints (RSS, JSON por idioma)
 ├── content/                 essays/, labs/, strata/, pages/ ({pt,en}/*.md) e concepts/*.json
+├── wasm/                    núcleos compilados (gerados por scripts/build-wasm.mjs; fora do controle de versão)
 └── styles/                  tokens.css (gerado), camadas base, components/*.css
 ```
+
+Fora de `src/`: `wasm/` (crates Rust), `scripts/` (ferramentas de linha de comando e `scripts/lib/` puro),
+`bibliography/`, `lexicon/`, `tests/`, `docs/` e `.github/`.
 
 Padrões funcionais por pasta (o nome diz o que a função é):
 
@@ -213,8 +227,11 @@ diretiva explícita > frontmatter > dicionário:
   anuncia resultados relevantes em `aria-live="polite"`.
 - Lógica não trivial (layout de grafo, mapeamentos de rolagem, easing) fica no núcleo e é testada.
 
-## 8. Verificações previstas
+## 8. Verificações
 
-O `package.json` declara verificações de tipos, lint, formatação, tokens, paleta, i18n, testes, WebAssembly, links, tamanho e acessibilidade. A árvore ainda não contém todos os arquivos necessários para executá-las.
-
-A implementação da automação deve distinguir os checks disponíveis dos checks pendentes. Uma declaração de script não comprova execução nem aprovação. Este documento não registra execução de build, testes ou auditoria de acessibilidade.
+Todas as verificações declaradas no `package.json` existem e rodam no CI a cada PR e na `main`
+(`.github/workflows/ci.yml`: `quality` ∥ `wasm` → `build` → `e2e`). A tabela do README lista cada comando e o
+que ele confere; os limiares, formalismos e evidências estão em
+[requisitos-nao-funcionais.md](requisitos-nao-funcionais.md). Uma verificação nunca é desligada ou afrouxada
+para o CI passar (`CLAUDE.md`, regra 11): a correção vai no código, ou a regra muda em commit próprio com a
+razão, ou um ADR registra a decisão.

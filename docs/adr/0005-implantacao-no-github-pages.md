@@ -1,6 +1,6 @@
 # ADR 0005 — Implantação no GitHub Pages
 
-- **Status:** aceito
+- **Status:** aceito; emendado em 2026-10-21 (decisão 4)
 - **Data:** 2026-10-13
 - **Relacionados:** `.github/workflows/deploy.yml`, `.github/workflows/ci.yml`, `.github/dependabot.yml`,
   `astro.config.ts`; `docs/research/github-actions.md`, `docs/research/astro7.md`
@@ -55,6 +55,13 @@ para código malicioso.
 4. **CI antes do merge.** `ci.yml` (qualidade, wasm, compilação, e2e) roda em todo PR; a proteção da branch
    `main` deve exigir esses jobs e a revisão de `CODEOWNERS`.
 
+   _Emenda de 2026-10-21._ A `main` passou a ser protegida por um conjunto de regras (_ruleset_): merge só por
+   _pull request_, os quatro jobs do CI e as duas análises do CodeQL como verificações obrigatórias, bloqueio
+   de exclusão e de _force-push_, contorno permitido só a administradores. A revisão obrigatória de
+   `CODEOWNERS` **não** foi ligada: com um único colaborador, ninguém pode aprovar a própria PR e o auto-merge
+   nunca aconteceria. O arquivo `CODEOWNERS` fica como roteamento de revisão para quando houver mais
+   colaboradores; nesse dia, a revisão obrigatória entra no conjunto de regras sem mudança de código.
+
 ## Consequências
 
 - **Positivas:** publicação reprodutível e auditável; o mesmo artefato verificado (links, orçamentos) é o
@@ -62,5 +69,5 @@ para código malicioso.
 - **Negativas:** fixar SHAs exige manutenção (delegada ao Dependabot); a janela de 14 dias atrasa correções
   não relacionadas a segurança; o site depende da disponibilidade do GitHub Pages (é estático e pode ser
   movido para qualquer servidor de arquivos, ajustando `SITE` e `BASE_PATH`).
-- **Passos manuais (uma vez):** em _Settings → Pages_, escolher a fonte “GitHub Actions”; em _Settings →
-  Branches_, proteger `main` exigindo os checks do CI.
+- **Passos manuais (uma vez), feitos em 2026-10-21:** o Pages criado com origem “GitHub Actions”
+  (`build_type: workflow`) e a `main` protegida pelo conjunto de regras da emenda da decisão 4.
