@@ -1,22 +1,24 @@
 ---
 /**
- * Dispatcher for parameterised routes (essay, lab, concept, stratum).
+ * Dispatcher for parameterised routes (essay, lab, concept, stratum, ontology page).
  * Every path is produced by encodeRoute(), the inverse of decodeRoute().
  */
 import { LOCALES, type Locale } from '../../../core/domain/locale.ts';
 import { STRATA } from '../../../core/domain/strata.ts';
-import { encodeRoute, type Route } from '../../../core/i18n/routes.ts';
+import { ONTOLOGY_PAGES, encodeRoute, type OntologyPage, type Route } from '../../../core/i18n/routes.ts';
 import { concepts, essays, labs, routeOfConcept, routeOfEssay, routeOfLab } from '../../../adapters/astro/content.ts';
 import EssayView from '../../../views/EssayView.astro';
 import LabView from '../../../views/LabView.astro';
 import ConceptView from '../../../views/ConceptView.astro';
+import OntologyPageView from '../../../views/OntologyPageView.astro';
 import StratumView from '../../../views/StratumView.astro';
 
 type Target =
   | { readonly kind: 'essay'; readonly id: string }
   | { readonly kind: 'lab'; readonly id: string }
   | { readonly kind: 'concept'; readonly id: string }
-  | { readonly kind: 'stratum'; readonly stratum: (typeof STRATA)[number] };
+  | { readonly kind: 'stratum'; readonly stratum: (typeof STRATA)[number] }
+  | { readonly kind: 'ontology-page'; readonly page: OntologyPage };
 
 export async function getStaticPaths() {
   const path = (route: Route, locale: Locale, target: Target) => {
@@ -30,6 +32,7 @@ export async function getStaticPaths() {
     ...LOCALES.flatMap((locale) => [
       ...allConcepts.map((c) => path(routeOfConcept(c, locale), locale, { kind: 'concept', id: c.id })),
       ...STRATA.map((stratum) => path({ kind: 'stratum', stratum }, locale, { kind: 'stratum', stratum })),
+      ...ONTOLOGY_PAGES.map((page) => path({ kind: 'ontology-page', page }, locale, { kind: 'ontology-page', page })),
     ]),
   ];
 }
@@ -41,3 +44,4 @@ const { locale, target } = Astro.props;
 {target.kind === 'lab' && <LabView locale={locale} id={target.id} />}
 {target.kind === 'concept' && <ConceptView locale={locale} id={target.id} />}
 {target.kind === 'stratum' && <StratumView locale={locale} stratum={target.stratum} />}
+{target.kind === 'ontology-page' && <OntologyPageView locale={locale} page={target.page} />}

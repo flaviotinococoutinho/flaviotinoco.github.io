@@ -1,27 +1,26 @@
 ---
 /**
- * Ontology page (route kind "ontology"): the layered ontology made explicit.
+ * Ontology overview (route kind "ontology"): the layered ontology made explicit.
  *
- *   top level   strata × categories as a table (#category-… anchors);
- *   domain      the full concept map — a static SVG laid out at build (works
+ *   numbers     counts, depths and entropies of the scheme;
+ *   explorer    the full concept map — a static SVG laid out at build (works
  *               without JS) enhanced by <ft-concept-map>: pan/zoom, focus+context,
  *               stratum filters, search, force ↔ grid layout — and the taxonomy
- *               tree (<ft-concept-tree>), kept in sync; the compare tool;
- *               bridge concepts, communities + NMI, the relation vocabulary;
- *   application the formal concept lattice of the works;
+ *               tree (<ft-concept-tree>), kept in sync;
  *   export      /ontology.jsonld (linked as rel=alternate) and /ontology.graph.json.
+ *
+ * The top level and the relation vocabulary (structure), the comparison tools
+ * with the bridge concepts and communities (comparison), and the formal concept
+ * lattice of the works (lattice) have pages of their own (OntologyPageView.astro),
+ * reached through the local navigation: together they would not fit the HTML
+ * budget of one page, and the explorer grows with every concept (ADR 0009).
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import MathAssets from '../components/MathAssets.astro';
-import ComparePanel from '../components/ontology/ComparePanel.astro';
-import ConceptLink from '../components/ontology/ConceptLink.astro';
 import ConceptTree from '../components/ontology/ConceptTree.astro';
-import FcaSection from '../components/ontology/FcaSection.astro';
 import Markup from '../components/ontology/Markup.astro';
-import MeasuresNote from '../components/ontology/MeasuresNote.astro';
+import OntologyNav from '../components/ontology/OntologyNav.astro';
 import OntologyStats from '../components/ontology/OntologyStats.astro';
-import TopLevelGrid from '../components/ontology/TopLevelGrid.astro';
-import VocabularyTable from '../components/ontology/VocabularyTable.astro';
 import { siteOntology } from '../components/ontology/data.ts';
 import { ontologyText } from '../components/ontology/text.ts';
 import type { Locale } from '../core/domain/locale.ts';
@@ -64,17 +63,9 @@ const map = conceptMapMarkup({
   }),
 });
 
-const crossValue = (id: (typeof ontology.bridges)[number]) => ontology.centrality.crossStrata.get(id) ?? 0;
-const nmi = ontology.stats.communities;
 const ids = {
-  toplevel: 'ontology-toplevel',
   map: 'ontology-map',
   tree: 'ontology-tree',
-  compare: 'ontology-compare',
-  bridges: 'ontology-bridges',
-  communities: 'ontology-communities',
-  fca: 'ontology-fca',
-  vocabulary: 'ontology-vocabulary',
   stats: 'ontology-stats',
   measures: 'ontology-measures',
   detail: 'ontology-detail',
@@ -96,6 +87,7 @@ const ids = {
     <header class="ontology__header">
       <h1>{t('ontology.title')}</h1>
       <p class="ontology__lede">{t('ontology.lede')}</p>
+      <OntologyNav locale={locale} current="overview" />
       <ul class="ontology__links ui" role="list">
         <li>
           <a href={href({ kind: 'glossary' }, locale)}>{t('ontology.glossaryLink')}</a>
@@ -116,12 +108,6 @@ const ids = {
     <section class="ontology__stats" aria-labelledby={ids.stats}>
       <h2 id={ids.stats}>{t('ontology.statsHeading')}</h2>
       <OntologyStats locale={locale} />
-    </section>
-
-    <section class="ontology__toplevel wide" aria-labelledby={ids.toplevel}>
-      <h2 id={ids.toplevel}>{t('ontology.topLevelHeading')}</h2>
-      <p>{t('ontology.topLevelIntro')}</p>
-      <TopLevelGrid locale={locale} />
     </section>
 
     <section class="ontology__explorer full" aria-labelledby={ids.map} data-ontology-explorer>
@@ -149,63 +135,6 @@ const ids = {
       <h2 id={ids.tree}>{t('ontology.treeHeading')}</h2>
       <p>{t('ontology.treeIntro')}</p>
       <ConceptTree locale={locale} labelledBy={ids.tree} />
-    </section>
-
-    <section class="ontology__compare" aria-labelledby={ids.compare}>
-      <h2 id={ids.compare}>{t('ontology.compareHeading')}</h2>
-      <ComparePanel locale={locale} />
-      <MeasuresNote locale={locale} measures={['ic', 'resnik', 'lin']} />
-    </section>
-
-    <section class="ontology__bridges" aria-labelledby={ids.bridges}>
-      <h2 id={ids.bridges}>{t('ontology.bridgesHeading')}</h2>
-      <p>{t('ontology.bridgesIntro')}</p>
-      <ol class="bridge-list">
-        {ontology.bridges.map((id) => (
-          <li>
-            <ConceptLink id={id} locale={locale} showStratum />
-            <span class="bridge-list__value ui">{tx.number(crossValue(id))}</span>
-          </li>
-        ))}
-      </ol>
-      <MeasuresNote locale={locale} measures={['betweenness']} />
-    </section>
-
-    <section class="ontology__communities wide" aria-labelledby={ids.communities}>
-      <h2 id={ids.communities}>{t('ontology.communitiesHeading')}</h2>
-      <p>{t('ontology.communitiesIntro')}</p>
-      <p class="ui ontology__nmi">
-        {t('ontology.nmi', { q: tx.number(nmi.modularity), nmi: tx.number(nmi.nmiDomains) })}
-      </p>
-      <ol class="community-list">
-        {ontology.communities.members.map((members, i) => (
-          <li class="community-list__item">
-            <h3>{t('ontology.communityName', { n: i + 1 })}</h3>
-            <ul class="chip-list" role="list">
-              {members.map((id) => (
-                <li>
-                  <ConceptLink id={id} locale={locale} />
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ol>
-      <MeasuresNote locale={locale} measures={['nmi']} />
-    </section>
-
-    <section class="ontology__fca full" aria-labelledby={ids.fca}>
-      <div class="ontology__fca-head">
-        <h2 id={ids.fca}>{t('ontology.fcaHeading')}</h2>
-        <p>{t('ontology.fcaIntro')}</p>
-      </div>
-      <FcaSection locale={locale} />
-    </section>
-
-    <section class="ontology__vocabulary wide" aria-labelledby={ids.vocabulary}>
-      <h2 id={ids.vocabulary}>{t('ontology.vocabularyHeading')}</h2>
-      <p>{t('ontology.vocabularyIntro')}</p>
-      <VocabularyTable locale={locale} />
     </section>
 
     <section class="ontology__export" aria-labelledby={ids.measures}>
