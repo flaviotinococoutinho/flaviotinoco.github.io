@@ -95,11 +95,13 @@
  *
  * The scroll container is div.equation, which wraps every display and is
  * focusable and named (tabindex="0", role="group", aria-label: transform.ts),
- * so a keyboard can scroll it (WCAG 2.1.1; axe scrollable-region-focusable).
- * A display outside it (none is expected) still scrolls rather than overflow.
+ * so a keyboard can scroll it (WCAG 2.1.1; axe scrollable-region-focusable);
+ * the display boxes of the views (.ontology-tex--display, Tex.astro) are the
+ * same kind of box. A display outside both (none is expected) still scrolls
+ * rather than overflow.
  */
 .equation,
-:not(.equation) > .katex-display {
+:not(.equation, .ontology-tex--display) > .katex-display {
   overflow-x: auto;
   overflow-y: hidden;
   padding-block: var(--space-n4);
