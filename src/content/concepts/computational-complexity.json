@@ -1,0 +1,44 @@
+{
+  "slug": {
+    "pt-BR": "complexidade-computacional",
+    "en": "computational-complexity"
+  },
+  "prefLabel": {
+    "pt-BR": "Complexidade computacional",
+    "en": "Computational complexity"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "complexidade de tempo",
+      "NP-completude"
+    ],
+    "en": [
+      "time complexity",
+      "NP-completeness"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Quantidade de recursos — tempo, memória — que resolver um problema exige em função do tamanho da entrada, tomada sobre o melhor algoritmo possível; separa o que se resolve em tempo polinomial do que, até onde se sabe, não se resolve.",
+    "en": "The amount of resources — time, memory — that solving a problem demands as a function of the input size, taken over the best possible algorithm; it separates what is solved in polynomial time from what, as far as anyone knows, is not."
+  },
+  "notation": "T(n) = O\\bigl(n \\log n\\bigr)",
+  "stratum": "formal",
+  "category": "measure",
+  "domains": [
+    "computer-science",
+    "mathematics"
+  ],
+  "relations": [
+    {
+      "type": "related",
+      "target": "fast-fourier-transform"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q5157286"
+  ],
+  "sources": [
+    "cook1971",
+    "garey1979"
+  ]
+}

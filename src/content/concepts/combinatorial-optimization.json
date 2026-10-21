@@ -1,0 +1,53 @@
+{
+  "slug": {
+    "pt-BR": "otimizacao-combinatoria",
+    "en": "combinatorial-optimization"
+  },
+  "prefLabel": {
+    "pt-BR": "Otimização combinatória",
+    "en": "Combinatorial optimization"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "otimização discreta"
+    ],
+    "en": [
+      "discrete optimization",
+      "combinatorial optimisation"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Otimização sobre um conjunto finito, mas em geral enorme, de alternativas discretas — caminhos, árvores, códigos, atribuições —, em que enumerar é inviável e a estrutura do problema decide se há algoritmo eficiente.",
+    "en": "Optimization over a finite but usually enormous set of discrete alternatives — paths, trees, codes, assignments — where enumeration is out of reach and the structure of the problem decides whether an efficient algorithm exists."
+  },
+  "stratum": "formal",
+  "category": "process",
+  "domains": [
+    "mathematics",
+    "computer-science"
+  ],
+  "broader": [
+    "optimization"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "computational-complexity"
+    },
+    {
+      "type": "appliesTo",
+      "target": "interface"
+    },
+    {
+      "type": "related",
+      "target": "huffman-code"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q1333872"
+  ],
+  "sources": [
+    "papadimitriou1982",
+    "garey1979"
+  ]
+}

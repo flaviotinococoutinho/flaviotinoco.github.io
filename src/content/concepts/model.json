@@ -28,6 +28,12 @@
   "broader": [
     "sign"
   ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "abstraction"
+    }
+  ],
   "exactMatch": [
     "http://www.wikidata.org/entity/Q193946"
   ]

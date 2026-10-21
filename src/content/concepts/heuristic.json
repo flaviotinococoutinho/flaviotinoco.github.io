@@ -1,0 +1,46 @@
+{
+  "slug": {
+    "pt-BR": "heuristica",
+    "en": "heuristic"
+  },
+  "prefLabel": {
+    "pt-BR": "Heurística",
+    "en": "Heuristic"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "regra prática",
+      "regra de bolso"
+    ],
+    "en": [
+      "rule of thumb"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Regra que guia a busca de uma solução sem garantir que ela seja a melhor, nem que exista; troca a garantia por tempo, memória ou informação que não se tem.",
+    "en": "A rule that guides the search for a solution without guaranteeing that it is the best one, or that one exists; it trades the guarantee for time, memory or information one does not have."
+  },
+  "stratum": "theory",
+  "category": "method",
+  "domains": [
+    "computer-science",
+    "behavior"
+  ],
+  "relations": [
+    {
+      "type": "contrastsWith",
+      "target": "optimization"
+    },
+    {
+      "type": "appliesTo",
+      "target": "decision"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q201413"
+  ],
+  "sources": [
+    "polya1945",
+    "simon1956"
+  ]
+}

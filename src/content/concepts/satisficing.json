@@ -1,0 +1,48 @@
+{
+  "slug": {
+    "pt-BR": "satisficing",
+    "en": "satisficing"
+  },
+  "prefLabel": {
+    "pt-BR": "Satisficing",
+    "en": "Satisficing"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "escolha do suficiente",
+      "racionalidade limitada"
+    ],
+    "en": [
+      "bounded rationality"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Estratégia de decisão que percorre as alternativas até encontrar uma que atinja um nível de aspiração e para ali, em vez de buscar a melhor; o que um agente com tempo, atenção e informação limitados pode fazer.",
+    "en": "A decision strategy that searches the alternatives until one meets an aspiration level and stops there, rather than seeking the best; what an agent with limited time, attention and information can do."
+  },
+  "stratum": "value",
+  "category": "method",
+  "domains": [
+    "behavior",
+    "product"
+  ],
+  "broader": [
+    "heuristic"
+  ],
+  "relations": [
+    {
+      "type": "contrastsWith",
+      "target": "optimization"
+    },
+    {
+      "type": "dependsOn",
+      "target": "decision"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q1578122"
+  ],
+  "sources": [
+    "simon1956"
+  ]
+}

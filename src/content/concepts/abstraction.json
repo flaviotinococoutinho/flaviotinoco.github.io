@@ -1,0 +1,34 @@
+{
+  "slug": {
+    "pt-BR": "abstracao",
+    "en": "abstraction"
+  },
+  "prefLabel": {
+    "pt-BR": "Abstração",
+    "en": "Abstraction"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "abstrair"
+    ],
+    "en": [
+      "abstracting"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Ato de omitir, de uma coisa ou situação, o que não importa para um propósito, de modo a criar um nível em que se pode ser preciso sobre o que restou; a origem do modelo, da interface e do módulo.",
+    "en": "The act of leaving out, from a thing or situation, what does not matter for a purpose, so as to create a level at which one can be precise about what remains; the origin of the model, the interface and the module."
+  },
+  "stratum": "philosophy",
+  "category": "process",
+  "domains": [
+    "epistemology",
+    "computer-science"
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q673661"
+  ],
+  "sources": [
+    "dijkstra1972"
+  ]
+}
