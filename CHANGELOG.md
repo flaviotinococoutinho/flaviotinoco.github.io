@@ -36,6 +36,8 @@ próprio frontmatter.
 
 - Controles de formulário nunca alargam o contêiner: o seletor de conceitos da página de comparação (opção
   mais longa com espaçamento amplo) transbordava a janela a 390 px.
+- Exportação LaTeX: um `[` literal logo depois de uma citação (`@k[` seguido de quebra de parágrafo) era lido
+  como argumento opcional e podia engolir o bloco seguinte; o exportador termina a citação com `\relax`.
 
 ## [0.2.0] - 2026-10-21
 
