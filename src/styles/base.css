@@ -43,6 +43,9 @@ h6 {
   line-height: var(--leading-heading);
   text-wrap: balance;
   hyphens: manual;
+  /* A single word wider than the column (a title such as "Communication" at 320 px) breaks rather than
+     widens the page (WCAG 1.4.10); the break happens only when nothing else fits. */
+  overflow-wrap: anywhere;
   letter-spacing: -0.008em;
 }
 h1 {
