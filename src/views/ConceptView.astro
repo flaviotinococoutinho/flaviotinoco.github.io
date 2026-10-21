@@ -115,7 +115,8 @@ const alternates = alternatesForAll((l) => routeOfConcept(entry, l));
 const jsonldHref = asset('ontology.jsonld');
 const ontologyHref = href({ kind: 'ontology' }, locale);
 const stratumHref = href({ kind: 'stratum', stratum: e.stratum }, locale);
-const categoryHref = `${ontologyHref}#category-${e.category}`;
+// The top-level table lives on the structure page of the ontology (ADR 0009).
+const categoryHref = `${href({ kind: 'ontology-page', page: 'structure' }, locale)}#category-${e.category}`;
 const absolute = (p: string): string => new URL(p, Astro.site).href;
 const breadcrumbs = [
   { name: tx.stratum(e.stratum), item: absolute(stratumHref) },

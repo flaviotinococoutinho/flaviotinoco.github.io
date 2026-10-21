@@ -468,6 +468,15 @@
 .ontology__lede {
   font-size: var(--step-1);
 }
+/* Local navigation of the section (overview, structure, comparison, lattice): the page being
+   shown is named by aria-current and shown by weight and an underline, never colour alone. */
+.ontology-nav {
+  margin-block: var(--space-n1) var(--space-0);
+}
+.ontology-nav a[aria-current='page'] {
+  font-weight: 600;
+  text-decoration-thickness: 0.12em;
+}
 
 .ontology__explorer-head,
 .ontology__fca-head {

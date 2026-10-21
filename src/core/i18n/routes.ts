@@ -24,12 +24,29 @@ export type Route =
   | { readonly kind: 'lab'; readonly slug: Slug }
   | { readonly kind: 'stratum'; readonly stratum: Stratum }
   | { readonly kind: 'ontology' }
+  | { readonly kind: 'ontology-page'; readonly page: OntologyPage }
   | { readonly kind: 'concept'; readonly slug: Slug }
   | { readonly kind: 'glossary' }
   | { readonly kind: 'about' }
   | { readonly kind: 'colophon' };
 
 export type RouteKind = Route['kind'];
+
+/**
+ * Pages of the ontology section besides its overview (ADR 0009): the overview
+ * keeps the explorer (map and tree); the structure (top level and relation
+ * vocabulary), the comparison tools and measures, and the lattice of the works
+ * each have a page, so no page grows past the HTML budget with the ontology.
+ */
+export const ONTOLOGY_PAGES = ['structure', 'comparison', 'lattice'] as const;
+export type OntologyPage = (typeof ONTOLOGY_PAGES)[number];
+
+/** Localised slugs of the ontology pages, under the ontology segment. */
+export const ONTOLOGY_PAGE_SLUGS: Readonly<Record<OntologyPage, Readonly<Record<Locale, string>>>> = {
+  structure: { 'pt-BR': 'estrutura', en: 'structure' },
+  comparison: { 'pt-BR': 'comparacao', en: 'comparison' },
+  lattice: { 'pt-BR': 'reticulado', en: 'lattice' },
+};
 
 /** Localised collection segments. */
 export const SEGMENTS = {
@@ -70,6 +87,8 @@ export const encodeRoute = (route: Route, locale: Locale): string => {
       return join(l, SEGMENTS.strata[locale], STRATUM_SLUGS[route.stratum][locale]);
     case 'ontology':
       return join(l, SEGMENTS.ontology[locale]);
+    case 'ontology-page':
+      return join(l, SEGMENTS.ontology[locale], ONTOLOGY_PAGE_SLUGS[route.page][locale]);
     case 'concept':
       return join(l, SEGMENTS.concepts[locale], route.slug);
     case 'glossary':
@@ -97,6 +116,9 @@ const segmentKey = (segment: string, locale: Locale): keyof typeof SEGMENTS | nu
 
 const stratumFromSlug = (slug: string, locale: Locale): Stratum | null =>
   STRATA.find((s) => STRATUM_SLUGS[s][locale] === slug) ?? null;
+
+const ontologyPageFromSlug = (slug: string, locale: Locale): OntologyPage | null =>
+  ONTOLOGY_PAGES.find((p) => ONTOLOGY_PAGE_SLUGS[p][locale] === slug) ?? null;
 
 /** Inverse of encodeRoute. Accepts paths with or without the trailing slash. */
 export const decodeRoute = (path: string): Result<Located, string> => {
@@ -131,7 +153,13 @@ export const decodeRoute = (path: string): Result<Located, string> => {
         ? err(`unknown stratum slug "${item}"`)
         : ok({ route: { kind: 'stratum', stratum }, locale });
     }
-    case 'ontology':
+    case 'ontology': {
+      if (item === undefined) return ok({ route: { kind: 'ontology' }, locale });
+      const page = ontologyPageFromSlug(item, locale);
+      return page === null
+        ? err(`unknown ontology page "${item}" for ${locale}`)
+        : ok({ route: { kind: 'ontology-page', page }, locale });
+    }
     case 'glossary':
     case 'about':
     case 'colophon':

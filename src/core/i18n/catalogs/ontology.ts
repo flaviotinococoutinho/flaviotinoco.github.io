@@ -58,6 +58,26 @@ export default defineMessages({
     'ontology.exportNote': 'Dados abertos, legíveis por máquina, com IRIs estáveis para cada conceito e relação.',
     'ontology.glossaryLink': 'Glossário de A a Z',
     'ontology.noscript': 'O mapa estático funciona sem JavaScript; a busca, os filtros e a comparação precisam dele.',
+    'ontology.nav.label': 'Páginas da ontologia',
+    'ontology.nav.overview': 'Visão geral',
+    'ontology.page.structure.nav': 'Estrutura',
+    'ontology.page.structure.title': 'Estrutura da ontologia',
+    'ontology.page.structure.description':
+      'O nível superior da ontologia — estratos × categorias — e o vocabulário de relações tipadas, com suas propriedades algébricas e restrições.',
+    'ontology.page.structure.lede':
+      'Esta página mostra o esqueleto da ontologia: a tabela do nível superior, em que cada conceito ocupa uma célula do produto estrato × categoria, e o vocabulário das relações que ligam os conceitos. O mapa e a árvore ficam na visão geral.',
+    'ontology.page.comparison.nav': 'Comparação',
+    'ontology.page.comparison.title': 'Comparação e medidas',
+    'ontology.page.comparison.description':
+      'Comparar dois conceitos por conteúdo informacional, os conceitos-ponte entre estratos e as comunidades temáticas do grafo.',
+    'ontology.page.comparison.lede':
+      'As medidas da ontologia em uso: a semelhança entre dois conceitos quaisquer, os conceitos por onde a ponte passa e as comunidades que o grafo forma por si. As fórmulas estão nas notas de cada seção.',
+    'ontology.page.lattice.nav': 'Reticulado',
+    'ontology.page.lattice.title': 'Reticulado das obras',
+    'ontology.page.lattice.description':
+      'A análise formal de conceitos do contexto obras × conceitos discutidos, como reticulado desenhado e como lista completa.',
+    'ontology.page.lattice.lede':
+      'A camada de aplicação vista pela análise formal de conceitos: quais obras discutem quais conceitos, e que agrupamentos fechados isso produz. O diagrama de Hasse é desenhado na compilação e acompanhado de seu equivalente em texto.',
     'stats.concepts': 'Conceitos',
     'stats.topConcepts': 'Conceitos de topo (sem mais amplo)',
     'stats.links': 'Relações tipadas',
@@ -321,6 +341,26 @@ export default defineMessages({
     'ontology.exportNote': 'Open, machine-readable data with a stable IRI for every concept and relation.',
     'ontology.glossaryLink': 'A–Z glossary',
     'ontology.noscript': 'The static map works without JavaScript; search, filters and comparison need it.',
+    'ontology.nav.label': 'Ontology pages',
+    'ontology.nav.overview': 'Overview',
+    'ontology.page.structure.nav': 'Structure',
+    'ontology.page.structure.title': 'Structure of the ontology',
+    'ontology.page.structure.description':
+      'The top level of the ontology — strata × categories — and the vocabulary of typed relations, with their algebraic properties and constraints.',
+    'ontology.page.structure.lede':
+      'This page shows the skeleton of the ontology: the top-level table, in which every concept sits in one cell of the product stratum × category, and the vocabulary of the relations that link the concepts. The map and the tree are on the overview.',
+    'ontology.page.comparison.nav': 'Comparison',
+    'ontology.page.comparison.title': 'Comparison and measures',
+    'ontology.page.comparison.description':
+      'Compare two concepts by information content, the bridge concepts between strata and the thematic communities of the graph.',
+    'ontology.page.comparison.lede':
+      'The measures of the ontology at work: the similarity of any two concepts, the concepts the bridge passes through, and the communities the graph forms by itself. The formulas are in the notes of each section.',
+    'ontology.page.lattice.nav': 'Lattice',
+    'ontology.page.lattice.title': 'Lattice of the works',
+    'ontology.page.lattice.description':
+      'Formal concept analysis of the context works × concepts discussed, as a drawn lattice and as a complete list.',
+    'ontology.page.lattice.lede':
+      'The application layer seen through formal concept analysis: which works discuss which concepts, and which closed groupings that produces. The Hasse diagram is drawn at build time and comes with its textual equivalent.',
     'stats.concepts': 'Concepts',
     'stats.topConcepts': 'Top concepts (no broader)',
     'stats.links': 'Typed relations',

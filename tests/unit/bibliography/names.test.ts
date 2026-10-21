@@ -66,16 +66,16 @@ describe('parseNames', () => {
     expect(() => parseNames(raw)).not.toThrow();
   });
 
-  test.prop(
-    [
-      fc.array(fc.tuple(fc.stringMatching(/^[A-Z][a-z]{1,8}$/), fc.stringMatching(/^[A-Z][a-z]{1,8}$/)), {
-        minLength: 1,
-        maxLength: 5,
-      }),
-    ],
-    { numRuns: 200 },
-  )('"Last, First" lists round-trip', (people) => {
-    const raw = people.map(([last, first]) => `${last}, ${first}`).join(' and ');
-    expect(names(raw)).toEqual(people.map(([last, first]) => `${last}|${first}||`));
-  });
+  // A bare "and" (any case) is the list separator and "others" the et-al. marker: a name part spelled
+  // that way is not representable without braces, so the generator never produces one (a real .bib
+  // writes {And}); the encoder protects such parts (encode.ts), which the fixtures cover.
+  const namePart = fc.stringMatching(/^[A-Z][a-z]{1,8}$/).filter((w) => !/^(?:and|others)$/i.test(w));
+
+  test.prop([fc.array(fc.tuple(namePart, namePart), { minLength: 1, maxLength: 5 })], { numRuns: 200 })(
+    '"Last, First" lists round-trip',
+    (people) => {
+      const raw = people.map(([last, first]) => `${last}, ${first}`).join(' and ');
+      expect(names(raw)).toEqual(people.map(([last, first]) => `${last}|${first}||`));
+    },
+  );
 });

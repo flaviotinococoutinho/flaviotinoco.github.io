@@ -1,6 +1,6 @@
 import { describe, expect } from 'vitest';
 import { test, fc } from '@fast-check/vitest';
-import { decodeRoute, encodeRoute, type Route } from '../../../src/core/i18n/routes.ts';
+import { ONTOLOGY_PAGES, decodeRoute, encodeRoute, type Route } from '../../../src/core/i18n/routes.ts';
 import { LOCALES, localeCodec, negotiate } from '../../../src/core/domain/locale.ts';
 import { STRATA } from '../../../src/core/domain/strata.ts';
 import { parseSlug } from '../../../src/core/domain/identifiers.ts';
@@ -26,6 +26,7 @@ const routeArb: fc.Arbitrary<Route> = fc.oneof(
   slugArb.map((slug): Route => ({ kind: 'lab', slug })),
   slugArb.map((slug): Route => ({ kind: 'concept', slug })),
   fc.constantFrom(...STRATA).map((stratum): Route => ({ kind: 'stratum', stratum })),
+  fc.constantFrom(...ONTOLOGY_PAGES).map((page): Route => ({ kind: 'ontology-page', page })),
 );
 
 describe('route codec', () => {
@@ -51,6 +52,12 @@ describe('route codec', () => {
     expect(decodeRoute('/pt/ensaios/a/b/').ok).toBe(false);
     expect(decodeRoute('/pt/glossary/').ok).toBe(false); // English segment under pt
     expect(decodeRoute('/pt/glossario/x/').ok).toBe(false); // the glossary takes no parameter
+    expect(decodeRoute('/pt/ontologia/structure/').ok).toBe(false); // English page slug under pt
+    expect(decodeRoute('/en/ontology/estrutura/').ok).toBe(false);
+    expect(decodeRoute('/pt/ontologia/estrutura/')).toEqual({
+      ok: true,
+      value: { route: { kind: 'ontology-page', page: 'structure' }, locale: 'pt-BR' },
+    });
   });
 });
 
