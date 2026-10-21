@@ -1,0 +1,56 @@
+# Release — publishes a GitHub release for a version tag (ADR 0010).
+#
+# Trigger: a tag vX.Y.Z pushed to the repository. The tag must point to the
+# release commit on main, where package.json and wasm/Cargo.toml carry the same
+# version and CHANGELOG.md has a dated section for it; otherwise the job fails
+# and nothing is published. The notes are that section, verbatim.
+#
+# No third-party action: the GitHub CLI preinstalled on the runner creates the
+# release with the workflow's own token, scoped to this job (contents: write).
+name: Release
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release:
+    name: Publish the release of the tagged version
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+      - name: The tag, package.json and wasm/Cargo.toml agree on the version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          package="$(node -p "require('./package.json').version")"
+          cargo="$(sed -n 's/^version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' wasm/Cargo.toml | head -n 1)"
+          if [ "$version" != "$package" ] || [ "$version" != "$cargo" ]; then
+            echo "::error::tag $TAG, package.json $package and wasm/Cargo.toml $cargo must carry the same version"
+            exit 1
+          fi
+      - name: Release notes from CHANGELOG.md
+        env:
+          TAG: ${{ github.ref_name }}
+        run: node scripts/release-notes.ts "$TAG" > "$RUNNER_TEMP/notes.md"
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"

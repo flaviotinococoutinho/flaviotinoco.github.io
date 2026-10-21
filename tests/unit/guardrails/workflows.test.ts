@@ -1,8 +1,8 @@
 /**
  * Repository settings that documents promise: least-privilege permissions of
- * the deployment workflow (ADR 0005 §1) and one minimum Node version across
- * package.json, README and the agent hook (the TypeScript scripts need type
- * stripping, on by default from Node 22.18).
+ * the deployment and release workflows (ADR 0005 §1, ADR 0010) and one minimum
+ * Node version across package.json, README and the tokens hook (the TypeScript
+ * scripts need type stripping, on by default from Node 22.18).
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -37,6 +37,28 @@ describe('deploy.yml permissions (ADR 0005: least privilege)', () => {
 
   it('states the permissions of every job', () => {
     for (const [name, job] of Object.entries(workflow.jobs)) expect(job.permissions, name).toBeDefined();
+  });
+});
+
+describe('release.yml permissions (ADR 0010: the release job alone writes)', () => {
+  const workflow = parse(read('.github/workflows/release.yml')) as Workflow;
+
+  it('grants the workflow only read access to the code', () => {
+    expect(workflow.permissions).toEqual({ contents: 'read' });
+  });
+
+  it('gives write access to the release job alone, and states the permissions of every job', () => {
+    const writers = Object.entries(workflow.jobs)
+      .filter(([, job]) => Object.values(job.permissions ?? {}).includes('write'))
+      .map(([name]) => name);
+    expect(writers).toEqual(['release']);
+    expect(workflow.jobs['release']?.permissions).toEqual({ contents: 'write' });
+    for (const [name, job] of Object.entries(workflow.jobs)) expect(job.permissions, name).toBeDefined();
+  });
+
+  it('runs only for version tags', () => {
+    const on = (workflow as unknown as { readonly on: { readonly push?: { readonly tags?: readonly string[] } } }).on;
+    expect(on.push?.tags).toEqual(['v[0-9]+.[0-9]+.[0-9]+']);
   });
 });
 
