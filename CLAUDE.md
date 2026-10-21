@@ -4,13 +4,14 @@ Bilingual (pt-BR / en) static knowledge site — essays, interactive labs and a 
 of four strata (philosophy → theory → formal → value). Astro 7, pure Markdown content, WebAssembly kernels,
 deployed to GitHub Pages as a project site under `/flaviotinoco.github.io/`.
 
-## Architecture (normative: [docs/arquitetura.md](docs/arquitetura.md); decisions: [docs/adr/](docs/adr/))
+## Architecture (normative: [docs/arquitetura.md](docs/arquitetura.md); decisions: [docs/adr/](docs/adr/); requirements: [docs/requisitos-nao-funcionais.md](docs/requisitos-nao-funcionais.md))
 
 - `src/core/**` — functional core: pure, deterministic, total TypeScript. Business rules live here only.
 - `src/adapters/unified/` — one remark/rehype stage per file; order and contracts in `pipeline.ts`.
 - `src/adapters/astro/`, `src/adapters/wasm/` — glue to Astro (i18n, content queries, fonts) and to the kernels.
 - `src/islands/` — `registry.ts` (the only global script) lazy-loads `elements/ft-*.ts` custom elements.
-- `src/views/` compose pages; `src/components/` are stateless; `src/pages/` only dispatch routes.
+- `src/views/` compose pages; `src/components/` are stateless; `src/pages/` only dispatch routes and serve the
+  per-locale endpoints (RSS, `palette.json`, `preferences.json`: chrome content fetched on demand, ADR 0009).
 - `src/content/{essays,labs,strata,pages}/{pt,en}/*.md` + `concepts/*.json` — data, never code.
 - `src/core/design/tokens.json` (W3C DTCG) → generated `src/styles/tokens.css`; component CSS in `src/styles/components/`.
 - `src/core/i18n/` — bijective route codec and message catalogs (`defineMessages`, key parity type-checked).
@@ -19,7 +20,11 @@ deployed to GitHub Pages as a project site under `/flaviotinoco.github.io/`.
 - `tests/unit/**` (Vitest + fast-check), `tests/e2e/**` (Playwright + axe on the built site).
 - Folder patterns: parser `unknown → Result`, codec `decode ∘ encode = id`, transform, fold, compiler, formatter.
 - Shell code (adapters, islands, views, scripts) may do I/O and fail loudly; the core returns `Result`.
-- CI: `.github/workflows/ci.yml` (quality, wasm, build, e2e); deploy: `deploy.yml` (configure-pages → Pages).
+- Ontology: `src/content/concepts/*.json` + `src/core/ontology/**`; the guide is [docs/ontologia.md](docs/ontologia.md)
+  (categories, relation constraints, what the build rejects, how to add a concept).
+- CI: `.github/workflows/ci.yml` (quality, wasm, build, e2e); deploy: `deploy.yml` (configure-pages → Pages);
+  release: `release.yml` (a tag `vX.Y.Z` publishes the CHANGELOG section, ADR 0010). `main` is protected: PRs only,
+  six required checks, auto-merge waits for them.
 
 ## Commands
 
@@ -29,7 +34,7 @@ pnpm check            # types (astro check + tsc), lint, format, tokens, palette
 pnpm test             # vitest; replay a property failure with FC_SEED=<seed> pnpm test
 pnpm build            # build:wasm → astro build → pagefind (needs the Rust toolchain)
 pnpm exec astro build # site only, reusing src/wasm/*.wasm
-pnpm check:links && pnpm check:budgets   # on dist/, after a build
+pnpm check:links && pnpm check:budgets && pnpm check:robots   # on dist/, after a build
 pnpm test:e2e         # Playwright on dist/ via `astro preview` (build first)
 pnpm tokens           # regenerate src/styles/tokens.css (a hook does it when tokens.json is edited)
 pnpm check:wasm       # cargo fmt, clippy (host + wasm32), cargo test in wasm/
@@ -74,4 +79,6 @@ pnpm format           # prettier --write (never on src/content: it is ignored on
 - Interactive behaviour = one custom element `ft-*` per file in `src/islands/elements/`, guarded against double
   definition; non-trivial logic goes to `src/core` with tests. Never add global `<script>`s.
 - Internal links use `import.meta.env.BASE_URL` / the route codec; URLs end with `/` (`trailingSlash: 'always'`).
-- Conventional Commits. Do not commit `dist/`, `src/wasm/*.wasm` or generated reports.
+- Conventional Commits; one PR per subject, with the repository template. A change to the platform adds one line
+  under "Não lançado" in `CHANGELOG.md` (ADR 0010). Do not commit `dist/`, `src/wasm/*.wasm` or generated reports.
+- Documentation in pt-BR under `docs/`; a dated plan of a review round goes to `docs/planos/`.

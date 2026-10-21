@@ -1,0 +1,47 @@
+{
+  "slug": {
+    "pt-BR": "otimizacao",
+    "en": "optimization"
+  },
+  "prefLabel": {
+    "pt-BR": "Otimização",
+    "en": "Optimization"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "otimização matemática"
+    ],
+    "en": [
+      "mathematical optimization",
+      "optimisation"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Escolha, entre as alternativas que satisfazem um conjunto de restrições, da que maximiza ou minimiza uma função objetivo; pressupõe um valor a medir e um conjunto viável a percorrer.",
+    "en": "The choice, among the alternatives that satisfy a set of constraints, of the one that maximises or minimises an objective function; it presupposes a value to measure and a feasible set to search."
+  },
+  "notation": "x^{*} = \\operatorname*{arg\\,min}_{x \\in \\mathcal{F}} f(x)",
+  "stratum": "theory",
+  "category": "process",
+  "domains": [
+    "mathematics",
+    "computer-science"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "value"
+    },
+    {
+      "type": "appliesTo",
+      "target": "decision"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q141495"
+  ],
+  "sources": [
+    "boyd2004",
+    "papadimitriou1982"
+  ]
+}
