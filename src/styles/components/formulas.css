@@ -24,6 +24,9 @@
   font-family: var(--font-ui);
   font-size: var(--step-n1);
   line-height: var(--leading-ui);
+  /* Upright even inside an italic theorem body (amsthm plain style): running italics hinder
+     readers with dyslexia (BDA style guide); only the formula's name is italic, as a title. */
+  font-style: normal;
   color: var(--ink-muted);
   text-indent: 0;
 }
