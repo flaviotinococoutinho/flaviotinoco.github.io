@@ -9,10 +9,17 @@
  * (`${BASE_URL}pagefind/pagefind.js`, built by `pagefind --site dist`) is
  * imported at the same moment, never on page load.
  *
- * No-JS / not-yet-upgraded fallback: the server renders the quick-navigation
- * entries as an ordinary list of links (role="list"); upgrading turns it into
- * a listbox. When the index is missing (dev server), quick navigation still
- * works and a polite status explains why there are no text results.
+ * Quick navigation: the entries shared by every page of the locale (home,
+ * sections, strata, about, colophon) are fetched from data-entries
+ * (/<lang>/palette.json, ADR 0009) when this module runs — i.e. when the
+ * dialog opens — and decoded by the core (decodePaletteEntries); the
+ * page-specific entry (this page in the other language) is read from the
+ * static list the server renders (role="list"), which upgrading turns into a
+ * listbox. Until the entries arrive the field already searches the text index;
+ * if they never do, the palette still works with text search and the static
+ * entry, and the failure is logged. When the index is missing (dev server),
+ * quick navigation still works and a polite status explains why there are no
+ * text results.
  *
  * Pure logic lives in the core: keyboard state machine and ranking
  * (src/core/chrome/palette.ts) and excerpts (excerpt.ts — rebuilt from the
@@ -32,6 +39,7 @@ import {
   type PaletteState,
 } from '../../core/chrome/palette.ts';
 import { excerptFromContent, sanitiseExcerpt, type ExcerptSegment } from '../../core/chrome/excerpt.ts';
+import { decodePaletteEntries, type PaletteEntry } from '../../core/chrome/palette-entries.ts';
 import { format } from '../../core/i18n/messages.ts';
 
 const TAG = 'ft-command-palette';
@@ -127,6 +135,17 @@ const loadPagefind = (): Promise<Pagefind | null> => {
 
 const pathOf = (href: string): string => new URL(href, document.baseURI).pathname;
 
+const itemOfEntry = (e: PaletteEntry): Item => ({
+  label: e.label,
+  href: e.href,
+  kind: e.kind,
+  keywords: e.keywords,
+  lang: e.hreflang,
+  glyph: e.glyph,
+  stratum: e.stratum,
+  excerpt: null,
+});
+
 const readItem = (a: HTMLAnchorElement): Item => ({
   label: a.dataset['label'] ?? a.textContent.trim(),
   href: a.href,
@@ -214,6 +233,23 @@ class FtCommandPalette extends HTMLElement {
 
     void loadPagefind();
     this.#query();
+    void this.#loadEntries(this.dataset['entries']);
+  }
+
+  /** Prepends the shared quick-navigation entries to the page's own, then ranks again for the current query. */
+  async #loadEntries(url: string | undefined): Promise<void> {
+    if (url === undefined || url === '') return;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const decoded = decodePaletteEntries(await response.json());
+      if (!decoded.ok) throw new Error(decoded.error);
+      if (this.#abort === null) return; // disconnected meanwhile
+      this.#quick = [...decoded.value.map(itemOfEntry), ...this.#quick];
+      this.#query();
+    } catch (error: unknown) {
+      console.error(`[${TAG}] quick navigation unavailable (${url})`, error);
+    }
   }
 
   disconnectedCallback(): void {
