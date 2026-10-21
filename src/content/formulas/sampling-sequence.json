@@ -1,0 +1,55 @@
+{
+  "slug": {
+    "pt-BR": "amostragem-uniforme",
+    "en": "uniform-sampling"
+  },
+  "name": {
+    "pt-BR": "Amostragem uniforme",
+    "en": "Uniform sampling"
+  },
+  "tex": "x[n] = x(nT_s)",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "sampling",
+  "meaning": {
+    "pt-BR": "Amostrar um sinal contínuo é ler o seu valor em instantes igualmente espaçados: a amostra de índice n é o valor do sinal no instante n vezes o período de amostragem. O inverso desse período é a taxa de amostragem.",
+    "en": "Sampling a continuous signal is reading its value at equally spaced instants: the sample with index n is the value of the signal at instant n times the sampling period. The inverse of that period is the sampling rate."
+  },
+  "spoken": {
+    "pt-BR": "x índice n é igual a x de n vezes T sub s.",
+    "en": "x at index n equals x of n times T sub s."
+  },
+  "symbols": [
+    {
+      "tex": "x[n]",
+      "text": {
+        "pt-BR": "a n-ésima amostra",
+        "en": "the n-th sample"
+      }
+    },
+    {
+      "tex": "x(t)",
+      "text": {
+        "pt-BR": "o sinal contínuo",
+        "en": "the continuous signal"
+      }
+    },
+    {
+      "tex": "T_s",
+      "text": {
+        "pt-BR": "período de amostragem; a taxa é f_s = 1/T_s",
+        "en": "sampling period; the rate is f_s = 1/T_s"
+      }
+    }
+  ],
+  "concepts": [
+    "signal",
+    "sampling-theorem",
+    "aliasing"
+  ],
+  "sources": [
+    "shannon1949"
+  ]
+}

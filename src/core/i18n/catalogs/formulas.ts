@@ -1,0 +1,63 @@
+import { defineMessages } from '../messages.ts';
+
+/** The formula collection: the words block under every equation, the index page and each formula's page. */
+export default defineMessages({
+  'pt-BR': {
+    'words.summary': 'Em palavras',
+    'words.spoken': 'Como se lê:',
+    'words.symbols': 'Símbolos',
+    'words.more': 'Ficha da fórmula no acervo',
+    'index.title': 'Fórmulas',
+    'index.description':
+      'Acervo de referência das fórmulas do site: nome, notação, versão em palavras, leitura em voz alta, símbolos, onde cada uma aparece, conceitos e fontes.',
+    'index.lede':
+      'Toda equação numerada dos ensaios e dos laboratórios, e toda notação dos conceitos, tem uma ficha: o que a fórmula diz, como se lê em voz alta e o que significa cada símbolo. As fichas seguem a ordem da ponte, da teoria ao valor.',
+    'index.count': '{n} fórmulas em {strata} estratos',
+    'index.toc': 'Fórmulas por estrato',
+    'index.json': 'Fórmulas em JSON',
+    'index.jsonNote': 'Dados abertos: o acervo inteiro, nas duas línguas, em um único arquivo.',
+    'formula.ordinal': 'F{n}',
+    'formula.kicker': 'Fórmula {ordinal} do acervo',
+    'formula.notation': 'Notação',
+    'formula.meaning': 'O que diz',
+    'formula.spoken': 'Como se lê',
+    'formula.symbols': 'Símbolos',
+    'formula.uses': 'Onde aparece',
+    'formula.usesNone': 'É a notação de um conceito; não aparece numerada em nenhum texto.',
+    'formula.useAt': '{work} · {equation}',
+    'formula.conceptOf': 'Notação do conceito',
+    'formula.concepts': 'Conceitos relacionados',
+    'formula.sources': 'Fontes',
+    'formula.facets': 'Estrato e domínios',
+    'formula.back': 'Todas as fórmulas',
+  },
+  en: {
+    'words.summary': 'In words',
+    'words.spoken': 'How it reads:',
+    'words.symbols': 'Symbols',
+    'words.more': 'Entry in the formula collection',
+    'index.title': 'Formulas',
+    'index.description':
+      'Reference collection of the formulas of the site: name, notation, version in words, reading aloud, symbols, where each one appears, concepts and sources.',
+    'index.lede':
+      'Every numbered equation of the essays and labs, and every concept notation, has an entry: what the formula says, how it is read aloud and what each symbol stands for. The entries follow the order of the bridge, from theory to value.',
+    'index.count': '{n} formulas across {strata} strata',
+    'index.toc': 'Formulas by stratum',
+    'index.json': 'Formulas as JSON',
+    'index.jsonNote': 'Open data: the whole collection, in both languages, in one file.',
+    'formula.ordinal': 'F{n}',
+    'formula.kicker': 'Formula {ordinal} of the collection',
+    'formula.notation': 'Notation',
+    'formula.meaning': 'What it says',
+    'formula.spoken': 'How it reads',
+    'formula.symbols': 'Symbols',
+    'formula.uses': 'Where it appears',
+    'formula.usesNone': 'It is the notation of a concept; it is not numbered in any text.',
+    'formula.useAt': '{work} · {equation}',
+    'formula.conceptOf': 'Notation of the concept',
+    'formula.concepts': 'Related concepts',
+    'formula.sources': 'Sources',
+    'formula.facets': 'Stratum and domains',
+    'formula.back': 'All formulas',
+  },
+});

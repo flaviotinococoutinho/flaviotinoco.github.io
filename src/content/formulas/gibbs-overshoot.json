@@ -1,0 +1,44 @@
+{
+  "slug": {
+    "pt-BR": "excesso-de-gibbs",
+    "en": "gibbs-overshoot"
+  },
+  "name": {
+    "pt-BR": "Excesso de Gibbs",
+    "en": "Gibbs overshoot"
+  },
+  "tex": "\\frac{1}{\\pi}\\int_{0}^{\\pi}\\frac{\\sin u}{u}\\,\\d u - \\frac{1}{2}",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "gibbs-phenomenon",
+  "meaning": {
+    "pt-BR": "O excesso relativo com que a série de Fourier ultrapassa um salto: a integral do seno cardinal de 0 a π, dividida por π, menos meio. Vale cerca de 0,0895, isto é, cerca de 9 % da altura do salto, qualquer que seja a função descontínua.",
+    "en": "The relative amount by which the Fourier series overshoots a jump: the integral of the cardinal sine from 0 to π, divided by π, minus one half. It is about 0.0895, that is, about 9% of the height of the jump, whatever the discontinuous function."
+  },
+  "spoken": {
+    "pt-BR": "Um sobre pi vezes a integral, de zero a pi, de seno de u sobre u, d u, menos um meio.",
+    "en": "One over pi times the integral, from zero to pi, of sine of u over u, d u, minus one half."
+  },
+  "symbols": [
+    {
+      "tex": "\\frac{\\sin u}{u}",
+      "text": {
+        "pt-BR": "seno cardinal",
+        "en": "cardinal sine"
+      }
+    },
+    {
+      "tex": "\\frac{1}{2}",
+      "text": {
+        "pt-BR": "metade da altura do salto",
+        "en": "half the height of the jump"
+      }
+    }
+  ],
+  "concepts": [
+    "fourier-series"
+  ],
+  "sources": []
+}

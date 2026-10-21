@@ -19,7 +19,7 @@
     "pt-BR": "Condição necessária e suficiente para que palavras de código binárias de comprimentos dados possam formar um código de prefixo.",
     "en": "The necessary and sufficient condition for binary codewords of given lengths to be able to form a prefix code."
   },
-  "notation": "\\sum_{i} 2^{-\\ell_i} \\le 1",
+  "notation": "\\sum_{i=1}^{m} k^{-\\ell_i} \\leq 1",
   "stratum": "formal",
   "category": "proposition",
   "domains": [

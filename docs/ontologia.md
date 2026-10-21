@@ -177,5 +177,8 @@ Tudo funciona sem JavaScript: o mapa é SVG estático com nós que são links e 
    Wikidata.
 5. Rode `pnpm test` (os testes de ontologia carregam os conceitos reais) e `pnpm build:site`; a compilação
    relata todas as violações de uma vez.
-6. Cite o conceito nos textos com `:concept[rótulo]{ref=<id>}` e liste-o em `concepts` do frontmatter das obras
+6. Se o conceito tem `notation`, registre a fórmula correspondente em `src/content/formulas/` com
+   `"concept": "<id>"` ([ADR 0011](adr/0011-acervo-de-formulas.md)): o teste de guarda exige uma ficha para
+   cada notação.
+7. Cite o conceito nos textos com `:concept[rótulo]{ref=<id>}` e liste-o em `concepts` do frontmatter das obras
    que o discutem: é isso que o põe no reticulado e nas obras relacionadas.

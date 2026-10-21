@@ -1,0 +1,50 @@
+{
+  "slug": {
+    "pt-BR": "condicao-de-nyquist",
+    "en": "nyquist-condition"
+  },
+  "name": {
+    "pt-BR": "Condição de Nyquist",
+    "en": "Nyquist condition"
+  },
+  "tex": "f_s > 2B",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "sampling-theorem",
+  "meaning": {
+    "pt-BR": "Um sinal limitado em banda, sem frequências acima de B, é determinado pelas suas amostras quando a taxa de amostragem é maior que o dobro de B. Abaixo desse limite, frequências distintas produzem as mesmas amostras e o sinal já não é recuperável.",
+    "en": "A band-limited signal, with no frequencies above B, is determined by its samples when the sampling rate is greater than twice B. Below that limit, distinct frequencies produce the same samples and the signal can no longer be recovered."
+  },
+  "spoken": {
+    "pt-BR": "f sub s é maior que dois B.",
+    "en": "f sub s is greater than two B."
+  },
+  "symbols": [
+    {
+      "tex": "f_s",
+      "text": {
+        "pt-BR": "taxa de amostragem, em amostras por segundo",
+        "en": "sampling rate, in samples per second"
+      }
+    },
+    {
+      "tex": "B",
+      "text": {
+        "pt-BR": "maior frequência presente no sinal (largura de banda)",
+        "en": "highest frequency present in the signal (bandwidth)"
+      }
+    }
+  ],
+  "concepts": [
+    "sampling",
+    "aliasing",
+    "fourier-transform"
+  ],
+  "sources": [
+    "nyquist1928",
+    "kotelnikov1933",
+    "shannon1949"
+  ]
+}

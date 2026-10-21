@@ -56,6 +56,41 @@ A entropia :eqref[eq:entropia] é máxima para a distribuição uniforme.
 - Dentro de outra fórmula, `\eqref{eq:x}` vira `\text{(3)}` e `\ref{eq:x}` vira `\text{3}` (também valem para
   rótulos de teoremas e figuras: `\ref{thm:x}` → `\text{2}`).
 
+### 1.2 Fórmulas registradas e versão em palavras
+
+Toda equação numerada do conteúdo (`src/content/`) está vinculada a uma fórmula do acervo
+(`src/content/formulas/<id>.json`, [ADR 0011](adr/0011-acervo-de-formulas.md)) pelo rótulo: os `labels` da língua
+do documento contêm o `eq:…` do bloco. Uma equação sem fórmula é erro de compilação (`latex:missing-formula`); um
+bloco `$$` sem rótulo é reprovado pelo teste de guarda `tests/unit/guardrails/formulas.test.ts`. A mesma fórmula
+pode vincular várias equações (a interpolação aparece num ensaio e num laboratório) e a notação de um conceito
+(`concept`).
+
+```json
+{
+  "slug": { "pt-BR": "entropia-de-shannon", "en": "shannon-entropy" },
+  "name": { "pt-BR": "Entropia de Shannon", "en": "Shannon entropy" },
+  "tex": "\\H(X) = -\\sum_{x \\in \\mathcal{X}} p(x) \\log_2 p(x)",
+  "labels": { "pt-BR": ["eq:entropia"], "en": ["eq:entropy"] },
+  "concept": "entropy",
+  "meaning": { "pt-BR": "…", "en": "…" },
+  "spoken": { "pt-BR": "H de X é igual a menos o somatório…", "en": "H of X equals minus the sum…" },
+  "symbols": [{ "tex": "p(x)", "text": { "pt-BR": "probabilidade de X tomar o valor x", "en": "…" } }],
+  "concepts": ["information"],
+  "sources": ["shannon1948", "cover2006"]
+}
+```
+
+- `stratum` e `domains` só existem sem `concept` (com ele, são os do conceito); `concepts` e `sources` são
+  opcionais e conferidos contra a ontologia e a bibliografia; `symbols` é opcional.
+- O `tex` é a forma canônica da ficha. O documento pode escrever uma variante (outra letra, um termo
+  intermediário); a leitura em voz alta (`spoken`) descreve a forma canônica e o significado (`meaning`) explica a
+  diferença quando houver.
+- Sob a equação o estágio gera a versão em palavras: um `<details>` fechado cujo resumo mostra "Em palavras" e o
+  nome da fórmula, com o significado, a leitura e o link para a ficha (`/<lang>/formulas/<slug>/`); a equação
+  recebe `aria-describedby` apontando para o significado. Os símbolos ficam na ficha e na página do conceito.
+- As fichas estão em `/<lang>/formulas/` (ordem da ponte: estrato, depois id) e o registro inteiro em
+  `/formulas.json`.
+
 ## 2. Ambientes à maneira do `amsthm`
 
 ```markdown
@@ -226,8 +261,22 @@ depois de uma, no mesmo nível. Num texto sem contêineres, uma linha só de doi
   tabindex="0"
   role="group"
   aria-label="Equação (2)"
+  aria-describedby="eq-sinc__meaning"
 >
   (KaTeX)
+</div>
+<!-- uma equação vinculada ao acervo (ADR 0011) fica dentro de div.formula, seguida da versão em palavras -->
+<div class="formula" data-formula="whittaker-shannon-interpolation">
+  <div class="equation" …>(KaTeX)</div>
+  <details class="formula__words" id="eq-sinc__words">
+    <summary class="formula__summary">
+      <span class="formula__summary-label">Em palavras</span>
+      <span class="formula__name">Fórmula de interpolação de Whittaker–Shannon</span>
+    </summary>
+    <p class="formula__meaning" id="eq-sinc__meaning">…</p>
+    <p class="formula__spoken"><span class="formula__label">Como se lê:</span> …</p>
+    <p class="formula__more"><a href="/pt/formulas/formula-de-interpolacao/">Ficha da fórmula no acervo</a></p>
+  </details>
 </div>
 
 <figure class="figure figure--chart" id="fig-dobramento" data-label="fig:dobramento">
@@ -333,25 +382,26 @@ frontmatter (título, subtítulo, data `published`, resumo, palavras-chave, macr
 
 ## 8. Diagnósticos
 
-| Regra (`latex:…`)   | Gravidade | Quando                                                             |
-| ------------------- | --------- | ------------------------------------------------------------------ |
-| `unknown-label`     | erro      | `:ref`/`:eqref`/`\ref`/`\eqref`/`of=` para rótulo inexistente      |
-| `duplicate-label`   | erro      | o mesmo rótulo definido duas vezes (mostra a linha da primeira)    |
-| `invalid-label`     | erro      | rótulo fora da gramática `prefixo:nome`, ou `\label` sem `{…}`     |
-| `unnumbered-ref`    | erro      | referência a `remark` ou `proof`                                   |
-| `inline-label`      | erro      | `\label` em fórmula no parágrafo                                   |
-| `multiple-labels`   | erro      | dois `\label` no mesmo bloco                                       |
-| `unknown-attribute` | erro      | atributo fora da gramática fechada (ou atributo em `:ref`)         |
-| `duplicate-title`   | erro      | `[título]` e `title=""` juntos, ou `of=` e título na demonstração  |
-| `proof-target`      | erro      | `of=` aponta para algo que não é enunciado numerado                |
-| `invalid-kind`      | erro      | `kind` de figura desconhecido                                      |
-| `missing-title`     | erro      | figura sem título                                                  |
-| `missing-table`     | erro      | `kind="table"` sem tabela GFM                                      |
-| `stray-fence`       | erro      | linha `:::` órfã após ou dentro de contêiner (escape: `\:::`)      |
-| `missing-source`    | aviso     | figura sem `source`                                                |
-| `eqref-target`      | aviso     | `:eqref` para algo que não é equação (use `:ref`)                  |
-| `complex-tag`       | aviso     | `\tag{…}` com marcação TeX (as referências a mostram literalmente) |
-| `missing-lang`      | aviso     | frontmatter sem `lang` válido (nomes caem para pt-BR)              |
+| Regra (`latex:…`)   | Gravidade | Quando                                                              |
+| ------------------- | --------- | ------------------------------------------------------------------- |
+| `unknown-label`     | erro      | `:ref`/`:eqref`/`\ref`/`\eqref`/`of=` para rótulo inexistente       |
+| `duplicate-label`   | erro      | o mesmo rótulo definido duas vezes (mostra a linha da primeira)     |
+| `invalid-label`     | erro      | rótulo fora da gramática `prefixo:nome`, ou `\label` sem `{…}`      |
+| `unnumbered-ref`    | erro      | referência a `remark` ou `proof`                                    |
+| `inline-label`      | erro      | `\label` em fórmula no parágrafo                                    |
+| `multiple-labels`   | erro      | dois `\label` no mesmo bloco                                        |
+| `unknown-attribute` | erro      | atributo fora da gramática fechada (ou atributo em `:ref`)          |
+| `duplicate-title`   | erro      | `[título]` e `title=""` juntos, ou `of=` e título na demonstração   |
+| `proof-target`      | erro      | `of=` aponta para algo que não é enunciado numerado                 |
+| `invalid-kind`      | erro      | `kind` de figura desconhecido                                       |
+| `missing-title`     | erro      | figura sem título                                                   |
+| `missing-table`     | erro      | `kind="table"` sem tabela GFM                                       |
+| `stray-fence`       | erro      | linha `:::` órfã após ou dentro de contêiner (escape: `\:::`)       |
+| `missing-formula`   | erro      | equação numerada de `src/content/` sem fórmula no acervo (ADR 0011) |
+| `missing-source`    | aviso     | figura sem `source`                                                 |
+| `eqref-target`      | aviso     | `:eqref` para algo que não é equação (use `:ref`)                   |
+| `complex-tag`       | aviso     | `\tag{…}` com marcação TeX (as referências a mostram literalmente)  |
+| `missing-lang`      | aviso     | frontmatter sem `lang` válido (nomes caem para pt-BR)               |
 
 ## 9. Fundamentação
 

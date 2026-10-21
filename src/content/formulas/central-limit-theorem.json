@@ -1,0 +1,56 @@
+{
+  "slug": {
+    "pt-BR": "teorema-central-do-limite",
+    "en": "central-limit-theorem"
+  },
+  "name": {
+    "pt-BR": "Teorema central do limite",
+    "en": "Central limit theorem"
+  },
+  "tex": "\\frac{S_n - n\\mu}{\\sigma\\sqrt{n}} \\xrightarrow{d} \\mathcal{N}(0, 1)",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "central-limit-theorem",
+  "meaning": {
+    "pt-BR": "A soma padronizada de n variáveis independentes e identicamente distribuídas, com variância finita, converge em distribuição para a normal padrão quando n cresce: seja qual for a forma de cada parcela, a soma tende à curva em forma de sino.",
+    "en": "The standardised sum of n independent, identically distributed variables with finite variance converges in distribution to the standard normal as n grows: whatever the shape of each term, the sum tends to the bell curve."
+  },
+  "spoken": {
+    "pt-BR": "S índice n menos n mu, sobre sigma raiz de n, converge em distribuição para a normal de média zero e variância um.",
+    "en": "S sub n minus n mu, over sigma root n, converges in distribution to the normal with mean zero and variance one."
+  },
+  "symbols": [
+    {
+      "tex": "S_n",
+      "text": {
+        "pt-BR": "soma de n variáveis",
+        "en": "sum of n variables"
+      }
+    },
+    {
+      "tex": "\\mu, \\sigma",
+      "text": {
+        "pt-BR": "média e desvio-padrão de cada variável",
+        "en": "mean and standard deviation of each variable"
+      }
+    },
+    {
+      "tex": "\\xrightarrow{d}",
+      "text": {
+        "pt-BR": "convergência em distribuição",
+        "en": "convergence in distribution"
+      }
+    },
+    {
+      "tex": "\\mathcal{N}(0, 1)",
+      "text": {
+        "pt-BR": "distribuição normal padrão",
+        "en": "standard normal distribution"
+      }
+    }
+  ],
+  "concepts": [],
+  "sources": []
+}

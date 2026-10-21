@@ -1,0 +1,55 @@
+{
+  "slug": {
+    "pt-BR": "transformada-discreta-de-fourier",
+    "en": "discrete-fourier-transform"
+  },
+  "name": {
+    "pt-BR": "Transformada discreta de Fourier",
+    "en": "Discrete Fourier transform"
+  },
+  "tex": "X_k = \\sum_{n=0}^{N-1} x_n\\,\\e^{-2\\pi\\i k n / N}",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "discrete-fourier-transform",
+  "meaning": {
+    "pt-BR": "A transformada discreta de Fourier decompõe uma sequência finita de N amostras em N frequências: o k-ésimo coeficiente é a soma das amostras multiplicadas por uma oscilação complexa que dá k voltas ao longo da sequência. É a versão computável da transformada de Fourier.",
+    "en": "The discrete Fourier transform decomposes a finite sequence of N samples into N frequencies: the k-th coefficient is the sum of the samples multiplied by a complex oscillation that completes k turns over the sequence. It is the computable version of the Fourier transform."
+  },
+  "spoken": {
+    "pt-BR": "X índice k é igual ao somatório, para n de zero a N menos um, de x índice n vezes e elevado a menos dois pi i k n sobre N.",
+    "en": "X sub k equals the sum, for n from zero to N minus one, of x sub n times e to the power minus two pi i k n over N."
+  },
+  "symbols": [
+    {
+      "tex": "X_k",
+      "text": {
+        "pt-BR": "coeficiente da k-ésima frequência",
+        "en": "coefficient of the k-th frequency"
+      }
+    },
+    {
+      "tex": "x_n",
+      "text": {
+        "pt-BR": "n-ésima amostra",
+        "en": "n-th sample"
+      }
+    },
+    {
+      "tex": "N",
+      "text": {
+        "pt-BR": "número de amostras",
+        "en": "number of samples"
+      }
+    }
+  ],
+  "concepts": [
+    "fourier-transform",
+    "fast-fourier-transform",
+    "sampling"
+  ],
+  "sources": [
+    "cooley1965"
+  ]
+}

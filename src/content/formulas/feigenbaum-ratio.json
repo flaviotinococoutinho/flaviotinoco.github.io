@@ -1,0 +1,53 @@
+{
+  "slug": {
+    "pt-BR": "razao-de-feigenbaum",
+    "en": "feigenbaum-ratio"
+  },
+  "name": {
+    "pt-BR": "Razão de Feigenbaum",
+    "en": "Feigenbaum ratio"
+  },
+  "tex": "\\delta = \\lim_{n\\to\\infty} \\frac{r_{n} - r_{n-1}}{r_{n+1} - r_{n}}",
+  "labels": {
+    "pt-BR": [
+      "eq:razao"
+    ],
+    "en": [
+      "eq:ratio"
+    ]
+  },
+  "concept": "bifurcation",
+  "meaning": {
+    "pt-BR": "Na rota para o caos por duplicação de período, cada bifurcação ocorre num valor r do parâmetro, e as distâncias entre bifurcações sucessivas encolhem numa razão que converge para a constante de Feigenbaum, 4,669…. O laboratório mostra as razões finitas δₙ aproximando-se do limite; a constante é a mesma para toda uma família de mapas.",
+    "en": "On the period-doubling route to chaos each bifurcation happens at a parameter value r, and the distances between successive bifurcations shrink by a ratio that converges to Feigenbaum’s constant, 4.669…. The lab shows the finite ratios δₙ approaching the limit; the constant is the same for a whole family of maps."
+  },
+  "spoken": {
+    "pt-BR": "Delta é igual ao limite, quando n tende a infinito, de r índice n menos r índice n menos um, sobre r índice n mais um menos r índice n.",
+    "en": "Delta equals the limit, as n tends to infinity, of r sub n minus r sub n minus one, over r sub n plus one minus r sub n."
+  },
+  "symbols": [
+    {
+      "tex": "\\delta",
+      "text": {
+        "pt-BR": "constante de Feigenbaum (cerca de 4,669)",
+        "en": "Feigenbaum’s constant (about 4.669)"
+      }
+    },
+    {
+      "tex": "r_n",
+      "text": {
+        "pt-BR": "valor do parâmetro na n-ésima duplicação de período",
+        "en": "parameter value at the n-th period doubling"
+      }
+    }
+  ],
+  "concepts": [
+    "logistic-map",
+    "deterministic-chaos",
+    "dynamical-system"
+  ],
+  "sources": [
+    "feigenbaum1978",
+    "may1976"
+  ]
+}

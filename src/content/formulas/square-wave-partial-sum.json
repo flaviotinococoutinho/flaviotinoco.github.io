@@ -1,0 +1,60 @@
+{
+  "slug": {
+    "pt-BR": "soma-parcial-da-onda-quadrada",
+    "en": "square-wave-partial-sum"
+  },
+  "name": {
+    "pt-BR": "Soma parcial da série da onda quadrada",
+    "en": "Partial sum of the square-wave series"
+  },
+  "tex": "S_N(x) = \\frac{4}{\\pi} \\sum_{j=1}^{N} \\frac{\\sin\\big((2j - 1)x\\big)}{2j - 1}",
+  "labels": {
+    "pt-BR": [
+      "eq:soma-parcial"
+    ],
+    "en": [
+      "eq:partial-sum"
+    ]
+  },
+  "stratum": "formal",
+  "domains": [
+    "signal-processing",
+    "mathematics"
+  ],
+  "meaning": {
+    "pt-BR": "A onda quadrada de amplitude 1 é a soma de senoides nas frequências ímpares, cada uma com amplitude inversamente proporcional à sua frequência. A soma dos N primeiros termos aproxima a onda; o erro se concentra junto aos saltos.",
+    "en": "The square wave of amplitude 1 is the sum of sinusoids at the odd frequencies, each with amplitude inversely proportional to its frequency. The sum of the first N terms approximates the wave; the error concentrates next to the jumps."
+  },
+  "spoken": {
+    "pt-BR": "S índice N de x é igual a quatro sobre pi vezes o somatório, para j de um a N, de seno de, dois j menos um, vezes x, sobre dois j menos um.",
+    "en": "S sub N of x equals four over pi times the sum, for j from one to N, of sine of, two j minus one, times x, over two j minus one."
+  },
+  "symbols": [
+    {
+      "tex": "S_N(x)",
+      "text": {
+        "pt-BR": "soma dos N primeiros termos da série",
+        "en": "sum of the first N terms of the series"
+      }
+    },
+    {
+      "tex": "N",
+      "text": {
+        "pt-BR": "número de harmônicas somadas",
+        "en": "number of harmonics added"
+      }
+    },
+    {
+      "tex": "2j - 1",
+      "text": {
+        "pt-BR": "frequências ímpares",
+        "en": "odd frequencies"
+      }
+    }
+  ],
+  "concepts": [
+    "fourier-series",
+    "gibbs-phenomenon"
+  ],
+  "sources": []
+}

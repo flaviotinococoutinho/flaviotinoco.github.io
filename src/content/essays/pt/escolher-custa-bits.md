@@ -93,6 +93,7 @@ Seja $$X$$ uma fonte com probabilidades $$p_i$$, e seja $$L^*$$ o menor comprime
 
 $$
 \frac{\H(X)}{\log_2 k} \leq L^* < \frac{\H(X)}{\log_2 k} + 1,
+\label{eq:codificacao-fonte}
 $$
 
 e o algoritmo de Huffman constrói um código que atinge $$L^*$$ [@huffman1952; @cover2006, cap. 5].

@@ -26,6 +26,8 @@ import type { Code, Link, Nodes, Paragraph, Parent, PhrasingContent, Root, RootC
 import type { Position } from 'unist';
 import { parseLabel, type Label } from '../domain/identifiers.ts';
 import type { Locale } from '../domain/locale.ts';
+import { formulaWords, lookupFormula, type Formula, type FormulaRegistry } from '../formulas/index.ts';
+import { formulaBlock, formulaWordsBlock } from './formula-block.ts';
 import {
   captionLabel,
   envName,
@@ -37,6 +39,7 @@ import {
   targetNumber,
   type Segment,
 } from './format.ts';
+import { formulaPartId } from '../formulas/words.ts';
 import { anonymousId, labelToId, partId } from './label-codec.ts';
 import { smartPunctuation } from './smart-punctuation.ts';
 import {
@@ -84,10 +87,23 @@ import {
   type TextDirective,
 } from './nodes.ts';
 
+/**
+ * Binding of the document's numbered equations to the formula registry: every
+ * labelled display gets the version in words of its formula under it, and a
+ * label no formula claims is an error (docs/adr/0011-acervo-de-formulas.md).
+ */
+export interface FormulaBinding {
+  readonly registry: FormulaRegistry;
+  /** URL of a formula's own page (the shell prefixes the base path). */
+  readonly href: (formula: Formula) => string;
+}
+
 export interface TransformOptions {
   readonly locale: Locale;
   /** The Markdown source the tree was parsed from (file.value); lets labels be sliced verbatim. */
   readonly source?: string;
+  /** When given, the document is site content: its numbered equations must be registered formulas. */
+  readonly formulas?: FormulaBinding;
 }
 
 /** JSON-serialisable summary of the label table, exported as frontmatter.crossrefs. */
@@ -146,6 +162,8 @@ interface EquationItem {
   /** Formula without the `\label`, ready for KaTeX (author `\tag` kept). */
   readonly tex: string;
   readonly explicitTag: boolean;
+  /** The registered formula this equation is bound to (only with a FormulaBinding). */
+  readonly formula: Formula | undefined;
 }
 
 const isLabelParagraph = (node: Nodes): node is Paragraph =>
@@ -187,7 +205,7 @@ const attributesOf = (node: Directive): Readonly<Record<string, string>> => {
 const lineOf = (position: Position | undefined): string => (position === undefined ? '?' : String(position.start.line));
 
 export const transformLatex = (tree: Root, options: TransformOptions): TransformResult => {
-  const { locale, source } = options;
+  const { locale, source, formulas } = options;
   const diagnostics: Diagnostic[] = [];
   const report = (severity: Diagnostic['severity'], rule: DiagnosticRule, reason: string, node?: Nodes): void => {
     diagnostics.push(
@@ -415,12 +433,23 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     }
     const number = tag === undefined ? String((equationCounter += 1)) : tag.text;
     register(parsed.value, { type: 'equation', number }, node);
+    const formula = formulas === undefined ? undefined : lookupFormula(formulas.registry, locale, parsed.value);
+    if (formulas !== undefined && formula === undefined) {
+      report(
+        'error',
+        'missing-formula',
+        `no formula registered for "${parsed.value}": every numbered equation has a version in words — add it to ` +
+          `src/content/formulas/<id>.json under labels["${locale}"] (docs/guia-latex.md §1.2)`,
+        node,
+      );
+    }
     equations.set(node, {
       label: parsed.value,
       id: labelToId(parsed.value),
       number,
       tex: scan.tex,
       explicitTag: tag !== undefined,
+      formula,
     });
   };
 
@@ -583,13 +612,20 @@ export const transformLatex = (tree: Root, options: TransformOptions): Transform
     const body = starAutoNumbered(item === undefined ? node.value : item.tex);
     const tagged = item === undefined || item.explicitTag ? body : appendTag(body, item.number);
     const tex = resolveMath(tagged, node);
+    const formula = item?.formula;
     const properties: Properties = {
       className: ['equation'],
       ...(item === undefined ? {} : { id: item.id, dataLabel: item.label }),
       dataTex: node.value,
       ...scrollBox({ ariaLabel: equationLabel(item?.number ?? findTag(node.value)?.text) }),
+      // The meaning of the bound formula describes the equation (WCAG 2.2 SC 1.3.1).
+      ...(item === undefined || formula === undefined ? {} : { ariaDescribedBy: [formulaPartId(item.id, 'meaning')] }),
     };
-    return latexBlock('equation', 'div', properties, [tex === node.value ? node : withMathValue(node, tex)]);
+    const equation = latexBlock('equation', 'div', properties, [tex === node.value ? node : withMathValue(node, tex)]);
+    if (item === undefined || formula === undefined || formulas === undefined) return equation;
+    localized = true;
+    const words = formulaWords(formula, locale, formulas.href(formula));
+    return formulaBlock(equation, formulaWordsBlock(words, item.id), formula.id);
   };
 
   /** A ```math fence renders as a display too (rehype-katex); its content stays opaque here. */

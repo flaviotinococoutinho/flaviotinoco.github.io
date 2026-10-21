@@ -26,6 +26,8 @@ export type Route =
   | { readonly kind: 'ontology' }
   | { readonly kind: 'ontology-page'; readonly page: OntologyPage }
   | { readonly kind: 'concept'; readonly slug: Slug }
+  | { readonly kind: 'formulas' }
+  | { readonly kind: 'formula'; readonly slug: Slug }
   | { readonly kind: 'glossary' }
   | { readonly kind: 'about' }
   | { readonly kind: 'colophon' };
@@ -55,6 +57,7 @@ export const SEGMENTS = {
   strata: { 'pt-BR': 'estratos', en: 'strata' },
   ontology: { 'pt-BR': 'ontologia', en: 'ontology' },
   concepts: { 'pt-BR': 'conceitos', en: 'concepts' },
+  formulas: { 'pt-BR': 'formulas', en: 'formulas' },
   glossary: { 'pt-BR': 'glossario', en: 'glossary' },
   about: { 'pt-BR': 'sobre', en: 'about' },
   colophon: { 'pt-BR': 'colofao', en: 'colophon' },
@@ -91,6 +94,10 @@ export const encodeRoute = (route: Route, locale: Locale): string => {
       return join(l, SEGMENTS.ontology[locale], ONTOLOGY_PAGE_SLUGS[route.page][locale]);
     case 'concept':
       return join(l, SEGMENTS.concepts[locale], route.slug);
+    case 'formulas':
+      return join(l, SEGMENTS.formulas[locale]);
+    case 'formula':
+      return join(l, SEGMENTS.formulas[locale], route.slug);
     case 'glossary':
       return join(l, SEGMENTS.glossary[locale]);
     case 'about':
@@ -134,7 +141,7 @@ export const decodeRoute = (path: string): Result<Located, string> => {
   const key = segmentKey(collection, locale);
   if (key === null) return err(`unknown segment "${collection}" for ${locale}`);
 
-  const withSlug = (kind: 'essay' | 'lab' | 'concept'): Result<Located, string> => {
+  const withSlug = (kind: 'essay' | 'lab' | 'concept' | 'formula'): Result<Located, string> => {
     const slug = parseSlug(item);
     return slug.ok ? ok({ route: { kind, slug: slug.value }, locale }) : slug;
   };
@@ -146,6 +153,8 @@ export const decodeRoute = (path: string): Result<Located, string> => {
       return item === undefined ? ok({ route: { kind: 'labs' }, locale }) : withSlug('lab');
     case 'concepts':
       return item === undefined ? err('concept index is the ontology route') : withSlug('concept');
+    case 'formulas':
+      return item === undefined ? ok({ route: { kind: 'formulas' }, locale }) : withSlug('formula');
     case 'strata': {
       if (item === undefined) return err('strata index is not a route');
       const stratum = stratumFromSlug(item, locale);

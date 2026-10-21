@@ -1,0 +1,47 @@
+{
+  "slug": {
+    "pt-BR": "complexidade-de-tempo",
+    "en": "time-complexity"
+  },
+  "name": {
+    "pt-BR": "Complexidade de tempo (notação O)",
+    "en": "Time complexity (big-O notation)"
+  },
+  "tex": "T(n) = O\\bigl(n \\log n\\bigr)",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "computational-complexity",
+  "meaning": {
+    "pt-BR": "A complexidade de tempo de um algoritmo diz como o número de passos cresce com o tamanho da entrada. A notação O guarda só a ordem de crescimento: T(n) = O(n log n) significa que, a partir de certo n, T(n) não passa de uma constante vezes n log n. É o custo da ordenação por comparação e da transformada rápida de Fourier.",
+    "en": "The time complexity of an algorithm says how the number of steps grows with the size of the input. Big-O notation keeps only the order of growth: T(n) = O(n log n) means that, from some n on, T(n) does not exceed a constant times n log n. It is the cost of comparison sorting and of the fast Fourier transform."
+  },
+  "spoken": {
+    "pt-BR": "T de n é O de n logaritmo de n.",
+    "en": "T of n is big O of n log n."
+  },
+  "symbols": [
+    {
+      "tex": "T(n)",
+      "text": {
+        "pt-BR": "número de passos para uma entrada de tamanho n",
+        "en": "number of steps for an input of size n"
+      }
+    },
+    {
+      "tex": "O(\\cdot)",
+      "text": {
+        "pt-BR": "limite superior assintótico, a menos de uma constante",
+        "en": "asymptotic upper bound, up to a constant"
+      }
+    }
+  ],
+  "concepts": [
+    "fast-fourier-transform",
+    "combinatorial-optimization"
+  ],
+  "sources": [
+    "garey1979"
+  ]
+}

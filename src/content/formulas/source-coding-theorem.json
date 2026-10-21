@@ -1,0 +1,64 @@
+{
+  "slug": {
+    "pt-BR": "teorema-da-codificacao-de-fonte",
+    "en": "source-coding-theorem"
+  },
+  "name": {
+    "pt-BR": "Teorema da codificação de fonte",
+    "en": "Source coding theorem"
+  },
+  "tex": "\\frac{\\H(X)}{\\log_2 k} \\leq L^{*} < \\frac{\\H(X)}{\\log_2 k} + 1",
+  "labels": {
+    "pt-BR": [
+      "eq:limites",
+      "eq:codificacao-fonte"
+    ],
+    "en": [
+      "eq:bounds",
+      "eq:source-coding"
+    ]
+  },
+  "concept": "huffman-code",
+  "meaning": {
+    "pt-BR": "O menor comprimento médio de um código de prefixo k-ário fica entre a entropia da fonte, medida em símbolos do código, e esse valor mais um. Com código binário (k = 2), o divisor vale 1 e os limites são H(X) e H(X) + 1. O algoritmo de Huffman constrói um código que atinge o ótimo.",
+    "en": "The smallest average length of a k-ary prefix code lies between the entropy of the source, measured in code symbols, and that value plus one. With a binary code (k = 2) the divisor equals 1 and the bounds are H(X) and H(X) + 1. Huffman’s algorithm builds a code that attains the optimum."
+  },
+  "spoken": {
+    "pt-BR": "H de X sobre o logaritmo, na base dois, de k é menor ou igual a L asterisco, que é menor que H de X sobre o logaritmo, na base dois, de k, mais um.",
+    "en": "H of X over the logarithm, base two, of k is less than or equal to L star, which is less than H of X over the logarithm, base two, of k, plus one."
+  },
+  "symbols": [
+    {
+      "tex": "\\H(X)",
+      "text": {
+        "pt-BR": "entropia da fonte, em bits",
+        "en": "entropy of the source, in bits"
+      }
+    },
+    {
+      "tex": "k",
+      "text": {
+        "pt-BR": "tamanho do alfabeto do código (2 para códigos binários)",
+        "en": "size of the code alphabet (2 for binary codes)"
+      }
+    },
+    {
+      "tex": "L^{*}",
+      "text": {
+        "pt-BR": "menor comprimento médio por símbolo entre os códigos de prefixo",
+        "en": "smallest average length per symbol among prefix codes"
+      }
+    }
+  ],
+  "concepts": [
+    "entropy",
+    "prefix-code",
+    "kraft-inequality",
+    "code"
+  ],
+  "sources": [
+    "shannon1948",
+    "huffman1952",
+    "cover2006"
+  ]
+}

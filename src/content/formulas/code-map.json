@@ -1,0 +1,54 @@
+{
+  "slug": {
+    "pt-BR": "codigo-como-funcao",
+    "en": "code-as-a-function"
+  },
+  "name": {
+    "pt-BR": "Código como função",
+    "en": "Code as a function"
+  },
+  "tex": "C : \\mathcal{X} \\to \\mathcal{D}^{*}",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "code",
+  "meaning": {
+    "pt-BR": "Um código é uma função que leva cada símbolo da fonte a uma palavra de código: uma sequência finita, possivelmente vazia, de símbolos do alfabeto do código. O asterisco denota o conjunto de todas essas sequências.",
+    "en": "A code is a function that takes each source symbol to a codeword: a finite, possibly empty, sequence of symbols of the code alphabet. The asterisk denotes the set of all such sequences."
+  },
+  "spoken": {
+    "pt-BR": "C é uma função do alfabeto X no conjunto das sequências finitas sobre o alfabeto D.",
+    "en": "C is a function from the alphabet X to the set of finite sequences over the alphabet D."
+  },
+  "symbols": [
+    {
+      "tex": "C",
+      "text": {
+        "pt-BR": "o código (a função de codificação)",
+        "en": "the code (the encoding function)"
+      }
+    },
+    {
+      "tex": "\\mathcal{X}",
+      "text": {
+        "pt-BR": "alfabeto da fonte",
+        "en": "source alphabet"
+      }
+    },
+    {
+      "tex": "\\mathcal{D}^{*}",
+      "text": {
+        "pt-BR": "todas as sequências finitas de símbolos do alfabeto do código",
+        "en": "all finite sequences of symbols of the code alphabet"
+      }
+    }
+  ],
+  "concepts": [
+    "prefix-code",
+    "huffman-code"
+  ],
+  "sources": [
+    "cover2006"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "slug": {
+    "pt-BR": "frequencia-e-periodo",
+    "en": "frequency-and-period"
+  },
+  "name": {
+    "pt-BR": "Frequência e período",
+    "en": "Frequency and period"
+  },
+  "tex": "f = \\frac{1}{T}",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "frequency",
+  "meaning": {
+    "pt-BR": "A frequência de uma oscilação periódica é o inverso do seu período: o número de ciclos por unidade de tempo. Em hertz, ciclos por segundo.",
+    "en": "The frequency of a periodic oscillation is the inverse of its period: the number of cycles per unit of time. In hertz, cycles per second."
+  },
+  "spoken": {
+    "pt-BR": "f é igual a um sobre T.",
+    "en": "f equals one over T."
+  },
+  "symbols": [
+    {
+      "tex": "f",
+      "text": {
+        "pt-BR": "frequência, em hertz",
+        "en": "frequency, in hertz"
+      }
+    },
+    {
+      "tex": "T",
+      "text": {
+        "pt-BR": "período: a duração de um ciclo, em segundos",
+        "en": "period: the duration of one cycle, in seconds"
+      }
+    }
+  ],
+  "concepts": [
+    "signal",
+    "fourier-transform"
+  ],
+  "sources": []
+}

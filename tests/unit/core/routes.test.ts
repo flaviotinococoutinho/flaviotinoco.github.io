@@ -19,12 +19,14 @@ const routeArb: fc.Arbitrary<Route> = fc.oneof(
   fc.constant<Route>({ kind: 'essays' }),
   fc.constant<Route>({ kind: 'labs' }),
   fc.constant<Route>({ kind: 'ontology' }),
+  fc.constant<Route>({ kind: 'formulas' }),
   fc.constant<Route>({ kind: 'glossary' }),
   fc.constant<Route>({ kind: 'about' }),
   fc.constant<Route>({ kind: 'colophon' }),
   slugArb.map((slug): Route => ({ kind: 'essay', slug })),
   slugArb.map((slug): Route => ({ kind: 'lab', slug })),
   slugArb.map((slug): Route => ({ kind: 'concept', slug })),
+  slugArb.map((slug): Route => ({ kind: 'formula', slug })),
   fc.constantFrom(...STRATA).map((stratum): Route => ({ kind: 'stratum', stratum })),
   fc.constantFrom(...ONTOLOGY_PAGES).map((page): Route => ({ kind: 'ontology-page', page })),
 );
@@ -54,6 +56,8 @@ describe('route codec', () => {
     expect(decodeRoute('/pt/glossario/x/').ok).toBe(false); // the glossary takes no parameter
     expect(decodeRoute('/pt/ontologia/structure/').ok).toBe(false); // English page slug under pt
     expect(decodeRoute('/en/ontology/estrutura/').ok).toBe(false);
+    expect(decodeRoute('/pt/formulas/Entropia/').ok).toBe(false); // slugs are lowercase
+    expect(decodeRoute('/en/formulas/')).toEqual({ ok: true, value: { route: { kind: 'formulas' }, locale: 'en' } });
     expect(decodeRoute('/pt/ontologia/estrutura/')).toEqual({
       ok: true,
       value: { route: { kind: 'ontology-page', page: 'structure' }, locale: 'pt-BR' },

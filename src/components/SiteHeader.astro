@@ -43,6 +43,7 @@ const nav = [
   { label: t('nav.essays'), href: href({ kind: 'essays' }, locale) },
   { label: t('nav.labs'), href: href({ kind: 'labs' }, locale) },
   { label: t('nav.ontology'), href: href({ kind: 'ontology' }, locale) },
+  { label: t('nav.formulas'), href: href({ kind: 'formulas' }, locale) },
 ].map((item) => ({ ...item, current: currentness(path, item.href) }));
 ---
 

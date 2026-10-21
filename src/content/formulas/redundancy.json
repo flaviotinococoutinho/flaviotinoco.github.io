@@ -1,0 +1,54 @@
+{
+  "slug": {
+    "pt-BR": "redundancia",
+    "en": "redundancy"
+  },
+  "name": {
+    "pt-BR": "Redundância",
+    "en": "Redundancy"
+  },
+  "tex": "R = 1 - \\frac{\\H(X)}{\\log_2 \\lvert \\mathcal{X} \\rvert}",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "redundancy",
+  "meaning": {
+    "pt-BR": "A redundância de uma fonte é a fração da entropia máxima que ela não usa. A entropia máxima é o logaritmo do número de símbolos (todos equiprováveis); quanto mais desigual a distribuição, maior a redundância, e maior a compressão possível.",
+    "en": "The redundancy of a source is the fraction of the maximum entropy it does not use. The maximum entropy is the logarithm of the number of symbols (all equally likely); the more uneven the distribution, the larger the redundancy, and the more compression is possible."
+  },
+  "spoken": {
+    "pt-BR": "R é igual a um menos H de X dividido pelo logaritmo, na base dois, do número de símbolos do alfabeto X.",
+    "en": "R equals one minus H of X divided by the logarithm, base two, of the number of symbols of the alphabet X."
+  },
+  "symbols": [
+    {
+      "tex": "R",
+      "text": {
+        "pt-BR": "redundância, entre 0 e 1",
+        "en": "redundancy, between 0 and 1"
+      }
+    },
+    {
+      "tex": "\\H(X)",
+      "text": {
+        "pt-BR": "entropia da fonte",
+        "en": "entropy of the source"
+      }
+    },
+    {
+      "tex": "\\lvert \\mathcal{X} \\rvert",
+      "text": {
+        "pt-BR": "número de símbolos do alfabeto",
+        "en": "number of symbols of the alphabet"
+      }
+    }
+  ],
+  "concepts": [
+    "entropy",
+    "huffman-code"
+  ],
+  "sources": [
+    "shannon1948"
+  ]
+}

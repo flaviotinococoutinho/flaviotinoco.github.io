@@ -1,12 +1,33 @@
 ---
-/** TeX rendered with KaTeX at build time (HTML + MathML, site macros). Include <MathAssets /> on the page. */
+/**
+ * TeX rendered with KaTeX at build time (HTML + MathML, site macros). Include <MathAssets /> on the page.
+ *
+ * A display box scrolls horizontally when the formula is wider than the column, so it is
+ * focusable and named (tabindex="0", role="group", aria-label), as the latex stage does for
+ * every display of the content (WCAG 2.1.1; axe scrollable-region-focusable): `label` is
+ * required with `display`.
+ */
 import { renderTex } from './text.ts';
 
 export interface Props {
   readonly tex: string;
   readonly display?: boolean;
+  /** Accessible name of a display box ("Notação", "Equação"); required when `display`. */
+  readonly label?: string;
 }
-const { tex, display = false } = Astro.props;
+const { tex, display = false, label } = Astro.props;
+if (display && (label === undefined || label === ''))
+  throw new Error('Tex: a display box needs a label (it is a focusable scroll box).');
 ---
 
-<span class:list={['ontology-tex', { 'ontology-tex--display': display }]} set:html={renderTex(tex, display)} />
+{display ? (
+  <span
+    class="ontology-tex ontology-tex--display"
+    tabindex="0"
+    role="group"
+    aria-label={label}
+    set:html={renderTex(tex, true)}
+  />
+) : (
+  <span class="ontology-tex" set:html={renderTex(tex, false)} />
+)}

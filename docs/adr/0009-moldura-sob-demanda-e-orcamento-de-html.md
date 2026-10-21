@@ -54,7 +54,7 @@ marginal por conceito** (≈ 1,1 KiB no mapa e ≈ 0,27 KiB na árvore): cresce 
    localizados e a mesma lei `decode ∘ encode = id`; as quatro páginas compartilham uma navegação local com
    `aria-current`.
 
-3. **O orçamento não muda.** 150 KiB continua o limite; a margem de cada página e a taxa de crescimento por
+3. **O orçamento não muda.** 150 KiB continua o limite (alterado para 160 KiB pelo ADR 0011, com a medição que o justifica); a margem de cada página e a taxa de crescimento por
    conceito são registradas em `docs/requisitos-nao-funcionais.md` e remedidas a cada rodada.
 
 ## Consequências

@@ -1,0 +1,64 @@
+{
+  "slug": {
+    "pt-BR": "lei-de-hick-hyman-forma-entropica",
+    "en": "hick-hyman-law-entropy-form"
+  },
+  "name": {
+    "pt-BR": "Lei de Hick–Hyman, forma entrópica",
+    "en": "Hick–Hyman law, entropy form"
+  },
+  "tex": "T = a + b\\, \\H(X)",
+  "labels": {
+    "pt-BR": [
+      "eq:hyman"
+    ],
+    "en": [
+      "eq:hyman"
+    ]
+  },
+  "stratum": "value",
+  "domains": [
+    "design",
+    "information-theory"
+  ],
+  "meaning": {
+    "pt-BR": "Hyman separou o número de alternativas da informação que elas carregam: o tempo médio de reação cresce linearmente com a entropia do estímulo. Para alternativas equiprováveis a entropia vale log₂ n, e a forma entrópica difere da forma de Hick só pelo termo mais um; com probabilidades desiguais, o que pesa é a incerteza, não a contagem.",
+    "en": "Hyman separated the number of alternatives from the information they carry: the average reaction time grows linearly with the entropy of the stimulus. For equally likely alternatives the entropy is log₂ n, and the entropy form differs from Hick’s only by the plus one; with unequal probabilities what counts is the uncertainty, not the count."
+  },
+  "spoken": {
+    "pt-BR": "T é igual a a mais b vezes H de X.",
+    "en": "T equals a plus b times H of X."
+  },
+  "symbols": [
+    {
+      "tex": "T",
+      "text": {
+        "pt-BR": "tempo médio de reação",
+        "en": "average reaction time"
+      }
+    },
+    {
+      "tex": "\\H(X)",
+      "text": {
+        "pt-BR": "entropia do estímulo, em bits",
+        "en": "entropy of the stimulus, in bits"
+      }
+    },
+    {
+      "tex": "a, b",
+      "text": {
+        "pt-BR": "constantes ajustadas aos dados",
+        "en": "constants fitted to the data"
+      }
+    }
+  ],
+  "concepts": [
+    "hick-hyman-law",
+    "entropy",
+    "decision"
+  ],
+  "sources": [
+    "hyman1953",
+    "hick1952"
+  ]
+}

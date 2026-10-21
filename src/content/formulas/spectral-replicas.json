@@ -1,0 +1,69 @@
+{
+  "slug": {
+    "pt-BR": "espectro-do-sinal-amostrado",
+    "en": "spectrum-of-the-sampled-signal"
+  },
+  "name": {
+    "pt-BR": "Espectro do sinal amostrado",
+    "en": "Spectrum of the sampled signal"
+  },
+  "tex": "X_s(f) = \\frac{1}{T} \\sum_{k=-\\infty}^{\\infty} X(f - k f_s)",
+  "labels": {
+    "pt-BR": [
+      "eq:replicas"
+    ],
+    "en": [
+      "eq:replicas"
+    ]
+  },
+  "stratum": "formal",
+  "domains": [
+    "signal-processing"
+  ],
+  "meaning": {
+    "pt-BR": "Amostrar um sinal copia o seu espectro repetidamente, uma réplica a cada múltiplo da taxa de amostragem. Se as réplicas não se sobrepõem, um filtro recupera a original; se se sobrepõem, as frequências se confundem: é o dobramento espectral.",
+    "en": "Sampling a signal copies its spectrum repeatedly, one replica at every multiple of the sampling rate. If the replicas do not overlap, a filter recovers the original; if they overlap, frequencies get confused: that is aliasing."
+  },
+  "spoken": {
+    "pt-BR": "X sub s de f é igual a um sobre T vezes o somatório, para k de menos infinito a mais infinito, de X de, f menos k f sub s.",
+    "en": "X sub s of f equals one over T times the sum, for k from minus infinity to plus infinity, of X of, f minus k f sub s."
+  },
+  "symbols": [
+    {
+      "tex": "X_s(f)",
+      "text": {
+        "pt-BR": "espectro do sinal amostrado",
+        "en": "spectrum of the sampled signal"
+      }
+    },
+    {
+      "tex": "X(f)",
+      "text": {
+        "pt-BR": "espectro do sinal original",
+        "en": "spectrum of the original signal"
+      }
+    },
+    {
+      "tex": "f_s",
+      "text": {
+        "pt-BR": "taxa de amostragem (igual a 1/T)",
+        "en": "sampling rate (equal to 1/T)"
+      }
+    },
+    {
+      "tex": "k",
+      "text": {
+        "pt-BR": "índice da réplica",
+        "en": "index of the replica"
+      }
+    }
+  ],
+  "concepts": [
+    "sampling",
+    "fourier-transform",
+    "aliasing"
+  ],
+  "sources": [
+    "shannon1949"
+  ]
+}

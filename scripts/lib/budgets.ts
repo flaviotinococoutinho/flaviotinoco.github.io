@@ -4,7 +4,8 @@
  * "Leveza como requisito" (docs/arquitetura.md §2.7): static HTML, no client
  * framework, behaviour loaded on demand. The budgets make that measurable:
  *
- *   HTML (raw)                   ≤ 150 KiB per page  — long essays with inline SVG and MathML fit; bloat does not.
+ *   HTML (raw)                   ≤ 160 KiB per page  — long essays with inline SVG, MathML and the words of their
+ *                                                      formulas fit (ADR 0011); bloat does not.
  *   CSS  (gzip, render-blocking) ≤  30 KiB per page  — linked stylesheets + inline <style> (KaTeX ≈ 7 KiB gz included).
  *   JS   (gzip, initial)         ≤  12 KiB per page  — scripts that run at load: inline + src + their static import
  *                                                      graph + modulepreload. Dynamic import() (islands) is excluded.
@@ -34,7 +35,7 @@ export interface Budgets {
 }
 
 export const BUDGETS: Budgets = {
-  htmlRaw: 150 * KiB,
+  htmlRaw: 160 * KiB,
   cssGzip: 30 * KiB,
   jsGzip: 12 * KiB,
   wasmRaw: 48 * KiB,

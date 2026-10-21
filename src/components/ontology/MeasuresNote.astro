@@ -5,6 +5,7 @@
  * <details>, so it works without JavaScript.
  */
 import type { Locale } from '../../core/domain/locale.ts';
+import { equationName } from '../../core/latex/format.ts';
 import { BETWEENNESS_TEX, ENTROPY_TEX, IC_TEX, LIN_TEX, NMI_TEX, RESNIK_TEX } from '../../core/ontology/index.ts';
 import Tex from './Tex.astro';
 import { ontologyText } from './text.ts';
@@ -41,7 +42,7 @@ const TEXT: Readonly<Record<Measure, string>> = {
   {measures.map((m) => (
     <div class="measures-note__item" data-measure={m}>
       <p>{TEXT[m]}</p>
-      <Tex tex={FORMULA[m]} display />
+      <Tex tex={FORMULA[m]} display label={equationName(locale)} />
     </div>
   ))}
 </details>

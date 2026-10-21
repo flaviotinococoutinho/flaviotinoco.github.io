@@ -1,0 +1,59 @@
+{
+  "slug": {
+    "pt-BR": "desigualdade-de-kraft",
+    "en": "kraft-inequality"
+  },
+  "name": {
+    "pt-BR": "Desigualdade de Kraft",
+    "en": "Kraft inequality"
+  },
+  "tex": "\\sum_{i=1}^{m} k^{-\\ell_i} \\leq 1",
+  "labels": {
+    "pt-BR": [
+      "eq:kraft"
+    ],
+    "en": [
+      "eq:kraft"
+    ]
+  },
+  "concept": "kraft-inequality",
+  "meaning": {
+    "pt-BR": "Existe um código de prefixo k-ário com palavras de comprimentos ℓ₁ … ℓₘ se, e somente se, a soma de k elevado a menos cada comprimento não passa de 1. As palavras são folhas de uma árvore k-ária, e cada uma ocupa uma fração k elevado a menos ℓ do espaço disponível.",
+    "en": "A k-ary prefix code with codeword lengths ℓ₁ … ℓₘ exists if, and only if, the sum of k to the power of minus each length does not exceed 1. The codewords are leaves of a k-ary tree, and each one takes a fraction k to the minus ℓ of the available space."
+  },
+  "spoken": {
+    "pt-BR": "O somatório, para i de um a m, de k elevado a menos ℓ i é menor ou igual a um.",
+    "en": "The sum, for i from one to m, of k to the power of minus ℓ i is less than or equal to one."
+  },
+  "symbols": [
+    {
+      "tex": "k",
+      "text": {
+        "pt-BR": "tamanho do alfabeto do código",
+        "en": "size of the code alphabet"
+      }
+    },
+    {
+      "tex": "m",
+      "text": {
+        "pt-BR": "número de palavras do código",
+        "en": "number of codewords"
+      }
+    },
+    {
+      "tex": "\\ell_i",
+      "text": {
+        "pt-BR": "comprimento da i-ésima palavra",
+        "en": "length of the i-th codeword"
+      }
+    }
+  ],
+  "concepts": [
+    "prefix-code",
+    "code",
+    "huffman-code"
+  ],
+  "sources": [
+    "cover2006"
+  ]
+}

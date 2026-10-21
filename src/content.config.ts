@@ -184,4 +184,33 @@ const concepts = defineCollection({
     .strict(),
 });
 
-export const collections = { essays, labs, strata, pages, concepts };
+/**
+ * Formulas (src/core/formulas): the display equations of the site with their
+ * version in words. The core builder checks what this shape cannot (labels and
+ * slugs unique per locale, concepts and sources that exist, one notation per
+ * concept); the id is the file name (`pathId`), as for concepts.
+ */
+const formulas = defineCollection({
+  loader: glob({ pattern: '*.json', base: './src/content/formulas', generateId: pathId }),
+  schema: z
+    .object({
+      slug: localized(slug),
+      name: localized(z.string().min(1)),
+      /** Canonical TeX (KaTeX subset, site macros). */
+      tex: z.string().min(1),
+      /** Labels of the numbered equations bound to the formula, per locale (`eq:…`). */
+      labels: localized(z.array(z.string().regex(/^eq:[a-z0-9][a-z0-9-]*$/))),
+      /** The concept whose notation this formula is; then stratum and domains are the concept's. */
+      concept: conceptId.optional(),
+      stratum: stratum.optional(),
+      domains: z.array(domain).min(1).optional(),
+      meaning: localized(z.string().min(1)),
+      spoken: localized(z.string().min(1)),
+      symbols: z.array(z.object({ tex: z.string().min(1), text: localized(z.string().min(1)) }).strict()).default([]),
+      concepts: z.array(conceptId).default([]),
+      sources: z.array(z.string()).default([]),
+    })
+    .strict(),
+});
+
+export const collections = { essays, labs, strata, pages, concepts, formulas };

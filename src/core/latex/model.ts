@@ -117,7 +117,9 @@ export type DiagnosticRule =
   | 'complex-tag'
   | 'eqref-target'
   | 'stray-fence'
-  | 'missing-lang';
+  | 'missing-lang'
+  /** A numbered equation whose label no formula of the registry claims (every formula has a version in words). */
+  | 'missing-formula';
 
 export type Severity = 'error' | 'warning';
 

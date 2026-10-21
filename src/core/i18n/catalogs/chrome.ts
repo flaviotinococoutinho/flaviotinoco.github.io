@@ -29,6 +29,7 @@ export default defineMessages({
     'palette.kind.page': 'Página',
     'palette.kind.section': 'Seção',
     'palette.kind.stratum': 'Estrato',
+    'palette.kind.formula': 'Fórmula',
     'palette.kind.language': 'Idioma',
     'palette.kind.text': 'Texto',
     'palette.results.zero': 'Nenhum resultado para “{query}”.',
@@ -129,6 +130,7 @@ export default defineMessages({
     'footer.pages': 'Sobre o site',
     'footer.data': 'Dados abertos',
     'footer.ontologyData': 'Ontologia (JSON-LD)',
+    'footer.formulasData': 'Fórmulas (JSON)',
     'footer.strata': 'Os quatro estratos',
 
     'feed.title': 'Flávio Tinoco: ensaios e laboratórios',
@@ -156,6 +158,7 @@ export default defineMessages({
     'palette.kind.page': 'Page',
     'palette.kind.section': 'Section',
     'palette.kind.stratum': 'Stratum',
+    'palette.kind.formula': 'Formula',
     'palette.kind.language': 'Language',
     'palette.kind.text': 'Text',
     'palette.results.zero': 'No results for “{query}”.',
@@ -256,6 +259,7 @@ export default defineMessages({
     'footer.pages': 'About the site',
     'footer.data': 'Open data',
     'footer.ontologyData': 'Ontology (JSON-LD)',
+    'footer.formulasData': 'Formulas (JSON)',
     'footer.strata': 'The four strata',
 
     'feed.title': 'Flávio Tinoco: essays and labs',
