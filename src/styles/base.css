@@ -101,6 +101,13 @@ th,
   font-family: var(--font-ui);
   line-height: var(--leading-ui);
 }
+/* A form control never widens its container (WCAG 2.2 SC 1.4.10 and 1.4.12): a select
+   measures its longest option, a text field its size attribute. */
+input,
+select,
+textarea {
+  max-inline-size: 100%;
+}
 
 code,
 kbd,

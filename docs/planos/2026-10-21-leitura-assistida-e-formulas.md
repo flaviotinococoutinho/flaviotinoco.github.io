@@ -164,3 +164,9 @@ Um revisor independente leu o documento antes da execução e levantou quatro po
 - 21/10/2026 10:50 — branch 1 (`feat/formulas`): núcleo, 36 fichas, estágio, páginas, exportação, testes
   (registro, estágio, rotas, guarda de conteúdo), docs e ADR 0011; `check:links`, `check:robots` e
   `check:budgets` passam (ensaio mais pesado: 151,0 KiB).
+- 21/10/2026 11:00 — branch 1 enviada (PR com auto-merge); branch 2 (`feat/reading-aids`): modelo com
+  `spacing`/`ruler`/`focus`, CSS, `ft-reading-ruler` + `src/core/chrome/ruler.ts`, e2e `spacing.spec.ts`.
+- 21/10/2026 11:20 — branch 2 verificada: `pnpm check` (1507 testes), build com índice, orçamentos, e2e
+  completo (a `spacing.spec` cobre 228 páginas × 2 formas de aplicar o 1.4.12); capturas em claro e escuro
+  confirmam espaçamento amplo, régua e foco. O recuo de parágrafo dentro do bloco "Em palavras" foi corrigido
+  aqui (item da branch 3 antecipado).

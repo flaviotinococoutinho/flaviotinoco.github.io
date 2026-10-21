@@ -27,8 +27,8 @@ export { PREFS_STORAGE_KEY };
 
 /**
  * Preference keys mirrored as data-<key> on <html>: theme, contrast, motion, text,
- * face, hyphens, texture, shortcut, cvd — derived from the pure model, so a key
- * added there is applied before paint without touching this file.
+ * face, spacing, hyphens, ruler, focus, texture, shortcut, cvd — derived from the
+ * pure model, so a key added there is applied before paint without touching this file.
  */
 export const PREFS_KEYS = PREFERENCE_KEYS;
 

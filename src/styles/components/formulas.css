@@ -24,10 +24,18 @@
   font-family: var(--font-ui);
   font-size: var(--step-n1);
   line-height: var(--leading-ui);
+  /* Upright even inside an italic theorem body (amsthm plain style): running italics hinder
+     readers with dyslexia (BDA style guide); only the formula's name is italic, as a title. */
+  font-style: normal;
   color: var(--ink-muted);
   text-indent: 0;
 }
 .formula__words > * + * {
+  margin-block-start: var(--space-n2);
+}
+/* Paragraphs of the block are list-like, never indented as running prose (.prose p + p). */
+.prose .formula__words p + p {
+  text-indent: 0;
   margin-block-start: var(--space-n2);
 }
 .formula__summary {

@@ -248,3 +248,36 @@ test.describe('404 page', () => {
     expect(words((await heading.textContent()) ?? '')).toEqual(titles.flatMap(words));
   });
 });
+
+test.describe('reading aids', () => {
+  test('the reading ruler follows the pointer once turned on, and focus mode marks the document', async ({ page }) => {
+    await page.goto('pt/ensaios/');
+    await settle(page);
+    const ruler = page.locator('ft-reading-ruler');
+    await expect(ruler, 'idle until the preference is on').toBeHidden();
+
+    await page.locator(PREFERENCES_TRIGGER).first().click();
+    await page.locator(preferenceRadio('ruler', 'on')).check();
+    await expect(page.locator('html')).toHaveAttribute('data-ruler', 'on');
+    await page.keyboard.press('Escape');
+    await page.mouse.move(200, 300);
+    await page.mouse.move(210, 320);
+    await expect(ruler, 'a band appears where the pointer is').toBeVisible();
+    const band = await ruler.evaluate((el) => ({
+      top: Number.parseFloat(el.style.getPropertyValue('--ruler-top')),
+      height: Number.parseFloat(el.style.getPropertyValue('--ruler-height')),
+    }));
+    expect(band.height).toBeGreaterThanOrEqual(24);
+    expect(band.top).toBeLessThanOrEqual(320);
+    expect(band.top + band.height).toBeGreaterThanOrEqual(320);
+
+    await page.locator(PREFERENCES_TRIGGER).first().click();
+    await page.locator(preferenceRadio('ruler', 'off')).check();
+    await page.locator(preferenceRadio('focus', 'on')).check();
+    await expect(page.locator('html')).toHaveAttribute('data-focus', 'on');
+    await expect(page.locator('html')).not.toHaveAttribute('data-ruler', 'on');
+    await page.keyboard.press('Escape');
+    await page.mouse.move(220, 340);
+    await expect(ruler, 'turned off at once').toBeHidden();
+  });
+});

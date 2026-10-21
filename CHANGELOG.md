@@ -20,11 +20,21 @@ próprio frontmatter.
   e sob a notação de cada conceito; teste de guarda `tests/unit/guardrails/formulas.test.ts` (todo bloco `$$`
   rotulado, todo rótulo com fórmula, toda notação com ficha).
 
+- Leitura assistida: preferências `spacing` (espaçamento amplo, valores do critério 1.4.12 da WCAG 2.2),
+  `ruler` (régua de leitura, `ft-reading-ruler`, geometria pura em `src/core/chrome/ruler.ts`) e `focus` (modo
+  de foco: sem textura nem campo ambiente, marginália discreta); teste e2e `spacing.spec.ts` aplica o critério
+  1.4.12 a todas as páginas de duas formas.
+
 ### Alterado
 
 - Orçamento de HTML por página: 150 → 160 KiB (ADR 0011 altera a decisão 3 do ADR 0009; medição no ADR).
 - Impressão: `[data-reveal]` sem animação e conteúdo de `details` exposto via `::details-content`.
 - Diagnóstico novo do estágio `latex`: `missing-formula` (equação numerada sem fórmula no acervo).
+
+### Corrigido
+
+- Controles de formulário nunca alargam o contêiner: o seletor de conceitos da página de comparação (opção
+  mais longa com espaçamento amplo) transbordava a janela a 390 px.
 
 ## [0.2.0] - 2026-10-21
 

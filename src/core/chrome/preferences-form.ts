@@ -52,8 +52,21 @@ export interface PreferencesForm {
 }
 
 /** Keys with an explanatory hint below the group (`prefs.<key>.hint` in the chrome catalog). */
-const HINTS: Partial<Record<PreferenceKey, 'prefs.face.hint' | 'prefs.shortcut.hint' | 'prefs.cvd.hint'>> = {
+const HINTS: Partial<
+  Record<
+    PreferenceKey,
+    | 'prefs.face.hint'
+    | 'prefs.spacing.hint'
+    | 'prefs.ruler.hint'
+    | 'prefs.focus.hint'
+    | 'prefs.shortcut.hint'
+    | 'prefs.cvd.hint'
+  >
+> = {
   face: 'prefs.face.hint',
+  spacing: 'prefs.spacing.hint',
+  ruler: 'prefs.ruler.hint',
+  focus: 'prefs.focus.hint',
   shortcut: 'prefs.shortcut.hint',
   cvd: 'prefs.cvd.hint',
 };

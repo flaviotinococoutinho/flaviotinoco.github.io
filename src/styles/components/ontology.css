@@ -646,9 +646,18 @@
 .compare__form[hidden] {
   display: none;
 }
+/* A field is a flex item: it may shrink below its content (a select is as wide as its
+   longest option — "Transformada discreta de Fourier" with wide text spacing exceeds a
+   phone column), and the select fills the field, never the other way round. */
 .compare__field {
   display: grid;
   gap: var(--space-n3);
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+.compare__field select {
+  inline-size: 100%;
+  max-inline-size: 100%;
 }
 .compare__field select,
 .compare__submit {
