@@ -1,6 +1,6 @@
 # Leitura assistida, fórmulas em palavras e estética — 21/10/2026
 
-- Status: em execução
+- Status: concluído (v0.3.0)
 - Autor: Flávio Tinoco
 - Relacionados: `docs/planos/2026-10-21-revisao-da-entrega.md` (rodada anterior); ADR 0002, ADR 0004, ADR 0009;
   `docs/guia-latex.md`; `docs/requisitos-nao-funcionais.md` §2; issue #22
@@ -132,12 +132,12 @@ Três preferências novas no modelo (`src/core/chrome/preferences.ts`), com rót
 
 ### 5.4 Sequência
 
-| #   | Branch                | Conteúdo                                                                                           |
-| --- | --------------------- | -------------------------------------------------------------------------------------------------- |
-| 1   | `feat/formulas`       | núcleo do registro, 36 registros, estágio, conceito, acervo, exportação, navegação, docs, ADR 0011 |
-| 2   | `feat/reading-aids`   | preferências, CSS, régua, e2e 1.4.12, documentação                                                 |
-| 3   | `style/refinements`   | detalhes de estética                                                                               |
-| 4   | `chore/release-0.3.0` | registro de mudanças e versão                                                                      |
+| #   | Branch                | Conteúdo                                                                                           | Estado           |
+| --- | --------------------- | -------------------------------------------------------------------------------------------------- | ---------------- |
+| 1   | `feat/formulas`       | núcleo do registro, 36 registros, estágio, conceito, acervo, exportação, navegação, docs, ADR 0011 | PR #36, mesclada |
+| 2   | `feat/reading-aids`   | preferências, CSS, régua, e2e 1.4.12, documentação; detalhes de estética da branch 3               | PR #37, mesclada |
+| 3   | `style/refinements`   | absorvida na branch 2: recuo e itálico do bloco "Em palavras", seletores que não alargam a coluna  | —                |
+| 4   | `chore/release-0.3.0` | registro de mudanças e versão                                                                      | esta PR          |
 
 ## 6. Premissas
 
@@ -170,3 +170,6 @@ Um revisor independente leu o documento antes da execução e levantou quatro po
   completo (a `spacing.spec` cobre 228 páginas × 2 formas de aplicar o 1.4.12); capturas em claro e escuro
   confirmam espaçamento amplo, régua e foco. O recuo de parágrafo dentro do bloco "Em palavras" foi corrigido
   aqui (item da branch 3 antecipado).
+- 21/10/2026 12:10 — PR #37 mesclada depois de duas correções apontadas pelo CI (o seletor de conceitos da
+  página de comparação transbordava 7 px a 390 px com as fontes do Linux; o bloco "Em palavras" herdava o
+  itálico do teorema). Release 0.3.0 preparada.

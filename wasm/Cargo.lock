@@ -4,11 +4,11 @@ version = 4
 
 [[package]]
 name = "kernel-core"
-version = "0.2.0"
+version = "0.3.0"
 
 [[package]]
 name = "kernel-dynamics"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "kernel-core",
  "libm",
@@ -16,7 +16,7 @@ dependencies = [
 
 [[package]]
 name = "kernel-information"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "kernel-core",
  "libm",
@@ -24,7 +24,7 @@ dependencies = [
 
 [[package]]
 name = "kernel-signal"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "kernel-core",
  "libm",
