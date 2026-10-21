@@ -32,6 +32,76 @@
   --font-text: var(--font-ui) !important;
 }
 
+/* Text spacing (WCAG 2.2 SC 1.4.12 values offered as a reader choice; the layout
+   must survive them when assistive tools apply them, so offering them costs
+   nothing). Leading tokens are overridden at the root, letter and word spacing
+   set on the body; formulas and glyphs keep their own metrics (letter spacing
+   would break KaTeX's positioning), and paragraphs are set apart by space
+   instead of an indent (BDA style guide). */
+:root[data-spacing='wide'] {
+  --leading-body: 1.8;
+  --leading-ui: 1.6;
+  --leading-heading: 1.3;
+}
+:root[data-spacing='wide'] body {
+  letter-spacing: 0.12em;
+  word-spacing: 0.16em;
+}
+:root[data-spacing='wide'] :is(.katex, .ontology-tex, svg, kbd) {
+  letter-spacing: 0;
+  word-spacing: 0;
+}
+/* Paragraph spacing of at least twice the font size: --space-2 (φ² rem) covers every text step. */
+:root[data-spacing='wide'] .prose p + p {
+  text-indent: 0;
+  margin-block-start: var(--space-2);
+}
+
+/* Focus mode: nothing moves or textures the page; marginalia (side notes, the
+   argument map) stay discreet until pointed at or focused. Inline notes on
+   narrow screens are part of the text and keep full contrast. */
+:root[data-focus='on'] {
+  --grain-image: none;
+}
+:root[data-focus='on'] ft-ambient-field {
+  display: none;
+}
+@media (width >= 72rem) {
+  :root[data-focus='on'] .essay__main :is(.sidenote__note, .marginnote__note),
+  :root[data-focus='on'] .essay__rail {
+    opacity: 0.45;
+    transition: opacity calc(var(--duration-3) * var(--motion)) var(--ease-standard);
+  }
+  :root[data-focus='on'] .essay__main :is(.sidenote__note, .marginnote__note):is(:hover, :focus-within),
+  :root[data-focus='on'] .essay__rail:is(:hover, :focus-within) {
+    opacity: 1;
+  }
+}
+
+/* Reading ruler: <ft-reading-ruler> is a clear band (--ruler-top, --ruler-height
+   set by the island) and its shadow washes the rest of the viewport towards the
+   paper, so the current lines stand out. Never catches the pointer; never in
+   forced colours (the wash would be dropped anyway) nor on paper. */
+ft-reading-ruler {
+  display: none;
+}
+:root[data-ruler='on'][data-js] ft-reading-ruler:not([hidden]) {
+  display: block;
+  position: fixed;
+  inset-inline: 0;
+  inset-block-start: var(--ruler-top, 0);
+  block-size: var(--ruler-height, 3rem);
+  z-index: 40;
+  pointer-events: none;
+  box-shadow: 0 0 0 200vmax color-mix(in oklab, var(--paper) 62%, transparent);
+  transition: inset-block-start calc(var(--duration-2) * var(--motion)) var(--ease-standard);
+}
+@media (forced-colors: active), print {
+  ft-reading-ruler {
+    display: none !important;
+  }
+}
+
 /* Colour-vision simulation (audit tool): SVG feColorMatrix filters defined in
    Glyphs.astro from Machado et al. (2009). On the root element a filter creates
    no containing block for fixed-position descendants (Filter Effects 1 §5). */

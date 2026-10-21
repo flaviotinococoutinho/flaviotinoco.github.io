@@ -30,6 +30,11 @@
 .formula__words > * + * {
   margin-block-start: var(--space-n2);
 }
+/* Paragraphs of the block are list-like, never indented as running prose (.prose p + p). */
+.prose .formula__words p + p {
+  text-indent: 0;
+  margin-block-start: var(--space-n2);
+}
 .formula__summary {
   cursor: pointer;
   color: var(--ink);

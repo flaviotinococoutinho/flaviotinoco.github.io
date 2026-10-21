@@ -36,7 +36,17 @@ export const PREFERENCE_DOMAINS = {
   motion: ['auto', 'reduce', 'full'],
   text: ['s', 'm', 'l', 'xl'],
   face: ['serif', 'sans'],
+  /**
+   * Text spacing as a reader choice: "wide" applies the values of WCAG 2.2 SC 1.4.12
+   * (line height 1.5 or more, letter spacing 0.12 em, word spacing 0.16 em, paragraphs
+   * 2 em apart), which the British Dyslexia Association's style guide (2023) recommends.
+   */
+  spacing: ['normal', 'wide'],
   hyphens: ['on', 'off'],
+  /** Reading ruler: a band of two lines that follows the pointer and the keyboard focus (BDA style guide). */
+  ruler: ['off', 'on'],
+  /** Focus mode: no paper texture or ambient field; side notes and the argument map discreet until pointed at. */
+  focus: ['off', 'on'],
   texture: ['on', 'off'],
   /**
    * The single-character shortcut "/" that opens the command palette. WCAG 2.2
@@ -59,7 +69,10 @@ export const PREFERENCE_KEYS = [
   'motion',
   'text',
   'face',
+  'spacing',
   'hyphens',
+  'ruler',
+  'focus',
   'texture',
   'shortcut',
   'cvd',
@@ -76,7 +89,10 @@ export const DEFAULT_PREFERENCES: Preferences = {
   motion: 'auto',
   text: 'm',
   face: 'serif',
+  spacing: 'normal',
   hyphens: 'on',
+  ruler: 'off',
+  focus: 'off',
   texture: 'on',
   shortcut: 'on',
   cvd: 'none',

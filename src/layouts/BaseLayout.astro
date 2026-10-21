@@ -2,7 +2,8 @@
 /**
  * Document shell shared by every page.
  * Responsibilities: language & direction, metadata (canonical, hreflang
- * alternates, Open Graph), fonts, pre-paint preferences, landmarks.
+ * alternates, Open Graph), fonts, pre-paint preferences, landmarks, and the
+ * reading ruler host (<ft-reading-ruler>, idle until the reader turns it on).
  */
 import { Font } from 'astro:assets';
 import { SITE_INDEXING } from 'astro:env/server';
@@ -81,6 +82,7 @@ Astro.csp.insertScriptHash(PREFS_INIT_HASH);
       <slot />
     </main>
     <SiteFooter locale={locale} />
+    <ft-reading-ruler data-eager hidden></ft-reading-ruler>
     <script>
       import '../islands/registry.ts';
     </script>
