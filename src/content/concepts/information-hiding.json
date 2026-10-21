@@ -1,0 +1,46 @@
+{
+  "slug": {
+    "pt-BR": "ocultacao-de-informacao",
+    "en": "information-hiding"
+  },
+  "prefLabel": {
+    "pt-BR": "Ocultação de informação",
+    "en": "Information hiding"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "critério de Parnas",
+      "encapsulamento"
+    ],
+    "en": [
+      "Parnas's criterion",
+      "encapsulation"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Critério para dividir um sistema em módulos: cada módulo esconde uma decisão de projeto que provavelmente mudará, e expõe aos outros só uma interface que não depende dela.",
+    "en": "A criterion for dividing a system into modules: each module hides one design decision that is likely to change, and exposes to the others only an interface that does not depend on it."
+  },
+  "stratum": "value",
+  "category": "method",
+  "domains": [
+    "software-engineering",
+    "information-systems"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "abstraction"
+    },
+    {
+      "type": "related",
+      "target": "interface"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q15912075"
+  ],
+  "sources": [
+    "parnas1972"
+  ]
+}
