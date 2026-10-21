@@ -52,6 +52,9 @@ export const niceNumber = (x: number, round: boolean): number => {
   return nice * power;
 };
 
+/** Narrowest range an axis can label: below it, a step is unprintable with 100 decimals (see `roundTo`). */
+const TINY = 1e-100;
+
 /** Decimals needed to print multiples of `step` (0 for integer steps). */
 export const stepDecimals = (step: number): number => Math.max(0, -Math.floor(Math.log10(step) + 1e-9));
 
@@ -65,15 +68,24 @@ const checkRange = (min: number, max: number, count: number): Result<readonly [n
   if (!Number.isInteger(count) || count < 2) return err(`at least two ticks are needed, got ${count}`);
   const lo = Math.min(min, max);
   const hi = Math.max(min, max);
-  if (lo === hi) {
-    // A degenerate range is widened around its value, so that the axis still shows a scale.
-    const pad = lo === 0 ? 1 : Math.abs(lo) / 2;
+  // A degenerate range is widened around its value, so that the axis still shows a scale. Two more cases
+  // count as degenerate: a range thinner than one part in 10^9 of its magnitude (the tolerance ticks are
+  // compared with below), whose multiples k·step would reach |k| > 2^53, where k + 1 = k and the
+  // enumeration would never end; and a range thinner than TINY, whose step could not be printed by
+  // `roundTo` (100 decimals) and underflows to zero in `niceNumber` well before that. The padding has the
+  // same floor, so the widened range never falls back into either case.
+  const scale = Math.max(Math.abs(lo), Math.abs(hi));
+  if (hi - lo <= 1e-9 * scale || hi - lo < TINY) {
+    const pad = scale < TINY ? 1 : Math.max(Math.abs(lo) / 2, TINY);
     return ok([lo - pad, hi + pad]);
   }
   return ok([lo, hi]);
 };
 
 const multiples = (first: number, last: number, step: number, decimals: number): readonly number[] => {
+  // Unreachable for a nice step over a checked range (at most a few dozen multiples); the guard keeps the
+  // function total should either ever be violated, instead of enumerating until memory runs out.
+  if (!Number.isSafeInteger(first) || !Number.isSafeInteger(last) || last - first > 10_000) return [];
   const out: number[] = [];
   for (let k = first; k <= last; k++) out.push(roundTo(k * step, decimals));
   return out;

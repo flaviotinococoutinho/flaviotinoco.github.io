@@ -565,9 +565,11 @@
 .prefs__hint {
   margin-block-start: var(--space-n3);
 }
-/* Until the island upgrades, the form would show defaults rather than the stored
+/* Until the island upgrades and builds the groups from /<lang>/preferences.json
+   (data-ready), the form would be empty or show defaults rather than the stored
    choices: keep its space but hide it (a few milliseconds after opening). */
-ft-preferences:not(:defined) .prefs__form {
+ft-preferences:not(:defined) .prefs__form,
+ft-preferences:not([data-ready]) .prefs__form {
   visibility: hidden;
 }
 .prefs__form {
