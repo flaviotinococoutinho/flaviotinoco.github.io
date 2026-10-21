@@ -1,0 +1,8 @@
+# pnpm settings (pnpm reads project settings here, not from the "pnpm" field of
+# package.json, which it ignores since 10.x with a warning and stopped reading in 11).
+# This is a single-package repository: no `packages` list.
+
+# KaTeX pinned to one version for every dependant (rehype-katex, @astrojs/markdown-remark):
+# the site resolves \label/\ref itself and hands KaTeX only \tag (docs/guia-latex.md §9).
+overrides:
+  katex: 0.19.0
