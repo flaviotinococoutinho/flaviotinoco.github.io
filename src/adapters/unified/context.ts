@@ -10,6 +10,7 @@
 import { loadBibliography } from './load-bibliography.ts';
 import { loadLexicon } from './load-lexicon.ts';
 import { loadConcepts } from './load-concepts.ts';
+import { loadFormulas } from './load-formulas.ts';
 
 export type PipelineContext = {
   /** Site base path ending with "/", e.g. "/flaviotinoco.github.io/". */
@@ -17,6 +18,8 @@ export type PipelineContext = {
   readonly bibliography: Awaited<ReturnType<typeof loadBibliography>>;
   readonly lexicon: Awaited<ReturnType<typeof loadLexicon>>;
   readonly concepts: Awaited<ReturnType<typeof loadConcepts>>;
+  /** The formula registry (src/content/formulas/*.json), checked against the concepts and the bibliography. */
+  readonly formulas: Awaited<ReturnType<typeof loadFormulas>>;
 };
 
 export const loadPipelineContext = async (root: URL, base: string): Promise<PipelineContext> => {
@@ -25,5 +28,6 @@ export const loadPipelineContext = async (root: URL, base: string): Promise<Pipe
     loadLexicon(root),
     loadConcepts(root),
   ]);
-  return { base, bibliography, lexicon, concepts };
+  const formulas = await loadFormulas(root, concepts, bibliography);
+  return { base, bibliography, lexicon, concepts, formulas };
 };

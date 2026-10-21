@@ -12,6 +12,7 @@
 @import './components/chrome.css' layer(components);
 @import './components/reading.css' layer(components);
 @import './components/latex.css' layer(components);
+@import './components/formulas.css' layer(components);
 @import './components/citations.css' layer(components);
 @import './components/abnt.css' layer(components);
 @import './components/ontology.css' layer(components);

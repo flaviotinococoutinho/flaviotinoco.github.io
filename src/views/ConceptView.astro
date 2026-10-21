@@ -19,11 +19,14 @@ import Markup from '../components/ontology/Markup.astro';
 import MeasuresNote from '../components/ontology/MeasuresNote.astro';
 import StratumMark from '../components/chrome/StratumMark.astro';
 import Tex from '../components/ontology/Tex.astro';
+import FormulaWords from '../components/formulas/FormulaWords.astro';
+import { siteFormulas } from '../components/formulas/data.ts';
 import { siteOntology } from '../components/ontology/data.ts';
 import { ontologyText } from '../components/ontology/text.ts';
 import { styleFor, toHtml } from '../core/bibliography/index.ts';
 import type { ConceptId } from '../core/domain/identifiers.ts';
 import type { Locale } from '../core/domain/locale.ts';
+import { FORMULA_CLASS, formulaPartId, formulaWords } from '../core/formulas/index.ts';
 import {
   BRIDGE_COUNT,
   RELATIONS,
@@ -149,6 +152,12 @@ const sources = e.sources.map((k) => {
 });
 const hasMath = e.notation !== null;
 const sectionId = (s: string): string => `concept-${s}`;
+// The formula whose notation this is (ADR 0011): its version in words goes under the notation.
+const formulasData = await siteFormulas();
+const formula = formulasData.registry.byConcept.get(id);
+const notationId = sectionId('notation');
+const words =
+  formula === undefined ? undefined : formulaWords(formula, locale, formulasData.formulaHref(formula, locale));
 ---
 
 <BaseLayout locale={locale} title={label} description={e.definition[locale]} alternates={alternates} ogType="article">
@@ -196,10 +205,17 @@ const sectionId = (s: string): string => `concept-${s}`;
       </h2>
       <p class="concept__definition">{e.definition[locale]}</p>
       {e.notation !== null && (
-        <figure class="concept__notation">
-          <figcaption class="ui">{t('concept.notation')}</figcaption>
-          <Tex tex={e.notation} display />
-        </figure>
+        <div class={FORMULA_CLASS.block} data-formula={formula?.id}>
+          <figure
+            class="concept__notation"
+            id={notationId}
+            aria-describedby={words === undefined ? undefined : formulaPartId(notationId, 'meaning')}
+          >
+            <figcaption class="ui">{t('concept.notation')}</figcaption>
+            <Tex tex={e.notation} display label={t('concept.notation')} />
+          </figure>
+          {words !== undefined && <FormulaWords words={words} equationId={notationId} />}
+        </div>
       )}
       <dl class="concept__facets ui">
         <dt>{t('concept.domains')}</dt>

@@ -1,0 +1,48 @@
+{
+  "slug": {
+    "pt-BR": "mapa-logistico",
+    "en": "logistic-map"
+  },
+  "name": {
+    "pt-BR": "Mapa logístico",
+    "en": "Logistic map"
+  },
+  "tex": "x_{n+1} = r\\,x_n\\,(1 - x_n)",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "logistic-map",
+  "meaning": {
+    "pt-BR": "O mapa logístico leva uma população normalizada, entre 0 e 1, à do passo seguinte: cresce em proporção a r e é freada pelo fator 1 − x quando se aproxima do limite. Para r pequeno a sequência estabiliza; conforme r cresce, o período duplica repetidamente até o caos.",
+    "en": "The logistic map takes a normalised population, between 0 and 1, to the next step’s: it grows in proportion to r and is held back by the factor 1 − x as it nears the limit. For small r the sequence settles; as r grows the period doubles repeatedly until chaos."
+  },
+  "spoken": {
+    "pt-BR": "x índice n mais um é igual a r vezes x índice n vezes, um menos x índice n.",
+    "en": "x sub n plus one equals r times x sub n times, one minus x sub n."
+  },
+  "symbols": [
+    {
+      "tex": "x_n",
+      "text": {
+        "pt-BR": "estado no passo n, entre 0 e 1",
+        "en": "state at step n, between 0 and 1"
+      }
+    },
+    {
+      "tex": "r",
+      "text": {
+        "pt-BR": "parâmetro de crescimento, entre 0 e 4",
+        "en": "growth parameter, between 0 and 4"
+      }
+    }
+  ],
+  "concepts": [
+    "dynamical-system",
+    "bifurcation",
+    "deterministic-chaos"
+  ],
+  "sources": [
+    "may1976"
+  ]
+}

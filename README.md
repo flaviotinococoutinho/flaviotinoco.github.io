@@ -1,7 +1,7 @@
 # flaviotinoco.github.io
 
-Site bilíngue (pt-BR e en) de Flávio Tinoco: ensaios, laboratórios interativos e uma ontologia de conceitos,
-organizados em quatro estratos — filosofia, teoria, formal e valor — percorridos sempre nessa ordem. Os temas
+Site bilíngue (pt-BR e en) de Flávio Tinoco: ensaios, laboratórios interativos, uma ontologia de conceitos e
+um acervo de fórmulas com versão em palavras, organizados em quatro estratos — filosofia, teoria, formal e valor — percorridos sempre nessa ordem. Os temas
 vão da semiótica e da teoria da informação ao processamento de sinais, à computação, à engenharia de software e
 à otimização combinatória ([programa editorial](docs/programa-editorial.md)).
 

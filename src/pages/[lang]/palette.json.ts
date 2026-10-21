@@ -8,12 +8,14 @@ import { encodePaletteEntries } from '../../core/chrome/palette-entries.ts';
 import type { Locale } from '../../core/domain/locale.ts';
 import { localeStaticPaths } from '../../adapters/astro/i18n.ts';
 import { paletteEntries } from '../../adapters/astro/palette.ts';
+import { siteFormulas } from '../../components/formulas/data.ts';
 
 export const getStaticPaths = localeStaticPaths;
 
-export function GET(context: APIContext): Response {
+export async function GET(context: APIContext): Promise<Response> {
   const { locale } = context.props as { readonly locale: Locale };
-  return new Response(encodePaletteEntries(paletteEntries(locale)), {
+  const { registry } = await siteFormulas();
+  return new Response(encodePaletteEntries(paletteEntries(locale, registry)), {
     headers: { 'Content-Type': 'application/json; charset=utf-8' },
   });
 }

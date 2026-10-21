@@ -1,0 +1,66 @@
+{
+  "slug": {
+    "pt-BR": "entropia-de-shannon",
+    "en": "shannon-entropy"
+  },
+  "name": {
+    "pt-BR": "Entropia de Shannon",
+    "en": "Shannon entropy"
+  },
+  "tex": "\\H(X) = -\\sum_{x \\in \\mathcal{X}} p(x) \\log_2 p(x)",
+  "labels": {
+    "pt-BR": [
+      "eq:entropia"
+    ],
+    "en": [
+      "eq:entropy"
+    ]
+  },
+  "concept": "entropy",
+  "meaning": {
+    "pt-BR": "A entropia de uma variável aleatória é a média das autoinformações dos seus valores, cada uma pesada pela probabilidade do valor. Mede a incerteza média, em bits: quantas perguntas de sim ou não são necessárias, em média, para descobrir o resultado. Nos ensaios a soma aparece também escrita como a soma de p(x) vezes I(x).",
+    "en": "The entropy of a random variable is the average of the self-informations of its values, each weighted by the probability of the value. It measures the average uncertainty, in bits: how many yes-or-no questions are needed, on average, to find out the outcome. In the essays the sum also appears written as the sum of p(x) times I(x)."
+  },
+  "spoken": {
+    "pt-BR": "H de X é igual a menos o somatório, para todo x no alfabeto X, de p de x vezes o logaritmo, na base dois, de p de x.",
+    "en": "H of X equals minus the sum, over every x in the alphabet X, of p of x times the logarithm, base two, of p of x."
+  },
+  "symbols": [
+    {
+      "tex": "\\H(X)",
+      "text": {
+        "pt-BR": "entropia da variável aleatória X, em bits",
+        "en": "entropy of the random variable X, in bits"
+      }
+    },
+    {
+      "tex": "\\mathcal{X}",
+      "text": {
+        "pt-BR": "alfabeto: o conjunto dos valores possíveis de X",
+        "en": "alphabet: the set of possible values of X"
+      }
+    },
+    {
+      "tex": "p(x)",
+      "text": {
+        "pt-BR": "probabilidade de X tomar o valor x",
+        "en": "probability that X takes the value x"
+      }
+    },
+    {
+      "tex": "\\sum_{x \\in \\mathcal{X}}",
+      "text": {
+        "pt-BR": "soma sobre todos os valores do alfabeto",
+        "en": "sum over every value of the alphabet"
+      }
+    }
+  ],
+  "concepts": [
+    "information",
+    "uncertainty"
+  ],
+  "sources": [
+    "shannon1948",
+    "cover2006"
+  ]
+}

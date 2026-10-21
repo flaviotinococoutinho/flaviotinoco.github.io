@@ -1,0 +1,55 @@
+{
+  "slug": {
+    "pt-BR": "otimizacao",
+    "en": "optimization"
+  },
+  "name": {
+    "pt-BR": "Problema de otimização",
+    "en": "Optimization problem"
+  },
+  "tex": "x^{*} = \\operatorname*{arg\\,min}_{x \\in \\mathcal{F}} f(x)",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "optimization",
+  "meaning": {
+    "pt-BR": "Otimizar é escolher, entre as alternativas admissíveis, a que minimiza (ou maximiza) uma função objetivo. A solução ótima é o argumento que atinge o menor valor de f dentro do conjunto viável.",
+    "en": "To optimize is to choose, among the admissible alternatives, the one that minimizes (or maximizes) an objective function. The optimal solution is the argument that attains the smallest value of f within the feasible set."
+  },
+  "spoken": {
+    "pt-BR": "x asterisco é igual ao argumento que minimiza f de x, com x no conjunto viável F.",
+    "en": "x star equals the argument that minimizes f of x, with x in the feasible set F."
+  },
+  "symbols": [
+    {
+      "tex": "x^{*}",
+      "text": {
+        "pt-BR": "a solução ótima",
+        "en": "the optimal solution"
+      }
+    },
+    {
+      "tex": "\\mathcal{F}",
+      "text": {
+        "pt-BR": "conjunto viável: as alternativas que satisfazem as restrições",
+        "en": "feasible set: the alternatives that satisfy the constraints"
+      }
+    },
+    {
+      "tex": "f(x)",
+      "text": {
+        "pt-BR": "função objetivo",
+        "en": "objective function"
+      }
+    }
+  ],
+  "concepts": [
+    "combinatorial-optimization",
+    "decision",
+    "satisficing"
+  ],
+  "sources": [
+    "boyd2004"
+  ]
+}

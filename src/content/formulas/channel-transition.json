@@ -1,0 +1,54 @@
+{
+  "slug": {
+    "pt-BR": "canal-como-probabilidade-de-transicao",
+    "en": "channel-as-transition-probability"
+  },
+  "name": {
+    "pt-BR": "Canal como probabilidade de transição",
+    "en": "Channel as transition probability"
+  },
+  "tex": "p(y \\mid x)",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "channel",
+  "meaning": {
+    "pt-BR": "Um canal discreto sem memória é descrito pela probabilidade de cada saída y dado cada entrada x. A tabela dessas probabilidades é tudo o que a teoria precisa saber do meio físico: o ruído é a parte de y que x não determina.",
+    "en": "A discrete memoryless channel is described by the probability of each output y given each input x. The table of those probabilities is all the theory needs to know about the physical medium: noise is the part of y that x does not determine."
+  },
+  "spoken": {
+    "pt-BR": "p de y dado x.",
+    "en": "p of y given x."
+  },
+  "symbols": [
+    {
+      "tex": "x",
+      "text": {
+        "pt-BR": "símbolo de entrada",
+        "en": "input symbol"
+      }
+    },
+    {
+      "tex": "y",
+      "text": {
+        "pt-BR": "símbolo de saída",
+        "en": "output symbol"
+      }
+    },
+    {
+      "tex": "p(y \\mid x)",
+      "text": {
+        "pt-BR": "probabilidade de receber y quando x foi enviado",
+        "en": "probability of receiving y when x was sent"
+      }
+    }
+  ],
+  "concepts": [
+    "noise",
+    "channel-capacity"
+  ],
+  "sources": [
+    "cover2006"
+  ]
+}

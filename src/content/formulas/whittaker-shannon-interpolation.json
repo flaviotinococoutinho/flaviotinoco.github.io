@@ -1,0 +1,72 @@
+{
+  "slug": {
+    "pt-BR": "formula-de-interpolacao",
+    "en": "interpolation-formula"
+  },
+  "name": {
+    "pt-BR": "Fórmula de interpolação de Whittaker–Shannon",
+    "en": "Whittaker–Shannon interpolation formula"
+  },
+  "tex": "x(t) = \\sum_{n=-\\infty}^{\\infty} x(nT)\\, \\sinc\\!\\left(\\frac{t - nT}{T}\\right), \\qquad \\sinc(u) = \\frac{\\sin(\\pi u)}{\\pi u}",
+  "labels": {
+    "pt-BR": [
+      "eq:interpolacao"
+    ],
+    "en": [
+      "eq:interpolation"
+    ]
+  },
+  "stratum": "formal",
+  "domains": [
+    "signal-processing",
+    "mathematics"
+  ],
+  "meaning": {
+    "pt-BR": "Quando a taxa de amostragem supera o dobro da maior frequência do sinal, as amostras determinam o sinal inteiro: cada amostra contribui com uma função sinc centrada no seu instante, e a soma de todas reconstrói o sinal em qualquer instante t. A função sinc vale 1 na origem e 0 em todos os outros instantes de amostragem.",
+    "en": "When the sampling rate exceeds twice the highest frequency of the signal, the samples determine the whole signal: each sample contributes a sinc function centred at its instant, and the sum of all of them reconstructs the signal at any instant t. The sinc function equals 1 at the origin and 0 at every other sampling instant."
+  },
+  "spoken": {
+    "pt-BR": "x de t é igual ao somatório, para n de menos infinito a mais infinito, de x de n T vezes sinc de, t menos n T, sobre T; onde sinc de u é igual a seno de pi u sobre pi u.",
+    "en": "x of t equals the sum, for n from minus infinity to plus infinity, of x of n T times sinc of, t minus n T, over T; where sinc of u equals sine of pi u over pi u."
+  },
+  "symbols": [
+    {
+      "tex": "x(nT)",
+      "text": {
+        "pt-BR": "a amostra tomada no instante nT",
+        "en": "the sample taken at instant nT"
+      }
+    },
+    {
+      "tex": "T",
+      "text": {
+        "pt-BR": "período de amostragem",
+        "en": "sampling period"
+      }
+    },
+    {
+      "tex": "\\sinc(u)",
+      "text": {
+        "pt-BR": "seno cardinal: seno de pi u sobre pi u",
+        "en": "cardinal sine: sine of pi u over pi u"
+      }
+    },
+    {
+      "tex": "t",
+      "text": {
+        "pt-BR": "instante em que o sinal é reconstruído",
+        "en": "instant at which the signal is reconstructed"
+      }
+    }
+  ],
+  "concepts": [
+    "sampling-theorem",
+    "sampling",
+    "signal"
+  ],
+  "sources": [
+    "whittaker1915",
+    "kotelnikov1933",
+    "shannon1949"
+  ]
+}

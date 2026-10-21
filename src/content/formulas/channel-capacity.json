@@ -1,0 +1,56 @@
+{
+  "slug": {
+    "pt-BR": "capacidade-de-canal",
+    "en": "channel-capacity"
+  },
+  "name": {
+    "pt-BR": "Capacidade de canal",
+    "en": "Channel capacity"
+  },
+  "tex": "C = \\max_{p(x)} \\I(X;Y)",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "channel-capacity",
+  "meaning": {
+    "pt-BR": "A capacidade de um canal é a maior informação mútua entre entrada e saída que alguma distribuição da entrada consegue produzir. Pelo teorema da codificação de canal ruidoso, é a maior taxa, em bits por uso do canal, em que se pode transmitir com probabilidade de erro tão pequena quanto se queira.",
+    "en": "The capacity of a channel is the largest mutual information between input and output that some input distribution can produce. By the noisy-channel coding theorem it is the highest rate, in bits per channel use, at which one can transmit with as small an error probability as desired."
+  },
+  "spoken": {
+    "pt-BR": "C é igual ao máximo, sobre as distribuições p de x, de I de X e Y.",
+    "en": "C equals the maximum, over the input distributions p of x, of I of X and Y."
+  },
+  "symbols": [
+    {
+      "tex": "C",
+      "text": {
+        "pt-BR": "capacidade do canal, em bits por uso",
+        "en": "channel capacity, in bits per use"
+      }
+    },
+    {
+      "tex": "p(x)",
+      "text": {
+        "pt-BR": "distribuição de probabilidade da entrada X",
+        "en": "probability distribution of the input X"
+      }
+    },
+    {
+      "tex": "\\I(X;Y)",
+      "text": {
+        "pt-BR": "informação mútua entre a entrada X e a saída Y",
+        "en": "mutual information between the input X and the output Y"
+      }
+    }
+  ],
+  "concepts": [
+    "mutual-information",
+    "channel",
+    "noise"
+  ],
+  "sources": [
+    "shannon1948",
+    "cover2006"
+  ]
+}

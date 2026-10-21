@@ -1,0 +1,65 @@
+{
+  "slug": {
+    "pt-BR": "frequencia-aparente",
+    "en": "alias-frequency"
+  },
+  "name": {
+    "pt-BR": "Frequência aparente (dobramento)",
+    "en": "Alias frequency"
+  },
+  "tex": "f_a = \\lvert f - k f_s \\rvert, \\qquad k = \\operatorname{round}\\!\\left(\\frac{f}{f_s}\\right)",
+  "labels": {
+    "pt-BR": [
+      "eq:alias"
+    ],
+    "en": [
+      "eq:alias"
+    ]
+  },
+  "concept": "aliasing",
+  "meaning": {
+    "pt-BR": "Uma senoide amostrada abaixo do dobro da sua frequência aparece nas amostras como outra senoide, de frequência mais baixa: a distância entre a frequência real e o múltiplo mais próximo da taxa de amostragem. Dentro da condição de Nyquist, k vale zero e a frequência aparente é a própria frequência.",
+    "en": "A sinusoid sampled below twice its frequency shows up in the samples as another sinusoid, of lower frequency: the distance between the true frequency and the nearest multiple of the sampling rate. Within the Nyquist condition, k is zero and the alias frequency is the frequency itself."
+  },
+  "spoken": {
+    "pt-BR": "f sub a é igual ao valor absoluto de f menos k f sub s, onde k é o inteiro mais próximo de f sobre f sub s.",
+    "en": "f sub a equals the absolute value of f minus k f sub s, where k is the nearest integer to f over f sub s."
+  },
+  "symbols": [
+    {
+      "tex": "f_a",
+      "text": {
+        "pt-BR": "frequência aparente nas amostras",
+        "en": "frequency that appears in the samples"
+      }
+    },
+    {
+      "tex": "f",
+      "text": {
+        "pt-BR": "frequência real da senoide",
+        "en": "true frequency of the sinusoid"
+      }
+    },
+    {
+      "tex": "f_s",
+      "text": {
+        "pt-BR": "taxa de amostragem",
+        "en": "sampling rate"
+      }
+    },
+    {
+      "tex": "\\operatorname{round}",
+      "text": {
+        "pt-BR": "arredondamento ao inteiro mais próximo",
+        "en": "rounding to the nearest integer"
+      }
+    }
+  ],
+  "concepts": [
+    "sampling",
+    "sampling-theorem"
+  ],
+  "sources": [
+    "shannon1949"
+  ]
+}

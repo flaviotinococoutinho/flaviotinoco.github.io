@@ -1,0 +1,71 @@
+{
+  "slug": {
+    "pt-BR": "entropia-cruzada",
+    "en": "cross-entropy"
+  },
+  "name": {
+    "pt-BR": "Entropia cruzada e divergência",
+    "en": "Cross-entropy and divergence"
+  },
+  "tex": "\\sum_x p(x) \\log_2 \\frac{1}{w(x)} = \\H(X) + \\KL{p}{w} \\geq \\H(X)",
+  "labels": {
+    "pt-BR": [
+      "eq:entropia-cruzada"
+    ],
+    "en": [
+      "eq:cross-entropy"
+    ]
+  },
+  "stratum": "formal",
+  "domains": [
+    "information-theory",
+    "probability"
+  ],
+  "meaning": {
+    "pt-BR": "Codificar uma fonte de distribuição p com um código feito para outra distribuição w custa, em média, a entropia de p mais a divergência de Kullback–Leibler entre p e w. A divergência nunca é negativa e só vale zero quando w é igual a p: um modelo errado da fonte sempre custa bits a mais.",
+    "en": "Encoding a source with distribution p using a code built for another distribution w costs, on average, the entropy of p plus the Kullback–Leibler divergence between p and w. The divergence is never negative and is zero only when w equals p: a wrong model of the source always costs extra bits."
+  },
+  "spoken": {
+    "pt-BR": "O somatório, sobre x, de p de x vezes o logaritmo, na base dois, de um sobre w de x é igual a H de X mais a divergência de Kullback–Leibler de p em relação a w, que é maior ou igual a H de X.",
+    "en": "The sum, over x, of p of x times the logarithm, base two, of one over w of x equals H of X plus the Kullback–Leibler divergence of p from w, which is greater than or equal to H of X."
+  },
+  "symbols": [
+    {
+      "tex": "p(x)",
+      "text": {
+        "pt-BR": "distribuição real da fonte",
+        "en": "true distribution of the source"
+      }
+    },
+    {
+      "tex": "w(x)",
+      "text": {
+        "pt-BR": "distribuição suposta pelo código",
+        "en": "distribution the code assumes"
+      }
+    },
+    {
+      "tex": "\\H(X)",
+      "text": {
+        "pt-BR": "entropia da fonte",
+        "en": "entropy of the source"
+      }
+    },
+    {
+      "tex": "\\KL{p}{w}",
+      "text": {
+        "pt-BR": "divergência de Kullback–Leibler de p em relação a w",
+        "en": "Kullback–Leibler divergence of p from w"
+      }
+    }
+  ],
+  "concepts": [
+    "entropy",
+    "code",
+    "huffman-code",
+    "model"
+  ],
+  "sources": [
+    "cover2006"
+  ]
+}

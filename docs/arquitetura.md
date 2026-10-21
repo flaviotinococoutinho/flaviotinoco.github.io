@@ -9,18 +9,18 @@ Inspeção de 21/10/2026 sobre a `main`. Cada linha diz o que existe no código 
 comprova; "verificado" significa que o comando passou nessa data (CI: `.github/workflows/ci.yml`). As pesquisas
 de 11/10/2026 em `docs/research/` mantêm suas datas e limites originais.
 
-| Área                                        | Estado no código versionado                                                                                                                                    | Comprovação                                                                        |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Núcleo funcional (`src/core/`)              | `algebra`, `domain`, `i18n`, `design`, `latex`, `bibliography`, `lexicon`, `abnt`, `ontology`, `reading`, `fold`, `chrome`, `labs`, `web` — 150+ módulos puros | `pnpm check:lint` (pureza, camadas); `pnpm test` com cobertura                     |
-| Pipeline Markdown (`src/adapters/unified/`) | estágios `integrity`, `latex`, `citations`, `reading`, `concepts`, `embeds`, `abnt`, `meta`, na ordem de `pipeline.ts`                                         | testes de cada estágio; `pnpm build:site` (estrito)                                |
-| Ilhas (`src/islands/elements/`)             | 23 elementos `ft-*` carregados sob demanda pelo `registry.ts`                                                                                                  | e2e (`chrome`, `labs`, `keyboard`, `motion`)                                       |
-| Conteúdo                                    | 3 ensaios, 6 laboratórios, 4 estratos e 2 páginas por língua; 53 conceitos; `bibliography/main.bib`; 5 léxicos                                                 | `pnpm check:i18n`; testes de `content`, `bibliography/seed`, `ontology`, `lexicon` |
-| WebAssembly (`wasm/`, `src/adapters/wasm/`) | três núcleos `no_std` (`signal`, `information`, `dynamics`), ABI v1, sem importações                                                                           | `pnpm check:wasm`; `pnpm test:wasm`; orçamento ≤ 48 KiB                            |
-| Vistas e rotas                              | `src/pages` só despacha; `src/views` compõe; codec de rotas bijetivo com as páginas da ontologia                                                               | `routes.test.ts`; `pnpm check:links`                                               |
-| Verificações                                | tokens, paleta, tipos, lint, formatação, i18n, testes, wasm, links, orçamentos, `robots`, e2e (axe nos dois temas)                                             | `pnpm check`; jobs `quality`, `wasm`, `build`, `e2e`                               |
-| Automação e decisões                        | `ci.yml`, `deploy.yml`, `codeql.yml`, `release.yml`; Dependabot; ADRs 0001–0010; `CLAUDE.md`                                                                   | `tests/unit/guardrails/workflows.test.ts`                                          |
-| Publicação                                  | Pages com origem "GitHub Actions"; `main` protegida por conjunto de regras; `noindex` até o lançamento (ADR 0008)                                              | job `Deploy`; `pnpm check:robots`                                                  |
-| Pendente                                    | CLI `ft` (`cli/`, issue #20); complementos de leitura (#19); resenhas (#17, #18); camada de acidentes (#14)                                                    | branches `ws/*`                                                                    |
+| Área                                        | Estado no código versionado                                                                                                                                                | Comprovação                                                                                               |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Núcleo funcional (`src/core/`)              | `algebra`, `domain`, `i18n`, `design`, `latex`, `formulas`, `bibliography`, `lexicon`, `abnt`, `ontology`, `reading`, `fold`, `chrome`, `labs`, `web` — 150+ módulos puros | `pnpm check:lint` (pureza, camadas); `pnpm test` com cobertura                                            |
+| Pipeline Markdown (`src/adapters/unified/`) | estágios `integrity`, `latex`, `citations`, `reading`, `concepts`, `embeds`, `abnt`, `meta`, na ordem de `pipeline.ts`                                                     | testes de cada estágio; `pnpm build:site` (estrito)                                                       |
+| Ilhas (`src/islands/elements/`)             | 23 elementos `ft-*` carregados sob demanda pelo `registry.ts`                                                                                                              | e2e (`chrome`, `labs`, `keyboard`, `motion`)                                                              |
+| Conteúdo                                    | 3 ensaios, 6 laboratórios, 4 estratos e 2 páginas por língua; 53 conceitos; 36 fórmulas com versão em palavras (ADR 0011); `bibliography/main.bib`; 5 léxicos              | `pnpm check:i18n`; testes de `content`, `bibliography/seed`, `ontology`, `lexicon`, `guardrails/formulas` |
+| WebAssembly (`wasm/`, `src/adapters/wasm/`) | três núcleos `no_std` (`signal`, `information`, `dynamics`), ABI v1, sem importações                                                                                       | `pnpm check:wasm`; `pnpm test:wasm`; orçamento ≤ 48 KiB                                                   |
+| Vistas e rotas                              | `src/pages` só despacha; `src/views` compõe; codec de rotas bijetivo com as páginas da ontologia e do acervo de fórmulas                                                   | `routes.test.ts`; `pnpm check:links`                                                                      |
+| Verificações                                | tokens, paleta, tipos, lint, formatação, i18n, testes, wasm, links, orçamentos, `robots`, e2e (axe nos dois temas)                                                         | `pnpm check`; jobs `quality`, `wasm`, `build`, `e2e`                                                      |
+| Automação e decisões                        | `ci.yml`, `deploy.yml`, `codeql.yml`, `release.yml`; Dependabot; ADRs 0001–0011; `CLAUDE.md`                                                                               | `tests/unit/guardrails/workflows.test.ts`                                                                 |
+| Publicação                                  | Pages com origem "GitHub Actions"; `main` protegida por conjunto de regras; `noindex` até o lançamento (ADR 0008)                                                          | job `Deploy`; `pnpm check:robots`                                                                         |
+| Pendente                                    | CLI `ft` (`cli/`, issue #20); complementos de leitura (#19); resenhas (#17, #18); camada de acidentes (#14)                                                                | branches `ws/*`                                                                                           |
 
 Os requisitos abaixo definem a arquitetura pretendida e os contratos entre as partes. Um requisito não comprova
 que um recurso funciona: a tabela acima, os ADRs e o CI comprovam.
@@ -74,6 +74,7 @@ src/
 │   ├── i18n/                rotas (codec bijetivo), catálogos de mensagens com paridade de chaves
 │   ├── design/              tokens → CSS; simulação de discromatopsia (Machado et al., 2009); escalas φ
 │   ├── latex/               macros, contadores, ambientes, referências cruzadas, exportação .tex
+│   ├── formulas/            acervo de fórmulas: analisador, registro (rótulos, conceitos, fontes), versão em palavras, JSON
 │   ├── bibliography/        analisador BibTeX (árvore sintática), modelo de referência, estilos NBR 6023/10520 e APA
 │   ├── lexicon/             TSV → trie → regex compilada; filtro de Bloom; casamento sobre nós de texto
 │   ├── abnt/                regras tipográficas e normativas como dados + aplicadores puros
@@ -92,7 +93,7 @@ src/
 ├── components/              componentes de apresentação (Astro, sem estado)
 ├── layouts/                 documento base
 ├── pages/                   despachantes de rota gerados pelo codec do núcleo; endpoints (RSS, JSON por idioma)
-├── content/                 essays/, labs/, strata/, pages/ ({pt,en}/*.md) e concepts/*.json
+├── content/                 essays/, labs/, strata/, pages/ ({pt,en}/*.md), concepts/*.json e formulas/*.json
 ├── wasm/                    núcleos compilados (gerados por scripts/build-wasm.mjs; fora do controle de versão)
 └── styles/                  tokens.css (gerado), camadas base, components/*.css
 ```
@@ -130,6 +131,7 @@ O contrato de autoria define uma sintaxe fechada. Nomes desconhecidos de diretiv
 - Rótulo: `\label{eq:nome}` dentro do bloco. O contrato numera somente equações rotuladas, com algarismos arábicos entre parênteses e alinhamento à direita, conforme a ABNT NBR 14724.
 - Referências: `:eqref[eq:nome]` no texto → "(3)" com link; `\eqref{eq:nome}` dentro de outra fórmula.
 - Macros do site em `src/core/latex/macros.ts`; macros locais no frontmatter `macros: { '\\foo': '…' }`.
+- Versão em palavras: toda equação numerada do conteúdo está vinculada, pelo rótulo, a uma fórmula do acervo (`src/content/formulas/`, [ADR 0011](adr/0011-acervo-de-formulas.md)); o estágio gera sob ela o significado, a leitura em voz alta e o link para a ficha, e reprova rótulo sem fórmula.
 
 ### 5.2 Ambientes (estilo `amsthm`)
 

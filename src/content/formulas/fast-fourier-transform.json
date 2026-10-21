@@ -1,0 +1,54 @@
+{
+  "slug": {
+    "pt-BR": "recorrencia-da-fft",
+    "en": "fft-recurrence"
+  },
+  "name": {
+    "pt-BR": "Recorrência da transformada rápida de Fourier",
+    "en": "Recurrence of the fast Fourier transform"
+  },
+  "tex": "T(N) = 2\\,T(N/2) + O(N) = O(N \\log N)",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "fast-fourier-transform",
+  "meaning": {
+    "pt-BR": "O algoritmo de Cooley e Tukey divide uma transformada de N pontos em duas de N/2 pontos (amostras pares e ímpares) e as combina em tempo proporcional a N. A recorrência resolve-se em N log N operações, contra N² da definição direta.",
+    "en": "The Cooley–Tukey algorithm splits a transform of N points into two of N/2 points (even and odd samples) and combines them in time proportional to N. The recurrence solves to N log N operations, against N² for the direct definition."
+  },
+  "spoken": {
+    "pt-BR": "T de N é igual a duas vezes T de N sobre dois mais O de N, que é O de N logaritmo de N.",
+    "en": "T of N equals two times T of N over two plus O of N, which is O of N log N."
+  },
+  "symbols": [
+    {
+      "tex": "T(N)",
+      "text": {
+        "pt-BR": "tempo para transformar N pontos",
+        "en": "time to transform N points"
+      }
+    },
+    {
+      "tex": "O(N)",
+      "text": {
+        "pt-BR": "custo linear da combinação das metades",
+        "en": "linear cost of combining the halves"
+      }
+    },
+    {
+      "tex": "O(N \\log N)",
+      "text": {
+        "pt-BR": "ordem de crescimento do total",
+        "en": "order of growth of the total"
+      }
+    }
+  ],
+  "concepts": [
+    "discrete-fourier-transform",
+    "computational-complexity"
+  ],
+  "sources": [
+    "cooley1965"
+  ]
+}

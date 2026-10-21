@@ -1,0 +1,89 @@
+---
+/**
+ * The formula collection (route kind "formulas"): every formula of the registry
+ * in bridge order, grouped by stratum, each with its ordinal, name and what it
+ * says. Notation and the full entry live on each formula's own page: rendered
+ * formulas are heavy (KaTeX HTML + MathML), and the index must stay within the
+ * HTML budget (ADR 0009, ADR 0011).
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StratumMark from '../components/chrome/StratumMark.astro';
+import { siteFormulas } from '../components/formulas/data.ts';
+import { ontologyText } from '../components/ontology/text.ts';
+import type { Locale } from '../core/domain/locale.ts';
+import { STRATA, type Stratum } from '../core/domain/strata.ts';
+import formulasCatalog from '../core/i18n/catalogs/formulas.ts';
+import { alternatesForAll } from '../adapters/astro/content.ts';
+import { asset, useTranslations } from '../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+}
+const { locale } = Astro.props;
+const data = await siteFormulas();
+const t = useTranslations(formulasCatalog, locale);
+const { count } = ontologyText(locale);
+const { formulas } = data.registry;
+const groups = STRATA.map((stratum) => ({
+  stratum,
+  entries: formulas.flatMap((f, index) => (f.stratum === stratum ? [{ formula: f, ordinal: index + 1 }] : [])),
+})).filter((g) => g.entries.length > 0);
+const sectionId = (s: Stratum): string => `formulas-${s}`;
+const jsonHref = asset('formulas.json');
+---
+
+<BaseLayout
+  locale={locale}
+  title={t('index.title')}
+  description={t('index.description')}
+  alternates={alternatesForAll(() => ({ kind: 'formulas' }))}
+>
+  <link slot="head" rel="alternate" type="application/json" href={jsonHref} title={t('index.json')} />
+  <div class="page-grid formulas">
+    <header class="formulas__header">
+      <h1>{t('index.title')}</h1>
+      <p class="formulas__lede">{t('index.lede')}</p>
+      <p class="ui formulas__count">{t('index.count', { n: count(formulas.length), strata: count(groups.length) })}</p>
+      <nav class="formulas__toc ui" aria-label={t('index.toc')}>
+        <ul role="list">
+          {groups.map((g) => (
+            <li>
+              <a href={`#${sectionId(g.stratum)}`}>
+                <StratumMark stratum={g.stratum} locale={locale} size="s" />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </header>
+    {groups.map((g) => (
+      <section class="formulas__section" aria-labelledby={sectionId(g.stratum)} data-stratum={g.stratum}>
+        <h2 id={sectionId(g.stratum)}>
+          <StratumMark stratum={g.stratum} locale={locale} size="l" />
+        </h2>
+        <ol class="formula-list" role="list">
+          {g.entries.map(({ formula, ordinal }) => (
+            <li class="formula-list__item" id={`formula-${formula.id}`}>
+              <span class="formula-list__ordinal ui">{t('formula.ordinal', { n: ordinal })}</span>
+              <a class="formula-list__name" href={data.formulaHref(formula, locale)}>
+                {formula.name[locale]}
+              </a>
+              <p class="formula-list__meaning">{formula.meaning[locale]}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+    <section class="formulas__export" aria-labelledby="formulas-json">
+      <h2 id="formulas-json">{t('index.json')}</h2>
+      <p>{t('index.jsonNote')}</p>
+      <ul class="ui">
+        <li>
+          <a href={jsonHref} type="application/json">
+            formulas.json
+          </a>
+        </li>
+      </ul>
+    </section>
+  </div>
+</BaseLayout>

@@ -1,0 +1,65 @@
+{
+  "slug": {
+    "pt-BR": "capacidade-do-canal-binario-simetrico",
+    "en": "binary-symmetric-channel-capacity"
+  },
+  "name": {
+    "pt-BR": "Capacidade do canal binário simétrico",
+    "en": "Binary symmetric channel capacity"
+  },
+  "tex": "C = 1 - \\H_2(p), \\qquad \\H_2(p) = -p \\log_2 p - (1 - p) \\log_2 (1 - p)",
+  "labels": {
+    "pt-BR": [
+      "eq:capacidade-bsc"
+    ],
+    "en": [
+      "eq:bsc-capacity"
+    ]
+  },
+  "stratum": "formal",
+  "domains": [
+    "information-theory",
+    "probability"
+  ],
+  "meaning": {
+    "pt-BR": "Um canal que troca cada bit com probabilidade p transmite no máximo um bit por uso menos a entropia binária de p. Com p igual a 0 ou 1 a capacidade é 1 bit (um canal perfeito, ou um que inverte tudo de modo previsível); com p igual a meio ela é zero, porque a saída nada diz sobre a entrada.",
+    "en": "A channel that flips each bit with probability p carries at most one bit per use minus the binary entropy of p. With p equal to 0 or 1 the capacity is 1 bit (a perfect channel, or one that inverts everything predictably); with p equal to one half it is zero, because the output says nothing about the input."
+  },
+  "spoken": {
+    "pt-BR": "C é igual a um menos H dois de p, onde H dois de p é igual a menos p vezes o logaritmo, na base dois, de p, menos, um menos p, vezes o logaritmo, na base dois, de um menos p.",
+    "en": "C equals one minus H two of p, where H two of p equals minus p times the logarithm, base two, of p, minus, one minus p, times the logarithm, base two, of one minus p."
+  },
+  "symbols": [
+    {
+      "tex": "C",
+      "text": {
+        "pt-BR": "capacidade, em bits por uso do canal",
+        "en": "capacity, in bits per channel use"
+      }
+    },
+    {
+      "tex": "p",
+      "text": {
+        "pt-BR": "probabilidade de um bit ser trocado",
+        "en": "probability that a bit is flipped"
+      }
+    },
+    {
+      "tex": "\\H_2(p)",
+      "text": {
+        "pt-BR": "função de entropia binária",
+        "en": "binary entropy function"
+      }
+    }
+  ],
+  "concepts": [
+    "channel-capacity",
+    "channel",
+    "entropy",
+    "noise"
+  ],
+  "sources": [
+    "cover2006",
+    "shannon1948"
+  ]
+}

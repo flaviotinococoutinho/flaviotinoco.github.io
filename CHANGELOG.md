@@ -10,6 +10,22 @@ próprio frontmatter.
 
 ## [Não lançado]
 
+### Adicionado
+
+- Acervo de fórmulas ([ADR 0011](docs/adr/0011-acervo-de-formulas.md)): registro em `src/content/formulas/*.json`
+  (36 fórmulas, nome, TeX canônico, significado, leitura em voz alta, símbolos, conceitos e fontes nas duas
+  línguas), núcleo `src/core/formulas/`, páginas `/<lang>/formulas/` e `/<lang>/formulas/<slug>/`, exportação
+  `/formulas.json`, entrada na navegação, na paleta, no rodapé e na página 404.
+- Versão em palavras sob toda equação numerada (estágio `latex`: `details.formula__words`, `aria-describedby`)
+  e sob a notação de cada conceito; teste de guarda `tests/unit/guardrails/formulas.test.ts` (todo bloco `$$`
+  rotulado, todo rótulo com fórmula, toda notação com ficha).
+
+### Alterado
+
+- Orçamento de HTML por página: 150 → 160 KiB (ADR 0011 altera a decisão 3 do ADR 0009; medição no ADR).
+- Impressão: `[data-reveal]` sem animação e conteúdo de `details` exposto via `::details-content`.
+- Diagnóstico novo do estágio `latex`: `missing-formula` (equação numerada sem fórmula no acervo).
+
 ## [0.2.0] - 2026-10-21
 
 ### Adicionado

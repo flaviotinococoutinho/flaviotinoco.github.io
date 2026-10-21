@@ -1,0 +1,53 @@
+{
+  "slug": {
+    "pt-BR": "serie-de-fourier",
+    "en": "fourier-series"
+  },
+  "name": {
+    "pt-BR": "Série de Fourier",
+    "en": "Fourier series"
+  },
+  "tex": "x(t) = \\sum_{n=-\\infty}^{\\infty} c_n\\,\\e^{2\\pi\\i n t / T}",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "fourier-series",
+  "meaning": {
+    "pt-BR": "Um sinal periódico de período T é a soma de oscilações complexas nas frequências múltiplas de 1/T, cada uma com um coeficiente que diz quanto dessa harmônica o sinal contém. Somar apenas as primeiras harmônicas dá uma aproximação, cada vez melhor, do sinal.",
+    "en": "A periodic signal of period T is the sum of complex oscillations at the frequencies that are multiples of 1/T, each with a coefficient saying how much of that harmonic the signal contains. Adding only the first harmonics gives an ever better approximation of the signal."
+  },
+  "spoken": {
+    "pt-BR": "x de t é igual ao somatório, para n de menos infinito a mais infinito, de c índice n vezes e elevado a dois pi i n t sobre T.",
+    "en": "x of t equals the sum, for n from minus infinity to plus infinity, of c sub n times e to the power two pi i n t over T."
+  },
+  "symbols": [
+    {
+      "tex": "c_n",
+      "text": {
+        "pt-BR": "coeficiente da n-ésima harmônica",
+        "en": "coefficient of the n-th harmonic"
+      }
+    },
+    {
+      "tex": "T",
+      "text": {
+        "pt-BR": "período do sinal",
+        "en": "period of the signal"
+      }
+    },
+    {
+      "tex": "n/T",
+      "text": {
+        "pt-BR": "frequência da n-ésima harmônica",
+        "en": "frequency of the n-th harmonic"
+      }
+    }
+  ],
+  "concepts": [
+    "fourier-transform",
+    "gibbs-phenomenon",
+    "frequency"
+  ],
+  "sources": []
+}

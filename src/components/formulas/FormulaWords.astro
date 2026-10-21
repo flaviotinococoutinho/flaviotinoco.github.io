@@ -1,0 +1,44 @@
+---
+/**
+ * The version in words of a formula, as the latex stage renders it under every
+ * bound equation (src/core/latex/formula-block.ts): the same elements and
+ * classes (FORMULA_CLASS), so one stylesheet serves both. Used under the
+ * notation of a concept page. Symbols are rendered with KaTeX at build time.
+ */
+import { FORMULA_CLASS, formulaPartId, type FormulaWords } from '../../core/formulas/index.ts';
+import Tex from '../ontology/Tex.astro';
+
+export interface Props {
+  readonly words: FormulaWords;
+  /** Id of the equation the words describe (prefix of the ids of the block's parts). */
+  readonly equationId: string;
+}
+const { words, equationId } = Astro.props;
+---
+
+<details class={FORMULA_CLASS.words} id={formulaPartId(equationId, 'words')}>
+  <summary class={FORMULA_CLASS.summary}>
+    <span class={FORMULA_CLASS.summaryLabel}>{words.summary}</span> <span class={FORMULA_CLASS.name}>{words.name}</span>
+  </summary>
+  <p class={FORMULA_CLASS.meaning} id={formulaPartId(equationId, 'meaning')}>
+    {words.meaning}
+  </p>
+  <p class={FORMULA_CLASS.spoken}>
+    <span class={FORMULA_CLASS.label}>{words.spokenLabel}</span> {words.spoken}
+  </p>
+  {words.symbols.length > 0 && (
+    <dl class={FORMULA_CLASS.symbols} aria-label={words.symbolsLabel}>
+      {words.symbols.map((s) => (
+        <>
+          <dt class={FORMULA_CLASS.symbol}>
+            <Tex tex={s.tex} />
+          </dt>
+          <dd class={FORMULA_CLASS.symbolText}>{s.text}</dd>
+        </>
+      ))}
+    </dl>
+  )}
+  <p class={FORMULA_CLASS.more}>
+    <a href={words.href}>{words.moreLabel}</a>
+  </p>
+</details>

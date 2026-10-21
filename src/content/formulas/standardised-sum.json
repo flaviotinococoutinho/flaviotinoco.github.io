@@ -1,0 +1,66 @@
+{
+  "slug": {
+    "pt-BR": "soma-padronizada",
+    "en": "standardised-sum"
+  },
+  "name": {
+    "pt-BR": "Soma padronizada",
+    "en": "Standardised sum"
+  },
+  "tex": "Z_n = \\frac{S_n - n\\mu}{\\sigma \\sqrt{n}}",
+  "labels": {
+    "pt-BR": [
+      "eq:padronizada"
+    ],
+    "en": [
+      "eq:standardised"
+    ]
+  },
+  "stratum": "formal",
+  "domains": [
+    "probability",
+    "mathematics"
+  ],
+  "meaning": {
+    "pt-BR": "Para comparar somas de tamanhos diferentes, subtrai-se da soma de n variáveis a sua média esperada e divide-se pelo seu desvio-padrão. A soma padronizada tem sempre média 0 e variância 1; é ela que o teorema central do limite compara com a curva normal.",
+    "en": "To compare sums of different sizes, the expected mean of the sum of n variables is subtracted and the result is divided by its standard deviation. The standardised sum always has mean 0 and variance 1; it is what the central limit theorem compares with the normal curve."
+  },
+  "spoken": {
+    "pt-BR": "Z índice n é igual a S índice n menos n mu, sobre sigma vezes raiz quadrada de n.",
+    "en": "Z sub n equals S sub n minus n mu, over sigma times the square root of n."
+  },
+  "symbols": [
+    {
+      "tex": "S_n",
+      "text": {
+        "pt-BR": "soma de n variáveis independentes e identicamente distribuídas",
+        "en": "sum of n independent, identically distributed variables"
+      }
+    },
+    {
+      "tex": "\\mu",
+      "text": {
+        "pt-BR": "média de cada variável",
+        "en": "mean of each variable"
+      }
+    },
+    {
+      "tex": "\\sigma",
+      "text": {
+        "pt-BR": "desvio-padrão de cada variável",
+        "en": "standard deviation of each variable"
+      }
+    },
+    {
+      "tex": "Z_n",
+      "text": {
+        "pt-BR": "a soma padronizada",
+        "en": "the standardised sum"
+      }
+    }
+  ],
+  "concepts": [
+    "central-limit-theorem"
+  ],
+  "sources": []
+}

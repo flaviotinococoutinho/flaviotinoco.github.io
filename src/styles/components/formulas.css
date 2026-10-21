@@ -1,0 +1,181 @@
+/*
+ * Component styles: the formula collection (ADR 0011) — the version in words
+ * under a bound equation (emitted by the latex stage and by FormulaWords.astro
+ * with the same classes), the index of formulas and a formula's own page.
+ * Wrapped in the `components` cascade layer by global.css; tokens only.
+ */
+
+/* ───────────────────── 1. The words block under an equation ───────────────────── */
+
+.formula {
+  margin-block: var(--space-0);
+}
+.prose .formula > .equation {
+  margin-block: 0;
+}
+
+/* The disclosure reads as an aside of the equation: interface face, one step smaller,
+   a thin rule on the start side (the same voice as side notes and figure sources). */
+.prose .formula__words,
+.formula__words {
+  margin-block: var(--space-n2) 0;
+  padding-inline-start: var(--space-n1);
+  border-inline-start: 2px solid var(--rule);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+  color: var(--ink-muted);
+  text-indent: 0;
+}
+.formula__words > * + * {
+  margin-block-start: var(--space-n2);
+}
+.formula__summary {
+  cursor: pointer;
+  color: var(--ink);
+}
+.formula__summary::marker {
+  color: var(--ink-muted);
+}
+.formula__summary-label {
+  font-weight: 600;
+}
+/* The formula's name is visible with the disclosure closed: in the text face, as a title. */
+.formula__name {
+  font-family: var(--font-text);
+  font-style: italic;
+}
+.formula__meaning {
+  color: var(--ink);
+}
+.formula__label {
+  font-weight: 600;
+}
+.formula__symbols {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--space-n1);
+  row-gap: var(--space-n3);
+  margin: 0;
+}
+.formula__symbol {
+  font-size: var(--step-0);
+  color: var(--ink);
+}
+.formula__symbol-text {
+  margin: 0;
+  align-self: baseline;
+}
+.formula__more {
+  margin-block-start: var(--space-n2);
+}
+
+/* ───────────────────── 2. The index of formulas ───────────────────── */
+
+.formulas__lede {
+  font-size: var(--step-1);
+  line-height: var(--leading-ui);
+}
+.formulas__count {
+  color: var(--ink-muted);
+}
+.formulas__toc ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2) var(--space-0);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.formulas__section {
+  margin-block-start: var(--space-2);
+}
+.formula-list {
+  display: grid;
+  gap: var(--space-0);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.formula-list__item {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--space-n1);
+  row-gap: var(--space-n3);
+  align-items: baseline;
+}
+.formula-list__ordinal {
+  grid-row: 1 / span 2;
+  color: var(--ink-muted);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.formula-list__name {
+  font-size: var(--step-1);
+  line-height: var(--leading-heading);
+}
+.formula-list__meaning {
+  grid-column: 2;
+  margin: 0;
+  color: var(--ink-muted);
+}
+.formulas__export {
+  margin-block-start: var(--space-2);
+}
+
+/* ───────────────────── 3. A formula's page ───────────────────── */
+
+.formula-page__kicker {
+  color: var(--ink-muted);
+}
+.formula-page__title {
+  margin-block: var(--space-n2) 0;
+}
+.formula-page__facets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-n2) var(--space-0);
+  margin-block-start: var(--space-n1);
+  color: var(--ink-muted);
+}
+.formula-page__notation {
+  margin-block: var(--space-0);
+}
+.formula-page__tex {
+  padding-block: var(--space-n2);
+}
+.formula-page__tex .ontology-tex--display {
+  font-size: var(--step-1);
+}
+.formula-page > section + section {
+  margin-block-start: var(--space-1);
+}
+.formula-page h2 {
+  margin-block-end: var(--space-n2);
+}
+.formula__symbols--page {
+  font-family: var(--font-text);
+  font-size: var(--step-0);
+  color: var(--ink);
+  row-gap: var(--space-n2);
+}
+.formula__symbols--page .formula__symbol {
+  font-size: var(--step-1);
+}
+.formula-uses {
+  display: grid;
+  gap: var(--space-n2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.formula-page__concept-of {
+  margin-block-end: var(--space-n1);
+}
+.formula-page__note {
+  color: var(--ink-muted);
+}
+.formula-page__footer {
+  margin-block-start: var(--space-2);
+  color: var(--ink-muted);
+}

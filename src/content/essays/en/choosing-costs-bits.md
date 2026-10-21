@@ -94,6 +94,7 @@ Let $$X$$ be a source with probabilities $$p_i$$, and let $$L^*$$ be the smalles
 
 $$
 \frac{\H(X)}{\log_2 k} \leq L^* < \frac{\H(X)}{\log_2 k} + 1,
+\label{eq:source-coding}
 $$
 
 and Huffman's algorithm constructs a code that attains $$L^*$$ [@huffman1952; @cover2006, ch. 5].

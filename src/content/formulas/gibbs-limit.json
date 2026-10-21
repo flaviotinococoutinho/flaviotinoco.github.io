@@ -1,0 +1,60 @@
+{
+  "slug": {
+    "pt-BR": "limite-de-gibbs",
+    "en": "gibbs-limit"
+  },
+  "name": {
+    "pt-BR": "Limite do excesso de Gibbs",
+    "en": "Gibbs overshoot limit"
+  },
+  "tex": "\\lim_{N \\to \\infty} S_N\\!\\left(\\frac{\\pi}{2N}\\right) = \\frac{2}{\\pi} \\int_0^{\\pi} \\frac{\\sin t}{t} \\d t",
+  "labels": {
+    "pt-BR": [
+      "eq:gibbs"
+    ],
+    "en": [
+      "eq:gibbs"
+    ]
+  },
+  "stratum": "formal",
+  "domains": [
+    "signal-processing",
+    "mathematics"
+  ],
+  "meaning": {
+    "pt-BR": "Junto ao salto da onda quadrada, o máximo da soma parcial não converge para 1: no ponto π/2N, ele tende a 2/π vezes a integral do seno cardinal de 0 a π, cerca de 1,179. O excesso de cerca de 9 % persiste por mais termos que se somem; só se estreita.",
+    "en": "Next to the jump of the square wave the maximum of the partial sum does not converge to 1: at the point π/2N it tends to 2/π times the integral of the cardinal sine from 0 to π, about 1.179. The overshoot of about 9% persists however many terms are added; it only narrows."
+  },
+  "spoken": {
+    "pt-BR": "O limite, quando N tende a infinito, de S índice N de pi sobre dois N é igual a dois sobre pi vezes a integral, de zero a pi, de seno de t sobre t, d t.",
+    "en": "The limit, as N tends to infinity, of S sub N of pi over two N equals two over pi times the integral, from zero to pi, of sine of t over t, d t."
+  },
+  "symbols": [
+    {
+      "tex": "S_N",
+      "text": {
+        "pt-BR": "soma parcial com N harmônicas",
+        "en": "partial sum with N harmonics"
+      }
+    },
+    {
+      "tex": "\\frac{\\pi}{2N}",
+      "text": {
+        "pt-BR": "posição do primeiro máximo depois do salto",
+        "en": "position of the first maximum after the jump"
+      }
+    },
+    {
+      "tex": "\\int_0^{\\pi} \\frac{\\sin t}{t} \\d t",
+      "text": {
+        "pt-BR": "integral do seno cardinal (cerca de 1,852)",
+        "en": "integral of the cardinal sine (about 1.852)"
+      }
+    }
+  ],
+  "concepts": [
+    "gibbs-phenomenon",
+    "fourier-series"
+  ],
+  "sources": []
+}

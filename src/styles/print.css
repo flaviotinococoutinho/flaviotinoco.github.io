@@ -45,4 +45,13 @@
   [data-depth] {
     translate: none !important;
   }
+  /* What scrolling would reveal is printed as it rests (the reveal is scroll-driven, motion.css). */
+  [data-reveal] {
+    animation-name: none;
+  }
+  /* A closed disclosure (stretchtext, the words of a formula) prints its content where
+     the browser exposes it (CSS ::details-content, Chromium ≥ 131); elsewhere only the summary. */
+  details::details-content {
+    content-visibility: visible;
+  }
 }

@@ -1,0 +1,61 @@
+{
+  "slug": {
+    "pt-BR": "lei-de-hick-hyman",
+    "en": "hick-hyman-law"
+  },
+  "name": {
+    "pt-BR": "Lei de Hick–Hyman",
+    "en": "Hick–Hyman law"
+  },
+  "tex": "T = a + b \\log_2(n + 1)",
+  "labels": {
+    "pt-BR": [
+      "eq:hick"
+    ],
+    "en": [
+      "eq:hick"
+    ]
+  },
+  "concept": "hick-hyman-law",
+  "meaning": {
+    "pt-BR": "O tempo médio para escolher entre n alternativas equiprováveis cresce com o logaritmo de n mais um, não com n: cada duplicação das alternativas acrescenta o mesmo tempo. As constantes a e b são ajustadas aos dados de cada tarefa; o termo mais um costuma ser lido como a incerteza sobre haver ou não um estímulo. Nos ensaios, o tempo aparece como TR (tempo de reação) ou RT.",
+    "en": "The average time to choose among n equally likely alternatives grows with the logarithm of n plus one, not with n: every doubling of the alternatives adds the same time. The constants a and b are fitted to the data of each task; the plus one is usually read as the uncertainty about whether a stimulus occurs at all. In the essays the time appears as RT (reaction time) or TR."
+  },
+  "spoken": {
+    "pt-BR": "T é igual a a mais b vezes o logaritmo, na base dois, de n mais um.",
+    "en": "T equals a plus b times the logarithm, base two, of n plus one."
+  },
+  "symbols": [
+    {
+      "tex": "T",
+      "text": {
+        "pt-BR": "tempo médio de reação",
+        "en": "average reaction time"
+      }
+    },
+    {
+      "tex": "n",
+      "text": {
+        "pt-BR": "número de alternativas equiprováveis",
+        "en": "number of equally likely alternatives"
+      }
+    },
+    {
+      "tex": "a, b",
+      "text": {
+        "pt-BR": "constantes ajustadas por regressão para a tarefa",
+        "en": "constants fitted by regression for the task"
+      }
+    }
+  ],
+  "concepts": [
+    "decision",
+    "entropy",
+    "interface",
+    "cognitive-load"
+  ],
+  "sources": [
+    "hick1952",
+    "hyman1953"
+  ]
+}

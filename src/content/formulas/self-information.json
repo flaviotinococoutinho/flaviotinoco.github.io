@@ -1,0 +1,59 @@
+{
+  "slug": {
+    "pt-BR": "autoinformacao",
+    "en": "self-information"
+  },
+  "name": {
+    "pt-BR": "Autoinformação",
+    "en": "Self-information"
+  },
+  "tex": "I(x) = -\\log_2 p(x)",
+  "labels": {
+    "pt-BR": [
+      "eq:autoinformacao"
+    ],
+    "en": [
+      "eq:self-information"
+    ]
+  },
+  "concept": "information",
+  "meaning": {
+    "pt-BR": "A informação de um resultado é o logaritmo do inverso da sua probabilidade: quanto mais improvável o resultado, mais informação ele traz. Com logaritmo na base dois, a unidade é o bit; um resultado certo (probabilidade 1) traz zero bits.",
+    "en": "The information of an outcome is the logarithm of the inverse of its probability: the less likely the outcome, the more information it carries. With a base-two logarithm the unit is the bit; a certain outcome (probability 1) carries zero bits."
+  },
+  "spoken": {
+    "pt-BR": "I de x é igual a menos o logaritmo, na base dois, de p de x.",
+    "en": "I of x equals minus the logarithm, base two, of p of x."
+  },
+  "symbols": [
+    {
+      "tex": "I(x)",
+      "text": {
+        "pt-BR": "informação do resultado x, em bits",
+        "en": "information of the outcome x, in bits"
+      }
+    },
+    {
+      "tex": "p(x)",
+      "text": {
+        "pt-BR": "probabilidade do resultado x",
+        "en": "probability of the outcome x"
+      }
+    },
+    {
+      "tex": "\\log_2",
+      "text": {
+        "pt-BR": "logaritmo na base dois",
+        "en": "logarithm to base two"
+      }
+    }
+  ],
+  "concepts": [
+    "entropy",
+    "signal"
+  ],
+  "sources": [
+    "shannon1948",
+    "cover2006"
+  ]
+}

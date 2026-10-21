@@ -1,0 +1,72 @@
+{
+  "slug": {
+    "pt-BR": "capacidade-do-canal-gaussiano",
+    "en": "gaussian-channel-capacity"
+  },
+  "name": {
+    "pt-BR": "Capacidade do canal gaussiano (Shannon–Hartley)",
+    "en": "Gaussian channel capacity (Shannon–Hartley)"
+  },
+  "tex": "C = W \\log_2 \\frac{P + N}{N}",
+  "labels": {
+    "pt-BR": [
+      "eq:capacidade"
+    ],
+    "en": [
+      "eq:capacity"
+    ]
+  },
+  "stratum": "formal",
+  "domains": [
+    "information-theory",
+    "signal-processing"
+  ],
+  "meaning": {
+    "pt-BR": "Um canal de largura de banda W, com ruído gaussiano branco de potência N e sinal de potência P, transmite no máximo W vezes o logaritmo de um mais a razão sinal-ruído, em bits por segundo. A largura de banda entra pelo teorema da amostragem: 2W amostras independentes por segundo.",
+    "en": "A channel of bandwidth W, with white Gaussian noise of power N and a signal of power P, carries at most W times the logarithm of one plus the signal-to-noise ratio, in bits per second. Bandwidth enters through the sampling theorem: 2W independent samples per second."
+  },
+  "spoken": {
+    "pt-BR": "C é igual a W vezes o logaritmo, na base dois, de P mais N sobre N.",
+    "en": "C equals W times the logarithm, base two, of P plus N over N."
+  },
+  "symbols": [
+    {
+      "tex": "C",
+      "text": {
+        "pt-BR": "capacidade, em bits por segundo",
+        "en": "capacity, in bits per second"
+      }
+    },
+    {
+      "tex": "W",
+      "text": {
+        "pt-BR": "largura de banda do canal, em hertz",
+        "en": "channel bandwidth, in hertz"
+      }
+    },
+    {
+      "tex": "P",
+      "text": {
+        "pt-BR": "potência do sinal",
+        "en": "signal power"
+      }
+    },
+    {
+      "tex": "N",
+      "text": {
+        "pt-BR": "potência do ruído na banda",
+        "en": "noise power within the band"
+      }
+    }
+  ],
+  "concepts": [
+    "channel-capacity",
+    "channel",
+    "sampling-theorem",
+    "noise"
+  ],
+  "sources": [
+    "shannon1949",
+    "shannon1948"
+  ]
+}

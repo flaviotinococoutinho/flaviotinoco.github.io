@@ -181,7 +181,7 @@ describe('check-budgets', () => {
     const r = run('check-budgets.ts', [dir]);
     expect(r.code).toBe(1);
     expect(r.out).toContain('4 budget violation(s)');
-    expect(r.out).toMatch(/en\/index\.html: html .* > 150\.0 KiB/);
+    expect(r.out).toMatch(/en\/index\.html: html .* > 160\.0 KiB/);
     expect(r.out).toMatch(/en\/index\.html: css .* > 30\.0 KiB/);
     expect(r.out).toMatch(/en\/index\.html: js .* > 12\.0 KiB/);
     expect(r.out).toMatch(/_astro\/big\.wasm: wasm 49\.0 KiB > 48\.0 KiB/);

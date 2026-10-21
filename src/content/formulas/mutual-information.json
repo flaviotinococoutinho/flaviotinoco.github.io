@@ -1,0 +1,54 @@
+{
+  "slug": {
+    "pt-BR": "informacao-mutua",
+    "en": "mutual-information"
+  },
+  "name": {
+    "pt-BR": "Informação mútua",
+    "en": "Mutual information"
+  },
+  "tex": "\\I(X;Y) = \\H(X) - \\H(X \\mid Y)",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "mutual-information",
+  "meaning": {
+    "pt-BR": "A informação mútua entre duas variáveis é quanto a incerteza sobre uma diminui quando a outra é conhecida: a entropia de X menos a entropia que resta em X depois de observar Y. É simétrica e nunca negativa; vale zero quando as variáveis são independentes.",
+    "en": "The mutual information between two variables is how much the uncertainty about one decreases once the other is known: the entropy of X minus the entropy left in X after observing Y. It is symmetric and never negative; it is zero when the variables are independent."
+  },
+  "spoken": {
+    "pt-BR": "I de X e Y é igual a H de X menos H de X dado Y.",
+    "en": "I of X and Y equals H of X minus H of X given Y."
+  },
+  "symbols": [
+    {
+      "tex": "\\I(X;Y)",
+      "text": {
+        "pt-BR": "informação mútua entre X e Y, em bits",
+        "en": "mutual information between X and Y, in bits"
+      }
+    },
+    {
+      "tex": "\\H(X)",
+      "text": {
+        "pt-BR": "entropia de X",
+        "en": "entropy of X"
+      }
+    },
+    {
+      "tex": "\\H(X \\mid Y)",
+      "text": {
+        "pt-BR": "entropia condicional: a incerteza que resta em X conhecido Y",
+        "en": "conditional entropy: the uncertainty left in X once Y is known"
+      }
+    }
+  ],
+  "concepts": [
+    "entropy",
+    "channel-capacity"
+  ],
+  "sources": [
+    "cover2006"
+  ]
+}

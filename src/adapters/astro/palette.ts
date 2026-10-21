@@ -1,7 +1,7 @@
 /**
  * Shell: the quick-navigation entries of the command palette for one locale —
  * every entry that is the same on every page of that locale (home, sections,
- * strata, about, colophon). They are served as /<lang>/palette.json (ADR 0009)
+ * strata, formulas, about, colophon). They are served as /<lang>/palette.json (ADR 0009)
  * and fetched by <ft-command-palette> when the dialog opens; the entry for
  * this page in the other language is page-specific and stays in the HTML
  * (CommandPalette.astro).
@@ -12,8 +12,9 @@ import { STRATA, STRATUM_SPECS } from '../../core/domain/strata.ts';
 import chrome from '../../core/i18n/catalogs/chrome.ts';
 import common from '../../core/i18n/catalogs/common.ts';
 import { href, useTranslations } from './i18n.ts';
+import type { FormulaRegistry } from '../../core/formulas/index.ts';
 
-export const paletteEntries = (locale: Locale): readonly PaletteEntry[] => {
+export const paletteEntries = (locale: Locale, formulas: FormulaRegistry): readonly PaletteEntry[] => {
   const t = useTranslations(common, locale);
   const c = useTranslations(chrome, locale);
   const page = c('palette.kind.page');
@@ -52,6 +53,13 @@ export const paletteEntries = (locale: Locale): readonly PaletteEntry[] => {
       keywords: `${t('form.concept')} ${t('form.map')}`,
       glyph: 'form-map',
     }),
+    entry({
+      label: t('nav.formulas'),
+      href: href({ kind: 'formulas' }, locale),
+      kind: section,
+      keywords: t('form.formula'),
+      glyph: 'form-formula',
+    }),
     ...STRATA.map((s) =>
       entry({
         label: t(`strata.${s}`),
@@ -76,5 +84,15 @@ export const paletteEntries = (locale: Locale): readonly PaletteEntry[] => {
       keywords: '',
       glyph: 'form-note',
     }),
+    ...formulas.formulas.map((f) =>
+      entry({
+        label: f.name[locale],
+        href: href({ kind: 'formula', slug: f.slug[locale] }, locale),
+        kind: c('palette.kind.formula'),
+        keywords: `${t('form.formula')} ${f.tex}`,
+        glyph: STRATUM_SPECS[f.stratum].glyph,
+        stratum: f.stratum,
+      }),
+    ),
   ];
 };

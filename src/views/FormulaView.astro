@@ -1,0 +1,158 @@
+---
+/**
+ * One formula of the collection (route kind "formula"): ordinal and stratum,
+ * name, notation (KaTeX), what it says, how it reads, the symbols, where it
+ * appears (the numbered equations of the works of this locale, linked to their
+ * anchors), the concept whose notation it is, related concepts and sources.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MathAssets from '../components/MathAssets.astro';
+import StratumMark from '../components/chrome/StratumMark.astro';
+import ConceptLink from '../components/ontology/ConceptLink.astro';
+import Tex from '../components/ontology/Tex.astro';
+import { siteFormulas } from '../components/formulas/data.ts';
+import { siteOntology } from '../components/ontology/data.ts';
+import { ontologyText } from '../components/ontology/text.ts';
+import { styleFor, toHtml } from '../core/bibliography/index.ts';
+import type { Locale } from '../core/domain/locale.ts';
+import { formulaOrdinal, type FormulaId } from '../core/formulas/index.ts';
+import formulasCatalog from '../core/i18n/catalogs/formulas.ts';
+import { alternatesForAll } from '../adapters/astro/content.ts';
+import { asset, href, useTranslations } from '../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly id: string;
+}
+const { locale } = Astro.props;
+const id = Astro.props.id as FormulaId;
+const [data, site] = await Promise.all([siteFormulas(), siteOntology()]);
+const formula = data.registry.byId.get(id);
+if (formula === undefined) throw new Error(`FormulaView: no formula "${id}"`);
+const t = useTranslations(formulasCatalog, locale);
+const tx = ontologyText(locale);
+const ordinal = t('formula.ordinal', { n: formulaOrdinal(data.registry, id) });
+const uses = data.usesOf(formula, locale);
+const style = styleFor(locale);
+const sources = formula.sources.map((k) => {
+  const ref = site.bibliography.get(k);
+  return { key: k, html: ref === undefined ? null : toHtml(style.reference(ref, '')) };
+});
+const related = formula.concepts;
+const sectionId = (s: string): string => `formula-${s}`;
+const name = formula.name[locale];
+---
+
+<BaseLayout
+  locale={locale}
+  title={name}
+  description={formula.meaning[locale]}
+  alternates={alternatesForAll((l) => ({ kind: 'formula', slug: formula.slug[l] }))}
+  ogType="article"
+>
+  <MathAssets slot="head" />
+  <div class="page-grid formula-page" data-stratum={formula.stratum} data-formula={formula.id}>
+    <header class="formula-page__header">
+      <p class="formula-page__kicker ui">
+        <a href={href({ kind: 'formulas' }, locale)}>{t('formula.kicker', { ordinal })}</a>
+      </p>
+      <h1 class="formula-page__title">{name}</h1>
+      <p class="formula-page__facets ui">
+        <StratumMark stratum={formula.stratum} locale={locale} />
+        <span class="formula-page__domains">{formula.domains.map((d) => tx.domain(d)).join(', ')}</span>
+      </p>
+    </header>
+
+    <section class="formula-page__notation" aria-labelledby={sectionId('notation')}>
+      <h2 class="visually-hidden" id={sectionId('notation')}>
+        {t('formula.notation')}
+      </h2>
+      <div class="formula-page__tex" aria-describedby={sectionId('meaning-text')}>
+        <Tex tex={formula.tex} display label={t('formula.notation')} />
+      </div>
+    </section>
+
+    <section class="formula-page__meaning" aria-labelledby={sectionId('meaning')}>
+      <h2 id={sectionId('meaning')}>{t('formula.meaning')}</h2>
+      <p id={sectionId('meaning-text')}>{formula.meaning[locale]}</p>
+    </section>
+
+    <section class="formula-page__spoken" aria-labelledby={sectionId('spoken')}>
+      <h2 id={sectionId('spoken')}>{t('formula.spoken')}</h2>
+      <p>{formula.spoken[locale]}</p>
+    </section>
+
+    {formula.symbols.length > 0 && (
+      <section class="formula-page__symbols" aria-labelledby={sectionId('symbols')}>
+        <h2 id={sectionId('symbols')}>{t('formula.symbols')}</h2>
+        <dl class="formula__symbols formula__symbols--page">
+          {formula.symbols.map((s) => (
+            <>
+              <dt class="formula__symbol">
+                <Tex tex={s.tex} />
+              </dt>
+              <dd class="formula__symbol-text">{s.text[locale]}</dd>
+            </>
+          ))}
+        </dl>
+      </section>
+    )}
+
+    <section class="formula-page__uses" aria-labelledby={sectionId('uses')}>
+      <h2 id={sectionId('uses')}>{t('formula.uses')}</h2>
+      {uses.length === 0 ? (
+        <p class="ui formula-page__note">{t('formula.usesNone')}</p>
+      ) : (
+        <ul class="formula-uses" role="list">
+          {uses.map((u) => (
+            <li class="formula-uses__item" data-form={u.form}>
+              <a href={u.href}>{t('formula.useAt', { work: u.title, equation: u.equation })}</a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+
+    {(formula.concept !== null || related.length > 0) && (
+      <section class="formula-page__concepts" aria-labelledby={sectionId('concepts')}>
+        <h2 id={sectionId('concepts')}>{t('formula.concepts')}</h2>
+        {formula.concept !== null && (
+          <p class="formula-page__concept-of">
+            <span class="ui formula__label">{t('formula.conceptOf')}</span>{' '}
+            <ConceptLink id={formula.concept} locale={locale} />
+          </p>
+        )}
+        {related.length > 0 && (
+          <ul class="chip-list" role="list">
+            {related.map((c) => (
+              <li>
+                <ConceptLink id={c} locale={locale} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    )}
+
+    {sources.length > 0 && (
+      <section class="formula-page__sources" aria-labelledby={sectionId('sources')}>
+        <h2 id={sectionId('sources')}>{t('formula.sources')}</h2>
+        <ul class="concept-sources" role="list">
+          {sources.map((src) => (
+            <li class="concept-sources__item" data-citation-key={src.key}>
+              {src.html === null ? <cite class="source-key">{src.key}</cite> : <Fragment set:html={src.html} />}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <p class="formula-page__footer ui">
+      <a href={href({ kind: 'formulas' }, locale)}>{t('formula.back')}</a>
+      <span aria-hidden="true"> · </span>
+      <a href={asset('formulas.json')} type="application/json">
+        {t('index.json')}
+      </a>
+    </p>
+  </div>
+</BaseLayout>

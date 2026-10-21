@@ -1,0 +1,65 @@
+{
+  "slug": {
+    "pt-BR": "transformada-de-fourier",
+    "en": "fourier-transform"
+  },
+  "name": {
+    "pt-BR": "Transformada de Fourier",
+    "en": "Fourier transform"
+  },
+  "tex": "X(f) = \\int_{-\\infty}^{\\infty} x(t)\\, \\e^{-\\i 2\\pi f t} \\d t",
+  "labels": {
+    "pt-BR": [
+      "eq:fourier"
+    ],
+    "en": [
+      "eq:fourier"
+    ]
+  },
+  "concept": "fourier-transform",
+  "meaning": {
+    "pt-BR": "A transformada de Fourier descreve um sinal pela quantidade e pela fase de cada frequência que ele contém: para cada frequência f, integra-se o sinal multiplicado por uma oscilação complexa dessa frequência. O sinal é recuperado pela transformada inversa, que troca o sinal do expoente.",
+    "en": "The Fourier transform describes a signal by the amount and the phase of each frequency it contains: for each frequency f, the signal is integrated against a complex oscillation of that frequency. The signal is recovered by the inverse transform, which flips the sign of the exponent."
+  },
+  "spoken": {
+    "pt-BR": "X de f é igual à integral, de menos infinito a mais infinito, de x de t vezes e elevado a menos i dois pi f t, d t.",
+    "en": "X of f equals the integral, from minus infinity to plus infinity, of x of t times e to the power minus i two pi f t, d t."
+  },
+  "symbols": [
+    {
+      "tex": "X(f)",
+      "text": {
+        "pt-BR": "espectro: a transformada do sinal na frequência f",
+        "en": "spectrum: the transform of the signal at frequency f"
+      }
+    },
+    {
+      "tex": "x(t)",
+      "text": {
+        "pt-BR": "o sinal no tempo",
+        "en": "the signal in time"
+      }
+    },
+    {
+      "tex": "\\e^{-\\i 2\\pi f t}",
+      "text": {
+        "pt-BR": "oscilação complexa de frequência f (fórmula de Euler)",
+        "en": "complex oscillation of frequency f (Euler’s formula)"
+      }
+    },
+    {
+      "tex": "\\i",
+      "text": {
+        "pt-BR": "unidade imaginária",
+        "en": "imaginary unit"
+      }
+    }
+  ],
+  "concepts": [
+    "signal",
+    "frequency",
+    "fourier-series",
+    "discrete-fourier-transform"
+  ],
+  "sources": []
+}

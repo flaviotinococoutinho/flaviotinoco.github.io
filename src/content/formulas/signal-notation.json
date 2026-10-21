@@ -1,0 +1,45 @@
+{
+  "slug": {
+    "pt-BR": "sinal-continuo-e-discreto",
+    "en": "continuous-and-discrete-signal"
+  },
+  "name": {
+    "pt-BR": "Sinal contínuo e sinal discreto",
+    "en": "Continuous and discrete signal"
+  },
+  "tex": "x(t), \\quad x[n]",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "signal",
+  "meaning": {
+    "pt-BR": "Um sinal é uma grandeza que varia: com parênteses, x(t) é uma função do tempo contínuo; com colchetes, x[n] é uma sequência indexada por inteiros, como as amostras tomadas de um sinal contínuo.",
+    "en": "A signal is a quantity that varies: with parentheses, x(t) is a function of continuous time; with square brackets, x[n] is a sequence indexed by integers, such as the samples taken from a continuous signal."
+  },
+  "spoken": {
+    "pt-BR": "x de t; e x índice n.",
+    "en": "x of t; and x at index n."
+  },
+  "symbols": [
+    {
+      "tex": "x(t)",
+      "text": {
+        "pt-BR": "sinal de tempo contínuo, com t real",
+        "en": "continuous-time signal, with real t"
+      }
+    },
+    {
+      "tex": "x[n]",
+      "text": {
+        "pt-BR": "sinal de tempo discreto, com n inteiro",
+        "en": "discrete-time signal, with integer n"
+      }
+    }
+  ],
+  "concepts": [
+    "sampling",
+    "frequency"
+  ],
+  "sources": []
+}

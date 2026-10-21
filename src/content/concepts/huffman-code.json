@@ -21,7 +21,7 @@
     "pt-BR": "Procedimento que constrói um código de prefixo ótimo para uma fonte de probabilidades conhecidas, fundindo repetidamente os dois símbolos menos prováveis em um só.",
     "en": "The procedure that builds an optimal prefix code for a source with known probabilities by repeatedly merging the two least probable symbols into one."
   },
-  "notation": "H(X) \\le \\bar{L} < H(X) + 1",
+  "notation": "\\frac{H(X)}{\\log_2 k} \\leq L^{*} < \\frac{H(X)}{\\log_2 k} + 1",
   "stratum": "formal",
   "category": "method",
   "domains": [

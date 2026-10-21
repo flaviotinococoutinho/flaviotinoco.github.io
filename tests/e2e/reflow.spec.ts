@@ -17,7 +17,9 @@ test.describe(`reflow at ${WIDTH} px`, () => {
       await page.goto(path);
       await settle(page);
       const measured = await page.evaluate(() => {
-        const boxes = [...document.querySelectorAll<HTMLElement>('.equation, .figure__scroll, pre')];
+        const boxes = [
+          ...document.querySelectorAll<HTMLElement>('.equation, .figure__scroll, .ontology-tex--display, pre'),
+        ];
         return {
           document: document.documentElement.scrollWidth,
           body: document.body.scrollWidth,

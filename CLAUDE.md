@@ -12,7 +12,10 @@ deployed to GitHub Pages as a project site under `/flaviotinoco.github.io/`.
 - `src/islands/` — `registry.ts` (the only global script) lazy-loads `elements/ft-*.ts` custom elements.
 - `src/views/` compose pages; `src/components/` are stateless; `src/pages/` only dispatch routes and serve the
   per-locale endpoints (RSS, `palette.json`, `preferences.json`: chrome content fetched on demand, ADR 0009).
-- `src/content/{essays,labs,strata,pages}/{pt,en}/*.md` + `concepts/*.json` — data, never code.
+- `src/content/{essays,labs,strata,pages}/{pt,en}/*.md` + `concepts/*.json` + `formulas/*.json` — data, never code.
+- Formulas: every `$$` block of the content carries `\label{eq:…}` and is bound by that label to a formula of
+  `src/content/formulas/` (version in words; ADR 0011, [docs/guia-latex.md](docs/guia-latex.md) §1.2); a missing
+  formula fails the build and the guardrail test.
 - `src/core/design/tokens.json` (W3C DTCG) → generated `src/styles/tokens.css`; component CSS in `src/styles/components/`.
 - `src/core/i18n/` — bijective route codec and message catalogs (`defineMessages`, key parity type-checked).
 - `wasm/` — Rust kernels (no wasm-bindgen, no imports) built into `src/wasm/` by `scripts/build-wasm.mjs`.

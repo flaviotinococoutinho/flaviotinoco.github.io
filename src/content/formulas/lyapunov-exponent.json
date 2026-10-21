@@ -1,0 +1,57 @@
+{
+  "slug": {
+    "pt-BR": "expoente-de-lyapunov",
+    "en": "lyapunov-exponent"
+  },
+  "name": {
+    "pt-BR": "Expoente de Lyapunov",
+    "en": "Lyapunov exponent"
+  },
+  "tex": "\\lambda = \\lim_{n\\to\\infty} \\frac{1}{n} \\sum_{i=0}^{n-1} \\ln \\lvert f'(x_i) \\rvert",
+  "labels": {
+    "pt-BR": [
+      "eq:lyapunov"
+    ],
+    "en": [
+      "eq:lyapunov"
+    ]
+  },
+  "concept": "lyapunov-exponent",
+  "meaning": {
+    "pt-BR": "O expoente de Lyapunov é a taxa média, por passo, com que duas órbitas vizinhas se afastam: a média dos logaritmos da derivada do mapa ao longo da órbita. Positivo, as diferenças crescem exponencialmente e o sistema é caótico; negativo, elas se apagam. Para o mapa logístico, a derivada vale r(1 − 2x).",
+    "en": "The Lyapunov exponent is the average rate, per step, at which two neighbouring orbits separate: the mean of the logarithms of the derivative of the map along the orbit. Positive, the differences grow exponentially and the system is chaotic; negative, they die out. For the logistic map the derivative is r(1 − 2x)."
+  },
+  "spoken": {
+    "pt-BR": "Lambda é igual ao limite, quando n tende a infinito, de um sobre n vezes o somatório, para i de zero a n menos um, do logaritmo natural do valor absoluto de f linha de x índice i.",
+    "en": "Lambda equals the limit, as n tends to infinity, of one over n times the sum, for i from zero to n minus one, of the natural logarithm of the absolute value of f prime of x sub i."
+  },
+  "symbols": [
+    {
+      "tex": "\\lambda",
+      "text": {
+        "pt-BR": "expoente de Lyapunov",
+        "en": "Lyapunov exponent"
+      }
+    },
+    {
+      "tex": "f'(x_i)",
+      "text": {
+        "pt-BR": "derivada do mapa no i-ésimo ponto da órbita",
+        "en": "derivative of the map at the i-th point of the orbit"
+      }
+    },
+    {
+      "tex": "\\ln",
+      "text": {
+        "pt-BR": "logaritmo natural",
+        "en": "natural logarithm"
+      }
+    }
+  ],
+  "concepts": [
+    "deterministic-chaos",
+    "logistic-map",
+    "dynamical-system"
+  ],
+  "sources": []
+}

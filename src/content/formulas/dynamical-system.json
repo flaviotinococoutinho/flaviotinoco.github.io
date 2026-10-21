@@ -1,0 +1,45 @@
+{
+  "slug": {
+    "pt-BR": "sistema-dinamico-discreto",
+    "en": "discrete-dynamical-system"
+  },
+  "name": {
+    "pt-BR": "Sistema dinâmico discreto",
+    "en": "Discrete dynamical system"
+  },
+  "tex": "x_{n+1} = f(x_n)",
+  "labels": {
+    "pt-BR": [],
+    "en": []
+  },
+  "concept": "dynamical-system",
+  "meaning": {
+    "pt-BR": "Um sistema dinâmico de tempo discreto é uma regra que leva o estado atual ao estado seguinte. Aplicá-la repetidamente a partir de um estado inicial gera a órbita do sistema; estudar o sistema é estudar o que as órbitas fazem a longo prazo.",
+    "en": "A discrete-time dynamical system is a rule that takes the current state to the next one. Applying it repeatedly from an initial state generates the orbit of the system; studying the system is studying what orbits do in the long run."
+  },
+  "spoken": {
+    "pt-BR": "x índice n mais um é igual a f de x índice n.",
+    "en": "x sub n plus one equals f of x sub n."
+  },
+  "symbols": [
+    {
+      "tex": "x_n",
+      "text": {
+        "pt-BR": "estado no passo n",
+        "en": "state at step n"
+      }
+    },
+    {
+      "tex": "f",
+      "text": {
+        "pt-BR": "regra de evolução",
+        "en": "evolution rule"
+      }
+    }
+  ],
+  "concepts": [
+    "logistic-map",
+    "lyapunov-exponent"
+  ],
+  "sources": []
+}

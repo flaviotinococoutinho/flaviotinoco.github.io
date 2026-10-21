@@ -35,11 +35,23 @@ export type LatexRole =
   | 'table-scroll'
   | 'math-source'
   /** A resolved reference inside the author's own link (a span: links cannot nest). */
-  | 'xref';
+  | 'xref'
+  /** The formula block: the equation and its version in words (src/core/latex/formula-block.ts). */
+  | 'formula'
+  | 'formula-words'
+  | 'formula-summary'
+  | 'formula-summary-label'
+  | 'formula-name'
+  | 'formula-meaning'
+  | 'formula-spoken'
+  | 'formula-label'
+  | 'formula-more';
 
 interface LatexData extends Data {
   hName: string;
   hProperties: Properties;
+  /** Set on generated text no reader-facing fold should count as the author's prose (src/core/fold/tree.ts). */
+  readingGenerated?: true;
 }
 
 /** Generated phrasing element (environment name/number/title, QED mark, caption parts). */
