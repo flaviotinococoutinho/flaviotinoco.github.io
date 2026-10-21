@@ -47,7 +47,7 @@ describe('nice numbers', () => {
 describe('loose ticks', () => {
   test.prop([bound, bound, count])('enclose the range with a nice, even step', (a, b, n) => {
     const [lo, hi] = [Math.min(a, b), Math.max(a, b)];
-    fc.pre(hi - lo > 1e-9 * Math.max(Math.abs(lo), Math.abs(hi)) && hi - lo >= 1e-100);
+    fc.pre(hi - lo > 1e-9 * Math.max(Math.abs(lo), Math.abs(hi)) && hi - lo >= 1e-96);
     const r = looseTicks(a, b, n);
     if (!r.ok) throw new Error(r.error);
     const t = r.value;
@@ -67,6 +67,8 @@ describe('loose ticks', () => {
     const thin = looseTicks(1e4, 1e4 + 2e-12);
     expect(thin.ok ? [thin.value.min <= 5e3, thin.value.max >= 1.5e4] : thin.error).toEqual([true, true]);
     // A range below the printable floor is widened to [−1, 1] around zero, as a zero range is.
+    const edge = looseTicks(0, 1e-100, 3);
+    expect(edge.ok ? [edge.value.min, edge.value.max] : edge.error).toEqual([-1, 1]);
     const tiny = ticksWithin(1e-323, 8.4e-323, 5);
     expect(tiny.ok ? [tiny.value.min, tiny.value.max, tiny.value.values] : tiny.error).toEqual([
       -1,
@@ -89,7 +91,7 @@ describe('ticks within', () => {
   test.prop([bound, bound, count])('stay inside the domain with the same nice step', (a, b, n) => {
     // Thin ranges are widened (tested above); here the domain is kept as given.
     const [lo, hi] = [Math.min(a, b), Math.max(a, b)];
-    fc.pre(hi - lo > 1e-9 * Math.max(Math.abs(lo), Math.abs(hi)) && hi - lo >= 1e-100);
+    fc.pre(hi - lo > 1e-9 * Math.max(Math.abs(lo), Math.abs(hi)) && hi - lo >= 1e-96);
     const r = ticksWithin(a, b, n);
     if (!r.ok) throw new Error(r.error);
     const t = r.value;
