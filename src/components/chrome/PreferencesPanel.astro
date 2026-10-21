@@ -2,57 +2,33 @@
 /**
  * Reader preferences panel: a native popover (popovertarget on the header
  * button opens it without script, light-dismiss and Esc included) with the
- * semantics of a non-modal dialog. Controls are radio groups generated from
- * the pure model (PREFERENCE_KEYS × PREFERENCE_DOMAINS), so adding a value to
- * the model adds its control; labels come from the chrome catalog with
- * compile-time-checked keys `prefs.<key>.<value>`.
+ * semantics of a non-modal dialog.
  *
- * <ft-preferences> is inside the popover, so its module loads only when the
- * panel opens. Before it upgrades, the form is kept invisible (CSS
- * :not(:defined)) so a stale default never flashes; without JavaScript the
- * opening button is not shown at all and the site follows the system settings
+ * The panel is a shell: title, close button, intro, an empty form with the
+ * reset button, and the live status. The radio groups (PREFERENCE_KEYS ×
+ * PREFERENCE_DOMAINS, labels from the chrome catalog) are served once per
+ * locale as /<lang>/preferences.json (ADR 0009) and built by <ft-preferences>
+ * the first time the panel opens — the element sits inside the popover, so
+ * its module loads only then. Until the form is built (data-ready) it is kept
+ * invisible, so a stale default never flashes; without JavaScript the opening
+ * button is not shown at all and the site follows the system settings
  * (prefers-color-scheme, prefers-contrast, prefers-reduced-motion, browser zoom).
  */
 import type { Locale } from '../../core/domain/locale.ts';
+import { localeCodec } from '../../core/domain/locale.ts';
 import chrome from '../../core/i18n/catalogs/chrome.ts';
-import { useTranslations } from '../../adapters/astro/i18n.ts';
-import {
-  DEFAULT_PREFERENCES,
-  PREFERENCE_DOMAINS,
-  PREFERENCE_KEYS,
-  preferenceOptionMessage,
-  type PreferenceKey,
-} from '../../core/chrome/preferences.ts';
+import { asset, useTranslations } from '../../adapters/astro/i18n.ts';
 
 export interface Props {
   readonly locale: Locale;
 }
 
-const c = useTranslations(chrome, Astro.props.locale);
-/** Announcement spoken after a change, rendered here so the island ships no formatter. */
-const applied = (setting: string, value: string): string => c('prefs.applied', { setting, value });
-
-const HINTS: Partial<Record<PreferenceKey, 'prefs.face.hint' | 'prefs.shortcut.hint' | 'prefs.cvd.hint'>> = {
-  face: 'prefs.face.hint',
-  shortcut: 'prefs.shortcut.hint',
-  cvd: 'prefs.cvd.hint',
-};
-
-const groups = PREFERENCE_KEYS.map((key) => ({
-  key,
-  legend: c(`prefs.${key}`),
-  hint: HINTS[key] === undefined ? null : c(HINTS[key]),
-  options: (PREFERENCE_DOMAINS[key] as readonly (typeof PREFERENCE_DOMAINS)[typeof key][number][]).map((value) => ({
-    value,
-    label: c(preferenceOptionMessage(key, value)),
-    announce: applied(c(`prefs.${key}`), c(preferenceOptionMessage(key, value))),
-    checked: value === DEFAULT_PREFERENCES[key],
-  })),
-}));
+const { locale } = Astro.props;
+const c = useTranslations(chrome, locale);
 ---
 
 <div id="ft-prefs" class="prefs ui" popover role="dialog" aria-labelledby="ft-prefs-title">
-  <ft-preferences class="prefs__body">
+  <ft-preferences class="prefs__body" data-source={asset(`${localeCodec.encode(locale)}/preferences.json`)}>
     <div class="prefs__head">
       <h2 id="ft-prefs-title" class="prefs__title">
         {c('prefs.title')}
@@ -66,35 +42,6 @@ const groups = PREFERENCE_KEYS.map((key) => ({
     </div>
     <p class="prefs__intro">{c('prefs.intro')}</p>
     <form class="prefs__form">
-      {groups.map((g) => (
-        <fieldset
-          class="prefs__group"
-          data-key={g.key}
-          aria-describedby={g.hint === null ? undefined : `ft-prefs-hint-${g.key}`}
-        >
-          <legend class="prefs__legend">{g.legend}</legend>
-          <div class="prefs__options">
-            {g.options.map((o) => (
-              <label class="prefs__option">
-                <input
-                  type="radio"
-                  name={`ft-pref-${g.key}`}
-                  value={o.value}
-                  data-key={g.key}
-                  data-announce={o.announce}
-                  checked={o.checked}
-                />
-                <span>{o.label}</span>
-              </label>
-            ))}
-          </div>
-          {g.hint !== null && (
-            <p class="prefs__hint" id={`ft-prefs-hint-${g.key}`}>
-              {g.hint}
-            </p>
-          )}
-        </fieldset>
-      ))}
       <button type="button" class="prefs__reset" data-reset data-announce={c('prefs.resetDone')}>
         {c('prefs.reset')}
       </button>
