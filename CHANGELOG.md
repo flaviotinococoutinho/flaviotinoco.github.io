@@ -10,6 +10,8 @@ próprio frontmatter.
 
 ## [Não lançado]
 
+## [0.3.0] - 2026-10-21
+
 ### Adicionado
 
 - Acervo de fórmulas ([ADR 0011](docs/adr/0011-acervo-de-formulas.md)): registro em `src/content/formulas/*.json`
@@ -19,7 +21,6 @@ próprio frontmatter.
 - Versão em palavras sob toda equação numerada (estágio `latex`: `details.formula__words`, `aria-describedby`)
   e sob a notação de cada conceito; teste de guarda `tests/unit/guardrails/formulas.test.ts` (todo bloco `$$`
   rotulado, todo rótulo com fórmula, toda notação com ficha).
-
 - Leitura assistida: preferências `spacing` (espaçamento amplo, valores do critério 1.4.12 da WCAG 2.2),
   `ruler` (régua de leitura, `ft-reading-ruler`, geometria pura em `src/core/chrome/ruler.ts`) e `focus` (modo
   de foco: sem textura nem campo ambiente, marginália discreta); teste e2e `spacing.spec.ts` aplica o critério
@@ -92,6 +93,7 @@ próprio frontmatter.
 - Integração contínua e implantação no GitHub Pages com ações fixadas por SHA (ADR 0005)
   ([#1](https://github.com/flaviotinococoutinho/flaviotinoco.github.io/pull/1)).
 
-[Não lançado]: https://github.com/flaviotinococoutinho/flaviotinoco.github.io/compare/v0.2.0...HEAD
+[Não lançado]: https://github.com/flaviotinococoutinho/flaviotinoco.github.io/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/flaviotinococoutinho/flaviotinoco.github.io/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/flaviotinococoutinho/flaviotinoco.github.io/compare/d09aeabb1e32a34a686e7f2be9303c3323136bf9...v0.2.0
 [0.1.0]: https://github.com/flaviotinococoutinho/flaviotinoco.github.io/tree/d09aeabb1e32a34a686e7f2be9303c3323136bf9
