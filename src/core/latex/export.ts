@@ -509,11 +509,20 @@ export const exportLatex = (tree: Root, meta: ExportMeta, options: ExportOptions
     }
     const isKey =
       options.citationKeys === undefined ? undefined : (k: string): boolean => options.citationKeys?.has(k) === true;
-    return scanCitations(value, {
+    const tokens = scanCitations(value, {
       ...(isKey === undefined ? {} : { isKey }),
       ...(escaped === undefined ? {} : { escaped }),
-    })
-      .map((token) => (token.type === 'text' ? escapeTex(token.raw) : citation(token, node)))
+    });
+    return tokens
+      .map((token, i) => {
+        if (token.type !== 'text') return citation(token, node);
+        const text = escapeTex(token.raw);
+        // A literal "[" right after a citation command would be read as one more optional
+        // argument: biblatex's multicite commands scan ahead for "[" and "{" (\parencites{a}[…]),
+        // and the bracket could swallow whatever follows, a blockquote included. \relax ends the scan.
+        const afterCitation = i > 0 && tokens[i - 1]?.type !== 'text';
+        return afterCitation && text.startsWith('[') ? `\\relax${text}` : text;
+      })
       .join('');
   };
 

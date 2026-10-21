@@ -10,6 +10,11 @@ próprio frontmatter.
 
 ## [Não lançado]
 
+### Corrigido
+
+- Exportação LaTeX: um `[` literal logo depois de uma citação (`@k[` seguido de quebra de parágrafo) era lido
+  como argumento opcional e podia engolir o bloco seguinte; o exportador termina a citação com `\relax`.
+
 ### Adicionado
 
 - Acervo de fórmulas ([ADR 0011](docs/adr/0011-acervo-de-formulas.md)): registro em `src/content/formulas/*.json`

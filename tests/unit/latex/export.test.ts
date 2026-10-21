@@ -621,6 +621,14 @@ describe('properties', () => {
     },
   );
 
+  it('ends a citation with \\relax when a literal "[" follows it (biblatex would scan it as an argument)', () => {
+    // A bracket the citation grammar does not close ("@k[" then a paragraph break) stays literal text.
+    const md = 'Veja @k[\n\n> citado]';
+    const tex = toLatex(parse(md), meta, { source: md });
+    expect(tex).toContain('\\textcite{k}\\relax[');
+    expect(lintDocument(tex)).toEqual([]);
+  });
+
   it('escapeTex is the identity on text without specials', () => {
     expect(escapeTex('Nyquist–Shannon, 2.5× — ok')).toBe('Nyquist–Shannon, 2.5× — ok');
   });
