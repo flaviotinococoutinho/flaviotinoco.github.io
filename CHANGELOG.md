@@ -31,6 +31,11 @@ próprio frontmatter.
 - Impressão: `[data-reveal]` sem animação e conteúdo de `details` exposto via `::details-content`.
 - Diagnóstico novo do estágio `latex`: `missing-formula` (equação numerada sem fórmula no acervo).
 
+### Corrigido
+
+- Controles de formulário nunca alargam o contêiner: o seletor de conceitos da página de comparação (opção
+  mais longa com espaçamento amplo) transbordava a janela a 390 px.
+
 ## [0.2.0] - 2026-10-21
 
 ### Adicionado
