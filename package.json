@@ -59,7 +59,7 @@
     "rehype-stringify": "^10.0.1",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
-    "satori": "^0.47.1",
+    "satori": "^0.48.1",
     "typescript": "6.0.3",
     "typescript-eslint": "^8.71.1",
     "vfile": "^6.0.3",
