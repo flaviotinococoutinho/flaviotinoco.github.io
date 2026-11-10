@@ -10,6 +10,11 @@ próprio frontmatter.
 
 ## [Não lançado]
 
+### Corrigido
+
+- Build na Hostinger sem `cargo`: módulos WebAssembly versionados, com validação de integridade e das fontes
+  antes de compilar o site e o índice de busca ([ADR 0012](docs/adr/0012-hostinger-build.md)).
+
 ## [0.3.0] - 2026-10-21
 
 ### Adicionado

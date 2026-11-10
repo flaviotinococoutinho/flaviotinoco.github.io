@@ -35,7 +35,7 @@ if (process.env['VITEST_WORKER_ID'] === undefined) {
 export default defineConfig({
   test: {
     // Two projects: `unit` needs nothing but Node; `wasm` reads the kernels built by
-    // `pnpm build:wasm` (gitignored), so it runs in the CI job that builds them.
+    // `pnpm build:wasm` (also committed for hosts without Rust), so CI rebuilds them there.
     projects: [
       { extends: true, test: { name: 'unit', include: ['tests/unit/**/*.test.ts'], exclude: ['tests/unit/wasm/**'] } },
       { extends: true, test: { name: 'wasm', include: ['tests/unit/wasm/**/*.test.ts'] } },

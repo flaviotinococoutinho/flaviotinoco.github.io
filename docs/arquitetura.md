@@ -94,7 +94,7 @@ src/
 ├── layouts/                 documento base
 ├── pages/                   despachantes de rota gerados pelo codec do núcleo; endpoints (RSS, JSON por idioma)
 ├── content/                 essays/, labs/, strata/, pages/ ({pt,en}/*.md), concepts/*.json e formulas/*.json
-├── wasm/                    núcleos compilados (gerados por scripts/build-wasm.mjs; fora do controle de versão)
+├── wasm/                    núcleos compilados e manifestos versionados (scripts/build-wasm.mjs; ADR 0012)
 └── styles/                  tokens.css (gerado), camadas base, components/*.css
 ```
 
