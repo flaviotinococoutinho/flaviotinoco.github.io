@@ -112,6 +112,16 @@ describe('build-wasm prebuilt deployment', () => {
     expect(run(dir).code).toBe(1);
   });
 
+  it('accepts gzip size metadata produced by a different compressor build', () => {
+    const dir = fixture();
+    const manifest = path.join(dir, 'src/wasm/manifest.json');
+    const entries = JSON.parse(readFileSync(manifest, 'utf8')) as { gzipBytes: number }[];
+    for (const entry of entries) entry.gzipBytes += 1;
+    writeFileSync(manifest, JSON.stringify(entries));
+    const result = run(dir);
+    expect(result.code, result.out).toBe(0);
+  });
+
   it.each(['wasm/crates/signal/src/lib.rs', 'wasm/Cargo.toml', 'wasm/.cargo/config.toml'])(
     'rejects kernels compiled before %s changed',
     (name) => {

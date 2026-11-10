@@ -176,8 +176,10 @@ async function validatePrebuilt() {
       const entry = manifest.find((entry) => entry.name === name);
       const gzipBytes = gzipSync(bytes).length;
       const sha256 = createHash('sha256').update(bytes).digest('hex');
-      if (entry.bytes !== bytes.length || entry.gzipBytes !== gzipBytes || entry.sha256 !== sha256)
-        throw new BuildError(`${name}.wasm does not match manifest.json`);
+      if (entry.bytes !== bytes.length) throw new BuildError(`${name}.wasm byte length does not match manifest.json`);
+      if (entry.sha256 !== sha256) throw new BuildError(`${name}.wasm SHA-256 does not match manifest.json`);
+      // Compressed size depends on the host's zlib build. Integrity is defined by
+      // the original bytes and SHA-256; report this runtime's gzip size instead.
       if (bytes.length > FAIL_BYTES)
         throw new BuildError(`${name}.wasm exceeds the hard budget of ${fmtKiB(FAIL_BYTES)}`);
       const status = bytes.length > WARN_BYTES ? `warn > ${fmtKiB(WARN_BYTES)}` : 'ok';

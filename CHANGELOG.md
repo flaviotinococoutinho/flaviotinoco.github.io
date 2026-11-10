@@ -14,6 +14,8 @@ próprio frontmatter.
 
 - Build na Hostinger sem `cargo`: módulos WebAssembly versionados, com validação de integridade e das fontes
   antes de compilar o site e o índice de busca ([ADR 0012](docs/adr/0012-hostinger-build.md)).
+- Validação portátil dos artefatos WASM: tamanho original e SHA-256 atestam integridade; o tamanho gzip é
+  recalculado por ambiente, pois depende da implementação de zlib.
 
 ## [0.3.0] - 2026-10-21
 
