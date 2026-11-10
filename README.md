@@ -25,14 +25,16 @@ com a data da inspeção e o comando que o comprova, está em
 
 O `package.json` declara Node.js a partir de `22.18.0` (os scripts em TypeScript dependem do _type stripping_
 nativo, ativo por padrão a partir dessa versão; o CI usa a 24, ver `.nvmrc`), pnpm `10.28.0` (configurações em
-`pnpm-workspace.yaml`) e Astro `7.3.8`. Os módulos WebAssembly exigem Rust; a versão e o alvo
-`wasm32-unknown-unknown` vêm de `wasm/rust-toolchain.toml` e são instalados pelo `rustup`.
+`pnpm-workspace.yaml`) e Astro `7.3.8`. Para recompilar os módulos WebAssembly, Rust e o alvo
+`wasm32-unknown-unknown` vêm de `wasm/rust-toolchain.toml` e são instalados pelo `rustup`. Ambientes sem
+`cargo`, como o build da Hostinger, usam os binários versionados após validar sua integridade e a
+correspondência com as fontes ([ADR 0012](docs/adr/0012-hostinger-build.md)).
 
 ## Como executar
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm build:wasm          # compila os núcleos Rust → src/wasm/*.wasm
+pnpm build:wasm           # compila com Rust ou valida os binários versionados quando cargo não existe
 pnpm dev                 # servidor de desenvolvimento
 pnpm build               # build:wasm → astro build (estrito) → índice de busca (saída em dist/)
 pnpm preview             # serve dist/ em http://localhost:4321/flaviotinoco.github.io/
@@ -44,6 +46,12 @@ Sem variáveis de ambiente, a compilação usa os valores de produção (site de
 
 `pnpm build:site` falha quando o Astro registra um erro de renderização de conteúdo: o carregador de conteúdo
 do Astro apenas registra essas falhas e termina com sucesso, o que publicaria páginas vazias.
+
+`node scripts/build-wasm.mjs --prebuilt` valida os artefatos sem chamar Rust; `--rebuild` exige a compilação
+com Rust e nunca usa o fallback. `--check` não escreve arquivos. Ao alterar uma entrada da compilação
+Rust ou o script, execute `node scripts/build-wasm.mjs --rebuild` e versione os três `.wasm`,
+`manifest.json` e `sources.json` de `src/wasm/` junto com a mudança. Artefatos ausentes, alterados ou
+desatualizados fazem a validação falhar.
 
 ## Verificações
 
@@ -78,6 +86,10 @@ repositório é `flaviotinococoutinho`, então este é um site de projeto, servi
 `flaviotinococoutinho.github.io` ou configurar um domínio próprio remove o _base path_ sem mudança de código
 ([ADR 0005](docs/adr/0005-implantacao-no-github-pages.md)). As ações do GitHub são fixadas por SHA de commit e
 atualizadas pelo Dependabot.
+
+Na Hostinger, `flaviotinoco.com` usa Node.js 24, `pnpm build` e saída em `dist/`, com `SITE=https://flaviotinoco.com`
+e `BASE_PATH=/` para servir na raiz. O build valida os artefatos WebAssembly versionados quando `cargo` não
+está disponível; Astro e Pagefind continuam executando no ambiente da hospedagem.
 
 ## Versionamento
 

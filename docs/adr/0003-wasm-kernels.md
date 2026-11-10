@@ -205,7 +205,10 @@ binary is on `PATH` and only if it shrinks the module → validation with `WebAs
 exact export list, `abi_version() === 1`, arena smoke test) → budget (warn > 24 KiB, fail > 48 KiB raw) →
 table of raw and gzip sizes → `src/wasm/{signal,information,dynamics}.wasm` and `src/wasm/manifest.json`, a JSON
 array of `{ name, bytes, gzipBytes, sha256 }` (`bytes` raw; gzip at zlib's default level 6, as
-`scripts/check-budgets.ts` measures). Outputs are git-ignored; `pnpm build`/`pnpm dev` run the script first.
+`scripts/check-budgets.ts` measures). `pnpm build`/`pnpm dev` run the script first. Outputs are now versioned
+with `src/wasm/sources.json` so hosts without Cargo can validate and reuse them; the source fingerprint,
+explicit `--prebuilt`/`--rebuild` modes and CI policy are specified in [ADR 0012](0012-hostinger-build.md).
+`--check` writes nothing in either mode.
 
 Sizes in bytes after stripping custom sections (no `wasm-opt`), gzip level 6, Rust 1.97.0:
 
@@ -257,10 +260,10 @@ Negative and trade-offs:
 - One flow field per module instance; `flow_init` invalidates every arena allocation (the TypeScript wrapper
   refuses to call it inside `withArena`). Two hero animations on one page would have to share it.
 - `wasm-opt` is optional: builds without Binaryen are reproducible but a few percent larger.
-- The Vitest suites in `tests/unit/wasm/` exercise the **built** modules (`src/wasm/*.wasm`, gitignored), so
-  `pnpm build:wasm` must run before `pnpm test`, and a CI job that runs them needs either the Rust toolchain or
-  the `wasm` artifact. Without the modules the suites fail with a hint rather than skip: a silent skip would let
-  the kernels go untested.
+- The Vitest suites in `tests/unit/wasm/` exercise the **built** modules (`src/wasm/*.wasm`) through
+  `pnpm test:wasm`. Hosts without Cargo validate the versioned artifacts; CI still rebuilds the Rust sources
+  before testing them (ADR 0012). Without the modules the suites fail with a hint rather than skip: a silent
+  skip would let the kernels go untested.
 
 Deviations from the original specification, with reasons:
 

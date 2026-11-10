@@ -3,6 +3,8 @@
 //
 //   node scripts/build-wasm.mjs           build, validate, write src/wasm/*.wasm + manifest.json
 //   node scripts/build-wasm.mjs --check   build and validate only (writes nothing)
+//   node scripts/build-wasm.mjs --prebuilt validate committed artifacts without Rust
+//   node scripts/build-wasm.mjs --rebuild  require a fresh Rust build (no fallback)
 //
 // Steps: cargo build (release, wasm32-unknown-unknown, run inside wasm/ so that
 // rust-toolchain.toml and .cargo/config.toml apply) → strip custom sections →
@@ -22,6 +24,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -108,17 +111,90 @@ const WASM_OPT_FEATURES = [
 class BuildError extends Error {}
 
 function parseArgs(argv) {
-  const opts = { check: false };
+  const opts = { check: false, prebuilt: false, rebuild: false };
   for (const arg of argv) {
     if (arg === '--check') opts.check = true;
+    else if (arg === '--prebuilt') opts.prebuilt = true;
+    else if (arg === '--rebuild') opts.rebuild = true;
     else if (arg === '--help' || arg === '-h') {
       console.log(
-        'Usage: node scripts/build-wasm.mjs [--check]\n  --check  build and validate only; do not write src/wasm/',
+        'Usage: node scripts/build-wasm.mjs [--check] [--prebuilt | --rebuild]\n' +
+          '  --check     validate only; do not write src/wasm/\n' +
+          '  --prebuilt  validate committed artifacts without invoking Rust\n' +
+          '  --rebuild   require Rust; never reuse committed artifacts',
       );
       process.exit(0);
     } else throw new BuildError(`unknown argument: ${arg}`);
   }
+  if (opts.prebuilt && opts.rebuild) throw new BuildError('--prebuilt and --rebuild are mutually exclusive');
   return opts;
+}
+
+/** Bind the portable artifacts to all build inputs, independent of timestamps or Git. */
+function sourceFingerprint() {
+  const files = ['scripts/build-wasm.mjs'];
+  function walk(dir, prefix) {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === 'target') continue;
+      const path = `${prefix}/${entry.name}`;
+      if (entry.isDirectory()) walk(join(dir, entry.name), path);
+      else if (
+        entry.name.endsWith('.rs') ||
+        ['Cargo.toml', 'Cargo.lock', 'rust-toolchain.toml'].includes(entry.name) ||
+        path === 'wasm/.cargo/config.toml'
+      )
+        files.push(path);
+    }
+  }
+  walk(WASM_DIR, 'wasm');
+  const hash = createHash('sha256');
+  for (const path of files.sort())
+    hash
+      .update(path)
+      .update('\0')
+      .update(readFileSync(join(ROOT, path)))
+      .update('\0');
+  return { sha256: hash.digest('hex') };
+}
+
+async function validatePrebuilt() {
+  try {
+    const sources = JSON.parse(readFileSync(join(OUT_DIR, 'sources.json'), 'utf8'));
+    if (sources?.sha256 !== sourceFingerprint().sha256) throw new BuildError('source fingerprint differs');
+    const manifest = JSON.parse(readFileSync(join(OUT_DIR, 'manifest.json'), 'utf8'));
+    const names = Object.keys(MODULES);
+    if (
+      !Array.isArray(manifest) ||
+      manifest.length !== names.length ||
+      names.some((name) => manifest.filter((entry) => entry?.name === name).length !== 1)
+    )
+      throw new BuildError('manifest must describe every module exactly once');
+    const rows = [];
+    for (const name of names) {
+      const bytes = readFileSync(join(OUT_DIR, `${name}.wasm`));
+      await validate(name, bytes);
+      const entry = manifest.find((entry) => entry.name === name);
+      const gzipBytes = gzipSync(bytes).length;
+      const sha256 = createHash('sha256').update(bytes).digest('hex');
+      if (entry.bytes !== bytes.length || entry.gzipBytes !== gzipBytes || entry.sha256 !== sha256)
+        throw new BuildError(`${name}.wasm does not match manifest.json`);
+      if (bytes.length > FAIL_BYTES)
+        throw new BuildError(`${name}.wasm exceeds the hard budget of ${fmtKiB(FAIL_BYTES)}`);
+      const status = bytes.length > WARN_BYTES ? `warn > ${fmtKiB(WARN_BYTES)}` : 'ok';
+      if (bytes.length > WARN_BYTES)
+        console.warn(`build-wasm: warning: ${name}.wasm exceeds the ${fmtKiB(WARN_BYTES)} soft budget`);
+      rows.push({ name, bytes: bytes.length, gzipBytes, optimiser: 'prebuilt', status });
+    }
+    printTable(rows);
+    console.log(
+      'build-wasm: committed artifacts validated (sources, hashes, ABI, arena and size); src/wasm/ left untouched.',
+    );
+  } catch (err) {
+    throw new BuildError(
+      `prebuilt artifacts are missing, stale or invalid: ${err.message}. ` +
+        'Run pnpm build:wasm --rebuild with the pinned Rust toolchain and commit src/wasm/.',
+    );
+  }
 }
 
 function run(cmd, args, options = {}) {
@@ -247,6 +323,11 @@ function printTable(rows) {
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
+  if (opts.prebuilt || (!opts.rebuild && !findOnPath('cargo'))) {
+    console.log(`build-wasm: ${opts.prebuilt ? '--prebuilt' : 'cargo unavailable'}; validating committed artifacts.`);
+    await validatePrebuilt();
+    return;
+  }
   if (process.env.RUSTFLAGS) {
     console.warn('build-wasm: RUSTFLAGS is set and overrides wasm/.cargo/config.toml (stack size); output may differ.');
   }
@@ -303,7 +384,10 @@ async function main() {
   for (const r of rows) writeFileSync(join(OUT_DIR, `${r.name}.wasm`), r.data);
   const manifest = rows.map(({ name, bytes, gzipBytes, sha256 }) => ({ name, bytes, gzipBytes, sha256 }));
   writeFileSync(join(OUT_DIR, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-  console.log(`build-wasm: wrote ${rows.length} modules and manifest.json to ${relative(ROOT, OUT_DIR)}/`);
+  writeFileSync(join(OUT_DIR, 'sources.json'), `${JSON.stringify(sourceFingerprint(), null, 2)}\n`);
+  console.log(
+    `build-wasm: wrote ${rows.length} modules, manifest.json and sources.json to ${relative(ROOT, OUT_DIR)}/`,
+  );
 }
 
 main().catch((err) => {

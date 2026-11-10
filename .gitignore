@@ -10,10 +10,8 @@ playwright-report/
 test-results/
 .lighthouseci/
 
-# wasm build artefacts (built from /wasm in CI and locally via `pnpm build:wasm`)
+# Rust intermediates; src/wasm/ is committed for hosts without Rust (ADR 0012).
 wasm/target/
-src/wasm/*.wasm
-src/wasm/manifest.json
 
 # env
 .env

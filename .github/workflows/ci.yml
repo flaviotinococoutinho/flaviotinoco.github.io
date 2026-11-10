@@ -108,7 +108,7 @@ jobs:
       - name: cargo fmt, clippy (host and wasm32), tests
         run: pnpm check:wasm
       - name: Build, validate and size-check the kernels
-        run: node scripts/build-wasm.mjs
+        run: node scripts/build-wasm.mjs --prebuilt && node scripts/build-wasm.mjs --rebuild
       - run: pnpm install --frozen-lockfile
       - name: Kernel tests through the TypeScript wrappers (vitest project "wasm")
         run: pnpm test:wasm

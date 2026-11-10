@@ -19,6 +19,7 @@ deployed to GitHub Pages as a project site under `/flaviotinoco.github.io/`.
 - `src/core/design/tokens.json` (W3C DTCG) → generated `src/styles/tokens.css`; component CSS in `src/styles/components/`.
 - `src/core/i18n/` — bijective route codec and message catalogs (`defineMessages`, key parity type-checked).
 - `wasm/` — Rust kernels (no wasm-bindgen, no imports) built into `src/wasm/` by `scripts/build-wasm.mjs`.
+  The three binaries, `manifest.json` and `sources.json` are versioned for hosts without Cargo (ADR 0012).
 - `scripts/` — shell tools (tokens, palette, i18n, links, budgets); pure helpers in `scripts/lib/`.
 - `tests/unit/**` (Vitest + fast-check), `tests/e2e/**` (Playwright + axe on the built site).
 - Folder patterns: parser `unknown → Result`, codec `decode ∘ encode = id`, transform, fold, compiler, formatter.
@@ -35,7 +36,9 @@ deployed to GitHub Pages as a project site under `/flaviotinoco.github.io/`.
 pnpm install --frozen-lockfile   # never add, remove or upgrade dependencies without being asked
 pnpm check            # types (astro check + tsc), lint, format, tokens, palette, i18n, unit tests
 pnpm test             # vitest; replay a property failure with FC_SEED=<seed> pnpm test
-pnpm build            # build:wasm → astro build → pagefind (needs the Rust toolchain)
+pnpm build            # build:wasm → astro build → pagefind (validated prebuilt kernels without Cargo)
+node scripts/build-wasm.mjs --rebuild # require Rust; regenerate the versioned kernels and manifests
+node scripts/build-wasm.mjs --prebuilt --check # validate integrity and source fingerprint without Rust or writes
 pnpm exec astro build # site only, reusing src/wasm/*.wasm
 pnpm check:links && pnpm check:budgets && pnpm check:robots   # on dist/, after a build
 pnpm test:e2e         # Playwright on dist/ via `astro preview` (build first)
@@ -83,5 +86,7 @@ pnpm format           # prettier --write (never on src/content: it is ignored on
   definition; non-trivial logic goes to `src/core` with tests. Never add global `<script>`s.
 - Internal links use `import.meta.env.BASE_URL` / the route codec; URLs end with `/` (`trailingSlash: 'always'`).
 - Conventional Commits; one PR per subject, with the repository template. A change to the platform adds one line
-  under "Não lançado" in `CHANGELOG.md` (ADR 0010). Do not commit `dist/`, `src/wasm/*.wasm` or generated reports.
+  under "Não lançado" in `CHANGELOG.md` (ADR 0010). Do not commit `dist/` or generated reports. The versioned
+  `src/wasm/*.wasm`, `manifest.json` and `sources.json` must be regenerated together after changes to their
+  Rust/configuration inputs or `scripts/build-wasm.mjs` (ADR 0012); never edit them by hand.
 - Documentation in pt-BR under `docs/`; a dated plan of a review round goes to `docs/planos/`.

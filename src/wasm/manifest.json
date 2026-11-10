@@ -1,0 +1,20 @@
+[
+  {
+    "name": "signal",
+    "bytes": 16417,
+    "gzipBytes": 7887,
+    "sha256": "666e939b7cae068ddbd20e2c2e43efdf590226138161785c1bba5b28068b0f76"
+  },
+  {
+    "name": "information",
+    "bytes": 10439,
+    "gzipBytes": 4230,
+    "sha256": "92cbc0b3ab49aecc6f20522c790964a594d3880c0eed1698c9664b0789a1c81e"
+  },
+  {
+    "name": "dynamics",
+    "bytes": 10435,
+    "gzipBytes": 5094,
+    "sha256": "d04f0f1897ccf2e9809c820ff2771f2ce49b48aed24b3bdaf5fb766331e148d9"
+  }
+]
