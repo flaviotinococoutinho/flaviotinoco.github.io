@@ -27,6 +27,10 @@ Reutilizar um arquivo apenas porque ele existe, porém, permitiria publicar um b
    além das verificações existentes de ABI, importações, arena e orçamento de tamanho.
 5. O CI continua compilando as fontes Rust, executando seus testes e testando os módulos pelos invólucros
    TypeScript. Reutilizar artefatos na hospedagem não substitui essas verificações.
+6. `gzipBytes` registra o tamanho comprimido no ambiente que gerou o manifesto; implementações de zlib
+   podem produzir tamanhos diferentes para os mesmos bytes. No modo prebuilt, a integridade é conferida
+   pelo tamanho original e SHA-256, e o relatório recalcula gzip no ambiente atual. O orçamento rígido
+   continua sendo aplicado ao tamanho original.
 
 ## Operação
 
