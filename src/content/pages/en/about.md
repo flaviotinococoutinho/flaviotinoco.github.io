@@ -1,12 +1,16 @@
 ---
 title: About
-description: 'What this site is, how to read it, and why it crosses four strata — from philosophy to product — always in the same direction.'
+description: 'What this site on software engineering and computing is, how to read it, and why it crosses four strata, from philosophy to product.'
 lang: en
 translationKey: about
 slug: about
 revisions:
   - date: 2026-10-11
     note: First version (seed text).
+  - date: 2026-11-10
+    note: Declared focus on software engineering and computing; fourth essay.
+  - date: 2026-11-13
+    note: Seven essays across all four strata; fronts in optimization and information systems.
 ---
 
 :::aside
@@ -15,7 +19,7 @@ revisions:
 
 ## The bridge
 
-This site gathers essays, interactive labs and a map of concepts around one idea: knowledge can be walked like a bridge of four strata, always crossed in the same direction — from the question to the artefact.
+This site gathers essays, interactive labs and a map of concepts on software engineering, computer science and information systems. What organises them is one idea: knowledge can be walked like a bridge of four strata, always crossed in the same direction — from the question to the artefact.
 
 | Stratum | Guiding question | Method |
 |---|---|---|
@@ -28,6 +32,12 @@ Each stratum is drawn as a simplex of increasing dimension — point, segment, t
 
 The three opening essays make one complete crossing. [From sign to information](../essays/from-sign-to-information/) goes from philosophy to theory; [To sample is to decide](../essays/to-sample-is-to-decide/), from theory to the formal stratum; [Choosing costs bits](../essays/choosing-costs-bits/), from the formal stratum to value. The [labs](../lab/) make the theorems mentioned in the essays tangible, one at a time.
 
+## What it is about
+
+The central subject is the craft of building and sustaining systems: software engineering, combinatorial optimization and information systems, joined to computer science, ways of working and technology stacks. The bridge gives the order of the questions. Before choosing a tool, it helps to know which problem it solves; before the problem, which model describes it; before the model, what the terms mean.
+
+Philosophy therefore comes in as applied philosophy: it serves to say precisely what a record, a state, a model, an essence or an abstraction is before measuring or programming it. Information theory ties the ends together, because the same measure that says how much a channel carries helps to say what a choice costs in an interface, or how much of a representation a program wastes. Four essays walk those fronts directly: [The record is not the thing](../essays/the-record-is-not-the-thing/) moves from data ontology and indexical semiotics to separate immutable facts from projected state in information systems; [The optimum is the enemy of the deadline](../essays/the-optimum-is-the-enemy-of-the-deadline/) pairs Amdahl's law, approximation algorithms and satisficing to decide what to optimize and where to stop; [The second flag](../essays/the-second-flag/) draws on automata theory to make illegal states unrepresentable; and [Changing without breaking](../essays/changing-without-breaking/) brings together information hiding, pace layers and architecture decision records in the stratum of value.
+
 ## How to read
 
 There is no need to read in order. The essays are written to allow several paths:
@@ -39,7 +49,7 @@ There is no need to read in order. The essays are written to allow several paths
 
 ## Epistemic status and provenance
 
-Every essay and lab states how confident the author is and what kind of support its claims rest on. Confidence uses the scale of estimative expressions proposed by Sherman Kent, in which “probable” corresponds to about 75 %, give or take 12 points [@kent1964]; the kind of support is proof, empirical evidence, argument or speculation. Each text also reports its provenance: whether it was written without assistance, with assistance, or generated with AI help, and whether the author has reviewed it. The opening texts of this site were generated with AI assistance and are labelled as unreviewed until the author reviews them.
+Every essay and lab states how confident the author is and what kind of support its claims rest on. Confidence uses the scale of estimative expressions proposed by Sherman Kent, in which “probable” corresponds to about 75 %, give or take 12 points [@kent1964]; the kind of support is proof, empirical evidence, argument or speculation. Each text also reports its provenance: whether it was written without assistance, with assistance, or generated with AI help, and whether the author has reviewed it. The texts published so far were generated with AI assistance and are labelled as unreviewed until the author reviews them.
 
 The essays exist in Portuguese and in English. Both versions were written to read naturally in each language rather than translated word for word, so they may differ in phrasing. Citations follow, in Portuguese, the standards of the Brazilian Association of Technical Standards (ABNT; from the Portuguese :foreign[Associação Brasileira de Normas Técnicas]{lang=pt-BR}) and, in English, the style of the American Psychological Association (APA); the [colophon](../colophon/) has the details.
 

@@ -1,0 +1,47 @@
+{
+  "slug": {
+    "pt-BR": "transacao",
+    "en": "transaction"
+  },
+  "prefLabel": {
+    "pt-BR": "Transação",
+    "en": "Transaction"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "transação ACID",
+      "transação de banco de dados"
+    ],
+    "en": [
+      "ACID transaction",
+      "database transaction"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Unidade delimitada de execução que leva um sistema de um estado consistente a outro como se fosse indivisível e isolada de execuções concorrentes, ou não deixa efeito algum.",
+    "en": "A bounded unit of execution that takes a system from one consistent state to another as if indivisible and isolated from concurrent executions, or leaves no effect at all."
+  },
+  "stratum": "formal",
+  "category": "process",
+  "domains": [
+    "information-systems",
+    "computer-science"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "state"
+    },
+    {
+      "type": "appliesTo",
+      "target": "information-system"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q848010"
+  ],
+  "sources": [
+    "gray1981",
+    "kleppmann2017"
+  ]
+}

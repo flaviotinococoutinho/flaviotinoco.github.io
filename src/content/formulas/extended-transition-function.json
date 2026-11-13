@@ -1,0 +1,69 @@
+{
+  "slug": {
+    "pt-BR": "funcao-de-transicao-estendida",
+    "en": "extended-transition-function"
+  },
+  "name": {
+    "pt-BR": "Função de transição estendida",
+    "en": "Extended transition function"
+  },
+  "tex": "\\hat{\\delta}(q, \\varepsilon) = q, \\qquad \\hat{\\delta}(q, wa) = \\delta\\bigl(\\hat{\\delta}(q, w),\\, a\\bigr)",
+  "labels": {
+    "pt-BR": [
+      "eq:transicao-estendida"
+    ],
+    "en": [
+      "eq:extended-transition"
+    ]
+  },
+  "stratum": "formal",
+  "domains": [
+    "computer-science",
+    "mathematics"
+  ],
+  "meaning": {
+    "pt-BR": "A função de transição estendida diz em que estado a máquina fica depois de uma sequência inteira de eventos. É definida por recorrência: a sequência vazia deixa o estado como está; para uma sequência seguida de mais um evento, aplica-se a transição ao estado em que a sequência deixou a máquina. O estado atual é, portanto, o resultado de dobrar a função de transição sobre a história, e a mesma história leva sempre ao mesmo estado.",
+    "en": "The extended transition function says in which state the machine ends up after a whole sequence of events. It is defined by recurrence: the empty sequence leaves the state as it is; for a sequence followed by one more event, the transition is applied to the state in which the sequence left the machine. The current state is therefore the result of folding the transition function over the history, and the same history always leads to the same state."
+  },
+  "spoken": {
+    "pt-BR": "Delta chapéu de q e da sequência vazia é q; delta chapéu de q e de w seguido de a é delta aplicado a delta chapéu de q e w, e a a.",
+    "en": "Delta hat of q and the empty sequence is q; delta hat of q and w followed by a is delta applied to delta hat of q and w, and to a."
+  },
+  "symbols": [
+    {
+      "tex": "\\hat{\\delta}",
+      "text": {
+        "pt-BR": "função de transição estendida a sequências de eventos",
+        "en": "transition function extended to sequences of events"
+      }
+    },
+    {
+      "tex": "\\varepsilon",
+      "text": {
+        "pt-BR": "sequência vazia",
+        "en": "empty sequence"
+      }
+    },
+    {
+      "tex": "w",
+      "text": {
+        "pt-BR": "sequência de eventos já ocorridos",
+        "en": "sequence of events that have already occurred"
+      }
+    },
+    {
+      "tex": "a",
+      "text": {
+        "pt-BR": "o evento seguinte",
+        "en": "the next event"
+      }
+    }
+  ],
+  "concepts": [
+    "finite-state-machine",
+    "state"
+  ],
+  "sources": [
+    "hopcroft2007"
+  ]
+}

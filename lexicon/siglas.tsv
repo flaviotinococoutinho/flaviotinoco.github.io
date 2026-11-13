@@ -96,6 +96,12 @@ KPI	mul	exact	indicador-chave de desempenho	key performance indicator	en
 OKR	mul	exact	objetivos e resultados-chave	objectives and key results	en
 NPS	mul	exact	índice de recomendação líquida	Net Promoter Score	en
 SaaS	mul	exact	software como serviço	software as a service	en
+ADR	mul	exact	registro de decisão arquitetural	architecture decision record	en
+CRUD	mul	exact	criar, ler, atualizar e excluir	create, read, update and delete	en
+ACID	mul	exact	atomicidade, consistência, isolamento e durabilidade	atomicity, consistency, isolation and durability	en
+SQL	mul	exact	linguagem de consulta estruturada	Structured Query Language	en
+SAT	mul	exact	satisfatibilidade booleana	Boolean satisfiability	en
+GDPR	mul	exact	Regulamento Geral sobre a Proteção de Dados	General Data Protection Regulation	en
 GPL	mul	exact	Licença Pública Geral GNU	GNU General Public License	en
 LGPD	mul	exact	Lei Geral de Proteção de Dados Pessoais	Brazilian General Data Protection Law	pt-BR
 # --- normas, documentação e instituições --------------------------------------

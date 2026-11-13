@@ -10,8 +10,39 @@ próprio frontmatter.
 
 ## [Não lançado]
 
+### Adicionado
+
+- Frentes temáticas e orientação de lugar digital na página inicial (`Frentes de investigação` com marcas
+  vetoriais estruturais para engenharia de software, otimização, sistemas de informação e filosofia aplicada;
+  destaque triplo para Laboratório, Ontologia e Fórmulas em palavras), marcação facetada de domínios nos cartões
+  e cabeçalhos de ensaio, linha de suspensão (`hangline`) nos ensaios e distinção geométrica por traço tracejado
+  para objeções dialéticas no mapa do argumento.
+- Três novos ensaios bilíngues (`O registro não é a coisa`, `O ótimo é inimigo do prazo` e `Mudar sem quebrar`),
+  onze conceitos SKOS (sistemas de informação, registro, transação, idempotência, lei de Amdahl, algoritmo de
+  aproximação, complexidade essencial e acidental, camadas de ritmo, gramática visual, registro de decisão
+  arquitetural e lei de Conway), cinco fichas de fórmula com versão em palavras e 23 referências primárias
+  verificadas em `bibliography/main.bib`, além do ensaio `A segunda flag`.
+
+### Alterado
+
+- Contrato editorial do corpus (`tests/unit/content/syntax.test.ts`): a data de publicação e a nota de
+  proveniência combinadas valem só para os nove textos-semente (lista fechada, conferida nas duas línguas);
+  toda obra segue o contrato geral, que passa a exigir a primeira revisão no dia da própria publicação,
+  revisões em ordem de data e nota de proveniência sempre que houver assistência ou faltar revisão.
+- Identidade do site nos catálogos (`site.tagline`, `site.description`): foco declarado em engenharia de
+  software e computação ([plano de 10/11/2026](docs/planos/2026-11-10-foco-em-engenharia-de-software.md)).
+- Léxico: `flag` e `statechart` em `lexicon/estrangeirismos.tsv`; vocabulários fechados dos testes de
+  conteúdo com os conceitos e as chaves bibliográficas de estado e autômatos.
+
 ### Corrigido
 
+- Mapa do argumento aberto (`ArgumentMap.astro`, `ft-argument-map.ts`): removido o elemento `<title>` redundante
+  dentro dos nós SVG cujo `aria-label` já nomeia o tipo e a seção, evitando concatenação duplicada do texto
+  visível na auditoria do critério 2.5.3 da WCAG 2.2 (`label-content-name-mismatch`).
+- Contraste dos blocos de código (WCAG 2.2, critério 1.4.3): os temas `github-light` e `github-dark` do Shiki
+  desenhavam variáveis a 3,49:1 e comentários a 3,05:1; os temas passam a ser `github-light-default` e
+  `github-dark-default` (`src/adapters/astro/code.ts`), e o teste de guarda
+  `tests/unit/guardrails/code-contrast.test.ts` mede toda cor emitida em dez linguagens, nos dois esquemas.
 - Build na Hostinger sem `cargo`: módulos WebAssembly versionados, com validação de integridade e das fontes
   antes de compilar o site e o índice de busca ([ADR 0012](docs/adr/0012-hostinger-build.md)).
 - Validação portátil dos artefatos WASM: tamanho original e SHA-256 atestam integridade; o tamanho gzip é

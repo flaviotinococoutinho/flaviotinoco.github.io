@@ -1,0 +1,50 @@
+{
+  "slug": {
+    "pt-BR": "camadas-de-ritmo",
+    "en": "pace-layering"
+  },
+  "prefLabel": {
+    "pt-BR": "Camadas de ritmo",
+    "en": "Pace layering"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "camadas de cisalhamento"
+    ],
+    "en": [
+      "shearing layers",
+      "pace layers"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Modelo que separa um sistema em estratos que mudam em velocidades diferentes, para que a superfície rápida evolua sem rasgar a estrutura semântica lenta que a sustenta.",
+    "en": "A model that separates a system into strata changing at different speeds, so that the fast surface can evolve without tearing the slow semantic structure beneath it."
+  },
+  "stratum": "theory",
+  "category": "entity",
+  "domains": [
+    "information-systems",
+    "software-engineering",
+    "design"
+  ],
+  "broader": [
+    "model"
+  ],
+  "relations": [
+    {
+      "type": "appliesTo",
+      "target": "information-hiding"
+    },
+    {
+      "type": "appliesTo",
+      "target": "information-system"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q7492199"
+  ],
+  "sources": [
+    "brand1994",
+    "arango2018"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "slug": {
+    "pt-BR": "complexidade-essencial-e-acidental",
+    "en": "essential-and-accidental-complexity"
+  },
+  "prefLabel": {
+    "pt-BR": "Complexidade essencial e acidental",
+    "en": "Essential and accidental complexity"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "essência e acidente",
+      "complexidade acidental"
+    ],
+    "en": [
+      "essence and accident",
+      "accidental complexity"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Distinção, tomada de Aristóteles por Brooks, entre a dificuldade própria do problema que o software modela e a dificuldade introduzida pelas representações e ferramentas usadas para construí-lo.",
+    "en": "The distinction, drawn from Aristotle by Brooks, between the difficulty inherent in the problem the software models and the difficulty introduced by the representations and tools used to build it."
+  },
+  "stratum": "philosophy",
+  "category": "quality",
+  "domains": [
+    "applied-philosophy",
+    "software-engineering",
+    "technology"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "abstraction"
+    },
+    {
+      "type": "appliesTo",
+      "target": "information-hiding"
+    }
+  ],
+  "sources": [
+    "brooks1987",
+    "brooks1995"
+  ]
+}

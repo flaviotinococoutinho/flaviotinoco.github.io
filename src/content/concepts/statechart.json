@@ -1,0 +1,36 @@
+{
+  "slug": {
+    "pt-BR": "statechart",
+    "en": "statechart"
+  },
+  "prefLabel": {
+    "pt-BR": "Statechart",
+    "en": "Statechart"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "diagrama de estados de Harel",
+      "máquina de estados hierárquica"
+    ],
+    "en": [
+      "Harel statechart",
+      "hierarchical state machine"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Extensão das máquinas de estados finitos com hierarquia (estados dentro de estados), ortogonalidade (regiões independentes ativas ao mesmo tempo) e comunicação por difusão, que descreve sistemas reativos complexos sem enumerar o produto de seus estados.",
+    "en": "An extension of finite-state machines with hierarchy (states within states), orthogonality (independent regions active at the same time) and broadcast communication, which describes complex reactive systems without enumerating the product of their states."
+  },
+  "stratum": "formal",
+  "category": "entity",
+  "domains": [
+    "computer-science",
+    "software-engineering"
+  ],
+  "broader": [
+    "finite-state-machine"
+  ],
+  "sources": [
+    "harel1987"
+  ]
+}

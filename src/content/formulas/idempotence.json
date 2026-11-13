@@ -1,0 +1,53 @@
+{
+  "slug": {
+    "pt-BR": "idempotencia",
+    "en": "idempotence"
+  },
+  "name": {
+    "pt-BR": "Idempotência de uma operação",
+    "en": "Idempotence of an operation"
+  },
+  "tex": "f\\bigl(f(x)\\bigr) = f(x)",
+  "labels": {
+    "pt-BR": [
+      "eq:idempotencia"
+    ],
+    "en": [
+      "eq:idempotence"
+    ]
+  },
+  "concept": "idempotence",
+  "meaning": {
+    "pt-BR": "Aplicar a operação f duas vezes seguidas produz exatamente o mesmo resultado de aplicá-la uma única vez. Em sistemas distribuídos e bancos de dados, isso significa que reenviar a mesma mensagem ou repetir uma gravação após falha de rede não duplica o efeito sobre o estado.",
+    "en": "Applying the operation f twice in a row produces the exact same result as applying it once. In distributed systems and databases, this means resending the same message or retrying a write after a network failure does not duplicate its effect on the state."
+  },
+  "spoken": {
+    "pt-BR": "f aplicada a f de x é igual a f de x.",
+    "en": "f applied to f of x equals f of x."
+  },
+  "symbols": [
+    {
+      "tex": "f",
+      "text": {
+        "pt-BR": "operação ou atualização de estado",
+        "en": "operation or state update"
+      }
+    },
+    {
+      "tex": "x",
+      "text": {
+        "pt-BR": "estado ou argumento ao qual a operação se aplica",
+        "en": "state or argument to which the operation is applied"
+      }
+    }
+  ],
+  "concepts": [
+    "transaction",
+    "state",
+    "information-system"
+  ],
+  "sources": [
+    "gray1981",
+    "helland2015"
+  ]
+}

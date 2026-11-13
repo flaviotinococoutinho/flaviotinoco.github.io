@@ -1,0 +1,45 @@
+{
+  "slug": {
+    "pt-BR": "lei-de-amdahl",
+    "en": "amdahl-s-law"
+  },
+  "prefLabel": {
+    "pt-BR": "Lei de Amdahl",
+    "en": "Amdahl's law"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "argumento de Amdahl"
+    ],
+    "en": [
+      "Amdahl's argument"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Relação segundo a qual acelerar por um fator s uma fração p de uma tarefa limita o ganho total pelo inverso da fração que permaneceu intocada, 1/(1 − p) no limite.",
+    "en": "The relation whereby speeding up a fraction p of a task by a factor s bounds the overall gain by the reciprocal of the untouched fraction, 1/(1 − p) in the limit."
+  },
+  "notation": "S(s) = \\frac{1}{(1 - p) + \\dfrac{p}{s}}",
+  "stratum": "formal",
+  "category": "proposition",
+  "domains": [
+    "computer-science",
+    "software-engineering"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "optimization"
+    },
+    {
+      "type": "appliesTo",
+      "target": "satisficing"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q460419"
+  ],
+  "sources": [
+    "amdahl1967"
+  ]
+}

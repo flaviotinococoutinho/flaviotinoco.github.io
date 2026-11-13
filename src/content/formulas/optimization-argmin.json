@@ -9,8 +9,12 @@
   },
   "tex": "x^{*} = \\operatorname*{arg\\,min}_{x \\in \\mathcal{F}} f(x)",
   "labels": {
-    "pt-BR": [],
-    "en": []
+    "pt-BR": [
+      "eq:otimizacao"
+    ],
+    "en": [
+      "eq:optimization"
+    ]
   },
   "concept": "optimization",
   "meaning": {

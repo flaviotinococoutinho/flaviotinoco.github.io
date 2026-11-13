@@ -1,0 +1,60 @@
+{
+  "slug": {
+    "pt-BR": "razao-de-aproximacao",
+    "en": "approximation-ratio"
+  },
+  "name": {
+    "pt-BR": "Garantia de aproximação multiplicativa",
+    "en": "Multiplicative approximation guarantee"
+  },
+  "tex": "f(x) \\leq \\rho\\, f(x^{*}), \\qquad \\rho \\geq 1",
+  "labels": {
+    "pt-BR": [
+      "eq:aproximacao"
+    ],
+    "en": [
+      "eq:approximation"
+    ]
+  },
+  "concept": "approximation-algorithm",
+  "meaning": {
+    "pt-BR": "Num problema de minimização com ótimo positivo, um algoritmo de ro-aproximação garante que, para qualquer instância de entrada, o custo da solução devolvida nunca excede ro vezes o menor custo possível — trocando a exatidão inalcançável em tempo polinomial por um teto provado de erro.",
+    "en": "In a minimization problem with positive optimum, a rho-approximation algorithm guarantees that, on every input instance, the cost of the returned solution never exceeds rho times the smallest possible cost — trading exactness that is unreachable in polynomial time for a proved error ceiling."
+  },
+  "spoken": {
+    "pt-BR": "f de x é menor ou igual a ro vezes f de x asterisco, com ro maior ou igual a um.",
+    "en": "f of x is less than or equal to rho times f of x star, with rho greater than or equal to one."
+  },
+  "symbols": [
+    {
+      "tex": "x",
+      "text": {
+        "pt-BR": "solução viável devolvida pelo algoritmo",
+        "en": "feasible solution returned by the algorithm"
+      }
+    },
+    {
+      "tex": "x^{*}",
+      "text": {
+        "pt-BR": "solução ótima da instância",
+        "en": "optimal solution of the instance"
+      }
+    },
+    {
+      "tex": "\\rho",
+      "text": {
+        "pt-BR": "razão de aproximação no pior caso",
+        "en": "worst-case approximation ratio"
+      }
+    }
+  ],
+  "concepts": [
+    "combinatorial-optimization",
+    "optimization",
+    "heuristic"
+  ],
+  "sources": [
+    "garey1979",
+    "williamson2011"
+  ]
+}

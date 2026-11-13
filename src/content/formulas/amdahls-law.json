@@ -1,0 +1,58 @@
+{
+  "slug": {
+    "pt-BR": "lei-de-amdahl",
+    "en": "amdahls-law"
+  },
+  "name": {
+    "pt-BR": "Lei de Amdahl",
+    "en": "Amdahl's law"
+  },
+  "tex": "S(s) = \\frac{1}{(1 - p) + \\dfrac{p}{s}} \\leq \\frac{1}{1 - p}",
+  "labels": {
+    "pt-BR": [
+      "eq:amdahl"
+    ],
+    "en": [
+      "eq:amdahl"
+    ]
+  },
+  "concept": "amdahls-law",
+  "meaning": {
+    "pt-BR": "Se uma melhoria acelera por um fator s apenas a fração p do tempo total de execução de uma tarefa, o ganho global S nunca ultrapassa o inverso da fração 1 menos p que permaneceu intocada, mesmo que a parte acelerada passasse a custar zero.",
+    "en": "If an improvement speeds up by a factor s only a fraction p of the total running time of a task, the overall speedup S never exceeds the reciprocal of the untouched fraction 1 minus p, even if the improved part came to take zero time."
+  },
+  "spoken": {
+    "pt-BR": "S de s é igual a um dividido por abre parênteses um menos p fecha parênteses mais p sobre s, menor ou igual a um sobre um menos p.",
+    "en": "S of s equals one divided by open parenthesis one minus p close parenthesis plus p over s, which is at most one over one minus p."
+  },
+  "symbols": [
+    {
+      "tex": "S(s)",
+      "text": {
+        "pt-BR": "aceleração global da tarefa completa",
+        "en": "overall speedup of the whole task"
+      }
+    },
+    {
+      "tex": "p",
+      "text": {
+        "pt-BR": "fração do tempo original ocupada pela parte otimizada (0 ≤ p ≤ 1)",
+        "en": "fraction of the original time spent in the optimized part (0 ≤ p ≤ 1)"
+      }
+    },
+    {
+      "tex": "s",
+      "text": {
+        "pt-BR": "fator pelo qual a parte otimizada ficou mais rápida (s ≥ 1)",
+        "en": "factor by which the optimized part was made faster (s ≥ 1)"
+      }
+    }
+  ],
+  "concepts": [
+    "optimization",
+    "satisficing"
+  ],
+  "sources": [
+    "amdahl1967"
+  ]
+}

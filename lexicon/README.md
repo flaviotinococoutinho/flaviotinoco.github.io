@@ -8,10 +8,10 @@ O motor está em `src/core/lexicon/` (análise, compilação, casamento) e `src/
 
 | Arquivo               | Tipo              | Marcação                                                      | Entradas |
 | --------------------- | ----------------- | ------------------------------------------------------------- | -------- |
-| `estrangeirismos.tsv` | termo estrangeiro | `<i lang="xx" class="foreign">`                               | 240      |
+| `estrangeirismos.tsv` | termo estrangeiro | `<i lang="xx" class="foreign">`                               | 247      |
 | `latim.tsv`           | locução latina    | `<i lang="la" class="locution">`                              | 84       |
-| `nomes-proprios.tsv`  | nome próprio      | `<span class="proper-name" translate="no">` (obras: `<cite>`) | 198      |
-| `siglas.tsv`          | sigla             | `<abbr class="acronym" title="…">`                            | 103      |
+| `nomes-proprios.tsv`  | nome próprio      | `<span class="proper-name" translate="no">` (obras: `<cite>`) | 214      |
+| `siglas.tsv`          | sigla             | `<abbr class="acronym" title="…">`                            | 109      |
 | `homografos.tsv`      | homógrafo         | **nunca marcado**; só aviso                                   | 12       |
 
 ## 1. Por que TSV, e não YAML

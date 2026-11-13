@@ -1,0 +1,49 @@
+{
+  "slug": {
+    "pt-BR": "idempotencia",
+    "en": "idempotence"
+  },
+  "prefLabel": {
+    "pt-BR": "Idempotência",
+    "en": "Idempotence"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "operação idempotente"
+    ],
+    "en": [
+      "idempotency",
+      "idempotent operation"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Propriedade de uma operação cuja aplicação repetida produz o mesmo efeito de uma única aplicação, tornando inofensivas as reentregas num canal que pode duplicar mensagens.",
+    "en": "The property of an operation whose repeated application has the same effect as a single one, making retries harmless across a channel that may duplicate messages."
+  },
+  "notation": "f\\bigl(f(x)\\bigr) = f(x)",
+  "stratum": "formal",
+  "category": "quality",
+  "domains": [
+    "computer-science",
+    "information-systems",
+    "mathematics"
+  ],
+  "relations": [
+    {
+      "type": "related",
+      "target": "transaction"
+    },
+    {
+      "type": "appliesTo",
+      "target": "information-system"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q368988"
+  ],
+  "sources": [
+    "gray1981",
+    "helland2015",
+    "kleppmann2017"
+  ]
+}
