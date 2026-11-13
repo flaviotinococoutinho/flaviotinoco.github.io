@@ -7,6 +7,8 @@ slug: colophon
 revisions:
   - date: 2026-10-11
     note: First version (seed text).
+  - date: 2026-11-13
+    note: Visual grammar, hierarchic grid, diagrammatic semiotics and custom-domain hosting.
 ---
 
 :::aside
@@ -26,6 +28,12 @@ Foreign words are set in italics and tagged with their language, which also guid
 The measurements derive from a single ratio, φ ≈ 1.618. The type scale is fluid: between screens 360 px and 1440 px wide, body text grows from 17 px to 20 px, and the ratio between successive steps grows from 1.2 to √φ ≈ 1.272, so that on wide screens every second step lands exactly on a power of φ. The line height of running text is φ; spacing comes in powers of φ, from φ⁻⁴ to φ⁵ (in rem); the reading column and the margin column stand in the ratio φ : 1. Animation durations are Fibonacci numbers of milliseconds — 89, 144, 233, 377, 610, 987 and 1597 — whose successive ratios tend to φ, so that time shares the proportion of space.
 
 This is a choice made for internal coherence, not a claim that φ is perceptually superior to other ratios — a thesis this site neither examines nor assumes.
+
+## Visual grammar, grid and digital place
+
+The spatial layout joins the book typography defended by Jan Tschichold — where form refuses gratuitous ornament so as to serve sustained reading quietly, differentiating voices through italics and letterspaced small capitals while marking successive paragraphs by first-line indention [@tschichold1991, pp. 3–11, 105–116; @tschichold2006, pp. 66–72] — to the asymmetric hierarchic grid described by Timothy Samara [@samara2023, pp. 32–43]. On wide screens, the main reading column (φ) and the margin column (1) drop from a shared hangline beneath the essay header, keeping a generous share of the outer rail as active negative space so that sidenotes and the argument map read as quiet parenthetical asides rather than competing columns [@tschichold2006, p. 71; @riechers2024, pp. 30–35; @hendel2013, pp. 45–62].
+
+Across graphic marks and diagrams, the design brings together Peirce's sign triad and contemporary visual grammar [@selby2023, pp. 60–61, 85; @riechers2024, pp. 108–139]: the simplices carry iconic structural analogy (point, segment, triangle, tetrahedron), section and ontology marks act as symbols always paired with verbal labels, and argument maps distinguish constructive support from dialectical rebuttal through stroke geometry itself (solid versus dashed), reserving arrowheads strictly for dependency and transition [@christiansen2023, pp. 66–67, 188–189]. Following Jorge Arango's architecture for digital places [@arango2018, pp. 26–31, 142–146], navigation rejects endless chronological streams in favour of stable orientation landmarks — stratum, lines of inquiry, faceted domains and durable ontology concepts.
 
 ## Colour
 
@@ -56,7 +64,7 @@ Known limitations:
 
 ## Technology
 
-The site is static, generated with Astro 7 and published on GitHub Pages. Texts are plain Markdown, written in a closed language of directives for mathematical environments, citations, notes and concepts, and processed by a chain of unified stages (remark and rehype), each backed by pure, tested functions. Formulas are written in TeX notation [@knuth1984] and typeset by KaTeX. The labs use small computing kernels written in Rust and compiled to WebAssembly — the fast Fourier transform [@cooley1965], entropy and Huffman codes, the logistic map, random sums — loaded only on the pages that use them. Search uses Pagefind, which builds a static index queried in the browser itself. Interactive behaviour is implemented as custom elements loaded on demand, with no user-interface framework on the client. The dictionaries that mark foreign words, proper names and acronyms are compiled into fast lookup structures; a Bloom filter [@bloom1970] with double hashing [@kirsch2008] is planned for future command-line tools.
+The site is static, generated with Astro 7 and published on `flaviotinoco.com` (Hostinger) and GitHub Pages. Texts are plain Markdown, written in a closed language of directives for mathematical environments, citations, notes and concepts, and processed by a chain of unified stages (remark and rehype), each backed by pure, tested functions. Formulas are written in TeX notation [@knuth1984] and typeset by KaTeX. The labs use small computing kernels written in Rust and compiled to WebAssembly — the fast Fourier transform [@cooley1965], entropy and Huffman codes, the logistic map, random sums — loaded only on the pages that use them. Search uses Pagefind, which builds a static index queried in the browser itself. Interactive behaviour is implemented as custom elements loaded on demand, with no user-interface framework on the client. The dictionaries that mark foreign words, proper names and acronyms are compiled into fast lookup structures; a Bloom filter [@bloom1970] with double hashing [@kirsch2008] is planned for future command-line tools.
 
 The source code is at <https://github.com/flaviotinococoutinho/flaviotinoco.github.io>.
 
@@ -81,7 +89,7 @@ Non-trivial factual claims come with a source. Direct quotations are exact, in q
 
 ## Privacy
 
-The site uses no tracking, no audience analytics and no cookies, and loads no third-party resources: the fonts are served by the site itself. Reading preferences — theme, contrast, motion, hyphenation, texture and text options — are kept only in your browser's local storage (`localStorage`) and are never sent anywhere; clearing them restores the defaults. Search runs in the browser, over a static index. The hosting service, GitHub Pages, may log technical request data such as IP addresses under GitHub's own policies, which this site does not control.
+The site uses no tracking, no audience analytics and no cookies, and loads no third-party resources: the fonts are served by the site itself. Reading preferences — theme, contrast, motion, hyphenation, texture and text options — are kept only in your browser's local storage (`localStorage`) and are never sent anywhere; clearing them restores the defaults. Search runs in the browser, over a static index. The hosting services (Hostinger and GitHub Pages) may log technical request data such as IP addresses under their own policies, which this site does not control.
 
 ## Licence
 

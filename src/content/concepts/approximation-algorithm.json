@@ -1,0 +1,50 @@
+{
+  "slug": {
+    "pt-BR": "algoritmo-de-aproximacao",
+    "en": "approximation-algorithm"
+  },
+  "prefLabel": {
+    "pt-BR": "Algoritmo de aproximação",
+    "en": "Approximation algorithm"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "razão de aproximação"
+    ],
+    "en": [
+      "approximation ratio"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Algoritmo eficiente para um problema de otimização difícil que devolve, para toda entrada, uma solução cujo custo fica a no máximo um fator provado do ótimo.",
+    "en": "An efficient algorithm for a hard optimization problem that returns, on every input, a solution whose cost lies within a proved factor of the optimum."
+  },
+  "notation": "f(x) \\leq \\rho\\, f(x^{*})",
+  "stratum": "formal",
+  "category": "method",
+  "domains": [
+    "computer-science",
+    "mathematics"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "combinatorial-optimization"
+    },
+    {
+      "type": "dependsOn",
+      "target": "computational-complexity"
+    },
+    {
+      "type": "contrastsWith",
+      "target": "heuristic"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q621751"
+  ],
+  "sources": [
+    "garey1979",
+    "williamson2011"
+  ]
+}

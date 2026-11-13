@@ -1,0 +1,49 @@
+{
+  "slug": {
+    "pt-BR": "sistema-de-informacao",
+    "en": "information-system"
+  },
+  "prefLabel": {
+    "pt-BR": "Sistema de informação",
+    "en": "Information system"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "sistemas de informação"
+    ],
+    "en": [
+      "information systems"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Artefato sociotécnico em que pessoas, regras e programas coletam, guardam e transformam registros para sustentar a memória, a coordenação e as decisões de uma organização.",
+    "en": "A sociotechnical artefact in which people, rules and programs collect, keep and transform records to sustain the memory, coordination and decisions of an organization."
+  },
+  "stratum": "value",
+  "category": "artifact",
+  "domains": [
+    "information-systems",
+    "software-engineering"
+  ],
+  "broader": [
+    "product"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "information"
+    },
+    {
+      "type": "dependsOn",
+      "target": "record"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q121182"
+  ],
+  "sources": [
+    "kent1978",
+    "orlikowski2001",
+    "hevner2004"
+  ]
+}

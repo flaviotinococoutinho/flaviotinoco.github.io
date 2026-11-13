@@ -1,0 +1,40 @@
+{
+  "slug": {
+    "pt-BR": "estado",
+    "en": "state"
+  },
+  "prefLabel": {
+    "pt-BR": "Estado",
+    "en": "State"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "estado de um sistema"
+    ],
+    "en": [
+      "system state"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Condição de um sistema num instante: o que ele retém da própria história e que, com as entradas seguintes, basta para determinar seu comportamento; o que o estado não distingue, o sistema esqueceu.",
+    "en": "The condition of a system at an instant: what it retains of its own history and that, together with the inputs to come, is enough to determine its behaviour; what the state does not distinguish, the system has forgotten."
+  },
+  "stratum": "theory",
+  "category": "quality",
+  "domains": [
+    "computer-science",
+    "dynamical-systems"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "abstraction"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q599031"
+  ],
+  "sources": [
+    "hopcroft2007"
+  ]
+}

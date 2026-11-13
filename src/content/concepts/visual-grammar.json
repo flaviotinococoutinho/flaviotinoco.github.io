@@ -1,0 +1,49 @@
+{
+  "slug": {
+    "pt-BR": "gramatica-visual",
+    "en": "visual-grammar"
+  },
+  "prefLabel": {
+    "pt-BR": "Gramática visual",
+    "en": "Visual grammar"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "sintaxe visual"
+    ],
+    "en": [
+      "visual syntax"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Conjunto de relações de proporção, contraste, agrupamento, espaço negativo e alinhamento pelas quais uma superfície articula hierarquia e sentido antes mesmo da leitura verbal.",
+    "en": "The set of relations of proportion, contrast, grouping, negative space and alignment by which a surface articulates hierarchy and meaning even before verbal reading begins."
+  },
+  "stratum": "theory",
+  "category": "entity",
+  "domains": [
+    "design",
+    "semiotics",
+    "information-theory"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "sign"
+    },
+    {
+      "type": "appliesTo",
+      "target": "interface"
+    },
+    {
+      "type": "related",
+      "target": "cognitive-load"
+    }
+  ],
+  "sources": [
+    "riechers2024",
+    "tschichold1991",
+    "samara2023",
+    "christiansen2023"
+  ]
+}

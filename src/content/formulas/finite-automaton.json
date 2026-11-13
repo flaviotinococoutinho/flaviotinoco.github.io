@@ -1,0 +1,72 @@
+{
+  "slug": {
+    "pt-BR": "automato-finito-deterministico",
+    "en": "deterministic-finite-automaton"
+  },
+  "name": {
+    "pt-BR": "Autômato finito determinístico",
+    "en": "Deterministic finite automaton"
+  },
+  "tex": "M = (Q, \\Sigma, \\delta, q_0, F)",
+  "labels": {
+    "pt-BR": [
+      "eq:automato"
+    ],
+    "en": [
+      "eq:automaton"
+    ]
+  },
+  "concept": "finite-state-machine",
+  "meaning": {
+    "pt-BR": "Um autômato finito determinístico fica inteiramente especificado por cinco coisas: um conjunto finito de estados, um conjunto finito de símbolos de entrada (os eventos), uma função de transição que dá, para cada estado e cada símbolo, exatamente um estado seguinte, o estado inicial e o conjunto dos estados finais. Tudo o que a máquina pode fazer está nessa lista: o que não é transição não acontece.",
+    "en": "A deterministic finite automaton is completely specified by five things: a finite set of states, a finite set of input symbols (the events), a transition function that gives, for each state and each symbol, exactly one next state, the initial state and the set of final states. Everything the machine can do is in that list: what is not a transition does not happen."
+  },
+  "spoken": {
+    "pt-BR": "M é a quíntupla formada por Q, sigma maiúsculo, delta, q zero e F.",
+    "en": "M is the five-tuple of Q, capital sigma, delta, q zero and F."
+  },
+  "symbols": [
+    {
+      "tex": "Q",
+      "text": {
+        "pt-BR": "conjunto finito de estados",
+        "en": "finite set of states"
+      }
+    },
+    {
+      "tex": "\\Sigma",
+      "text": {
+        "pt-BR": "alfabeto de entrada: o conjunto finito de eventos",
+        "en": "input alphabet: the finite set of events"
+      }
+    },
+    {
+      "tex": "\\delta : Q \\times \\Sigma \\to Q",
+      "text": {
+        "pt-BR": "função de transição: estado atual e evento determinam o estado seguinte",
+        "en": "transition function: the current state and the event determine the next state"
+      }
+    },
+    {
+      "tex": "q_0 \\in Q",
+      "text": {
+        "pt-BR": "estado inicial",
+        "en": "initial state"
+      }
+    },
+    {
+      "tex": "F \\subseteq Q",
+      "text": {
+        "pt-BR": "conjunto dos estados finais (de aceitação)",
+        "en": "set of final (accepting) states"
+      }
+    }
+  ],
+  "concepts": [
+    "state"
+  ],
+  "sources": [
+    "rabin1959",
+    "hopcroft2007"
+  ]
+}

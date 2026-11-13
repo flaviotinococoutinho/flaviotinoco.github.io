@@ -110,6 +110,21 @@ export default defineMessages({
     'home.bridge.question': 'Pergunta-guia',
     'home.bridge.method': 'Método',
     'home.bridge.step': 'Passo {n} de {total}',
+    'home.axes.title': 'Frentes de investigação',
+    'home.axes.lede':
+      'Quatro eixos temáticos cruzam a ponte: a engenharia que estrutura módulos e estados, a otimização sob restrições reais, a memória dos sistemas de informação e a filosofia aplicada que lhes fixa os termos.',
+    'home.axes.software.title': 'Engenharia de software',
+    'home.axes.software.body':
+      'Estados impossíveis, ocultação de informação, camadas de ritmo, lei de Conway e decisões arquiteturais registradas.',
+    'home.axes.optimization.title': 'Otimização e algoritmos',
+    'home.axes.optimization.body':
+      'Teto de Amdahl, códigos ótimos, NP-completude, garantias de aproximação e parada racional no suficiente.',
+    'home.axes.systems.title': 'Sistemas de informação',
+    'home.axes.systems.body':
+      'Registros imutáveis contra sobrescrita no lugar, projeções de estado, transações, idempotência e governança da memória.',
+    'home.axes.philosophy.title': 'Filosofia aplicada e semiótica',
+    'home.axes.philosophy.body':
+      'Signo, índice e símbolo, essência e acidente, abstração e gramática visual a serviço da clareza estrutural.',
     'home.latest.title': 'Ensaios recentes',
     'home.latest.all': 'Todos os ensaios',
     'home.labs.title': 'Laboratório',
@@ -121,6 +136,11 @@ export default defineMessages({
       'Os conceitos do site como um grafo: cada um com definição, relações mais amplas e associadas, e as fontes que o sustentam.',
     'home.ontology.link': 'Explorar a ontologia',
     'home.ontology.data': 'Baixar o grafo (JSON-LD)',
+    'home.formulas.title': 'Fórmulas em palavras',
+    'home.formulas.body':
+      'Cada equação numerada e cada notação conceitual acompanhada do seu significado estrutural, leitura por extenso e símbolos.',
+    'home.formulas.link': 'Consultar o acervo',
+    'home.formulas.data': 'Baixar o registro (JSON)',
 
     'simplex.0': '0-simplexo: ponto',
     'simplex.1': '1-simplexo: segmento',
@@ -253,6 +273,21 @@ export default defineMessages({
     'home.bridge.question': 'Guiding question',
     'home.bridge.method': 'Method',
     'home.bridge.step': 'Step {n} of {total}',
+    'home.axes.title': 'Lines of inquiry',
+    'home.axes.lede':
+      'Four thematic axes cross the bridge: the engineering of modules and states, optimization under real budgets, institutional memory in information systems, and the applied philosophy that sharpens their terms.',
+    'home.axes.software.title': 'Software engineering',
+    'home.axes.software.body':
+      'Impossible states, information hiding, pace layers, Conway’s law and recorded architectural decisions.',
+    'home.axes.optimization.title': 'Optimization and algorithms',
+    'home.axes.optimization.body':
+      'Amdahl’s ceiling, optimal prefix codes, NP-completeness, approximation guarantees and rational satisficing.',
+    'home.axes.systems.title': 'Information systems',
+    'home.axes.systems.body':
+      'Immutable records versus in-place overwrite, state projections, transactions, idempotence and memory governance.',
+    'home.axes.philosophy.title': 'Applied philosophy and semiotics',
+    'home.axes.philosophy.body':
+      'Sign, index and symbol, essence and accident, abstraction and visual grammar in the service of structural clarity.',
     'home.latest.title': 'Recent essays',
     'home.latest.all': 'All essays',
     'home.labs.title': 'Lab',
@@ -264,6 +299,11 @@ export default defineMessages({
       'The concepts of the site as a graph: each with a definition, broader and related concepts, and the sources behind it.',
     'home.ontology.link': 'Explore the ontology',
     'home.ontology.data': 'Download the graph (JSON-LD)',
+    'home.formulas.title': 'Formulas in words',
+    'home.formulas.body':
+      'Every numbered equation and concept notation paired with its structural meaning, spoken reading and symbol glossary.',
+    'home.formulas.link': 'Browse the collection',
+    'home.formulas.data': 'Download the registry (JSON)',
 
     'simplex.0': '0-simplex: point',
     'simplex.1': '1-simplex: segment',

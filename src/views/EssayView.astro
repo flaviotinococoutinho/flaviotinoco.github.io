@@ -107,6 +107,12 @@ const IDS = {
             {t('essay.bridge', { from: tc(`strata.${data.stratum}`), to: tc(`strata.${data.bridgesTo}`) })}
           </span>
         )}
+        <span class="essay__domains">
+          {data.domains
+            .slice(0, 3)
+            .map((d) => t(`domain.${d}`))
+            .join(' · ')}
+        </span>
       </p>
       <h1 class="essay__title" id={IDS.title}>
         {data.title}

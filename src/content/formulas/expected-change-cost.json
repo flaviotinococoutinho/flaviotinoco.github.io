@@ -1,0 +1,64 @@
+{
+  "slug": {
+    "pt-BR": "custo-esperado-de-mudanca",
+    "en": "expected-cost-of-change"
+  },
+  "name": {
+    "pt-BR": "Custo esperado de propagação de mudanças",
+    "en": "Expected cost of change propagation"
+  },
+  "tex": "\\E[C] = \\sum_{i=1}^{m} \\nu_i \\sum_{j=1}^{m} d_{ij}\\, c_j",
+  "labels": {
+    "pt-BR": [
+      "eq:custo-mudanca"
+    ],
+    "en": [
+      "eq:change-cost"
+    ]
+  },
+  "stratum": "theory",
+  "domains": [
+    "software-engineering",
+    "information-systems"
+  ],
+  "meaning": {
+    "pt-BR": "Quando cada decisão i muda com frequência nu índice i e sua mudança obriga a retrabalhar o módulo j com probabilidade d índice i j e custo c índice j, o custo esperado de manutenção cresce com o produto entre a volatilidade da decisão e o alcance do acoplamento. Ocultar decisões voláteis (nu alto) atrás de interfaces estáveis zera d índice i j fora do próprio módulo.",
+    "en": "When each decision i changes at rate nu sub i and its change forces rework in module j with probability d sub i j and cost c sub j, expected maintenance cost grows with the product of decision volatility and coupling reach. Hiding volatile decisions (large nu) behind stable interfaces drives d sub i j to zero outside the module itself."
+  },
+  "spoken": {
+    "pt-BR": "O valor esperado de C é igual ao somatório em i de um até m de nu índice i vezes o somatório em j de um até m de d índice i j vezes c índice j.",
+    "en": "The expected value of C equals the sum over i from one to m of nu sub i times the sum over j from one to m of d sub i j times c sub j."
+  },
+  "symbols": [
+    {
+      "tex": "\\nu_i",
+      "text": {
+        "pt-BR": "frequência de mudança da decisão i num período",
+        "en": "rate of change of decision i over a period"
+      }
+    },
+    {
+      "tex": "d_{ij}",
+      "text": {
+        "pt-BR": "probabilidade de uma mudança em i exigir alteração no módulo j",
+        "en": "probability that a change in i requires modifying module j"
+      }
+    },
+    {
+      "tex": "c_j",
+      "text": {
+        "pt-BR": "custo de alterar e verificar o módulo j",
+        "en": "cost of modifying and verifying module j"
+      }
+    }
+  ],
+  "concepts": [
+    "information-hiding",
+    "pace-layering",
+    "abstraction"
+  ],
+  "sources": [
+    "parnas1972",
+    "brand1994"
+  ]
+}

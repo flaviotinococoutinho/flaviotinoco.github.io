@@ -7,6 +7,8 @@ slug: colofao
 revisions:
   - date: 2026-10-11
     note: Versão inicial (texto-semente).
+  - date: 2026-11-13
+    note: Gramática visual, grade hierárquica, semiótica diagramática e hospedagem em domínio próprio.
 ---
 
 :::aside
@@ -26,6 +28,12 @@ Estrangeirismos aparecem em itálico e marcados com o idioma de origem, o que ta
 As medidas derivam de uma única razão, φ ≈ 1,618. A escala tipográfica é fluida: entre telas de 360 px e de 1440 px de largura, o corpo do texto passa de 17 px a 20 px, e a razão entre degraus sucessivos passa de 1,2 a √φ ≈ 1,272, de modo que, em telas largas, cada dois degraus correspondem exatamente a uma potência de φ. A entrelinha do texto corrido é φ; os espaçamentos são potências de φ, de φ⁻⁴ a φ⁵ (em rem); a coluna de leitura e a coluna de margem estão na razão φ : 1. As durações das animações são números de Fibonacci em milissegundos — 89, 144, 233, 377, 610, 987 e 1597 —, cujas razões sucessivas tendem a φ, de modo que o tempo compartilha a proporção do espaço.
 
 Trata-se de uma escolha de coerência interna, não da afirmação de que φ seja perceptivamente superior a outras razões — tese que este site não examina e não pressupõe.
+
+## Gramática visual, grade e lugar digital
+
+A disposição espacial combina a tipografia de livro defendida por Jan Tschichold — em que a forma recusa o ornamento gratuito para servir sem ruído à leitura contínua, distinguindo vozes por itálico e versaletes espaçados e marcando parágrafos sucessivos pelo recuo da primeira linha [@tschichold1991, p. 3-11, 105-116; @tschichold2006, p. 66-72] — com a grade hierárquica assimétrica descrita por Timothy Samara [@samara2023, p. 32-43]. Em telas largas, a coluna principal (φ) e a coluna de margem (1) partem de uma linha de suspensão comum (:foreign[hangline]{lang=en}) sob o cabeçalho do ensaio, preservando grande proporção da faixa lateral como espaço negativo ativo para que notas laterais e o mapa do argumento respirem como apartes parentéticos, sem competir com a prosa [@tschichold2006, p. 71; @riechers2024, p. 30-35; @hendel2013, p. 45-62].
+
+Nos sinais gráficos e nos diagramas, o projeto aplica a convergência entre a tríade semiótica de Peirce e a gramática visual contemporânea [@selby2023, p. 60-61, 85; @riechers2024, p. 108-139]: os simplexos carregam analogia estrutural icônica (ponto, segmento, triângulo, tetraedro), as marcas de seção e da ontologia operam como símbolos sempre acompanhados de rótulo verbal, e os mapas do argumento distinguem apoio construtivo de objeção dialética pela própria geometria do traço (contínuo contra tracejado), reservando pontas de seta a relações de dependência e transição [@christiansen2023, p. 66-67, 188-189]. Seguindo a arquitetura de lugares digitais de Jorge Arango [@arango2018, p. 26-31, 142-146], a navegação descarta fluxos cronológicos infinitos em favor de marcos estáveis de orientação — estrato, frentes temáticas, domínios facetados e conceitos permanentes da ontologia.
 
 ## Cor
 
@@ -56,7 +64,7 @@ Limitações conhecidas:
 
 ## Tecnologia
 
-O site é estático, gerado com Astro 7 e publicado no GitHub Pages. Os textos são Markdown puro, escritos numa linguagem fechada de diretivas para ambientes matemáticos, citações, notas e conceitos, e processados por uma cadeia de estágios unified (remark e rehype), cada um apoiado em funções puras e testadas. As fórmulas são escritas na notação do TeX [@knuth1984] e compostas pelo KaTeX. Os laboratórios usam pequenos núcleos de cálculo escritos em Rust e compilados para WebAssembly — transformada rápida de Fourier [@cooley1965], entropia e códigos de Huffman, mapa logístico, somas aleatórias —, carregados apenas nas páginas que os usam. A busca usa o Pagefind, que gera um índice estático consultado no próprio navegador. Os comportamentos interativos são elementos personalizados (:foreign[custom elements]{lang=en}) carregados sob demanda, sem framework de interface no cliente. Os dicionários que marcam estrangeirismos, nomes próprios e siglas são compilados em estruturas de busca rápida; um filtro de Bloom [@bloom1970], com :foreign[hashing]{lang=en} duplo [@kirsch2008], está previsto para as futuras ferramentas de terminal.
+O site é estático, gerado com Astro 7 e publicado em `flaviotinoco.com` (Hostinger) e no GitHub Pages. Os textos são Markdown puro, escritos numa linguagem fechada de diretivas para ambientes matemáticos, citações, notas e conceitos, e processados por uma cadeia de estágios unified (remark e rehype), cada um apoiado em funções puras e testadas. As fórmulas são escritas na notação do TeX [@knuth1984] e compostas pelo KaTeX. Os laboratórios usam pequenos núcleos de cálculo escritos em Rust e compilados para WebAssembly — transformada rápida de Fourier [@cooley1965], entropia e códigos de Huffman, mapa logístico, somas aleatórias —, carregados apenas nas páginas que os usam. A busca usa o Pagefind, que gera um índice estático consultado no próprio navegador. Os comportamentos interativos são elementos personalizados (:foreign[custom elements]{lang=en}) carregados sob demanda, sem framework de interface no cliente. Os dicionários que marcam estrangeirismos, nomes próprios e siglas são compilados em estruturas de busca rápida; um filtro de Bloom [@bloom1970], com :foreign[hashing]{lang=en} duplo [@kirsch2008], está previsto para as futuras ferramentas de terminal.
 
 O código-fonte está em <https://github.com/flaviotinococoutinho/flaviotinoco.github.io>.
 
@@ -81,7 +89,7 @@ Afirmações factuais não triviais vêm acompanhadas de fonte. Citações diret
 
 ## Privacidade
 
-O site não usa rastreamento, análise de audiência nem cookies, e não carrega recursos de terceiros: as fontes são servidas pelo próprio site. As preferências de leitura — tema, contraste, movimento, hifenização, textura e opções de texto — ficam guardadas apenas no armazenamento local do seu navegador (`localStorage`) e nunca são enviadas a lugar algum; apagá-las restaura os padrões. A busca roda no navegador, sobre um índice estático. O serviço de hospedagem, o GitHub Pages, pode registrar dados técnicos das requisições, como endereços IP, segundo as políticas da GitHub, que este site não controla.
+O site não usa rastreamento, análise de audiência nem cookies, e não carrega recursos de terceiros: as fontes são servidas pelo próprio site. As preferências de leitura — tema, contraste, movimento, hifenização, textura e opções de texto — ficam guardadas apenas no armazenamento local do seu navegador (`localStorage`) e nunca são enviadas a lugar algum; apagá-las restaura os padrões. A busca roda no navegador, sobre um índice estático. Os serviços de hospedagem (Hostinger e GitHub Pages) podem registrar dados técnicos das requisições, como endereços IP, segundo suas políticas próprias, que este site não controla.
 
 ## Licença
 

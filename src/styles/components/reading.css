@@ -126,8 +126,9 @@ ft-essay-filter {
  * of each token as CSS variables (--shiki-light / --shiki-dark, and -bg,
  * -font-style, -font-weight); the theme is chosen here, explicitly by
  * [data-theme] and otherwise by prefers-color-scheme. The block takes the
- * theme's own background, against which its token colours were designed
- * (github-light reds fall below 4.5:1 on the sunken paper).
+ * theme's own background, not the sunken paper of the page: it is the one its
+ * token colours were designed for and are measured against
+ * (src/adapters/astro/code.ts).
  */
 .prose pre {
   overflow-x: auto;
@@ -621,6 +622,11 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
   row-gap: var(--space-1);
   padding-block: var(--space-3) var(--space-4);
 }
+/* Hangline pause between the essay headspace and the reading apparatus (Samara 2023, pp. 40, 68). */
+.essay__header {
+  padding-block-end: var(--space-0);
+  border-block-end: 1px solid var(--rule-strong);
+}
 .essay__stratum {
   display: flex;
   flex-wrap: wrap;
@@ -630,6 +636,11 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
   font-family: var(--font-ui);
   font-size: var(--step-n1);
   color: var(--ink-muted);
+}
+.essay__domains,
+.essay-card__domains {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
 }
 .essay__stratum-link {
   color: var(--ink);
@@ -946,6 +957,10 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
   fill: none;
   stroke: var(--rule-strong);
   stroke-width: 1.2;
+}
+/* Dialectical rebuttals are distinguished from constructive support by line geometry (Christiansen 2023, p. 188). */
+.argmap__edge[data-target-kind='objection'] .argmap__line {
+  stroke-dasharray: 4 3;
 }
 .argmap__head {
   fill: var(--rule-strong);

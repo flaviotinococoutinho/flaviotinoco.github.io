@@ -1,0 +1,49 @@
+{
+  "slug": {
+    "pt-BR": "registro-de-decisao-arquitetural",
+    "en": "architecture-decision-record"
+  },
+  "prefLabel": {
+    "pt-BR": "Registro de decisão arquitetural",
+    "en": "Architecture decision record"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "ADR"
+    ],
+    "en": [
+      "ADR"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Documento curto e versionado que preserva o contexto, a escolha feita e as consequências aceitas numa decisão significativa de arquitetura de software.",
+    "en": "A short, versioned document that preserves the context, the choice made and the accepted consequences of a significant software-architecture decision."
+  },
+  "stratum": "value",
+  "category": "artifact",
+  "domains": [
+    "methodology",
+    "software-engineering",
+    "information-systems"
+  ],
+  "broader": [
+    "record"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "decision"
+    },
+    {
+      "type": "related",
+      "target": "information-hiding"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q28455546"
+  ],
+  "sources": [
+    "nygard2011",
+    "parnas1972"
+  ]
+}

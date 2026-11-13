@@ -1,0 +1,64 @@
+{
+  "slug": {
+    "pt-BR": "estado-como-projecao-de-registros",
+    "en": "state-as-record-projection"
+  },
+  "name": {
+    "pt-BR": "Estado como projeção de registros imutáveis",
+    "en": "State as a projection of immutable records"
+  },
+  "tex": "s_t = \\operatorname{fold}(g, s_0, r_{1..t}) = g\\bigl(\\cdots g(s_0, r_1) \\cdots, r_t\\bigr)",
+  "labels": {
+    "pt-BR": [
+      "eq:projecao-estado"
+    ],
+    "en": [
+      "eq:state-projection"
+    ]
+  },
+  "stratum": "formal",
+  "domains": [
+    "information-systems",
+    "computer-science"
+  ],
+  "meaning": {
+    "pt-BR": "O estado atual no instante t não precisa ser a única coisa guardada: ele é o resultado determinístico de aplicar uma função de projeção g, registro a registro, a partir de um estado inicial s zero sobre a sequência imutável de fatos ocorridos até t. Trocar a pergunta da organização equivale a trocar g sem perder os fatos.",
+    "en": "The current state at instant t need not be the only thing stored: it is the deterministic result of applying a projection function g, record by record, from an initial state s zero across the immutable sequence of facts recorded up to t. Changing the organization's question amounts to changing g without losing the facts."
+  },
+  "spoken": {
+    "pt-BR": "s índice t é igual à dobra de g a partir de s zero sobre os registros de um até t, isto é, g aplicada sucessivamente de r um até r índice t.",
+    "en": "s sub t equals the fold of g from s zero over records one through t, that is, g applied successively from r one to r sub t."
+  },
+  "symbols": [
+    {
+      "tex": "s_t",
+      "text": {
+        "pt-BR": "estado derivado após o t-ésimo registro",
+        "en": "derived state after the t-th record"
+      }
+    },
+    {
+      "tex": "r_{1..t}",
+      "text": {
+        "pt-BR": "sequência ordenada e imutável de registros de fatos",
+        "en": "ordered, immutable sequence of fact records"
+      }
+    },
+    {
+      "tex": "g",
+      "text": {
+        "pt-BR": "função determinística de projeção (ou agregação)",
+        "en": "deterministic projection (or aggregation) function"
+      }
+    }
+  ],
+  "concepts": [
+    "record",
+    "state",
+    "information-system"
+  ],
+  "sources": [
+    "helland2015",
+    "kleppmann2017"
+  ]
+}

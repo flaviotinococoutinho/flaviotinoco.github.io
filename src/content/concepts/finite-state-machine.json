@@ -1,0 +1,54 @@
+{
+  "slug": {
+    "pt-BR": "maquina-de-estados-finitos",
+    "en": "finite-state-machine"
+  },
+  "prefLabel": {
+    "pt-BR": "Máquina de estados finitos",
+    "en": "Finite-state machine"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "autômato finito",
+      "autômato finito determinístico",
+      "máquina de estados"
+    ],
+    "en": [
+      "finite automaton",
+      "deterministic finite automaton",
+      "state machine"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Modelo de um sistema que está, a cada instante, em exatamente um de um número finito de estados e que muda de estado, a cada evento, segundo uma função de transição fixada de antemão.",
+    "en": "A model of a system that is, at every instant, in exactly one of finitely many states and that changes state, at each event, according to a transition function fixed in advance."
+  },
+  "notation": "M = (Q, \\Sigma, \\delta, q_0, F)",
+  "stratum": "formal",
+  "category": "entity",
+  "domains": [
+    "computer-science",
+    "mathematics"
+  ],
+  "relations": [
+    {
+      "type": "formalizes",
+      "target": "state"
+    },
+    {
+      "type": "related",
+      "target": "dynamical-system"
+    },
+    {
+      "type": "appliesTo",
+      "target": "interface"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q176452"
+  ],
+  "sources": [
+    "rabin1959",
+    "hopcroft2007"
+  ]
+}

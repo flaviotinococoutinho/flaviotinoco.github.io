@@ -4,9 +4,11 @@
  * its stratum, title (link), description, date and reading time. The domains
  * are exposed as data-domains for the facet filter (ft-essay-filter).
  */
+import type { Domain } from '../../core/domain/facets.ts';
 import type { Locale } from '../../core/domain/locale.ts';
 import type { Stratum } from '../../core/domain/strata.ts';
 import common from '../../core/i18n/catalogs/common.ts';
+import reading from '../../core/i18n/catalogs/reading.ts';
 import { isoDate } from '../../core/reading/essay.ts';
 import { formatDate, useTranslations } from '../../adapters/astro/i18n.ts';
 import StratumLabel from './StratumLabel.astro';
@@ -19,7 +21,7 @@ export interface Props {
   readonly stratum: Stratum;
   readonly published: Date;
   readonly readingMinutes: number | null;
-  readonly domains: readonly string[];
+  readonly domains: readonly Domain[];
   /** Heading level of the title inside its list. */
   readonly level?: 2 | 3 | 4;
   /** Form label shown before the title (e.g. "Laboratório" in mixed lists). */
@@ -28,6 +30,7 @@ export interface Props {
 
 const { locale, href, title, description, stratum, published, readingMinutes, domains, level = 3, form } = Astro.props;
 const t = useTranslations(common, locale);
+const tr = useTranslations(reading, locale);
 const Heading = `h${level}` as const;
 ---
 
@@ -40,6 +43,14 @@ const Heading = `h${level}` as const;
     </Heading>
     <p class="essay-card__description">{description}</p>
     <p class="essay-card__meta">
+      {domains.length > 0 && (
+        <span class="essay-card__domains">
+          {domains
+            .slice(0, 3)
+            .map((d) => tr(`domain.${d}`))
+            .join(' · ')}
+        </span>
+      )}
       <time datetime={isoDate(published)}>{formatDate(locale, published)}</time>
       {readingMinutes !== null && <span>{t('reading.time', { minutes: readingMinutes })}</span>}
     </p>

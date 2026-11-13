@@ -96,6 +96,13 @@ folksonomy	en	sentence			classificação colaborativa por etiquetas
 ready-made	en	sentence	ready-mades		objeto pronto (Duchamp)
 # --- inglês: computação, dados ---------------------------------------------------
 bug	en	sentence	bugs		defeito de programa
+flag	en	sentence	flags		indicador booleano; sinalizador
+statechart	en	sentence	statecharts		diagrama de estados hierárquico (Harel)
+satisficing	en	sentence			escolha do suficiente sob racionalidade limitada (Simon, 1956)
+append-only	en	sentence			somente acréscimo; sem sobrescrita
+event sourcing	en	sentence			persistência do estado como sequência de eventos
+wayfinding	en	sentence			orientação espacial e navegacional
+shearing layers	en	sentence	pace layers		camadas de mudança em velocidades distintas (Brand; Arango)
 script	en	sentence	scripts		programa interpretado
 string	en	sentence	strings		cadeia de caracteres
 array	en	sentence	arrays		vetor; arranjo

@@ -1,0 +1,53 @@
+{
+  "slug": {
+    "pt-BR": "registro",
+    "en": "record"
+  },
+  "prefLabel": {
+    "pt-BR": "Registro",
+    "en": "Record"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "registro de evento",
+      "assento"
+    ],
+    "en": [
+      "event record",
+      "archival record"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Inscrição durável produzida para atestar que um fato ou ato ocorreu em dado contexto; diferente do estado atual, que resume o presente apagando o caminho até ele.",
+    "en": "An enduring inscription produced to attest that a fact or act occurred in a given context; distinct from current state, which summarises the present by erasing the path to it."
+  },
+  "stratum": "theory",
+  "category": "artifact",
+  "domains": [
+    "information-systems",
+    "semiotics",
+    "epistemology"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "sign"
+    },
+    {
+      "type": "dependsOn",
+      "target": "model"
+    },
+    {
+      "type": "contrastsWith",
+      "target": "state"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q3494271"
+  ],
+  "sources": [
+    "kent1978",
+    "helland2015",
+    "kleppmann2017"
+  ]
+}

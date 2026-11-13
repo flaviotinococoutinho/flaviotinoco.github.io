@@ -84,6 +84,15 @@ Pitágoras	pt-BR	exact	person	Pitágoras de Samos (séc. VI a.C.)
 Pythagoras	en	exact	person	Pythagoras of Samos (6th century BC)
 Knuth	en	exact	person	Donald E. Knuth (1938–), análise de algoritmos; TeX
 Dijkstra	nl	exact	person	Edsger W. Dijkstra (1930–2002)
+Parnas	en	exact	person	David L. Parnas (1941–), ocultação de informação (1972)
+Brooks	en	exact	person	Frederick P. Brooks, Jr. (1931–2022), essência e acidente
+Amdahl	en	exact	person	Gene M. Amdahl (1922–2015), lei de Amdahl (1967)
+Conway	en	exact	person	Melvin E. Conway, lei de Conway (1968)
+Lamport	en	exact	person	Leslie Lamport (1941–), relógios lógicos e sistemas distribuídos
+Kleppmann	de	exact	person	Martin Kleppmann, sistemas intensivos em dados
+Helland	en	exact	person	Pat Helland, imutabilidade em sistemas distribuídos
+Harel	he-Latn	exact	person	David Harel (1950–), statecharts (1987)
+Nygard	en	exact	person	Michael T. Nygard, registros de decisão arquitetural (2011)
 # --- filosofia, semiótica, linguística -----------------------------------------
 Aristóteles	pt-BR	exact	person	Aristóteles (384–322 a.C.)
 Aristotle	en	exact	person	Aristotle (384–322 BC)
@@ -151,6 +160,13 @@ Paulo Freire	pt-BR	exact	person	Paulo Freire (1921–1997), pedagogia
 Bringhurst	en	exact	person	Robert Bringhurst (1946–), The Elements of Typographic Style
 Tufte	en	exact	person	Edward R. Tufte (1942–), visualização de dados
 Tschichold	de	exact	person	Jan Tschichold (1902–1974), tipografia
+Arango	es	exact	person	Jorge Arango, arquitetura da informação
+Samara	en	exact	person	Timothy Samara, sistemas de grades tipográficas
+Riechers	en	exact	person	Angela Riechers, gramática visual
+Christiansen	en	exact	person	Jen Christiansen, diagramas científicos
+Selby	en	exact	person	Andrew Selby, ilustração editorial e semiótica
+Hendel	en	exact	person	Richard Hendel, projeto gráfico de livros
+Stewart Brand	en	exact	person	Stewart Brand (1938–), shearing layers (1994)
 Gropius	de	exact	person	Walter Gropius (1883–1969), Bauhaus
 Rams	de	exact	person	Dieter Rams (1932–), design industrial
 Christopher Alexander	en	exact	person	Christopher Alexander (1936–2022), linguagem de padrões

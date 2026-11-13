@@ -17,8 +17,19 @@ import SimplexScene from '../../components/chrome/SimplexScene.astro';
 import StratumMark from '../../components/chrome/StratumMark.astro';
 import common from '../../core/i18n/catalogs/common.ts';
 import chrome from '../../core/i18n/catalogs/chrome.ts';
+import reading from '../../core/i18n/catalogs/reading.ts';
 import { asset, formatDate, href, localeStaticPaths, useTranslations } from '../../adapters/astro/i18n.ts';
-import { alternatesForAll, essays, labs, routeOfEssay, routeOfLab, strata } from '../../adapters/astro/content.ts';
+import {
+  alternatesForAll,
+  concepts,
+  essays,
+  labs,
+  routeOfConcept,
+  routeOfEssay,
+  routeOfLab,
+  strata,
+  type Essay,
+} from '../../adapters/astro/content.ts';
 import { localeCodec, type Locale } from '../../core/domain/locale.ts';
 import { STRATA, STRATUM_SPECS } from '../../core/domain/strata.ts';
 import { FORM_GLYPH } from '../../core/domain/facets.ts';
@@ -28,18 +39,73 @@ export const getStaticPaths = localeStaticPaths;
 const { locale } = Astro.props as { readonly locale: Locale };
 const t = useTranslations(common, locale);
 const c = useTranslations(chrome, locale);
+const r = useTranslations(reading, locale);
 
 /** How many essays the home page lists; the full list lives in the essays index. */
-const LATEST = 3;
+const LATEST = 5;
 /** How many labs the teaser names. */
 const LAB_NAMES = 3;
 
-const [strataEntries, latest, allLabs] = await Promise.all([strata(locale), essays(locale), labs(locale)]);
+const [strataEntries, latest, allLabs, allConcepts] = await Promise.all([
+  strata(locale),
+  essays(locale),
+  labs(locale),
+  concepts(),
+]);
 const bridge = STRATA.map((s) => {
   const entry = strataEntries.find((e) => e.data.stratum === s);
   if (entry === undefined) throw new Error(`[home] missing src/content/strata entry for ${s} (${locale})`);
   return { stratum: s, spec: STRATUM_SPECS[s], data: entry.data };
 });
+const essayByKey = new Map<string, Essay>(latest.map((e) => [e.data.translationKey, e]));
+const conceptById = new Map(allConcepts.map((entry) => [entry.id, entry]));
+
+const essayLink = (key: string): { readonly href: string; readonly label: string } => {
+  const entry = essayByKey.get(key);
+  if (entry === undefined) throw new Error(`[home] missing essay "${key}" (${locale})`);
+  return { href: href(routeOfEssay(entry), locale), label: entry.data.title };
+};
+const conceptLink = (id: string): { readonly href: string; readonly label: string } => {
+  const entry = conceptById.get(id);
+  if (entry === undefined) throw new Error(`[home] missing concept "${id}"`);
+  return { href: href(routeOfConcept(entry, locale), locale), label: entry.data.prefLabel[locale] };
+};
+
+const axes = [
+  {
+    id: 'software',
+    glyph: 'axis-software',
+    title: c('home.axes.software.title'),
+    body: c('home.axes.software.body'),
+    essay: essayLink('changing-without-breaking'),
+    concept: conceptLink('information-hiding'),
+  },
+  {
+    id: 'optimization',
+    glyph: 'axis-optimization',
+    title: c('home.axes.optimization.title'),
+    body: c('home.axes.optimization.body'),
+    essay: essayLink('the-optimum-is-the-enemy-of-the-deadline'),
+    concept: conceptLink('combinatorial-optimization'),
+  },
+  {
+    id: 'systems',
+    glyph: 'axis-systems',
+    title: c('home.axes.systems.title'),
+    body: c('home.axes.systems.body'),
+    essay: essayLink('the-record-is-not-the-thing'),
+    concept: conceptLink('information-system'),
+  },
+  {
+    id: 'philosophy',
+    glyph: 'axis-philosophy',
+    title: c('home.axes.philosophy.title'),
+    body: c('home.axes.philosophy.body'),
+    essay: essayLink('from-sign-to-information'),
+    concept: conceptLink('sign'),
+  },
+] as const;
+
 const recent = latest.slice(0, LATEST);
 const labNames = allLabs.slice(0, LAB_NAMES);
 const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
@@ -101,6 +167,28 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
       </ol>
     </section>
 
+    <section class="home-section wide" aria-labelledby="axes-title" data-pagefind-ignore>
+      <h2 id="axes-title" class="section-title">
+        {c('home.axes.title')}
+      </h2>
+      <p class="section-lede">{c('home.axes.lede')}</p>
+      <ul class="axes" role="list">
+        {axes.map((axis) => (
+          <li class="axis" data-reveal>
+            <svg class="axis__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+              <use href={`#${axis.glyph}`} />
+            </svg>
+            <h3 class="axis__title">{axis.title}</h3>
+            <p class="axis__body">{axis.body}</p>
+            <p class="axis__links ui">
+              <a href={axis.essay.href}>{axis.essay.label}</a>
+              <a href={axis.concept.href}>§ {axis.concept.label}</a>
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+
     {recent.length > 0 && (
       <section class="home-section" aria-labelledby="latest-title" data-pagefind-ignore>
         <h2 id="latest-title" class="section-title">
@@ -115,6 +203,12 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
               <p class="entry__description">{e.data.description}</p>
               <p class="entry__meta ui">
                 <StratumMark stratum={e.data.stratum} locale={locale} size="s" />
+                <span class="entry__domains">
+                  {e.data.domains
+                    .slice(0, 3)
+                    .map((d) => r(`domain.${d}`))
+                    .join(' · ')}
+                </span>
                 <time datetime={e.data.published.toISOString().slice(0, 10)}>
                   {t('date.published', { date: formatDate(locale, e.data.published) })}
                 </time>
@@ -173,6 +267,26 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
           </a>
           <a class="more-link" href={asset('ontology.jsonld')} type="application/ld+json">
             {c('home.ontology.data')}
+          </a>
+        </p>
+      </section>
+      <section class="teaser" aria-labelledby="formulas-title" data-reveal>
+        <svg class="teaser__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+          <use href="#form-formula"></use>
+        </svg>
+        <h2 id="formulas-title" class="teaser__title">
+          {c('home.formulas.title')}
+        </h2>
+        <p class="teaser__body">{c('home.formulas.body')}</p>
+        <p class="teaser__links">
+          <a class="more-link" href={href({ kind: 'formulas' }, locale)}>
+            {c('home.formulas.link')}
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+              <use href="#ui-arrow"></use>
+            </svg>
+          </a>
+          <a class="more-link" href={asset('formulas.json')} type="application/json">
+            {c('home.formulas.data')}
           </a>
         </p>
       </section>

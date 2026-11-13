@@ -1,0 +1,43 @@
+{
+  "slug": {
+    "pt-BR": "lei-de-conway",
+    "en": "conway-s-law"
+  },
+  "prefLabel": {
+    "pt-BR": "Lei de Conway",
+    "en": "Conway's law"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "observação de Conway"
+    ],
+    "en": [
+      "Conway's observation"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Observação empírica segundo a qual organizações que projetam sistemas são constrangidas a produzir arquiteturas cuja divisão copia a estrutura de comunicação dessas organizações.",
+    "en": "The empirical observation that organizations which design systems are constrained to produce architectures whose division copies the communication structure of those organizations."
+  },
+  "stratum": "theory",
+  "category": "proposition",
+  "domains": [
+    "software-engineering",
+    "methodology",
+    "information-systems"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "communication"
+    },
+    {
+      "type": "appliesTo",
+      "target": "information-hiding"
+    }
+  ],
+  "sources": [
+    "conway1968",
+    "parnas1972"
+  ]
+}
