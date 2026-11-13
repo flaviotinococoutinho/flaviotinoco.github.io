@@ -3,6 +3,7 @@ import { unified } from '@astrojs/markdown-remark';
 import sitemap from '@astrojs/sitemap';
 import { loadPipelineContext } from './src/adapters/unified/context.ts';
 import { createPipeline } from './src/adapters/unified/pipeline.ts';
+import { SHIKI_CONFIG } from './src/adapters/astro/code.ts';
 import { FONT_FAMILIES } from './src/adapters/astro/fonts.ts';
 
 /**
@@ -57,10 +58,8 @@ export default defineConfig({
       smartypants: true,
     }),
     syntaxHighlight: { type: 'shiki', excludeLangs: ['math'] },
-    shikiConfig: {
-      themes: { light: 'github-light', dark: 'github-dark' },
-      defaultColor: false,
-    },
+    // Themes chosen by measured contrast (src/adapters/astro/code.ts).
+    shikiConfig: SHIKI_CONFIG,
   },
   fonts: FONT_FAMILIES,
   // Content images are authored as optimised SVG/WebP; no raster pipeline (and no native sharp dependency).

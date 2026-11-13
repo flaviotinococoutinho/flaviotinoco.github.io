@@ -36,6 +36,7 @@ if (!drawing.ok) throw new Error(`argument map: ${drawing.error}`);
 const { width, height, nodes, edges } = drawing.value;
 const glyph = DEFAULT_MAP_OPTIONS.glyph;
 const titleOf = new Map(argument.nodes.map((n) => [n.id, n.title]));
+const kindOf = new Map(argument.nodes.map((n) => [n.id, n.kind]));
 const list = new Intl.ListFormat(locale, { type: 'conjunction' });
 const kinds = ARGUMENT_KINDS.filter((k) => argument.nodes.some((n) => n.kind === k));
 ---
@@ -53,7 +54,7 @@ const kinds = ARGUMENT_KINDS.filter((k) => argument.nodes.some((n) => n.kind ===
         <svg class="argmap__svg" viewBox={`0 0 ${width} ${height}`} role="group" aria-labelledby={titleId}>
           <g class="argmap__edges" aria-hidden="true">
             {edges.map((e) => (
-              <g class="argmap__edge" data-from={e.from} data-to={e.to}>
+              <g class="argmap__edge" data-from={e.from} data-to={e.to} data-target-kind={kindOf.get(e.to)}>
                 <path class="argmap__line" d={e.d} />
                 <path class="argmap__head" d={e.head} />
               </g>
@@ -67,7 +68,6 @@ const kinds = ARGUMENT_KINDS.filter((k) => argument.nodes.some((n) => n.kind ===
               data-kind={n.kind}
               aria-label={t('argument.node', { kind: t(`kind.${n.kind}`), title: n.title })}
             >
-              <title>{t('argument.node', { kind: t(`kind.${n.kind}`), title: n.title })}</title>
               <circle class="argmap__hit" cx={n.cx} cy={n.cy} r={glyph} />
               <use
                 href={`#${glyphSymbolId(n.kind)}`}

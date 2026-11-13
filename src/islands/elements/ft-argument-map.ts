@@ -64,7 +64,7 @@ class FtArgumentMap extends HTMLElement {
     const label = this.querySelector<HTMLElement>('.argmap__current');
     const node = id === null ? null : this.querySelector<SVGAElement>(`.argmap__node[data-id="${CSS.escape(id)}"]`);
     if (label !== null) {
-      const title = node?.querySelector('title')?.textContent ?? '';
+      const title = node?.getAttribute('aria-label') ?? '';
       label.textContent = title === '' ? '' : (label.dataset['template'] ?? '{title}').replace('{title}', title);
     }
   }
