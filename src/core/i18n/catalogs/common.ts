@@ -4,9 +4,9 @@ import { defineMessages } from '../messages.ts';
 export default defineMessages({
   'pt-BR': {
     'site.name': 'Flávio Tinoco',
-    'site.tagline': 'Da questão ao produto: filosofia, teoria, formalismo e valor.',
+    'site.tagline': 'Engenharia de software, otimização e sistemas de informação — da pergunta ao artefato.',
     'site.description':
-      'Ensaios, laboratórios interativos e mapas conceituais que atravessam filosofia, teoria da informação, sistemas formais e produto.',
+      'Ensaios, laboratórios interativos e ontologia sobre engenharia de software, otimização combinatória e sistemas de informação, articulados pela filosofia aplicada e pela teoria da informação.',
     'nav.label': 'Navegação principal',
     'nav.home': 'Início',
     'nav.essays': 'Ensaios',
@@ -41,9 +41,9 @@ export default defineMessages({
   },
   en: {
     'site.name': 'Flávio Tinoco',
-    'site.tagline': 'From question to product: philosophy, theory, formalism and value.',
+    'site.tagline': 'Software engineering, optimization and information systems — from question to artefact.',
     'site.description':
-      'Essays, interactive labs and concept maps across philosophy, information theory, formal systems and product.',
+      'Essays, interactive labs and an ontology on software engineering, combinatorial optimization and information systems, articulated through applied philosophy and information theory.',
     'nav.label': 'Main navigation',
     'nav.home': 'Home',
     'nav.essays': 'Essays',
