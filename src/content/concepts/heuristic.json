@@ -24,7 +24,8 @@
   "category": "method",
   "domains": [
     "computer-science",
-    "behavior"
+    "behavior",
+    "systems-optimization"
   ],
   "relations": [
     {

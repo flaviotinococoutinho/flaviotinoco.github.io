@@ -6,12 +6,14 @@ lang: en
 translationKey: changing-without-breaking
 slug: changing-without-breaking
 stratum: value
-domains: [software-engineering, methodology, information-systems, design]
+domains: [software-architecture, software-engineering, information-systems, methodology, design]
 concepts: [essential-and-accidental-complexity, information-hiding, pace-layering, conways-law, architecture-decision-record, abstraction, interface, visual-grammar]
 published: 2026-11-13
 revisions:
   - date: 2026-11-13
     note: Initial version on the site.
+  - date: 2026-11-14
+    note: Domains reclassified under the site's scope model (ADR 0013); the text did not change.
 epistemic:
   confidence: probable
   evidence: argument

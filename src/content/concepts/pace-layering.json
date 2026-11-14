@@ -25,7 +25,8 @@
   "domains": [
     "information-systems",
     "software-engineering",
-    "design"
+    "design",
+    "software-architecture"
   ],
   "broader": [
     "model"

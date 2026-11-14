@@ -25,7 +25,8 @@
   "category": "entity",
   "domains": [
     "computer-science",
-    "software-engineering"
+    "software-engineering",
+    "systems-design"
   ],
   "broader": [
     "finite-state-machine"

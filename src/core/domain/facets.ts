@@ -6,7 +6,7 @@
  *
  *   stratum  — epistemic level (see strata.ts)           : exactly one
  *   form     — kind of document (genre)                  : exactly one
- *   domain   — field of knowledge                        : one or more (listed along the bridge)
+ *   domain   — field of knowledge                        : one or more (core disciplines and foundations)
  *   concepts — SKOS concepts the item discusses          : zero or more (ontology)
  */
 import { err, ok, type Result } from '../algebra/result.ts';
@@ -29,30 +29,52 @@ export const FORM_GLYPH: Readonly<Record<Form, `form-${Form}`>> = {
   map: 'form-map',
 };
 
-export const DOMAINS = [
-  // philosophy
+/**
+ * The domain facet is also the SCOPE of the site (ADR 0013, src/core/domain/scope.ts).
+ *
+ * Core disciplines are what the site is about: a work is in scope when it answers a
+ * question of at least one of them. Foundations are supporting fields: they enter only
+ * as far as a core discipline depends on them (scope.ts says which). A discipline is not
+ * tied to a stratum: each one has parts on every step of the bridge
+ * (docs/programa-editorial.md §2), so the lists follow the lines of inquiry, not the strata.
+ */
+export const CORE_DOMAINS = [
+  // building software
+  'software-engineering',
+  'software-architecture',
+  'systems-design',
+  // computing and optimization
+  'computer-science',
+  'systems-optimization',
+  // information systems and data
+  'information-systems',
+  'information-technology',
+  'data-engineering',
+  // information and signals
+  'information-theory',
+  'signal-processing',
+  // applied philosophy
+  'applied-philosophy',
+] as const;
+export type CoreDomain = (typeof CORE_DOMAINS)[number];
+
+export const FOUNDATION_DOMAINS = [
   'ontology',
   'epistemology',
   'semiotics',
   'logic',
-  'applied-philosophy',
-  // theory
-  'information-theory',
-  'signal-processing',
-  'dynamical-systems',
-  'probability',
-  'behavior',
-  // formal
   'mathematics',
-  'computer-science',
-  // value
-  'information-systems',
-  'software-engineering',
-  'technology',
+  'probability',
+  'dynamical-systems',
+  'behavior',
   'methodology',
   'design',
   'product',
 ] as const;
+export type FoundationDomain = (typeof FOUNDATION_DOMAINS)[number];
+
+/** Display order: core disciplines first (by line of inquiry), then foundations. */
+export const DOMAINS = [...CORE_DOMAINS, ...FOUNDATION_DOMAINS] as const;
 export type Domain = (typeof DOMAINS)[number];
 
 export const parseForm = (v: unknown): Result<Form, string> =>

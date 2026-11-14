@@ -24,7 +24,8 @@
   "domains": [
     "methodology",
     "software-engineering",
-    "information-systems"
+    "information-systems",
+    "software-architecture"
   ],
   "broader": [
     "record"

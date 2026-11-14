@@ -7,12 +7,14 @@ translationKey: the-optimum-is-the-enemy-of-the-deadline
 slug: the-optimum-is-the-enemy-of-the-deadline
 stratum: theory
 bridgesTo: formal
-domains: [computer-science, software-engineering, mathematics]
+domains: [systems-optimization, computer-science, software-engineering, mathematics]
 concepts: [optimization, combinatorial-optimization, computational-complexity, amdahls-law, approximation-algorithm, heuristic, satisficing, huffman-code]
 published: 2026-11-13
 revisions:
   - date: 2026-11-13
     note: Initial version on the site.
+  - date: 2026-11-14
+    note: Domains reclassified under the site's scope model (ADR 0013); the text did not change.
 epistemic:
   confidence: probable
   evidence: argument
