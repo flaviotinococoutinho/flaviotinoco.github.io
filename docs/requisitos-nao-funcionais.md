@@ -5,7 +5,7 @@
 > que o comprova (comando e job do CI) e a evidência mais recente. "Verificado" significa que o comando passou no
 > código versionado na data indicada; nada aqui vale por declaração.
 >
-> Decisões: ADRs 0001–0010. Arquitetura: [arquitetura.md](arquitetura.md). Última medição: 21/10/2026.
+> Decisões: ADRs 0001–0013. Arquitetura: [arquitetura.md](arquitetura.md). Última medição: 21/10/2026.
 
 ## 0. Método
 
@@ -125,7 +125,20 @@ Medições de 21/10/2026 (`dist/` da branch `fix/html-budgets`): a página mais 
 | Versionamento        | SemVer; registro de mudanças; `release.yml` (ADR 0010)                                  | versões iguais em `package.json` e `Cargo.toml`                                   | `changelog.test.ts`                    |
 | Decisões registradas | um ADR por decisão não óbvia, com status e data                                         | —                                                                                 | revisão de PR                          |
 
-## 9. O processo
+## 9. Escopo
+
+| Requisito                | Formalismo / heurística                                                                                           | Limiar         | Verificação                                                      |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------- |
+| Vocabulário fechado      | todo domínio é disciplina do núcleo ou fundamento; todo fundamento declara as disciplinas que sustenta (ADR 0013) | 0 exceções     | tipos (`SUPPORTS` total); `tests/unit/core/scope.test.ts`        |
+| Ensaio dentro do escopo  | todo ensaio declara ao menos uma disciplina do núcleo                                                             | 100 %          | esquema de conteúdo (`pnpm build:site`); `content/scope.test.ts` |
+| Fundamentos em minoria   | fração das obras (ensaios e laboratórios) que declaram uma disciplina do núcleo                                   | ≥ 75 %         | `tests/unit/content/scope.test.ts` · job `quality`               |
+| Cobertura medida         | matriz disciplina × estrato dobrada do acervo; a página de escopo mostra as lacunas                               | —              | `scope.test.ts` (homomorfismo de monoide); `pnpm check:links`    |
+| Mesmo escopo nas línguas | as duas línguas de uma obra declaram os mesmos domínios, na mesma ordem                                           | 0 divergências | `tests/unit/content/scope.test.ts`                               |
+
+Medição de 14/11/2026: 12 de 14 obras por língua declaram uma disciplina do núcleo (86 %); tecnologia da
+informação e engenharia de dados e ETL não têm obra publicada.
+
+## 10. O processo
 
 | Requisito                             | Formalismo / heurística                                                                                                  | Verificação                |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------- |

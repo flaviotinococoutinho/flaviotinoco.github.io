@@ -12,6 +12,18 @@ próprio frontmatter.
 
 ### Adicionado
 
+- Escopo do site como vocabulário fechado e medido ([ADR 0013](docs/adr/0013-escopo-do-site.md)): a faceta de
+  domínio se divide em onze disciplinas do núcleo e onze fundamentos (`src/core/domain/scope.ts`); um ensaio
+  sem disciplina do núcleo não compila, e ao menos 75 % das obras devem declarar uma
+  (`tests/unit/content/scope.test.ts`). Páginas `/<lang>/escopo/` (`/scope/`) e uma por disciplina, com a
+  matriz de cobertura disciplina × estrato calculada do acervo, o que fica de fora e os fundamentos de cada
+  disciplina; entradas no cabeçalho, no rodapé e na paleta de comandos.
+- Laboratório `flags` ("Flags e estados"): o reprodutor de vídeo do ensaio "A segunda flag" em duas
+  representações que recebem os mesmos eventos, com as oito configurações de três flags, os eventos que o
+  autômato recusa e a redundância do histórico (`src/core/labs/flags.ts`, `ft-lab-flags`).
+- Página inicial: a proposição do site como título, as chamadas, o acervo em números e o laboratório de flags
+  em forma compacta na primeira tela; sem JavaScript, a mesma figura desenhada na compilação.
+
 - Frentes temáticas e orientação de lugar digital na página inicial (`Frentes de investigação` com marcas
   vetoriais estruturais para engenharia de software, otimização, sistemas de informação e filosofia aplicada;
   destaque triplo para Laboratório, Ontologia e Fórmulas em palavras), marcação facetada de domínios nos cartões
@@ -25,6 +37,12 @@ próprio frontmatter.
 
 ### Alterado
 
+- Faceta de domínio: `technology` passa a `information-technology`; entram `software-architecture`,
+  `systems-design`, `systems-optimization` e `data-engineering`; quatro ensaios e treze conceitos foram
+  reclassificados (sem mudança de prosa; a revisão está registrada em cada ensaio).
+- Página inicial: as "frentes de investigação" passam a ser geradas do modelo de escopo (cinco frentes, com
+  suas disciplinas e a obra mais recente de cada uma); os simplexos acompanham a seção da ponte.
+- Esquema de conteúdo: o `widget` de um laboratório deriva de `WIDGETS` (uma lista só).
 - Contrato editorial do corpus (`tests/unit/content/syntax.test.ts`): a data de publicação e a nota de
   proveniência combinadas valem só para os nove textos-semente (lista fechada, conferida nas duas línguas);
   toda obra segue o contrato geral, que passa a exigir a primeira revisão no dia da própria publicação,
