@@ -6,13 +6,15 @@
  * (state.ts), the permalink in the URL hash, and the controls the islands draw (their bounds, step and
  * default). A parameter that is not listed here cannot be set anywhere.
  *
- * Units: sampling frequencies in hertz, phases in degrees, probabilities as fractions. The defaults put
+ * Units: sampling frequencies in hertz, phases in degrees, probabilities as fractions; a history of
+ * player events is a word over one letter per event. The defaults put
  * each lab in the first situation its "What to observe" list describes (src/content/labs/**).
  */
 import { err, ok, type Result } from '../algebra/result.ts';
 import { show } from '../algebra/show.ts';
+import { EVENT_ALPHABET, MAX_EVENTS } from './flags.ts';
 
-export const WIDGETS = ['fourier', 'sampling', 'entropy', 'channel', 'logistic', 'clt'] as const;
+export const WIDGETS = ['fourier', 'sampling', 'entropy', 'channel', 'logistic', 'clt', 'flags'] as const;
 export type Widget = (typeof WIDGETS)[number];
 
 export type KernelName = 'signal' | 'information' | 'dynamics';
@@ -25,6 +27,7 @@ export const WIDGET_KERNEL: Readonly<Record<Widget, KernelName>> = {
   channel: 'information',
   logistic: 'dynamics',
   clt: 'dynamics',
+  flags: 'information',
 };
 
 export const isWidget = (value: unknown): value is Widget =>
@@ -99,6 +102,8 @@ export const PARAMS: Readonly<Record<Widget, readonly ParamSpec[]>> = {
   ],
   logistic: [number('r', 2.5, 4, 0.001, 2.8), number('x0', 0.01, 0.99, 0.01, 0.2)],
   clt: [number('n', 1, 50, 1, 1), number('samples', 1000, 200000, 1000, 20000), number('seed', 0, 999999, 1, 42)],
+  // The whole state is the history of events sent to the player (src/core/labs/flags.ts): p, a, s, r.
+  flags: [{ kind: 'text', key: 'events', maxLength: MAX_EVENTS, alphabet: EVENT_ALPHABET, default: '' }],
 };
 
 /** The specification of `key` in `widget`, or undefined. */

@@ -6,7 +6,8 @@
 import { absurd } from '../algebra/match.ts';
 import type { Locale } from '../domain/locale.ts';
 import catalog from '../i18n/catalogs/labs.ts';
-import { translator } from '../i18n/messages.ts';
+import { plural, translator } from '../i18n/messages.ts';
+import { bitsOf, type FlagsRun } from './flags.ts';
 import { GIBBS_FRACTION, type Crest, type Waveform } from './fourier.ts';
 import { capitalize, fixed, frequency, list, percent, upTo } from './format.ts';
 import { exponentSign } from './logistic.ts';
@@ -171,3 +172,37 @@ export const cltSummary = (locale: Locale, c: CltFigures): string =>
     d: fixed(locale, c.distance, 4),
     bound: fixed(locale, c.bound, 2),
   });
+
+/** Events named one by one in the flags summary; a longer history is counted. */
+const MAX_LISTED_EVENTS = 6;
+
+/** The flags lab: where both representations ended after the history, and how many events the automaton refused. */
+export const flagsSummary = (locale: Locale, run: FlagsRun): string => {
+  const t = tr(locale);
+  if (run.events.length === 0) return t('flags.summary.start');
+  return t('flags.summary', {
+    events:
+      run.events.length <= MAX_LISTED_EVENTS
+        ? list(
+            locale,
+            run.events.map((e) => t(`flags.event.${e}`)),
+          )
+        : t('flags.summary.count', {
+            n: upTo(locale, run.events.length, 0),
+            last: t(`flags.event.${run.events.at(-1) ?? 'play'}`),
+          }),
+    bits: bitsOf(run.flags),
+    meaning:
+      run.meaning === null
+        ? t('flags.summary.meansNothing')
+        : t('flags.summary.means', { state: t(`flags.state.${run.meaning}`) }),
+    machine: t(`flags.state.${run.machine}`),
+    refused:
+      run.refused === 0
+        ? ''
+        : plural(locale, run.refused, {
+            one: t('flags.summary.refused.one'),
+            other: t('flags.summary.refused.other'),
+          }),
+  });
+};

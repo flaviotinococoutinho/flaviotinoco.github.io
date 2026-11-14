@@ -10,10 +10,12 @@
   "tex": "R = 1 - \\frac{\\H(X)}{\\log_2 \\lvert \\mathcal{X} \\rvert}",
   "labels": {
     "pt-BR": [
-      "eq:redundancia"
+      "eq:redundancia",
+      "eq:redundancia-flags"
     ],
     "en": [
-      "eq:redundancy"
+      "eq:redundancy",
+      "eq:redundancy-flags"
     ]
   },
   "concept": "redundancy",
