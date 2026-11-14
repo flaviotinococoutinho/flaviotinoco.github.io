@@ -1,0 +1,56 @@
+---
+/**
+ * Static picture of the flags lab after a given history, built at compile time
+ * from the same pure model the island runs (src/core/labs/flags.ts): what a
+ * reader without JavaScript sees in place of <ft-lab-flags>, with the same
+ * markup classes, so the two never drift apart.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import labsCatalog from '../../core/i18n/catalogs/labs.ts';
+import { FLAG_NAMES, PLAYER_STATES, run, type PlayerEvent } from '../../core/labs/flags.ts';
+import { flagsSummary } from '../../core/labs/summary.ts';
+import { useTranslations } from '../../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly events: readonly PlayerEvent[];
+}
+
+const { locale, events } = Astro.props;
+const t = useTranslations(labsCatalog, locale);
+const result = run(events);
+---
+
+<div class="flags flags--static">
+  <div class="flags__models">
+    <div class="flags__model">
+      <p class="lab__heading">{t('flags.model.flags')}</p>
+      <ul class="flags__lamps" role="list">
+        {FLAG_NAMES.map((name) => (
+          <li class="flags__lamp">
+            <span class="flags__mark" aria-hidden="true">
+              {result.flags[name] ? '■' : '□'}
+            </span>
+            <code>{name}</code>
+            <span class="flags__value">{t(result.flags[name] ? 'flags.true' : 'flags.false')}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="flags__model">
+      <p class="lab__heading">{t('flags.model.machine')}</p>
+      <ol class="flags__states" role="list">
+        {PLAYER_STATES.map((state) => (
+          <li class="flags__state" data-current={state === result.machine ? '' : undefined}>
+            <span class="flags__mark" aria-hidden="true">
+              {state === result.machine ? '■' : '□'}
+            </span>
+            <span>{t(`flags.state.${state}`)}</span>
+            {state === result.machine && <span class="visually-hidden"> ({t('flags.current')})</span>}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+  <p class="flags__static-summary">{flagsSummary(locale, result)}</p>
+</div>

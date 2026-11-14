@@ -6,7 +6,7 @@ export default defineMessages({
     'site.name': 'Flávio Tinoco',
     'site.tagline': 'Engenharia de software, otimização e sistemas de informação — da pergunta ao artefato.',
     'site.description':
-      'Ensaios, laboratórios interativos e ontologia sobre engenharia de software, otimização combinatória e sistemas de informação, articulados pela filosofia aplicada e pela teoria da informação.',
+      'Ensaios, laboratórios interativos e ontologia sobre engenharia e arquitetura de software, computação e otimização, sistemas de informação, dados e sinais, com teoria da informação como medida e filosofia aplicada.',
     'nav.label': 'Navegação principal',
     'nav.home': 'Início',
     'nav.essays': 'Ensaios',
@@ -44,7 +44,7 @@ export default defineMessages({
     'site.name': 'Flávio Tinoco',
     'site.tagline': 'Software engineering, optimization and information systems — from question to artefact.',
     'site.description':
-      'Essays, interactive labs and an ontology on software engineering, combinatorial optimization and information systems, articulated through applied philosophy and information theory.',
+      'Essays, interactive labs and an ontology on software engineering and architecture, computing and optimization, information systems, data and signals, with information theory as the measure and applied philosophy.',
     'nav.label': 'Main navigation',
     'nav.home': 'Home',
     'nav.essays': 'Essays',

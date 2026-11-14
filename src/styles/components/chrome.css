@@ -817,7 +817,7 @@ ft-preferences:not([data-ready]) .prefs__form {
 .hero {
   position: relative;
   isolation: isolate;
-  padding-block: var(--space-3) var(--space-0);
+  padding-block: var(--space-2) var(--space-1);
   overflow: clip;
 }
 /* Canvas host for the labs workstream (curl-noise ambient field): fills the whole
@@ -825,36 +825,143 @@ ft-preferences:not([data-ready]) .prefs__form {
    area as containing block, so it must span the full track range explicitly. */
 ft-ambient-field {
   position: absolute;
-  inset: 0;
+  /* Behind the claim only: the strokes never run under the body-size text below it. */
+  inset: 0 0 auto;
+  block-size: min(100%, 21rem);
   z-index: -1;
   display: block;
   grid-column: full;
-  grid-row: 1 / -1;
   pointer-events: none;
 }
 .hero__text {
   grid-column: main;
 }
 .hero__title {
-  font-size: var(--step-6);
+  font-size: var(--step-5);
   font-weight: 400;
-  letter-spacing: -0.022em;
-  line-height: 1.04;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
+  text-wrap: balance;
 }
-.hero__tagline {
-  max-inline-size: 34ch;
+.hero__lede {
   margin-block-start: var(--space-0);
   color: var(--ink-muted);
-  font-size: var(--step-1);
   line-height: var(--leading-heading);
-  text-wrap: balance;
+  font-size: var(--step-1);
+  hyphens: manual;
+  text-wrap: pretty;
+}
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n1) var(--space-1);
+  align-items: center;
+  margin-block-start: var(--space-1);
+}
+.hero__cta {
+  display: inline-flex;
+  gap: var(--space-n3);
+  align-items: center;
+  padding: var(--space-n2) var(--space-0);
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  background-color: var(--ink);
+  color: var(--paper);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color calc(var(--duration-2) * var(--motion)) var(--ease-standard),
+    color calc(var(--duration-2) * var(--motion)) var(--ease-standard);
+}
+.hero__cta:hover {
+  background-color: transparent;
+  color: var(--ink);
+}
+.hero__cta svg {
+  inline-size: 1.1em;
+  block-size: 1.1em;
+}
+.hero__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n3) var(--space-0);
+  margin-block-start: var(--space-1);
+  padding-block-start: var(--space-n1);
+  border-block-start: 1px solid var(--rule);
+  font-size: var(--step-n1);
+}
+.hero__stats a {
+  color: var(--ink-muted);
+}
+.hero__stats a:hover {
+  color: var(--ink);
+}
+/* The live instrument: beside the text where there is a margin column, below it elsewhere. */
+.hero__instrument {
+  align-self: start;
+  min-inline-size: 0;
+  margin-block-start: var(--space-1);
+}
+@media (width >= 72rem) {
+  .hero__instrument {
+    grid-row: 1;
+    margin-block-start: 0;
+  }
+}
+.hero__instrument-title {
+  font-weight: 600;
+}
+.hero__instrument-lede {
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+.lab--hero {
+  margin-block: var(--space-n1) 0;
+}
+.lab--hero .lab__frame {
+  gap: var(--space-0);
+  padding: var(--space-0);
+}
+/* Compact form: the buttons are the controls; the full readouts live on the lab page. */
+.lab--hero .lab__controls,
+.lab--hero .lab__readouts,
+.lab--hero .flags__hint,
+.lab--hero .flags__undo,
+.lab--hero .flags__grid .lab__note {
+  display: none;
+}
+.lab--hero .flags {
+  gap: var(--space-n1);
+  font-size: var(--step-n1);
+}
+.lab--hero .flags__event {
+  flex: 1;
+  min-inline-size: 4.5em;
+}
+@container (inline-size >= 21rem) {
+  .lab--hero .flags__models {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-n1);
+  }
+}
+.lab--hero .flags__model {
+  padding: var(--space-n2);
+}
+.lab--hero .flags__bits {
+  font-size: var(--step-n1);
+}
+.flags__static-summary {
+  margin-block-start: var(--space-n1);
 }
 .hero__scene {
   position: relative;
   display: block;
-  grid-column: main-start / margin-end;
   aspect-ratio: 2.618;
-  margin-block-start: var(--space-1);
+}
+/* The four simplices illustrate the bridge, so they sit with it. */
+.bridge__scene {
+  max-inline-size: 46rem;
+  margin-block-start: var(--space-0);
 }
 .depth-layer {
   position: absolute;
@@ -1027,9 +1134,15 @@ ft-ambient-field {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-@media (width >= 72rem) {
+@media (width >= 64rem) {
   .axes {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (width >= 80rem) {
+  .axes {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--space-1);
   }
 }
 .axis {
@@ -1053,12 +1166,25 @@ ft-ambient-field {
   font-size: var(--step-n1);
   line-height: var(--leading-ui);
 }
+.axis__disciplines {
+  display: grid;
+  gap: var(--space-n3);
+  margin-block-start: var(--space-n1);
+  font-size: var(--step-n1);
+  font-weight: 600;
+}
 .axis__links {
   display: grid;
   gap: var(--space-n3);
   margin-block-start: auto;
-  padding-block-start: var(--space-n1);
+  padding-block-start: var(--space-0);
   font-size: var(--step-n1);
+}
+.axis__latest {
+  color: var(--ink-muted);
+  font-size: var(--step-n2);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .entry-list {
