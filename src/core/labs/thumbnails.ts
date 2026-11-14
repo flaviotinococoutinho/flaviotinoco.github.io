@@ -7,6 +7,7 @@
 import { absurd } from '../algebra/match.ts';
 import { bscCapacity, binaryEntropy } from './channel.ts';
 import { binEdges, irwinHallDensity, normalPdf } from './clt.ts';
+import { FLAG_NAMES, configurations, flagsOfIndex, meaningOf } from './flags.ts';
 import { partialSum } from './fourier.ts';
 import { logisticOrbit, logisticStep } from './logistic.ts';
 import { barsPath, cobwebPoints, functionPath, pointsPath, polylinePath } from './path.ts';
@@ -116,6 +117,36 @@ const clt = (): readonly Shape[] => {
   ];
 };
 
+const flags = (): readonly Shape[] => {
+  // The eight configurations of three flags as a 4 × 2 grid: a dot where the configuration describes a
+  // situation of the player, a cross where it describes none (src/core/labs/flags.ts).
+  const cols = 4;
+  const cell = 26;
+  const gap = 8;
+  const x0 = (W - (cols * cell + (cols - 1) * gap)) / 2;
+  const y0 = (H - (2 * cell + gap)) / 2;
+  const boxes: string[] = [];
+  const dots: string[] = [];
+  const crosses: string[] = [];
+  for (let i = 0; i < configurations(FLAG_NAMES.length); i += 1) {
+    const x = x0 + (i % cols) * (cell + gap);
+    const y = y0 + Math.floor(i / cols) * (cell + gap);
+    boxes.push(`M${x} ${y}H${x + cell}V${y + cell}H${x}Z`);
+    const cx = x + cell / 2;
+    const cy = y + cell / 2;
+    if (meaningOf(flagsOfIndex(i)) === null) {
+      crosses.push(`M${cx - 5} ${cy - 5}L${cx + 5} ${cy + 5}M${cx + 5} ${cy - 5}L${cx - 5} ${cy + 5}`);
+    } else {
+      dots.push(`M${cx - 4} ${cy - 4}H${cx + 4}V${cy + 4}H${cx - 4}Z`);
+    }
+  }
+  return [
+    { role: 'reference', d: boxes.join('') },
+    { role: 'points', d: dots.join('') },
+    { role: 'accent', d: crosses.join('') },
+  ];
+};
+
 /** The preview of a widget. */
 export const thumbnail = (widget: Widget): Thumbnail => {
   const shapes = (() => {
@@ -132,6 +163,8 @@ export const thumbnail = (widget: Widget): Thumbnail => {
         return logistic();
       case 'clt':
         return clt();
+      case 'flags':
+        return flags();
       default:
         return absurd(widget);
     }

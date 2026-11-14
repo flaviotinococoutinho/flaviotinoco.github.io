@@ -1,0 +1,307 @@
+/* Scope pages (ADR 0013): the scope index and one page per core discipline. */
+
+.scope-page__header,
+.discipline-page__header {
+  padding-block-start: var(--space-2);
+}
+.scope-page__title,
+.discipline-page__title {
+  font-size: var(--step-5);
+  font-weight: 400;
+  letter-spacing: -0.018em;
+  line-height: 1.08;
+}
+.scope-page__lede {
+  margin-block-start: var(--space-0);
+  font-size: var(--step-1);
+  line-height: var(--leading-heading);
+  text-wrap: pretty;
+}
+.scope-page__criterion {
+  margin-block-start: var(--space-n1);
+  color: var(--ink-muted);
+}
+.scope-section {
+  /* A grid item: without this its minimum is the matrix's min-content, which would widen the page. */
+  min-inline-size: 0;
+  margin-block-start: var(--space-3);
+}
+
+/* Lines of inquiry with their disciplines. */
+.scope-axes {
+  display: grid;
+  gap: var(--space-2);
+  margin-block-start: var(--space-1);
+}
+@media (width >= 48rem) {
+  .scope-axes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.scope-axis {
+  padding-block-start: var(--space-0);
+  border-block-start: 1px solid var(--rule-strong);
+}
+.scope-axis__title {
+  margin-block-start: var(--space-n2);
+  font-size: var(--step-2);
+}
+.scope-axis__body {
+  margin-block-start: var(--space-n2);
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+}
+.scope-axis__disciplines {
+  display: grid;
+  gap: var(--space-n1);
+  margin-block-start: var(--space-0);
+}
+.scope-axis__discipline {
+  display: block;
+  font-family: var(--font-ui);
+  font-weight: 600;
+}
+.scope-axis__lede {
+  display: block;
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+}
+
+/* Coverage matrix. */
+.scope-matrix {
+  /* Containing block of the visually hidden labels in the cells: absolutely positioned boxes are clipped
+     by a scroll container only when it is their containing block; otherwise they widen the page. */
+  position: relative;
+  margin-block-start: var(--space-1);
+  overflow-x: auto;
+}
+.scope-matrix:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.scope-matrix table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+}
+.scope-matrix caption {
+  padding-block-end: var(--space-n1);
+  color: var(--ink-muted);
+  text-align: start;
+}
+.scope-matrix th,
+.scope-matrix td {
+  padding: var(--space-n2) var(--space-n1);
+  border-block-end: 1px solid var(--rule);
+  text-align: start;
+  vertical-align: top;
+}
+.scope-matrix thead th {
+  border-block-end-color: var(--rule-strong);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.scope-matrix tbody th[scope='row'] {
+  min-inline-size: 8.5rem;
+  font-weight: 400;
+}
+.scope-matrix__axis th {
+  padding-block-start: var(--space-0);
+  border-block-end-color: var(--rule-strong);
+  color: var(--ink-muted);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.scope-matrix__glyph {
+  inline-size: 1.15em;
+  block-size: 1.15em;
+  margin-inline-end: var(--space-n3);
+  vertical-align: -0.2em;
+}
+.scope-matrix__planned {
+  display: block;
+  color: var(--ink-muted);
+  font-size: var(--step-n2);
+}
+.scope-matrix__works,
+.scope-matrix__concepts {
+  display: block;
+  white-space: nowrap;
+}
+.scope-matrix__works {
+  font-weight: 600;
+}
+.scope-matrix__concepts,
+.scope-matrix td[data-empty] {
+  color: var(--ink-muted);
+}
+
+/* Prose lists of the scope page. */
+.scope-list {
+  display: grid;
+  gap: var(--space-n2);
+  margin-block-start: var(--space-0);
+  padding-inline-start: 1.25em;
+}
+ul.scope-list {
+  list-style: disc;
+}
+ol.scope-list {
+  list-style: decimal;
+}
+
+.scope-foundations {
+  display: grid;
+  gap: var(--space-n2);
+  margin-block-start: var(--space-0);
+}
+.scope-foundations__row {
+  display: grid;
+  gap: var(--space-n3) var(--space-0);
+  padding-block-end: var(--space-n2);
+  border-block-end: 1px solid var(--rule);
+}
+@media (width >= 40rem) {
+  .scope-foundations__row {
+    grid-template-columns: 11rem minmax(0, 1fr);
+  }
+}
+.scope-foundations dt {
+  font-weight: 600;
+}
+.scope-foundations__verb {
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+
+/* Inline lists: items separated by a middle dot drawn by CSS (the list stays a list). */
+.scope-inline {
+  display: inline;
+}
+.scope-inline > li {
+  display: inline;
+}
+/* Links in a list are targets of their own (WCAG 2.2 SC 2.5.8): at least 24 px tall, on lines that fit them. */
+.scope-inline {
+  line-height: 1.75rem;
+}
+.scope-inline > li > a {
+  display: inline-block;
+  min-block-size: 1.5rem;
+}
+.scope-inline > li + li::before {
+  content: ' · ';
+  color: var(--ink-muted);
+}
+
+/* Discipline page. */
+.discipline-page__crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-n3) var(--space-n2);
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+.discipline-page__axis {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-n3);
+}
+.discipline-page__glyph {
+  inline-size: 1.2em;
+  block-size: 1.2em;
+}
+.discipline-page__title {
+  margin-block-start: var(--space-n2);
+}
+.discipline-page__scope {
+  display: grid;
+  gap: var(--space-n1);
+  margin-block-start: var(--space-0);
+}
+.discipline-page__scope dt {
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+  letter-spacing: 0.02em;
+}
+.discipline-page__scope div:first-child dd {
+  font-size: var(--step-1);
+  line-height: var(--leading-heading);
+  text-wrap: pretty;
+}
+.discipline-page__scope div + div dd {
+  color: var(--ink-muted);
+}
+.discipline-page__others {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2) var(--space-0);
+  margin-block-start: var(--space-0);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+}
+.discipline-page__subtitle {
+  margin-block-start: var(--space-1);
+  font-size: var(--step-1);
+}
+
+.discipline-bridge {
+  display: grid;
+  gap: var(--space-1);
+  margin-block-start: var(--space-1);
+}
+@media (width >= 56rem) {
+  .discipline-bridge {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+}
+.discipline-bridge__step {
+  padding-block-start: var(--space-0);
+  border-block-start: 2px solid var(--stratum, var(--rule-strong));
+}
+.discipline-bridge__stratum {
+  font-family: var(--font-ui);
+  font-size: var(--step-0);
+  font-weight: 600;
+}
+.discipline-bridge__stratum a {
+  color: inherit;
+  text-decoration: none;
+}
+.discipline-bridge__stratum a:hover {
+  text-decoration: underline;
+}
+.discipline-bridge__works {
+  display: grid;
+  gap: var(--space-n1);
+  margin-block-start: var(--space-n1);
+}
+.discipline-bridge__work {
+  display: block;
+  font-size: var(--step-0);
+  line-height: var(--leading-heading);
+}
+.discipline-bridge__form,
+.discipline-bridge__label {
+  color: var(--ink-muted);
+  font-size: var(--step-n2);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.discipline-bridge__label {
+  margin-block-start: var(--space-n1);
+}
+.discipline-bridge__empty {
+  margin-block-start: var(--space-n1);
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+}
+.discipline-bridge .scope-inline {
+  font-size: var(--step-n1);
+}

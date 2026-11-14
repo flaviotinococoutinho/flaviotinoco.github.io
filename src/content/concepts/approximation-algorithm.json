@@ -24,7 +24,8 @@
   "category": "method",
   "domains": [
     "computer-science",
-    "mathematics"
+    "mathematics",
+    "systems-optimization"
   ],
   "relations": [
     {

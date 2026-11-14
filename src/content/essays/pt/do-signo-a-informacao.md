@@ -7,12 +7,14 @@ translationKey: from-sign-to-information
 slug: do-signo-a-informacao
 stratum: philosophy
 bridgesTo: theory
-domains: [semiotics, information-theory, epistemology]
+domains: [semiotics, information-theory, applied-philosophy, epistemology]
 concepts: [sign, symbol, meaning, sense-and-reference, information, entropy, redundancy, channel, model]
 published: 2026-10-11
 revisions:
   - date: 2026-10-11
     note: Versão inicial (texto-semente).
+  - date: 2026-11-14
+    note: Reclassificação de domínios segundo o modelo de escopo do site (ADR 0013); o texto não mudou.
 epistemic:
   confidence: probable
   evidence: argument

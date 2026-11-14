@@ -16,8 +16,10 @@ import { LOCALES } from './core/domain/locale.ts';
 import { STRATA } from './core/domain/strata.ts';
 import { CATEGORIES, LINK_TYPES } from './core/ontology/vocabulary.ts';
 import { DOMAINS } from './core/domain/facets.ts';
+import { checkEssayScope } from './core/domain/scope.ts';
 import { CONFIDENCE_LEVELS, EVIDENCE_KINDS } from './core/domain/epistemic.ts';
 import { parseConceptId, parseSlug, parseTranslationKey } from './core/domain/identifiers.ts';
+import { WIDGETS } from './core/labs/widgets.ts';
 
 /**
  * Entry identity = file path relative to the collection base, without extension
@@ -100,7 +102,14 @@ const work = z.object({
 
 const essays = defineCollection({
   loader: glob({ pattern: '{pt,en}/**/*.md', base: './src/content/essays', generateId: pathId }),
-  schema: work.extend({ form: z.literal('essay').default('essay') }).strict(),
+  schema: work
+    .extend({ form: z.literal('essay').default('essay') })
+    .strict()
+    // Scope rule R2 (ADR 0013): an essay is about at least one core discipline, or it does not build.
+    .superRefine((essay, ctx) => {
+      const scope = checkEssayScope(essay.domains);
+      if (!scope.ok) ctx.addIssue({ code: 'custom', path: ['domains'], message: scope.error });
+    }),
 });
 
 const labs = defineCollection({
@@ -109,7 +118,7 @@ const labs = defineCollection({
     .extend({
       form: z.literal('lab').default('lab'),
       kernel: z.enum(['signal', 'information', 'dynamics']),
-      widget: z.enum(['fourier', 'sampling', 'entropy', 'channel', 'logistic', 'clt']),
+      widget: z.enum(WIDGETS),
       /** Name of the theorem or law the lab makes tangible. */
       theorem: z.string().min(1),
     })

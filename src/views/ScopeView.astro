@@ -1,0 +1,141 @@
+---
+/**
+ * Scope page (route kind "scope", ADR 0013): what the site is about, measured.
+ *
+ *   header       the admission criterion in two sentences
+ *   lines        the five lines of inquiry with their core disciplines
+ *   coverage     the matrix discipline × stratum, computed from the corpus
+ *   left out     what the site does not publish
+ *   rules        the three checks of src/core/domain/scope.ts, with today's numbers
+ *   foundations  each supporting field and the disciplines that depend on it
+ *
+ * Everything is static HTML; the numbers come from the same pure functions the
+ * build and the tests use, so the page cannot disagree with the corpus.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ScopeMatrix from '../components/scope/ScopeMatrix.astro';
+import { siteScope } from '../components/scope/data.ts';
+import { FOUNDATION_DOMAINS } from '../core/domain/facets.ts';
+import type { Locale } from '../core/domain/locale.ts';
+import { AXES, SCOPE_MIN_CORE_SHARE, SUPPORTS, disciplinesOf } from '../core/domain/scope.ts';
+import reading from '../core/i18n/catalogs/reading.ts';
+import scopeCatalog from '../core/i18n/catalogs/scope.ts';
+import { formatNumber } from '../core/i18n/messages.ts';
+import { alternatesForAll } from '../adapters/astro/content.ts';
+import { href, useTranslations } from '../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(scopeCatalog, locale);
+const r = useTranslations(reading, locale);
+const scope = await siteScope(locale);
+const percent = (v: number): string => formatNumber(locale, v, { style: 'percent', maximumFractionDigits: 0 });
+const OUT = ['tutorials', 'news', 'opinion', 'foundations', 'elsewhere'] as const;
+---
+
+<BaseLayout
+  locale={locale}
+  title={t('scope.title')}
+  description={t('scope.description')}
+  alternates={alternatesForAll(() => ({ kind: 'scope' }))}
+>
+  <div class="page-grid scope-page">
+    <header class="scope-page__header">
+      <h1 class="scope-page__title">{t('scope.title')}</h1>
+      <p class="scope-page__lede">{t('scope.lede')}</p>
+      <p class="scope-page__criterion">{t('scope.criterion')}</p>
+    </header>
+
+    <section class="scope-section wide" aria-labelledby="scope-axes-title">
+      <h2 id="scope-axes-title" class="section-title">
+        {t('scope.axes.title')}
+      </h2>
+      <ul class="scope-axes" role="list">
+        {AXES.map((axis) => (
+          <li class="scope-axis">
+            <svg class="axis__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+              <use href={`#axis-${axis}`} />
+            </svg>
+            <h3 class="scope-axis__title">{t(`axis.${axis}.title`)}</h3>
+            <p class="scope-axis__body">{t(`axis.${axis}.body`)}</p>
+            <ul class="scope-axis__disciplines" role="list">
+              {disciplinesOf(axis).map((d) => (
+                <li>
+                  <a class="scope-axis__discipline" href={href({ kind: 'discipline', discipline: d }, locale)}>
+                    {r(`domain.${d}`)}
+                  </a>
+                  <span class="scope-axis__lede">{t(`discipline.${d}.lede`)}</span>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="scope-section wide" aria-labelledby="scope-matrix-title">
+      <h2 id="scope-matrix-title" class="section-title">
+        {t('scope.matrix.title')}
+      </h2>
+      <p class="section-lede">{t('scope.matrix.read')}</p>
+      <ScopeMatrix locale={locale} />
+    </section>
+
+    <section class="scope-section" aria-labelledby="scope-out-title">
+      <h2 id="scope-out-title" class="section-title">
+        {t('scope.out.title')}
+      </h2>
+      <ul class="scope-list">
+        {OUT.map((key) => (
+          <li>{t(`scope.out.${key}`)}</li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="scope-section" aria-labelledby="scope-rules-title">
+      <h2 id="scope-rules-title" class="section-title">
+        {t('scope.rules.title')}
+      </h2>
+      <p class="section-lede">{t('scope.rules.lede')}</p>
+      <ol class="scope-list">
+        <li>{t('scope.rules.vocabulary')}</li>
+        <li>{t('scope.rules.essays')}</li>
+        <li>
+          {t('scope.rules.share', {
+            minimum: percent(SCOPE_MIN_CORE_SHARE),
+            core: formatNumber(locale, scope.share.core),
+            total: formatNumber(locale, scope.share.total),
+            percent: percent(scope.share.value),
+          })}
+        </li>
+      </ol>
+    </section>
+
+    <section class="scope-section" aria-labelledby="scope-foundations-title">
+      <h2 id="scope-foundations-title" class="section-title">
+        {t('scope.foundations.title')}
+      </h2>
+      <p class="section-lede">{t('scope.foundations.lede')}</p>
+      <dl class="scope-foundations">
+        {FOUNDATION_DOMAINS.map((f) => (
+          <div class="scope-foundations__row">
+            <dt>{r(`domain.${f}`)}</dt>
+            <dd>
+              <span class="scope-foundations__verb ui">{t('scope.foundations.supports')}</span>
+              <ul class="scope-inline" role="list">
+                {SUPPORTS[f].map((d) => (
+                  <li>
+                    <a href={href({ kind: 'discipline', discipline: d }, locale)}>{r(`domain.${d}`)}</a>
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  </div>
+</BaseLayout>

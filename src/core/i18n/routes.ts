@@ -13,6 +13,7 @@
 import { err, ok, type Result } from '../algebra/result.ts';
 import { absurd } from '../algebra/match.ts';
 import { type Locale, localeCodec } from '../domain/locale.ts';
+import { CORE_DOMAINS, type CoreDomain } from '../domain/facets.ts';
 import { STRATA, type Stratum } from '../domain/strata.ts';
 import { parseSlug, type Slug } from '../domain/identifiers.ts';
 
@@ -29,6 +30,8 @@ export type Route =
   | { readonly kind: 'formulas' }
   | { readonly kind: 'formula'; readonly slug: Slug }
   | { readonly kind: 'glossary' }
+  | { readonly kind: 'scope' }
+  | { readonly kind: 'discipline'; readonly discipline: CoreDomain }
   | { readonly kind: 'about' }
   | { readonly kind: 'colophon' };
 
@@ -59,6 +62,7 @@ export const SEGMENTS = {
   concepts: { 'pt-BR': 'conceitos', en: 'concepts' },
   formulas: { 'pt-BR': 'formulas', en: 'formulas' },
   glossary: { 'pt-BR': 'glossario', en: 'glossary' },
+  scope: { 'pt-BR': 'escopo', en: 'scope' },
   about: { 'pt-BR': 'sobre', en: 'about' },
   colophon: { 'pt-BR': 'colofao', en: 'colophon' },
 } as const satisfies Record<string, Record<Locale, string>>;
@@ -69,6 +73,24 @@ export const STRATUM_SLUGS: Readonly<Record<Stratum, Readonly<Record<Locale, str
   theory: { 'pt-BR': 'teoria', en: 'theory' },
   formal: { 'pt-BR': 'formal', en: 'formal' },
   value: { 'pt-BR': 'valor', en: 'value' },
+};
+
+/**
+ * Localised slugs of the core disciplines, under the scope segment (ADR 0013):
+ * one page per discipline, the bridge restricted to it.
+ */
+export const DISCIPLINE_SLUGS: Readonly<Record<CoreDomain, Readonly<Record<Locale, string>>>> = {
+  'software-engineering': { 'pt-BR': 'engenharia-de-software', en: 'software-engineering' },
+  'software-architecture': { 'pt-BR': 'arquitetura-de-software', en: 'software-architecture' },
+  'systems-design': { 'pt-BR': 'design-de-sistemas', en: 'systems-design' },
+  'computer-science': { 'pt-BR': 'ciencia-da-computacao', en: 'computer-science' },
+  'systems-optimization': { 'pt-BR': 'otimizacao-de-sistemas', en: 'systems-optimization' },
+  'information-systems': { 'pt-BR': 'sistemas-de-informacao', en: 'information-systems' },
+  'information-technology': { 'pt-BR': 'tecnologia-da-informacao', en: 'information-technology' },
+  'data-engineering': { 'pt-BR': 'engenharia-de-dados', en: 'data-engineering' },
+  'information-theory': { 'pt-BR': 'teoria-da-informacao', en: 'information-theory' },
+  'signal-processing': { 'pt-BR': 'processamento-de-sinais', en: 'signal-processing' },
+  'applied-philosophy': { 'pt-BR': 'filosofia-aplicada', en: 'applied-philosophy' },
 };
 
 const join = (...parts: readonly string[]): string => `/${parts.filter((p) => p.length > 0).join('/')}/`;
@@ -100,6 +122,10 @@ export const encodeRoute = (route: Route, locale: Locale): string => {
       return join(l, SEGMENTS.formulas[locale], route.slug);
     case 'glossary':
       return join(l, SEGMENTS.glossary[locale]);
+    case 'scope':
+      return join(l, SEGMENTS.scope[locale]);
+    case 'discipline':
+      return join(l, SEGMENTS.scope[locale], DISCIPLINE_SLUGS[route.discipline][locale]);
     case 'about':
       return join(l, SEGMENTS.about[locale]);
     case 'colophon':
@@ -126,6 +152,9 @@ const stratumFromSlug = (slug: string, locale: Locale): Stratum | null =>
 
 const ontologyPageFromSlug = (slug: string, locale: Locale): OntologyPage | null =>
   ONTOLOGY_PAGES.find((p) => ONTOLOGY_PAGE_SLUGS[p][locale] === slug) ?? null;
+
+const disciplineFromSlug = (slug: string, locale: Locale): CoreDomain | null =>
+  CORE_DOMAINS.find((d) => DISCIPLINE_SLUGS[d][locale] === slug) ?? null;
 
 /** Inverse of encodeRoute. Accepts paths with or without the trailing slash. */
 export const decodeRoute = (path: string): Result<Located, string> => {
@@ -168,6 +197,13 @@ export const decodeRoute = (path: string): Result<Located, string> => {
       return page === null
         ? err(`unknown ontology page "${item}" for ${locale}`)
         : ok({ route: { kind: 'ontology-page', page }, locale });
+    }
+    case 'scope': {
+      if (item === undefined) return ok({ route: { kind: 'scope' }, locale });
+      const discipline = disciplineFromSlug(item, locale);
+      return discipline === null
+        ? err(`unknown discipline "${item}" for ${locale}`)
+        : ok({ route: { kind: 'discipline', discipline }, locale });
     }
     case 'glossary':
     case 'about':

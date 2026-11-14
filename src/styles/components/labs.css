@@ -568,3 +568,121 @@
     color: HighlightText;
   }
 }
+
+/* Flags and states: two representations of the same player, and the eight configurations of three flags.
+   On/off, the current state and a meaningless configuration differ in shape and wording, never in tone alone. */
+.flags {
+  display: grid;
+  gap: var(--space-0);
+  min-inline-size: 0;
+  container-type: inline-size;
+}
+.flags__events {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2);
+}
+.flags__event {
+  min-inline-size: 5.5em;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.lab__button:disabled {
+  color: var(--ink-muted);
+  cursor: not-allowed;
+  border-style: dashed;
+}
+.flags__models {
+  display: grid;
+  gap: var(--space-0);
+}
+@container (inline-size >= 30rem) {
+  .flags__models {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.flags__model {
+  padding: var(--space-n1);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+}
+.flags__lamps,
+.flags__states {
+  display: grid;
+  gap: var(--space-n3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.flags__lamp,
+.flags__state {
+  display: flex;
+  gap: var(--space-n2);
+  align-items: baseline;
+}
+.flags__mark {
+  inline-size: 1em;
+  flex: none;
+  font-family: var(--font-mono);
+}
+.flags__value {
+  margin-inline-start: auto;
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+}
+.flags__state[data-current] {
+  font-weight: 600;
+}
+.flags__verdict {
+  margin-block-start: var(--space-n1);
+  padding-block-start: var(--space-n2);
+  border-block-start: 1px solid var(--rule);
+  font-size: var(--step-n1);
+}
+.flags__verdict[data-alert] {
+  border-block-start: 2px dashed var(--ink);
+}
+.flags__label {
+  color: var(--ink-muted);
+}
+.flags__grid {
+  margin: 0;
+}
+.flags__cells {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-n2);
+  margin: 0 0 var(--space-n2);
+  padding: 0;
+  list-style: none;
+}
+.flags__cell {
+  display: grid;
+  gap: 0;
+  padding: var(--space-n2);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  font-size: var(--step-n2);
+  line-height: var(--leading-ui);
+}
+.flags__cell[data-meaningless] {
+  border-style: dashed;
+  color: var(--ink-muted);
+}
+.flags__cell[data-current] {
+  outline: 3px solid var(--ink);
+  outline-offset: -1px;
+  color: var(--ink);
+}
+.flags__bits {
+  font-size: var(--step-0);
+  font-weight: 600;
+}
+.flags__visits {
+  color: var(--ink-muted);
+}
+@media (forced-colors: active) {
+  .flags__cell[data-current] {
+    outline-color: Highlight;
+  }
+}

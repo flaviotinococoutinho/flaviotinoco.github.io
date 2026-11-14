@@ -7,12 +7,14 @@ translationKey: the-second-flag
 slug: a-segunda-flag
 stratum: formal
 bridgesTo: value
-domains: [computer-science, software-engineering, information-theory]
+domains: [computer-science, software-engineering, systems-design, information-theory]
 concepts: [state, finite-state-machine, statechart, redundancy, abstraction, information-hiding]
 published: 2026-11-10
 revisions:
   - date: 2026-11-10
     note: Versão inicial no site, reescrita a partir do artigo e da palestra apresentados pelo autor em 23 de novembro de 2025.
+  - date: 2026-11-14
+    note: Reclassificação de domínios segundo o modelo de escopo do site (ADR 0013); o texto não mudou.
 epistemic:
   confidence: probable
   evidence: argument

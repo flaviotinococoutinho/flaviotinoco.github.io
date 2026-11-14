@@ -24,7 +24,8 @@
   "domains": [
     "software-engineering",
     "methodology",
-    "information-systems"
+    "information-systems",
+    "software-architecture"
   ],
   "relations": [
     {

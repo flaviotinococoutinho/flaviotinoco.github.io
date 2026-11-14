@@ -2,12 +2,16 @@
 /**
  * Home page (one per locale).
  *
- *   hero      title + tagline over the four simplices in depth (<ft-depth-scene>)
- *             and the ambient field host (<ft-ambient-field>, labs workstream)
- *   bridge    the four strata as a path, each with its guiding question and
- *             method, linking to the stratum pages
+ *   hero      the claim of the site, what it covers, two ways in, the corpus in
+ *             numbers — and, beside it, a live instrument: the flags lab in its
+ *             compact form (<ft-lab-flags>), whose static picture after
+ *             play() and pause() is what a reader without JavaScript sees
+ *   scope     the five lines of inquiry with their core disciplines, generated
+ *             from the scope model (ADR 0013), each with its most recent work
  *   latest    the most recent essays of this locale (section omitted when empty)
- *   teasers   lab and ontology
+ *   bridge    the four strata as a path, under the simplices in depth
+ *             (<ft-depth-scene>), each with its guiding question and method
+ *   teasers   lab, ontology and formulas
  *
  * Everything is static HTML and reads completely without JavaScript and with
  * reduced motion; scroll only adds parallax and a gentle reveal (motion.css).
@@ -15,24 +19,29 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SimplexScene from '../../components/chrome/SimplexScene.astro';
 import StratumMark from '../../components/chrome/StratumMark.astro';
+import FlagsSnapshot from '../../components/labs/FlagsSnapshot.astro';
+import { siteFormulas } from '../../components/formulas/data.ts';
+import { siteScope } from '../../components/scope/data.ts';
 import common from '../../core/i18n/catalogs/common.ts';
 import chrome from '../../core/i18n/catalogs/chrome.ts';
 import reading from '../../core/i18n/catalogs/reading.ts';
+import scopeCatalog from '../../core/i18n/catalogs/scope.ts';
+import { plural } from '../../core/i18n/messages.ts';
+import { labElementModel } from '../../core/labs/embed.ts';
 import { asset, formatDate, href, localeStaticPaths, useTranslations } from '../../adapters/astro/i18n.ts';
 import {
   alternatesForAll,
   concepts,
   essays,
   labs,
-  routeOfConcept,
   routeOfEssay,
   routeOfLab,
   strata,
-  type Essay,
 } from '../../adapters/astro/content.ts';
 import { localeCodec, type Locale } from '../../core/domain/locale.ts';
 import { STRATA, STRATUM_SPECS } from '../../core/domain/strata.ts';
 import { FORM_GLYPH } from '../../core/domain/facets.ts';
+import { AXES, AXIS_OF, disciplinesOf, listing } from '../../core/domain/scope.ts';
 
 export const getStaticPaths = localeStaticPaths;
 
@@ -57,54 +66,42 @@ const bridge = STRATA.map((s) => {
   if (entry === undefined) throw new Error(`[home] missing src/content/strata entry for ${s} (${locale})`);
   return { stratum: s, spec: STRATUM_SPECS[s], data: entry.data };
 });
-const essayByKey = new Map<string, Essay>(latest.map((e) => [e.data.translationKey, e]));
-const conceptById = new Map(allConcepts.map((entry) => [entry.id, entry]));
+const sc = useTranslations(scopeCatalog, locale);
+const [scope, formulas] = await Promise.all([siteScope(locale), siteFormulas()]);
 
-const essayLink = (key: string): { readonly href: string; readonly label: string } => {
-  const entry = essayByKey.get(key);
-  if (entry === undefined) throw new Error(`[home] missing essay "${key}" (${locale})`);
-  return { href: href(routeOfEssay(entry), locale), label: entry.data.title };
-};
-const conceptLink = (id: string): { readonly href: string; readonly label: string } => {
-  const entry = conceptById.get(id);
-  if (entry === undefined) throw new Error(`[home] missing concept "${id}"`);
-  return { href: href(routeOfConcept(entry, locale), locale), label: entry.data.prefLabel[locale] };
-};
+/** Lines of inquiry: disciplines and the most recent work that declares one of them (none: the axis says so by omission). */
+const axes = AXES.map((axis) => ({
+  axis,
+  disciplines: disciplinesOf(axis),
+  latest: scope.works.find((w) => {
+    const l = listing(w.domains);
+    return l.role === 'direct' && l.disciplines.some((d) => AXIS_OF[d] === axis);
+  }),
+}));
 
-const axes = [
-  {
-    id: 'software',
-    glyph: 'axis-software',
-    title: c('home.axes.software.title'),
-    body: c('home.axes.software.body'),
-    essay: essayLink('changing-without-breaking'),
-    concept: conceptLink('information-hiding'),
-  },
-  {
-    id: 'optimization',
-    glyph: 'axis-optimization',
-    title: c('home.axes.optimization.title'),
-    body: c('home.axes.optimization.body'),
-    essay: essayLink('the-optimum-is-the-enemy-of-the-deadline'),
-    concept: conceptLink('combinatorial-optimization'),
-  },
-  {
-    id: 'systems',
-    glyph: 'axis-systems',
-    title: c('home.axes.systems.title'),
-    body: c('home.axes.systems.body'),
-    essay: essayLink('the-record-is-not-the-thing'),
-    concept: conceptLink('information-system'),
-  },
-  {
-    id: 'philosophy',
-    glyph: 'axis-philosophy',
-    title: c('home.axes.philosophy.title'),
-    body: c('home.axes.philosophy.body'),
-    essay: essayLink('from-sign-to-information'),
-    concept: conceptLink('sign'),
-  },
-] as const;
+/** The corpus in numbers, each a way in. */
+const count = (n: number, key: 'essays' | 'labs' | 'concepts' | 'formulas'): string =>
+  plural(locale, n, { one: c(`home.stats.${key}.one`), other: c(`home.stats.${key}.other`) });
+const stats = [
+  { text: count(latest.length, 'essays'), href: href({ kind: 'essays' }, locale) },
+  { text: count(allLabs.length, 'labs'), href: href({ kind: 'labs' }, locale) },
+  { text: count(allConcepts.length, 'concepts'), href: href({ kind: 'ontology' }, locale) },
+  { text: count(formulas.registry.formulas.length, 'formulas'), href: href({ kind: 'formulas' }, locale) },
+];
+
+/** The instrument of the hero: the flags lab, compact, with the essay it comes from. */
+const flagsLab = allLabs.find((l) => l.data.widget === 'flags');
+const flagsEssay = latest.find((e) => e.data.translationKey === 'the-second-flag');
+if (flagsLab === undefined || flagsEssay === undefined) {
+  throw new Error(`[home] the hero needs the lab "flags" and the essay "the-second-flag" (${locale})`);
+}
+const instrument = labElementModel('flags', locale, {
+  state: '',
+  link: { href: href(routeOfLab(flagsLab), locale), title: flagsLab.data.title },
+  title: c('home.hero.instrument'),
+});
+const Instrument = instrument.tag;
+const instrumentAttributes = { ...instrument.attributes, class: 'lab lab--hero' };
 
 const recent = latest.slice(0, LATEST);
 const labNames = allLabs.slice(0, LAB_NAMES);
@@ -128,65 +125,81 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
     ></ft-ambient-field>
     <div class="hero__text">
       <h1 id="home-title" class="hero__title">
-        {t('site.name')}
+        {c('home.hero.claim')}
       </h1>
-      <p class="hero__tagline">{t('site.tagline')}</p>
+      <p class="hero__lede">{c('home.hero.lede')}</p>
+      <p class="hero__actions ui">
+        <a class="hero__cta" href={href(routeOfEssay(flagsEssay), locale)}>
+          {c('home.hero.read')}
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+            <use href="#ui-arrow"></use>
+          </svg>
+        </a>
+        <a class="hero__more" href={href({ kind: 'scope' }, locale)}>
+          {c('home.hero.scope')}
+        </a>
+      </p>
+      <ul class="hero__stats ui" role="list" aria-label={c('home.stats.label')}>
+        {stats.map((s) => (
+          <li>
+            <a href={s.href}>{s.text}</a>
+          </li>
+        ))}
+      </ul>
     </div>
-    <SimplexScene locale={locale} />
+    <div class="hero__instrument margin" data-pagefind-ignore>
+      <p class="hero__instrument-title ui">{c('home.hero.instrument')}</p>
+      <p class="hero__instrument-lede ui">{c('home.hero.instrument.lede')}</p>
+      <Instrument {...instrumentAttributes}>
+        <div class="lab__fallback">
+          <FlagsSnapshot locale={locale} events={['play', 'pause']} />
+          <p class="lab__noscript">{instrument.noscript}</p>
+          {instrument.link !== null && (
+            <p class="lab__open">
+              <a href={instrument.link.href}>{instrument.link.text}</a>
+            </p>
+          )}
+        </div>
+      </Instrument>
+    </div>
   </section>
 
   <div class="page-grid">
-    <section class="home-section wide" aria-labelledby="bridge-title" data-pagefind-ignore>
-      <h2 id="bridge-title" class="section-title">
-        {c('home.bridge.title')}
-      </h2>
-      <p class="section-lede">{c('home.bridge.lede')}</p>
-      <ol class="bridge" role="list">
-        {bridge.map(({ stratum, spec, data }) => (
-          <li class="bridge__step" data-stratum={stratum} data-reveal>
-            <span class="bridge__node" aria-hidden="true">
-              <svg focusable="false" viewBox="0 0 24 24">
-                <use href={`#${spec.glyph}`} />
-              </svg>
-            </span>
-            <p class="bridge__step-label ui">{c('home.bridge.step', { n: spec.ordinal + 1, total: STRATA.length })}</p>
-            <h3 class="bridge__heading">
-              <a class="bridge__link" href={href({ kind: 'stratum', stratum }, locale)}>
-                <span class="bridge__title">{data.title}</span>
-              </a>
-            </h3>
-            <span class="bridge__simplex ui">{c(`simplex.${spec.simplex}`)}</span>
-            <dl class="bridge__facts">
-              <dt class="ui">{c('home.bridge.question')}</dt>
-              <dd class="bridge__question">{data.question}</dd>
-              <dt class="ui">{c('home.bridge.method')}</dt>
-              <dd>{data.method}</dd>
-            </dl>
-          </li>
-        ))}
-      </ol>
-    </section>
-
     <section class="home-section wide" aria-labelledby="axes-title" data-pagefind-ignore>
       <h2 id="axes-title" class="section-title">
         {c('home.axes.title')}
       </h2>
       <p class="section-lede">{c('home.axes.lede')}</p>
       <ul class="axes" role="list">
-        {axes.map((axis) => (
+        {axes.map(({ axis, disciplines, latest: work }) => (
           <li class="axis" data-reveal>
             <svg class="axis__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
-              <use href={`#${axis.glyph}`} />
+              <use href={`#axis-${axis}`} />
             </svg>
-            <h3 class="axis__title">{axis.title}</h3>
-            <p class="axis__body">{axis.body}</p>
-            <p class="axis__links ui">
-              <a href={axis.essay.href}>{axis.essay.label}</a>
-              <a href={axis.concept.href}>§ {axis.concept.label}</a>
-            </p>
+            <h3 class="axis__title">{sc(`axis.${axis}.title`)}</h3>
+            <p class="axis__body">{sc(`axis.${axis}.body`)}</p>
+            <ul class="axis__disciplines ui" role="list">
+              {disciplines.map((d) => (
+                <li>
+                  <a href={href({ kind: 'discipline', discipline: d }, locale)}>{r(`domain.${d}`)}</a>
+                </li>
+              ))}
+            </ul>
+            {work !== undefined && (
+              <p class="axis__links ui">
+                <span class="axis__latest">{c('home.axes.latest')}</span>
+                <a href={work.href}>{work.title}</a>
+              </p>
+            )}
           </li>
         ))}
       </ul>
+      <a class="more-link" href={href({ kind: 'scope' }, locale)}>
+        {c('home.axes.link')}
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+          <use href="#ui-arrow" />
+        </svg>
+      </a>
     </section>
 
     {recent.length > 0 && (
@@ -224,6 +237,40 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
         </a>
       </section>
     )}
+
+    <section class="home-section wide" aria-labelledby="bridge-title" data-pagefind-ignore>
+      <h2 id="bridge-title" class="section-title">
+        {c('home.bridge.title')}
+      </h2>
+      <p class="section-lede">{c('home.bridge.lede')}</p>
+      <div class="bridge__scene">
+        <SimplexScene locale={locale} />
+      </div>
+      <ol class="bridge" role="list">
+        {bridge.map(({ stratum, spec, data }) => (
+          <li class="bridge__step" data-stratum={stratum} data-reveal>
+            <span class="bridge__node" aria-hidden="true">
+              <svg focusable="false" viewBox="0 0 24 24">
+                <use href={`#${spec.glyph}`} />
+              </svg>
+            </span>
+            <p class="bridge__step-label ui">{c('home.bridge.step', { n: spec.ordinal + 1, total: STRATA.length })}</p>
+            <h3 class="bridge__heading">
+              <a class="bridge__link" href={href({ kind: 'stratum', stratum }, locale)}>
+                <span class="bridge__title">{data.title}</span>
+              </a>
+            </h3>
+            <span class="bridge__simplex ui">{c(`simplex.${spec.simplex}`)}</span>
+            <dl class="bridge__facts">
+              <dt class="ui">{c('home.bridge.question')}</dt>
+              <dd class="bridge__question">{data.question}</dd>
+              <dt class="ui">{c('home.bridge.method')}</dt>
+              <dd>{data.method}</dd>
+            </dl>
+          </li>
+        ))}
+      </ol>
+    </section>
 
     <div class="home-section teasers wide" data-pagefind-ignore>
       <section class="teaser" aria-labelledby="labs-title" data-reveal>

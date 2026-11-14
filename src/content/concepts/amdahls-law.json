@@ -24,7 +24,8 @@
   "category": "proposition",
   "domains": [
     "computer-science",
-    "software-engineering"
+    "software-engineering",
+    "systems-optimization"
   ],
   "relations": [
     {

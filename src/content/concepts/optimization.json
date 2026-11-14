@@ -25,7 +25,8 @@
   "category": "process",
   "domains": [
     "mathematics",
-    "computer-science"
+    "computer-science",
+    "systems-optimization"
   ],
   "relations": [
     {

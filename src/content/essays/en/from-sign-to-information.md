@@ -7,12 +7,14 @@ translationKey: from-sign-to-information
 slug: from-sign-to-information
 stratum: philosophy
 bridgesTo: theory
-domains: [semiotics, information-theory, epistemology]
+domains: [semiotics, information-theory, applied-philosophy, epistemology]
 concepts: [sign, symbol, meaning, sense-and-reference, information, entropy, redundancy, channel, model]
 published: 2026-10-11
 revisions:
   - date: 2026-10-11
     note: First version (seed text).
+  - date: 2026-11-14
+    note: Domains reclassified under the site's scope model (ADR 0013); the text did not change.
 epistemic:
   confidence: probable
   evidence: argument

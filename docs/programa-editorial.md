@@ -18,6 +18,12 @@ muda o que mais se põe sobre ela. A filosofia entra como filosofia aplicada (di
 informação, estado, modelo ou abstração antes de medir ou programar) e a teoria da informação é a medida comum
 entre os estratos. Os textos de semiótica, sinais e dinâmica continuam no site como fundamentos.
 
+Em 14/11/2026 o escopo deixou de ser só uma declaração. São onze disciplinas do núcleo, em cinco frentes, e
+onze fundamentos; cada fundamento declara de que disciplina é fundamento. Um ensaio sem disciplina do núcleo
+não compila, e a cobertura de cada disciplina em cada estrato é calculada do acervo e publicada na página de
+escopo do site (`/pt/escopo/`, `/en/scope/`; [ADR 0013](adr/0013-escopo-do-site.md)). A tabela do §2 diz o
+que se pretende cobrir; a página de escopo diz o que está coberto.
+
 ## 2. As disciplinas e onde cada uma entra
 
 A ponte não é uma sequência de disciplinas; cada disciplina tem partes em mais de um estrato. O que muda de um
@@ -42,14 +48,14 @@ suficiente e precisa justificar onde parou. As três últimas linhas (sistemas d
 e pilhas de tecnologia) entram com o foco de 10/11/2026; suas células dizem o que se pretende cobrir, não o que
 já está escrito (§3).
 
-## 3. Cobertura atual (13/11/2026)
+## 3. Cobertura atual (14/11/2026)
 
-| Forma        | Quantidade                                                             | Estratos                                                                                                |
-| ------------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Ensaios      | 7 por língua                                                           | filosofia → teoria (dois); teoria → formal (dois); formal → valor (dois); valor (um)                    |
-| Laboratórios | 6 por língua                                                           | formal (Fourier e Gibbs, amostragem, entropia e Huffman, canal ruidoso, mapa logístico, limite central) |
-| Conceitos    | 67                                                                     | 46 de partida, 7 conceitos-ponte (21/10), 3 sobre estado (10/11) e 11 de SI, arquitetura e otimização   |
-| Fórmulas     | 43                                                                     | com versão em palavras (ADR 0011)                                                                       |
+| Forma        | Quantidade                                                             | Estratos                                                                                                                 |
+| ------------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Ensaios      | 7 por língua                                                           | filosofia → teoria (dois); teoria → formal (dois); formal → valor (dois); valor (um)                                     |
+| Laboratórios | 7 por língua                                                           | formal (Fourier e Gibbs, amostragem, entropia e Huffman, canal ruidoso, mapa logístico, limite central, flags e estados) |
+| Conceitos    | 67                                                                     | 46 de partida, 7 conceitos-ponte (21/10), 3 sobre estado (10/11) e 11 de SI, arquitetura e otimização                    |
+| Fórmulas     | 43                                                                     | com versão em palavras (ADR 0011)                                                                                        |
 | Páginas      | sobre, colofão, quatro estratos, ontologia (quatro páginas), glossário |
 
 Todos os quatro estratos têm agora ensaios publicados. Sistemas de informação (sistema de informação, registro,
@@ -84,7 +90,10 @@ primárias verificadas e identificador no Wikidata:
 | Motor e conteúdo das resenhas (registro imparcial e leitura)                           | #17, #18 | todos             |
 | Complementos de leitura; CLI do site                                                   | #19, #20 | —                 |
 | Estado em produção: guardas e ações (Mealy e Moore), persistência, concorrência, sagas | a abrir  | formal → valor    |
-| Laboratório "flags e estados": contar configurações e percorrer a tabela de transições | a abrir  | formal            |
+
+O laboratório "flags e estados" entrou em 14/11/2026: envia eventos ao reprodutor do ensaio "A segunda flag"
+em duas representações e mede a redundância do histórico. Pelas regras do escopo, as disciplinas ainda sem
+obra publicada nessa data são tecnologia da informação e engenharia de dados e ETL.
 
 Ensaios previstos que usam os conceitos-ponte: "Escolher custa bits" ganha a leitura pela otimização
 combinatória (o menu como código de prefixo ótimo); "Essência e acidente" (#16) usa abstração e ocultação de

@@ -24,7 +24,8 @@
   "category": "method",
   "domains": [
     "behavior",
-    "product"
+    "product",
+    "systems-optimization"
   ],
   "broader": [
     "heuristic"
