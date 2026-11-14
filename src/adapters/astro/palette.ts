@@ -1,22 +1,28 @@
 /**
  * Shell: the quick-navigation entries of the command palette for one locale —
  * every entry that is the same on every page of that locale (home, sections,
- * strata, formulas, about, colophon). They are served as /<lang>/palette.json (ADR 0009)
+ * strata, scope and disciplines, formulas, about, colophon). They are served as /<lang>/palette.json (ADR 0009)
  * and fetched by <ft-command-palette> when the dialog opens; the entry for
  * this page in the other language is page-specific and stays in the HTML
  * (CommandPalette.astro).
  */
 import type { PaletteEntry } from '../../core/chrome/palette-entries.ts';
+import { CORE_DOMAINS } from '../../core/domain/facets.ts';
 import type { Locale } from '../../core/domain/locale.ts';
+import { AXIS_OF } from '../../core/domain/scope.ts';
 import { STRATA, STRATUM_SPECS } from '../../core/domain/strata.ts';
 import chrome from '../../core/i18n/catalogs/chrome.ts';
 import common from '../../core/i18n/catalogs/common.ts';
+import reading from '../../core/i18n/catalogs/reading.ts';
+import scopeCatalog from '../../core/i18n/catalogs/scope.ts';
 import { href, useTranslations } from './i18n.ts';
 import type { FormulaRegistry } from '../../core/formulas/index.ts';
 
 export const paletteEntries = (locale: Locale, formulas: FormulaRegistry): readonly PaletteEntry[] => {
   const t = useTranslations(common, locale);
   const c = useTranslations(chrome, locale);
+  const r = useTranslations(reading, locale);
+  const sc = useTranslations(scopeCatalog, locale);
   const page = c('palette.kind.page');
   const section = c('palette.kind.section');
   const entry = (e: Omit<PaletteEntry, 'stratum' | 'hreflang'> & Partial<PaletteEntry>): PaletteEntry => ({
@@ -68,6 +74,22 @@ export const paletteEntries = (locale: Locale, formulas: FormulaRegistry): reado
         keywords: `${t('strata.label')} ${c(`simplex.${STRATUM_SPECS[s].simplex}`)}`,
         glyph: STRATUM_SPECS[s].glyph,
         stratum: s,
+      }),
+    ),
+    entry({
+      label: t('nav.scope'),
+      href: href({ kind: 'scope' }, locale),
+      kind: section,
+      keywords: sc('scope.matrix.title'),
+      glyph: 'form-map',
+    }),
+    ...CORE_DOMAINS.map((d) =>
+      entry({
+        label: r(`domain.${d}`),
+        href: href({ kind: 'discipline', discipline: d }, locale),
+        kind: sc('discipline.kind'),
+        keywords: `${t('nav.scope')} ${sc(`axis.${AXIS_OF[d]}.title`)}`,
+        glyph: `axis-${AXIS_OF[d]}`,
       }),
     ),
     entry({

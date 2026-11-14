@@ -1,0 +1,95 @@
+---
+/**
+ * Coverage matrix of the scope: core disciplines (rows, grouped by line of
+ * inquiry) × strata (columns). Each cell states how many works and concepts
+ * declare the discipline on that stratum, in text; a dash with a hidden label
+ * marks a gap. Computed from the corpus (src/components/scope/data.ts), so the
+ * table cannot claim what the site does not hold. A real data table: scoped
+ * headers, a caption, and a focusable scroll region for narrow screens.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import { AXES, disciplinesOf, rowTotal } from '../../core/domain/scope.ts';
+import { STRATA } from '../../core/domain/strata.ts';
+import reading from '../../core/i18n/catalogs/reading.ts';
+import scopeCatalog from '../../core/i18n/catalogs/scope.ts';
+import { plural } from '../../core/i18n/messages.ts';
+import { href, useTranslations } from '../../adapters/astro/i18n.ts';
+import StratumMark from '../chrome/StratumMark.astro';
+import { siteScope } from './data.ts';
+
+export interface Props {
+  readonly locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(scopeCatalog, locale);
+const r = useTranslations(reading, locale);
+const scope = await siteScope(locale);
+
+const works = (n: number): string => plural(locale, n, { one: t('scope.works.one'), other: t('scope.works.other') });
+const conceptsText = (n: number): string =>
+  plural(locale, n, { one: t('scope.concepts.one'), other: t('scope.concepts.other') });
+---
+
+<div class="scope-matrix" role="region" aria-labelledby="scope-matrix-caption" tabindex="0">
+  <table>
+    <caption id="scope-matrix-caption" class="ui">
+      {t('scope.matrix.caption')}
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col" class="ui scope-matrix__corner">
+          {t('scope.matrix.discipline')}
+        </th>
+        {STRATA.map((s) => (
+          <th scope="col" class="ui">
+            <StratumMark stratum={s} locale={locale} size="s" />
+          </th>
+        ))}
+      </tr>
+    </thead>
+    {AXES.map((axis) => (
+      <tbody>
+        <tr class="scope-matrix__axis">
+          <th scope="colgroup" colspan={STRATA.length + 1} class="ui">
+            <svg class="scope-matrix__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+              <use href={`#axis-${axis}`} />
+            </svg>
+            {t(`axis.${axis}.title`)}
+          </th>
+        </tr>
+        {disciplinesOf(axis).map((d) => {
+          const row = scope.workCoverage[d];
+          const planned = rowTotal(row).direct === 0;
+          return (
+            <tr>
+              <th scope="row" class="ui">
+                <a href={href({ kind: 'discipline', discipline: d }, locale)}>{r(`domain.${d}`)}</a>
+                {planned && <span class="scope-matrix__planned">{t('scope.planned')}</span>}
+              </th>
+              {STRATA.map((s) => {
+                const w = row[s].direct;
+                const k = scope.conceptCoverage[d][s].direct;
+                return (
+                  <td data-stratum={s} data-empty={w === 0 && k === 0 ? '' : undefined}>
+                    {w === 0 && k === 0 ? (
+                      <>
+                        <span aria-hidden="true">—</span>
+                        <span class="visually-hidden">{t('scope.gap')}</span>
+                      </>
+                    ) : (
+                      <>
+                        {w > 0 && <span class="scope-matrix__works">{works(w)}</span>}
+                        {k > 0 && <span class="scope-matrix__concepts">{conceptsText(k)}</span>}
+                      </>
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          );
+        })}
+      </tbody>
+    ))}
+  </table>
+</div>

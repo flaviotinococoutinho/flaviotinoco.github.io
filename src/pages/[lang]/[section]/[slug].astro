@@ -1,8 +1,9 @@
 ---
 /**
- * Dispatcher for parameterised routes (essay, lab, concept, formula, stratum, ontology page).
+ * Dispatcher for parameterised routes (essay, lab, concept, formula, stratum, ontology page, discipline).
  * Every path is produced by encodeRoute(), the inverse of decodeRoute().
  */
+import { CORE_DOMAINS, type CoreDomain } from '../../../core/domain/facets.ts';
 import { LOCALES, type Locale } from '../../../core/domain/locale.ts';
 import { STRATA } from '../../../core/domain/strata.ts';
 import { ONTOLOGY_PAGES, encodeRoute, type OntologyPage, type Route } from '../../../core/i18n/routes.ts';
@@ -14,6 +15,7 @@ import ConceptView from '../../../views/ConceptView.astro';
 import FormulaView from '../../../views/FormulaView.astro';
 import OntologyPageView from '../../../views/OntologyPageView.astro';
 import StratumView from '../../../views/StratumView.astro';
+import DisciplineView from '../../../views/DisciplineView.astro';
 
 type Target =
   | { readonly kind: 'essay'; readonly id: string }
@@ -21,7 +23,8 @@ type Target =
   | { readonly kind: 'concept'; readonly id: string }
   | { readonly kind: 'formula'; readonly id: string }
   | { readonly kind: 'stratum'; readonly stratum: (typeof STRATA)[number] }
-  | { readonly kind: 'ontology-page'; readonly page: OntologyPage };
+  | { readonly kind: 'ontology-page'; readonly page: OntologyPage }
+  | { readonly kind: 'discipline'; readonly discipline: CoreDomain };
 
 export async function getStaticPaths() {
   const path = (route: Route, locale: Locale, target: Target) => {
@@ -39,6 +42,9 @@ export async function getStaticPaths() {
       ),
       ...STRATA.map((stratum) => path({ kind: 'stratum', stratum }, locale, { kind: 'stratum', stratum })),
       ...ONTOLOGY_PAGES.map((page) => path({ kind: 'ontology-page', page }, locale, { kind: 'ontology-page', page })),
+      ...CORE_DOMAINS.map((discipline) =>
+        path({ kind: 'discipline', discipline }, locale, { kind: 'discipline', discipline }),
+      ),
     ]),
   ];
 }
@@ -52,3 +58,4 @@ const { locale, target } = Astro.props;
 {target.kind === 'formula' && <FormulaView locale={locale} id={target.id} />}
 {target.kind === 'stratum' && <StratumView locale={locale} stratum={target.stratum} />}
 {target.kind === 'ontology-page' && <OntologyPageView locale={locale} page={target.page} />}
+{target.kind === 'discipline' && <DisciplineView locale={locale} discipline={target.discipline} />}

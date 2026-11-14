@@ -1,6 +1,6 @@
 ---
 /**
- * Dispatcher for single-segment routes (/pt/ensaios/, /en/lab/, /pt/formulas/, …).
+ * Dispatcher for single-segment routes (/pt/ensaios/, /en/lab/, /pt/formulas/, /pt/escopo/, …).
  * Paths are generated from the core route codec, so URL and type can never
  * disagree; the matching view renders the page.
  */
@@ -12,10 +12,11 @@ import OntologyView from '../../../views/OntologyView.astro';
 import GlossaryView from '../../../components/ontology/GlossaryView.astro';
 import FormulasIndexView from '../../../views/FormulasIndexView.astro';
 import PageView from '../../../views/PageView.astro';
+import ScopeView from '../../../views/ScopeView.astro';
 
 type IndexRoute = Extract<
   Route,
-  { kind: 'essays' | 'labs' | 'ontology' | 'formulas' | 'glossary' | 'about' | 'colophon' }
+  { kind: 'essays' | 'labs' | 'ontology' | 'formulas' | 'glossary' | 'scope' | 'about' | 'colophon' }
 >;
 
 export function getStaticPaths() {
@@ -26,6 +27,7 @@ export function getStaticPaths() {
     'ontology',
     'formulas',
     'glossary',
+    'scope',
     'about',
     'colophon',
   ];
@@ -45,4 +47,5 @@ const { locale, route } = Astro.props;
 {route.kind === 'ontology' && <OntologyView locale={locale} />}
 {route.kind === 'formulas' && <FormulasIndexView locale={locale} />}
 {route.kind === 'glossary' && <GlossaryView locale={locale} />}
+{route.kind === 'scope' && <ScopeView locale={locale} />}
 {(route.kind === 'about' || route.kind === 'colophon') && <PageView locale={locale} pageKey={route.kind} />}

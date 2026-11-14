@@ -17,3 +17,4 @@
 @import './components/abnt.css' layer(components);
 @import './components/ontology.css' layer(components);
 @import './components/labs.css' layer(components);
+@import './components/scope.css' layer(components);

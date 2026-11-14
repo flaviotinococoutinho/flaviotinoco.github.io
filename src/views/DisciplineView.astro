@@ -1,0 +1,181 @@
+---
+/**
+ * Discipline page (route kind "discipline", ADR 0013): the bridge restricted to
+ * one core discipline.
+ *
+ *   header       line of inquiry, name, what belongs and what is left out
+ *   bridge       the four strata in order; on each, the works and the concepts
+ *                that declare the discipline — or the plain statement that there
+ *                is nothing there yet (a gap is a fact of the corpus, shown as one)
+ *   foundations  the supporting fields the discipline depends on and the
+ *                foundation-only works listed under it
+ *   others       the remaining disciplines and the way back to the whole scope
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StratumMark from '../components/chrome/StratumMark.astro';
+import { siteScope } from '../components/scope/data.ts';
+import { CORE_DOMAINS, type CoreDomain } from '../core/domain/facets.ts';
+import type { Locale } from '../core/domain/locale.ts';
+import { AXIS_OF, foundationsOf } from '../core/domain/scope.ts';
+import { STRATA } from '../core/domain/strata.ts';
+import common from '../core/i18n/catalogs/common.ts';
+import reading from '../core/i18n/catalogs/reading.ts';
+import scopeCatalog from '../core/i18n/catalogs/scope.ts';
+import { alternatesForAll } from '../adapters/astro/content.ts';
+import { href, useTranslations } from '../adapters/astro/i18n.ts';
+
+export interface Props {
+  readonly locale: Locale;
+  readonly discipline: CoreDomain;
+}
+
+const { locale, discipline } = Astro.props;
+const t = useTranslations(scopeCatalog, locale);
+const r = useTranslations(reading, locale);
+const c = useTranslations(common, locale);
+const scope = await siteScope(locale);
+
+const name = r(`domain.${discipline}`);
+const axis = AXIS_OF[discipline];
+const works = scope.worksOf(discipline);
+const concepts = scope.conceptsOf(discipline);
+const supporting = scope.supportingWorksOf(discipline);
+const foundations = foundationsOf(discipline);
+const others = CORE_DOMAINS.filter((d) => d !== discipline);
+const steps = STRATA.map((stratum) => ({
+  stratum,
+  works: works.filter((w) => w.stratum === stratum),
+  concepts: concepts.filter((k) => k.stratum === stratum),
+}));
+---
+
+<BaseLayout
+  locale={locale}
+  title={name}
+  description={t('discipline.description', { name })}
+  alternates={alternatesForAll(() => ({ kind: 'discipline', discipline }))}
+>
+  <div class="page-grid discipline-page">
+    <header class="discipline-page__header">
+      <p class="discipline-page__crumbs ui">
+        <a href={href({ kind: 'scope' }, locale)}>{t('scope.title')}</a>
+        <span aria-hidden="true">›</span>
+        <span class="discipline-page__axis">
+          <svg class="discipline-page__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+            <use href={`#axis-${axis}`}></use>
+          </svg>
+          <span class="visually-hidden">{t('axis.label')}:</span>
+          {t(`axis.${axis}.title`)}
+        </span>
+      </p>
+      <h1 class="discipline-page__title">{name}</h1>
+      <dl class="discipline-page__scope">
+        <div>
+          <dt class="ui">{t('discipline.in')}</dt>
+          <dd>{t(`discipline.${discipline}.lede`)}</dd>
+        </div>
+        <div>
+          <dt class="ui">{t('discipline.out')}</dt>
+          <dd>{t(`discipline.${discipline}.out`)}</dd>
+        </div>
+      </dl>
+    </header>
+
+    <section class="scope-section wide" aria-labelledby="discipline-bridge-title">
+      <h2 id="discipline-bridge-title" class="section-title">
+        {t('discipline.bridge.title')}
+      </h2>
+      <p class="section-lede">{t('discipline.bridge.lede')}</p>
+      <ol class="discipline-bridge" role="list">
+        {steps.map((step) => (
+          <li class="discipline-bridge__step" data-stratum={step.stratum}>
+            <h3 class="discipline-bridge__stratum">
+              <a href={href({ kind: 'stratum', stratum: step.stratum }, locale)}>
+                <StratumMark stratum={step.stratum} locale={locale} />
+              </a>
+            </h3>
+            {step.works.length === 0 && step.concepts.length === 0 && (
+              <p class="discipline-bridge__empty">{t('discipline.empty')}</p>
+            )}
+            {step.works.length > 0 && (
+              <ul class="discipline-bridge__works" role="list">
+                {step.works.map((w) => (
+                  <li>
+                    <a class="discipline-bridge__work" href={w.href}>
+                      {w.title}
+                    </a>
+                    <span class="discipline-bridge__form ui">{c(`form.${w.form}`)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {step.concepts.length > 0 && (
+              <>
+                <p class="discipline-bridge__label ui">{t('discipline.concepts')}</p>
+                <ul class="scope-inline" role="list">
+                  {step.concepts.map((k) => (
+                    <li>
+                      <a href={k.href}>{k.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="scope-section" aria-labelledby="discipline-foundations-title">
+      <h2 id="discipline-foundations-title" class="section-title">
+        {t('discipline.foundations.title')}
+      </h2>
+      <p class="section-lede">{t('discipline.foundations.lede')}</p>
+      {foundations.length === 0 ? (
+        <p>{t('discipline.foundations.none')}</p>
+      ) : (
+        <ul class="scope-inline scope-inline--plain" role="list">
+          {foundations.map((f) => (
+            <li>{r(`domain.${f}`)}</li>
+          ))}
+        </ul>
+      )}
+      {supporting.length > 0 && (
+        <>
+          <h3 class="discipline-page__subtitle">{t('discipline.foundations.works')}</h3>
+          <ul class="discipline-bridge__works" role="list">
+            {supporting.map((w) => (
+              <li>
+                <a class="discipline-bridge__work" href={w.href}>
+                  {w.title}
+                </a>
+                <span class="discipline-bridge__form ui">{c(`form.${w.form}`)}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </section>
+
+    <nav class="scope-section wide" aria-labelledby="discipline-others-title">
+      <h2 id="discipline-others-title" class="section-title">
+        {t('discipline.others')}
+      </h2>
+      <ul class="discipline-page__others" role="list">
+        {others.map((d) => (
+          <li>
+            <a href={href({ kind: 'discipline', discipline: d }, locale)}>{r(`domain.${d}`)}</a>
+          </li>
+        ))}
+      </ul>
+      <p>
+        <a class="more-link" href={href({ kind: 'scope' }, locale)}>
+          {t('discipline.all')}
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+            <use href="#ui-arrow"></use>
+          </svg>
+        </a>
+      </p>
+    </nav>
+  </div>
+</BaseLayout>

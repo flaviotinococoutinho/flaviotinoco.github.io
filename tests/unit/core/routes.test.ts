@@ -1,7 +1,14 @@
 import { describe, expect } from 'vitest';
 import { test, fc } from '@fast-check/vitest';
-import { ONTOLOGY_PAGES, decodeRoute, encodeRoute, type Route } from '../../../src/core/i18n/routes.ts';
+import {
+  DISCIPLINE_SLUGS,
+  ONTOLOGY_PAGES,
+  decodeRoute,
+  encodeRoute,
+  type Route,
+} from '../../../src/core/i18n/routes.ts';
 import { LOCALES, localeCodec, negotiate } from '../../../src/core/domain/locale.ts';
+import { CORE_DOMAINS } from '../../../src/core/domain/facets.ts';
 import { STRATA } from '../../../src/core/domain/strata.ts';
 import { parseSlug } from '../../../src/core/domain/identifiers.ts';
 
@@ -21,6 +28,7 @@ const routeArb: fc.Arbitrary<Route> = fc.oneof(
   fc.constant<Route>({ kind: 'ontology' }),
   fc.constant<Route>({ kind: 'formulas' }),
   fc.constant<Route>({ kind: 'glossary' }),
+  fc.constant<Route>({ kind: 'scope' }),
   fc.constant<Route>({ kind: 'about' }),
   fc.constant<Route>({ kind: 'colophon' }),
   slugArb.map((slug): Route => ({ kind: 'essay', slug })),
@@ -29,6 +37,7 @@ const routeArb: fc.Arbitrary<Route> = fc.oneof(
   slugArb.map((slug): Route => ({ kind: 'formula', slug })),
   fc.constantFrom(...STRATA).map((stratum): Route => ({ kind: 'stratum', stratum })),
   fc.constantFrom(...ONTOLOGY_PAGES).map((page): Route => ({ kind: 'ontology-page', page })),
+  fc.constantFrom(...CORE_DOMAINS).map((discipline): Route => ({ kind: 'discipline', discipline })),
 );
 
 describe('route codec', () => {
@@ -62,6 +71,20 @@ describe('route codec', () => {
       ok: true,
       value: { route: { kind: 'ontology-page', page: 'structure' }, locale: 'pt-BR' },
     });
+    expect(decodeRoute('/pt/escopo/software-engineering/').ok).toBe(false); // English discipline slug under pt
+    expect(decodeRoute('/en/scope/matematica/').ok).toBe(false); // a foundation has no scope page
+    expect(decodeRoute('/pt/escopo/engenharia-de-dados/')).toEqual({
+      ok: true,
+      value: { route: { kind: 'discipline', discipline: 'data-engineering' }, locale: 'pt-BR' },
+    });
+  });
+
+  test('discipline slugs are unique per locale and well-formed', () => {
+    for (const locale of LOCALES) {
+      const slugs = CORE_DOMAINS.map((d) => DISCIPLINE_SLUGS[d][locale]);
+      expect(new Set(slugs).size).toBe(CORE_DOMAINS.length);
+      for (const slug of slugs) expect(parseSlug(slug).ok).toBe(true);
+    }
   });
 });
 
