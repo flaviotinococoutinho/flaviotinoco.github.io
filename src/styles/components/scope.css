@@ -71,6 +71,9 @@
 
 /* Coverage matrix. */
 .scope-matrix {
+  /* Containing block of the visually hidden labels in the cells: absolutely positioned boxes are clipped
+     by a scroll container only when it is their containing block; otherwise they widen the page. */
+  position: relative;
   margin-block-start: var(--space-1);
   overflow-x: auto;
 }
@@ -180,6 +183,14 @@ ol.scope-list {
 }
 .scope-inline > li {
   display: inline;
+}
+/* Links in a list are targets of their own (WCAG 2.2 SC 2.5.8): at least 24 px tall, on lines that fit them. */
+.scope-inline {
+  line-height: 1.75rem;
+}
+.scope-inline > li > a {
+  display: inline-block;
+  min-block-size: 1.5rem;
 }
 .scope-inline > li + li::before {
   content: ' · ';
@@ -293,5 +304,4 @@ ol.scope-list {
 }
 .discipline-bridge .scope-inline {
   font-size: var(--step-n1);
-  line-height: var(--leading-ui);
 }
