@@ -42,8 +42,10 @@ describe('bands', () => {
     const band = bandForRect({ top, height }, lh, vh);
     expect(band.top).toBeGreaterThanOrEqual(0);
     expect(band.top + band.height).toBeLessThanOrEqual(Math.max(vh, band.height));
+    // The band's top is canonical: never −0 (Object.is would tell −0 from +0; a pixel offset should not).
+    expect(Object.is(band.top, -0)).toBe(false);
     if (top >= 0 && top + Math.max(height, lh, MIN_BAND) <= vh) {
-      expect(band.top).toBe(top);
+      expect(band.top).toBe(top + 0);
       expect(band.height).toBe(Math.max(height, lh, MIN_BAND));
     }
   });
