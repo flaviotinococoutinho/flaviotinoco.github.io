@@ -1,0 +1,43 @@
+{
+  "slug": {
+    "pt-BR": "linhagem-de-dados",
+    "en": "data-lineage"
+  },
+  "prefLabel": {
+    "pt-BR": "Linhagem de dados",
+    "en": "Data lineage"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "proveniência de dados"
+    ],
+    "en": [
+      "data provenance"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Registro de onde um dado veio e do processo pelo qual chegou aonde está: de que dados de origem depende e de que lugar da fonte foi copiado.",
+    "en": "The record of where a piece of data came from and of the process by which it arrived where it is: which source data it depends on and from which place in the source it was copied."
+  },
+  "stratum": "value",
+  "category": "artifact",
+  "domains": [
+    "data-engineering",
+    "information-systems"
+  ],
+  "broader": [
+    "record"
+  ],
+  "relations": [
+    {
+      "type": "related",
+      "target": "etl"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q1172162"
+  ],
+  "sources": [
+    "buneman2001"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "slug": {
+    "pt-BR": "etl",
+    "en": "etl"
+  },
+  "prefLabel": {
+    "pt-BR": "ETL",
+    "en": "ETL"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "extrair, transformar e carregar",
+      "extração, transformação e carga"
+    ],
+    "en": [
+      "extract, transform, load"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Processo que copia dados de uma ou mais fontes, transforma-os para outro uso e os grava num destino que os representa de outro modo.",
+    "en": "The process that copies data from one or more sources, transforms them for another use and writes them to a destination that represents them differently."
+  },
+  "stratum": "value",
+  "category": "process",
+  "domains": [
+    "data-engineering",
+    "information-systems"
+  ],
+  "relations": [
+    {
+      "type": "partOf",
+      "target": "information-system"
+    },
+    {
+      "type": "dependsOn",
+      "target": "record"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q1276130"
+  ],
+  "sources": [
+    "kimball2004"
+  ]
+}

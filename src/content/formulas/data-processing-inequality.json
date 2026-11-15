@@ -1,0 +1,66 @@
+{
+  "slug": {
+    "pt-BR": "desigualdade-do-processamento-de-dados",
+    "en": "data-processing-inequality"
+  },
+  "name": {
+    "pt-BR": "Desigualdade do processamento de dados",
+    "en": "Data processing inequality"
+  },
+  "tex": "\\I(X; Z) \\leq \\I(X; Y)",
+  "labels": {
+    "pt-BR": [
+      "eq:processamento-de-dados"
+    ],
+    "en": [
+      "eq:data-processing"
+    ]
+  },
+  "concept": "data-processing-inequality",
+  "meaning": {
+    "pt-BR": "Numa cadeia de Markov em que Z é obtido de Y, e Y de X, o que Z informa sobre X nunca supera o que Y informava. Processar dados pode conservar ou perder informação sobre a fonte, nunca criar. A igualdade vale quando o processamento não descartou nada do que Y dizia sobre X.",
+    "en": "In a Markov chain in which Z is obtained from Y, and Y from X, what Z tells about X never exceeds what Y told. Processing data can keep or lose information about the source, never create it. Equality holds when the processing discarded nothing of what Y said about X."
+  },
+  "spoken": {
+    "pt-BR": "A informação mútua entre X e Z é menor ou igual à informação mútua entre X e Y.",
+    "en": "The mutual information between X and Z is less than or equal to the mutual information between X and Y."
+  },
+  "symbols": [
+    {
+      "tex": "X",
+      "text": {
+        "pt-BR": "a fonte",
+        "en": "the source"
+      }
+    },
+    {
+      "tex": "Y",
+      "text": {
+        "pt-BR": "o que foi obtido da fonte",
+        "en": "what was obtained from the source"
+      }
+    },
+    {
+      "tex": "Z",
+      "text": {
+        "pt-BR": "o resultado de processar Y",
+        "en": "the result of processing Y"
+      }
+    },
+    {
+      "tex": "\\I(X; Y)",
+      "text": {
+        "pt-BR": "informação mútua entre X e Y, em bits",
+        "en": "mutual information between X and Y, in bits"
+      }
+    }
+  ],
+  "concepts": [
+    "mutual-information",
+    "markov-chain",
+    "etl"
+  ],
+  "sources": [
+    "cover2006"
+  ]
+}

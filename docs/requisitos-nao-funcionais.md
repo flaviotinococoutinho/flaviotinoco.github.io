@@ -135,8 +135,8 @@ Medições de 21/10/2026 (`dist/` da branch `fix/html-budgets`): a página mais 
 | Cobertura medida         | matriz disciplina × estrato dobrada do acervo; a página de escopo mostra as lacunas                               | —              | `scope.test.ts` (homomorfismo de monoide); `pnpm check:links`    |
 | Mesmo escopo nas línguas | as duas línguas de uma obra declaram os mesmos domínios, na mesma ordem                                           | 0 divergências | `tests/unit/content/scope.test.ts`                               |
 
-Medição de 14/11/2026: 12 de 14 obras por língua declaram uma disciplina do núcleo (86 %); tecnologia da
-informação e engenharia de dados e ETL não têm obra publicada.
+Medição de 14/11/2026: 13 de 15 obras por língua declaram uma disciplina do núcleo (87 %); tecnologia da
+informação não tem obra publicada.
 
 ## 10. O processo
 
