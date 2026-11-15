@@ -223,7 +223,8 @@ diretiva explícita > frontmatter > dicionário:
 - Ambiente: nos ensaios, em janelas largas, uma sala de leitura desenhada com three.js ocupa as calhas ao lado
   da folha (ADR 0014). É uma camada atrás da página: o texto continua sobre os tokens de papel. A decisão de
   mostrá-la (`off`, `still`, `live`) é uma função pura de `src/core/chrome/room.ts`; o leitor a controla pela
-  preferência `room`.
+  preferência `room`. A sala é calculada do site: a estante é o acervo, a obra lida fica sobre a mesa sob o
+  simplexo do seu estrato, e a vela queima com o progresso da leitura.
 
 ## 7. Ilhas (comportamento no cliente)
 
@@ -233,7 +234,7 @@ diretiva explícita > frontmatter > dicionário:
   anuncia resultados relevantes em `aria-live="polite"`.
 - Lógica não trivial (layout de grafo, mapeamentos de rolagem, easing) fica no núcleo e é testada.
 - Uma ilha que precisa de uma biblioteca pesada a importa de `src/islands/scenes/`, com `import()`, depois de
-  decidir que vai usá-la. Hoje há um caso: a cena da sala de leitura (three.js, 131,6 KiB em gzip).
+  decidir que vai usá-la. Hoje há um caso: a cena da sala de leitura (three.js, 135,3 KiB em gzip).
 
 ## 8. Verificações
 

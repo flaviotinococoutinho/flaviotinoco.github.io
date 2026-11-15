@@ -8,7 +8,8 @@
  *             requested; on a software renderer the automatic mode does not load it either;
  *   reading   with the room on, every piece of text of every essay lies on the opaque sheet (no glyph
  *             over the scene), and axe finds no violation in the light or in the dark scheme;
- *   motion    with prefers-reduced-motion the room is one still frame;
+ *   motion    with prefers-reduced-motion the room is one still frame, redrawn only after the reader
+ *             scrolled (the candle is a reading clock: a state, not an animation);
  *   control   turning the preference off removes the layer and returns the page to what it was.
  *
  * The test browser draws WebGL on the CPU (SwiftShader), which the automatic mode refuses on purpose, so
@@ -202,6 +203,29 @@ test.describe('reading room: motion and control', () => {
     await page.waitForTimeout(700);
     const after = await page.locator('.room__canvas').screenshot();
     expect(after.equals(before), 'the canvas does not change over time').toBe(true);
+  });
+
+  test('the candle is a reading clock: with reduced motion it changes only when the reader has moved', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await withPreference(page, 'on');
+    await page.goto(essay);
+    await expect(page.locator('html')).toHaveAttribute('data-scene', 'still', { timeout: 20_000 });
+    await settle(page);
+    const top = await page.locator('.room__canvas').screenshot();
+    // Half-way through the article the candle is shorter: a new still frame, drawn once scrolling stops.
+    await page.evaluate(() => {
+      const article = document.querySelector('.essay');
+      const box = article?.getBoundingClientRect();
+      if (box !== undefined) window.scrollTo({ top: box.top + window.scrollY + box.height / 2, behavior: 'instant' });
+    });
+    await page.waitForTimeout(900);
+    const middle = await page.locator('.room__canvas').screenshot();
+    expect(middle.equals(top), 'the candle burnt down with the reading').toBe(false);
+    await page.waitForTimeout(700);
+    const later = await page.locator('.room__canvas').screenshot();
+    expect(later.equals(middle), 'and then stays as it is').toBe(true);
   });
 
   test('live: the room moves', async ({ page }) => {

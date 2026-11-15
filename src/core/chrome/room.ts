@@ -12,9 +12,12 @@
  *   calm         how much it quietens once the reader is inside the text
  *   flicker      the candle's intensity over time, band-limited below 3 Hz
  *   gutters      where, on the screen, the room is visible
+ *   shelf codec  the corpus as books; burn, rainfall, kindle, gust: the room following the reading
  *
  * docs/adr/0014-sala-de-leitura.md records the decision and its costs.
  */
+import { absurd } from '../algebra/match.ts';
+import { STRATA, type Stratum } from '../domain/strata.ts';
 import { clamp01, smoothstep } from '../reading/scroll.ts';
 import type { Daypart } from './daypart.ts';
 
@@ -213,4 +216,118 @@ export const gutters = (viewportWidth: number, sheetLeft: number, sheetRight: nu
     leftNdc: l / viewportWidth - 1,
     rightNdc: r / viewportWidth,
   };
+};
+
+/* ───────────────────────── The room is this site's room ─────────────────────────
+ * Nothing in the scene is stock: the shelf is the corpus, the candle is a reading clock, the rain eases
+ * as the essay ends and the paperweight is the simplex of the essay's stratum. The functions below are
+ * the data behind that; the scene only draws them.
+ */
+
+/** One work of the corpus as a book on the shelf. */
+export interface ShelfBook {
+  readonly stratum: Stratum;
+  /** Essays are bound books (upper shelf); labs are notebooks (lower shelf). */
+  readonly form: 'essay' | 'lab';
+  /** Thickness class 0…9, from the length of the text (bookSize). */
+  readonly size: number;
+  /** The work being read: off the shelf, on the desk. */
+  readonly current: boolean;
+}
+
+/** Books a shelf attribute may carry; older works beyond it are left out by the view. */
+export const SHELF_MAX = 64;
+const CHARACTERS_PER_SIZE = 3000;
+
+/** Thickness class of a text of `characters` (Markdown source): one step per 3 000 characters, 0…9. */
+export const bookSize = (characters: number): number =>
+  Number.isFinite(characters) ? Math.max(0, Math.min(9, Math.floor(characters / CHARACTERS_PER_SIZE))) : 0;
+
+const STRATUM_LETTER: Readonly<Record<Stratum, string>> = { philosophy: 'p', theory: 't', formal: 'f', value: 'v' };
+
+/**
+ * The shelf as an attribute value: per book, the stratum's initial (upper case for a lab), the size digit
+ * and "*" for the current work — "f3v5*T1". Codec law: decodeShelf(encodeShelf(books)) = books for any
+ * list of at most SHELF_MAX books with sizes in 0…9.
+ */
+export const encodeShelf = (books: readonly ShelfBook[]): string =>
+  books
+    .slice(0, SHELF_MAX)
+    .map((b) => {
+      const letter = STRATUM_LETTER[b.stratum];
+      const size = Math.max(0, Math.min(9, Math.trunc(Number.isFinite(b.size) ? b.size : 0)));
+      return `${b.form === 'lab' ? letter.toUpperCase() : letter}${String(size)}${b.current ? '*' : ''}`;
+    })
+    .join('');
+
+/** Lenient and total: whatever is not a book is skipped, so a damaged attribute gives a shorter shelf. */
+export const decodeShelf = (text: string | null | undefined): readonly ShelfBook[] => {
+  const books: ShelfBook[] = [];
+  for (const [, letter = '', digit = '0', star = ''] of (text ?? '').matchAll(/([ptfvPTFV])(\d)(\*?)/g)) {
+    const stratum = STRATA.find((s) => STRATUM_LETTER[s] === letter.toLowerCase());
+    if (stratum === undefined || books.length >= SHELF_MAX) continue;
+    books.push({
+      stratum,
+      form: letter === letter.toUpperCase() ? 'lab' : 'essay',
+      size: Number(digit),
+      current: star === '*',
+    });
+  }
+  return books;
+};
+
+/** The dimension of the simplex that stands for a stratum: point, segment, triangle, tetrahedron. */
+export const simplexOf = (stratum: Stratum): 0 | 1 | 2 | 3 => {
+  switch (stratum) {
+    case 'philosophy':
+      return 0;
+    case 'theory':
+      return 1;
+    case 'formal':
+      return 2;
+    case 'value':
+      return 3;
+    default:
+      return absurd(stratum);
+  }
+};
+
+/** What is left of the candle when the essay is read to the end. */
+export const CANDLE_STUB = 0.4;
+
+/**
+ * The candle as a reading clock: the fraction of its height left at reading `progress` (0 at the top of
+ * the article, 1 at its end). Linear, like a candle clock: equal lengths of text burn equal lengths of wax.
+ */
+export const burn = (progress: number): number => 1 - (1 - CANDLE_STUB) * clamp01(progress);
+
+/** How much it still rains when the essay ends. */
+export const RAIN_FLOOR = 0.25;
+
+/** The rain against reading progress: steady for the first three fifths, then easing to a drizzle. */
+export const rainfall = (progress: number): number =>
+  1 - (1 - RAIN_FLOOR) * smoothstep(clamp01((clamp01(progress) - 0.6) / 0.4));
+
+/** Seconds the flame takes to catch when the room first appears. */
+export const KINDLE_SECONDS = 1.8;
+
+/** The flame catching: 0 at the moment the room appears, 1 once it burns steadily. */
+export const kindle = (seconds: number): number =>
+  Number.isFinite(seconds) ? smoothstep(clamp01(seconds / KINDLE_SECONDS)) : 1;
+
+/** Seconds for a draught to fall to 1/e. */
+export const GUST_DECAY_SECONDS = 0.6;
+
+/**
+ * The draught the page makes when it is scrolled, in [−1, 1]: it jumps to the scroll speed (one viewport
+ * per second is a full draught, signed by direction) and decays exponentially when the page rests. The
+ * flame leans with it; nothing else moves.
+ */
+export const gust = (previous: number, pixelsPerSecond: number, seconds: number, viewportHeight: number): number => {
+  const before = Number.isFinite(previous) ? Math.max(-1, Math.min(1, previous)) : 0;
+  const dt = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
+  const decayed = before * Math.exp(-dt / GUST_DECAY_SECONDS);
+  if (!(viewportHeight > 0) || !Number.isFinite(pixelsPerSecond)) return decayed;
+  const target = Math.max(-1, Math.min(1, pixelsPerSecond / viewportHeight));
+  return Math.abs(target) > Math.abs(decayed) ? target : decayed;
 };

@@ -30,7 +30,7 @@ A regra tem duas metades, e cada uma virou um critério que se pode conferir:
 ## 3. Decisões
 
 Estão no ADR 0014. Em resumo: a sala é uma camada atrás da página, com uma folha opaca sob o texto; decide-se
-se ela existe antes de baixar o three.js; a cena é procedural, com oito objetos e sem arquivos; só as calhas são
+se ela existe antes de baixar o three.js; a cena é procedural e sem arquivos; só as calhas são
 desenhadas; as cores vêm de seis tokens novos; a qualidade desce sozinha quando os quadros atrasam.
 
 ## 4. O que entrou
@@ -54,13 +54,31 @@ o tempo ao período comum das três senoides, 100 s.
 
 | Medida                                       | Valor                               |
 | -------------------------------------------- | ----------------------------------- |
-| Pedaço da cena (three.js incluído), gzip     | 131,6 KiB                           |
-| Elemento `ft-reading-room`, gzip             | 3,2 KiB                             |
+| Pedaço da cena (three.js incluído), gzip     | 135,3 KiB                           |
+| Elemento `ft-reading-room`, gzip             | 3,9 KiB                             |
 | JavaScript inicial das páginas               | inalterado                          |
-| Objetos desenhados por quadro                | 8, em duas passagens                |
+| Chamadas de desenho por quadro               | cerca de 12 por calha               |
 | Área sombreada a 1920 × 1080                 | 30 % da tela (as duas calhas)       |
 | Largura mínima da janela para a sala existir | cerca de 1 540 px (calha de 96 px)  |
 | Tempo de quadro em placa gráfica real        | não medido (o ambiente não tem uma) |
+
+Em renderização por software (o pior caso, que o modo automático recusa), o navegador de teste entregou de
+17 a 21 quadros por segundo a 1920 × 1080.
+
+## 5.1 Segunda rodada: orgânica e original
+
+No mesmo dia o autor pediu que a experiência fosse orgânica e original. A primeira versão era um cenário
+genérico feito de caixas. A leitura do pedido:
+
+| Pedido   | O que mudou                                                                                                                         |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Original | a sala passou a ser calculada do site: a estante é o acervo, a obra lida está sobre a mesa, o peso de papel é o simplexo do estrato |
+|          | a vela virou relógio de leitura e a chuva cede no fim do texto                                                                      |
+| Orgânica | cera que escorre, chama deformada por ruído e pela corrente de ar da rolagem, veios com nós, lombadas arredondadas e gastas         |
+|          | reboco manchado, vidro embaçado, poeira na luz, sombras de contato; a chama pega aos poucos ao aparecer                             |
+
+O modelo ganhou o codec da estante e as funções `burn`, `rainfall`, `kindle` e `gust`, com testes de
+propriedade; a cena passou de 131,6 para 135,3 KiB em gzip.
 
 ## 6. Pendências do autor
 
@@ -73,5 +91,5 @@ o tempo ao período comum das três senoides, 100 s.
 | Frente                                                                           | Observação                                                |
 | -------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | Medir o tempo de quadro em aparelhos reais (um notebook com gráficos integrados) | calibra os degraus de qualidade e o limiar do governador  |
-| Trocar o three.js por WebGL 2 direto, se o peso incomodar                        | de 131,6 KiB para menos de 10 KiB; ADR 0014, alternativas |
+| Trocar o three.js por WebGL 2 direto, se o peso incomodar                        | de 135,3 KiB para menos de 10 KiB; ADR 0014, alternativas |
 | Laboratório do pipeline para o ensaio de ETL                                     | plano de 14/11/2026, §7                                   |

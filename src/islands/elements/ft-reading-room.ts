@@ -19,25 +19,37 @@
  *     when frames arrive late and stops the animation if that is not enough;
  *   - the loop stops while the tab is hidden; the room quietens as the reader scrolls into the text.
  *
+ * The room follows the reading: the candle burns down with the progress through the article (a reading
+ * clock), the rain eases towards the end, and the flame leans in the draught of a scrolled page. With
+ * reduced motion these are states, not animations: the still frame is redrawn when scrolling stops.
+ * The attributes `shelf` (the corpus, encodeShelf) and `stratum` say what the room holds.
+ *
  * The reader's preference `room` (auto | on | off) arrives as data-room on <html>; the state of the layer
  * is published as data-scene="live" | "still" on <html>, where src/styles/components/room.css reads it.
  */
 import {
+  burn,
   calm,
   candleStrength,
+  decodeShelf,
   flicker,
   frameIntervalOf,
   govern,
   governorAt,
+  gust,
   gutters,
+  kindle,
   pixelRatioOf,
+  rainfall,
   roomMode,
+  simplexOf,
   startTier,
   type Governor,
   type RoomMode,
 } from '../../core/chrome/room.ts';
 import { DAYPARTS, type Daypart } from '../../core/chrome/daypart.ts';
-import { STRATA } from '../../core/domain/strata.ts';
+import { STRATA, isStratum } from '../../core/domain/strata.ts';
+import { pinnedProgress } from '../../core/reading/scroll.ts';
 import type { ReadingRoom, Rgb, RoomColors } from '../scenes/reading-room.ts';
 
 const TAG = 'ft-reading-room';
@@ -112,6 +124,15 @@ class FtReadingRoom extends HTMLElement {
   #calm = 1;
   #left = 0;
   #right = 0;
+  /** The article's box in document coordinates, for the reading progress. */
+  #top = 0;
+  #height = 0;
+  #progress = 0;
+  #gust = 0;
+  #scrollY = 0;
+  /** Seconds since the flame was lit (the room's first live frame). */
+  #lit = 0;
+  #settle = 0;
   /** What the scene was last sized for, and whether something (colours, mode) asks for a new frame. */
   #sized = '';
   #stale = true;
@@ -159,7 +180,11 @@ class FtReadingRoom extends HTMLElement {
     window.addEventListener(
       'scroll',
       () => {
-        this.#calm = calm(window.scrollY, window.innerHeight);
+        this.#follow();
+        if (this.#mode !== 'still') return;
+        // Reduced motion: the candle is a state, not an animation — one new frame once scrolling stops.
+        clearTimeout(this.#settle);
+        this.#settle = window.setTimeout(() => this.#draw(STILL_TIME, STILL_TIME, 1, true), 250);
       },
       { passive: true, signal },
     );
@@ -169,6 +194,7 @@ class FtReadingRoom extends HTMLElement {
   disconnectedCallback(): void {
     this.#abort?.abort();
     this.#abort = null;
+    clearTimeout(this.#settle);
     this.#stop();
     this.#canvas?.remove();
     this.#sheet?.remove();
@@ -181,6 +207,9 @@ class FtReadingRoom extends HTMLElement {
     const target = this.#target;
     if (target === null) return;
     const box = target.getBoundingClientRect();
+    this.#top = box.top + window.scrollY;
+    this.#height = box.height;
+    this.#follow();
     // The used value lists the tracks in px between the line names: "[full-start] 385px [main-start] 648px …".
     const tracks = [...getComputedStyle(target).gridTemplateColumns.matchAll(/(\d+(?:\.\d+)?)px/g)].map((m) =>
       Number(m[1]),
@@ -192,6 +221,12 @@ class FtReadingRoom extends HTMLElement {
     this.#right = Math.min(window.innerWidth, box.right - last + pad);
     this.#sheet?.style.setProperty('--sheet-left', `${this.#left}px`);
     this.#sheet?.style.setProperty('--sheet-width', `${Math.max(0, this.#right - this.#left)}px`);
+  }
+
+  /** Where the reader is: how calm the room should be and how far through the article they are. */
+  #follow(): void {
+    this.#calm = calm(window.scrollY, window.innerHeight);
+    this.#progress = pinnedProgress(this.#top - window.scrollY, this.#height, window.innerHeight);
   }
 
   /** The rim of the stand around the sheet (a token, read from this element's block padding). */
@@ -244,8 +279,8 @@ class FtReadingRoom extends HTMLElement {
     const root = document.documentElement;
     if (this.#resize() || this.#stale || root.dataset['scene'] !== mode) {
       this.#stale = false;
-      if (mode === 'still') this.#draw(STILL_TIME, STILL_TIME, 1);
-      else this.#draw(this.#time, this.#rain, this.#calm);
+      if (mode === 'still') this.#draw(STILL_TIME, STILL_TIME, 1, true);
+      else this.#draw(this.#time, this.#rain, this.#calm, false);
     }
     root.dataset['scene'] = mode;
     this.#schedule();
@@ -268,6 +303,11 @@ class FtReadingRoom extends HTMLElement {
             this.#lost = true;
             return;
           }
+          const stratum = this.getAttribute('stratum');
+          this.#room.furnish({
+            books: decodeShelf(this.getAttribute('shelf')),
+            simplex: simplexOf(isStratum(stratum) ? stratum : 'philosophy'),
+          });
           this.#recolor();
           this.#evaluate();
         },
@@ -323,8 +363,8 @@ class FtReadingRoom extends HTMLElement {
       glass: token('--room-glass'),
       flame: token('--room-flame'),
       wax: token('--room-wax'),
-      // Cloth covers: the four stratum hues and the ink, each worn halfway towards the wood.
-      books: [...STRATA.map((s) => token(`--stratum-${s}`)), token('--ink-muted')].map((c) => mix(c, wood, 0.5)),
+      // Cloth covers: the hue of each stratum, worn halfway towards the wood.
+      covers: STRATA.map((s) => mix(token(`--stratum-${s}`), wood, 0.5)),
     };
     const theme = root.dataset['theme'];
     const night = theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
@@ -339,6 +379,7 @@ class FtReadingRoom extends HTMLElement {
     const run = this.#room !== null && this.#mode === 'live' && !document.hidden;
     if (run && this.#frame === 0) {
       this.#lastFrame = 0;
+      this.#scrollY = window.scrollY;
       this.#frame = requestAnimationFrame(this.#tick);
     }
     if (!run && this.#frame !== 0) {
@@ -364,14 +405,26 @@ class FtReadingRoom extends HTMLElement {
       const dt = this.#lastRender === 0 ? 0 : Math.min(0.1, (now - this.#lastRender) / 1000);
       this.#lastRender = now;
       this.#time += dt;
+      this.#lit += dt;
       this.#rain += dt * (0.4 + 0.6 * this.#calm);
-      this.#draw(this.#time, this.#rain, this.#calm);
+      const velocity = dt > 0 ? (window.scrollY - this.#scrollY) / dt : 0;
+      this.#scrollY = window.scrollY;
+      this.#gust = gust(this.#gust, velocity, dt, window.innerHeight);
+      this.#draw(this.#time, this.#rain, this.#calm, false);
     }
     this.#schedule();
   };
 
-  #draw(time: number, rainTime: number, liveliness: number): void {
-    this.#room?.render({ time, rainTime, flicker: flicker(time, liveliness), liveliness });
+  #draw(time: number, rainTime: number, liveliness: number, still: boolean): void {
+    this.#room?.render({
+      time,
+      rainTime,
+      flicker: flicker(time, liveliness) * (still ? 1 : kindle(this.#lit)),
+      liveliness,
+      burn: burn(this.#progress),
+      rainfall: rainfall(this.#progress),
+      gust: still ? 0 : this.#gust,
+    });
   }
 }
 

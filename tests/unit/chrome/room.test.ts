@@ -26,9 +26,24 @@ import {
   pixelRatioOf,
   roomMode,
   startTier,
+  CANDLE_STUB,
+  GUST_DECAY_SECONDS,
+  KINDLE_SECONDS,
+  RAIN_FLOOR,
+  SHELF_MAX,
+  bookSize,
+  burn,
+  decodeShelf,
+  encodeShelf,
+  gust,
+  kindle,
+  rainfall,
+  simplexOf,
   type Governor,
   type RoomEnvironment,
+  type ShelfBook,
 } from '../../../src/core/chrome/room.ts';
+import { STRATA } from '../../../src/core/domain/strata.ts';
 
 const environment: fc.Arbitrary<RoomEnvironment> = fc.record({
   preference: fc.constantFrom('auto', 'on', 'off'),
@@ -263,4 +278,101 @@ describe('gutters', () => {
       expect(g.rightNdc).toBeLessThanOrEqual(1);
     },
   );
+});
+
+describe('shelf: the corpus as books', () => {
+  const book: fc.Arbitrary<ShelfBook> = fc.record({
+    stratum: fc.constantFrom(...STRATA),
+    form: fc.constantFrom('essay', 'lab'),
+    size: fc.integer({ min: 0, max: 9 }),
+    current: fc.boolean(),
+  });
+
+  test.prop([fc.array(book, { maxLength: SHELF_MAX })])('decode ∘ encode = id', (books) => {
+    expect(decodeShelf(encodeShelf(books))).toEqual(books);
+  });
+
+  test.prop([fc.string()])('decoding is total and never exceeds the shelf', (text) => {
+    const books = decodeShelf(text);
+    expect(books.length).toBeLessThanOrEqual(SHELF_MAX);
+    for (const b of books) {
+      expect(STRATA).toContain(b.stratum);
+      expect(b.size >= 0 && b.size <= 9).toBe(true);
+    }
+  });
+
+  it('reads the documented example and skips what is not a book', () => {
+    expect(decodeShelf('f3v5*T1')).toEqual([
+      { stratum: 'formal', form: 'essay', size: 3, current: false },
+      { stratum: 'value', form: 'essay', size: 5, current: true },
+      { stratum: 'theory', form: 'lab', size: 1, current: false },
+    ]);
+    expect(decodeShelf('x9 f f2 ??')).toEqual([{ stratum: 'formal', form: 'essay', size: 2, current: false }]);
+    expect(decodeShelf(null)).toEqual([]);
+    expect(
+      encodeShelf(Array<ShelfBook>(SHELF_MAX + 5).fill({ stratum: 'value', form: 'essay', size: 1, current: false })),
+    ).toHaveLength(SHELF_MAX * 2);
+  });
+
+  test.prop([fc.double()])('book size is a class in 0…9 and grows with the text', (characters) => {
+    const size = bookSize(characters);
+    expect(Number.isInteger(size) && size >= 0 && size <= 9).toBe(true);
+    if (Number.isFinite(characters)) expect(bookSize(characters + 3000)).toBeGreaterThanOrEqual(size);
+  });
+
+  it('gives each stratum its simplex, in the order of the bridge', () => {
+    expect(STRATA.map(simplexOf)).toEqual([0, 1, 2, 3]);
+  });
+});
+
+describe('the room follows the reading', () => {
+  test.prop([fc.double(), fc.double()])('the candle only burns down, and never below the stub', (a, b) => {
+    for (const p of [a, b]) {
+      expect(burn(p)).toBeGreaterThanOrEqual(CANDLE_STUB - 1e-12);
+      expect(burn(p)).toBeLessThanOrEqual(1);
+    }
+    if (!Number.isNaN(a) && !Number.isNaN(b) && a <= b) expect(burn(b)).toBeLessThanOrEqual(burn(a) + 1e-12);
+  });
+
+  it('is a linear clock: half the text, half the burnable wax', () => {
+    expect(burn(0)).toBe(1);
+    expect(burn(1)).toBeCloseTo(CANDLE_STUB, 12);
+    expect(burn(0.5)).toBeCloseTo((1 + CANDLE_STUB) / 2, 12);
+  });
+
+  test.prop([fc.double(), fc.double()])('the rain never picks up as the reading advances', (a, b) => {
+    expect(rainfall(a)).toBeGreaterThanOrEqual(RAIN_FLOOR - 1e-12);
+    expect(rainfall(a)).toBeLessThanOrEqual(1);
+    if (!Number.isNaN(a) && !Number.isNaN(b) && a <= b) expect(rainfall(b)).toBeLessThanOrEqual(rainfall(a) + 1e-12);
+  });
+
+  it('keeps raining for the first three fifths and ends as a drizzle', () => {
+    expect(rainfall(0)).toBe(1);
+    expect(rainfall(0.6)).toBe(1);
+    expect(rainfall(1)).toBeCloseTo(RAIN_FLOOR, 12);
+  });
+
+  test.prop([fc.double()])('the flame catches once: kindle is within [0, 1] and complete after its time', (t) => {
+    expect(kindle(t)).toBeGreaterThanOrEqual(0);
+    expect(kindle(t)).toBeLessThanOrEqual(1);
+    if (Number.isFinite(t) && t >= KINDLE_SECONDS) expect(kindle(t)).toBe(1);
+  });
+
+  test.prop([fc.double(), fc.double(), fc.double(), fc.double()])(
+    'a draught is always within [−1, 1]',
+    (g, v, dt, h) => {
+      const next = gust(g, v, dt, h);
+      expect(next).toBeGreaterThanOrEqual(-1);
+      expect(next).toBeLessThanOrEqual(1);
+    },
+  );
+
+  it('a draught follows the scroll and dies when the page rests', () => {
+    expect(gust(0, 900, 1 / 30, 900)).toBe(1);
+    expect(gust(0, -450, 1 / 30, 900)).toBe(-0.5);
+    let g = 1;
+    for (let i = 0; i < 30 * 5; i++) g = gust(g, 0, 1 / 30, 900);
+    expect(Math.abs(g)).toBeLessThan(0.001);
+    expect(gust(1, 0, GUST_DECAY_SECONDS, 900)).toBeCloseTo(Math.exp(-1), 12);
+  });
 });

@@ -27,8 +27,10 @@ próprio frontmatter.
   three.js (mesa, estante, janela com chuva, vela) ocupa as calhas ao lado do texto, que continua sobre uma
   folha opaca com os tokens de papel. A decisão de mostrá-la é uma função pura (`src/core/chrome/room.ts`):
   nada é baixado sem calha, com economia de dados, contraste aumentado ou renderizador por software; com
-  movimento reduzido fica um quadro. Preferência `room` (automática, ligada, desligada) no painel; tokens
-  `--room-*`; dependência `three` 0.187.0, isolada num módulo sob demanda.
+  movimento reduzido fica um quadro. A sala é calculada do site: a estante é o acervo (uma lombada por ensaio,
+  um caderno por laboratório, cor do estrato), a obra lida fica sobre a mesa sob o simplexo do seu estrato, a
+  vela queima com o progresso da leitura e a chuva cede no fim. Preferência `room` (automática, ligada,
+  desligada) no painel; tokens `--room-*`; dependência `three` 0.187.0, isolada num módulo sob demanda.
 - Orçamentos: todo módulo do pacote do site passa a ter teto de 16 KiB em gzip, e a cena da sala de leitura,
   de 140 KiB (`pnpm check:budgets`).
 

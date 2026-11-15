@@ -59,14 +59,16 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
 
 3. **three.js entra como dependência, isolado num pedaço sob demanda.** `three@0.187.0`, versão fixada (a
    biblioteca não segue versionamento semântico), importado só por `src/islands/scenes/reading-room.ts` com
-   importações nomeadas. O pedaço pesa 131,6 KiB em gzip; o elemento que decide carregá-lo, 3,2 KiB.
+   importações nomeadas. O pedaço pesa 135,3 KiB em gzip; o elemento que decide carregá-lo, 3,9 KiB.
 
 4. **A cena é procedural: nenhum arquivo além do código.** Veios da madeira, reboco, chuva e chama são
    _shaders_ de fragmento. Não há sistema de luzes, mapas de sombra nem pós-processamento: uma luz pontual
    analítica (a vela, Lambert com decaimento pelo inverso do quadrado) e um termo de área (a janela) são
-   avaliados no _shader_ de cada material, com uniformes compartilhados. São oito objetos: mesa, parede,
-   janela, vela, castiçal, uma `InstancedMesh` com todas as caixas (livros, prateleiras, peitoril) e dois
-   quadriláteros aditivos (chama e halo).
+   avaliados no _shader_ de cada material, com uniformes compartilhados; as sombras são de contato,
+   analíticas. São cerca de doze chamadas de desenho por calha: mesa, parede, janela, vela, poça de cera,
+   pavio, castiçal, o simplexo, uma `InstancedMesh` com todas as caixas (livros, prateleiras, peitoril,
+   aparadores), uma nuvem de pontos (poeira) e dois quadriláteros aditivos (chama e halo). Padrões mais
+   finos que um pixel se desfazem pela derivada em espaço de tela, em vez de produzir _moiré_.
 
 5. **Só as calhas são sombreadas.** O quadro é desenhado duas vezes sob um retângulo de tesoura, uma por
    calha; os pixels cobertos pela folha custam uma limpeza do _buffer_. A 1920 × 1080 as calhas somam 30 % da
@@ -100,7 +102,31 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
     O modo de foco desliga a sala. Com isso há um mecanismo para parar ou esconder o movimento (WCAG 2.2,
     critério 2.2.2).
 
-12. **Dois orçamentos novos** em `pnpm check:budgets`: todo módulo do pacote do site pesa no máximo 16 KiB em
+12. **A sala é a deste site, não um cenário.** Os dados saem do acervo e da leitura; a cena só os desenha.
+
+    | O que se vê                                  | De onde vem                                                                                   |
+    | -------------------------------------------- | --------------------------------------------------------------------------------------------- |
+    | Lombadas na prateleira de cima               | os ensaios da língua, na ordem de publicação; cor do estrato; espessura pelo tamanho do texto |
+    | Cadernos na prateleira de baixo              | os laboratórios                                                                               |
+    | Um vão na prateleira e um livro sobre a mesa | a obra que está sendo lida, sobre as obras publicadas antes e depois dela                     |
+    | Um peso de latão sobre o livro               | o simplexo do estrato: ponto, segmento, triângulo, tetraedro (os glifos do site)              |
+    | A altura da vela                             | o progresso da leitura: `burn`, linear, de inteira a 40 % no fim do artigo                    |
+    | A intensidade da chuva                       | `rainfall`: constante nos três primeiros quintos, depois cede até uma garoa                   |
+    | A inclinação da chama                        | `gust`: a corrente de ar da página rolada, com decaimento exponencial                         |
+
+    A prateleira tem o comprimento que os livros pedem, então cresce com o acervo. A estante viaja no HTML
+    como um atributo compacto (`encodeShelf`, com a lei `decode ∘ encode = id`): dois caracteres por obra.
+    Com movimento reduzido, a vela é um estado e não uma animação: o quadro único é refeito quando a rolagem
+    para.
+
+13. **A matéria é irregular.** Nada na cena é uma primitiva lisa: a cera tem caroços, escorridos que
+    terminam em gota, borda cedida e uma poça que cresce conforme a vela queima; a chama é deformada por
+    duas faixas de ruído que sobem por ela; os veios da mesa contornam nós e as tábuas têm tom próprio; as
+    lombadas são arredondadas, com trama de tecido e desgaste nas pontas; o reboco é manchado; a parte
+    baixa do vidro embaça e as gotas abrem trilhas no embaçado; há poeira suspensa na luz da vela; o que
+    está sobre a mesa escurece a mesa. Ao aparecer, a chama pega aos poucos (`kindle`, 1,8 s).
+
+14. **Dois orçamentos novos** em `pnpm check:budgets`: todo módulo do pacote do site pesa no máximo 16 KiB em
     gzip, e a cena, o único módulo autorizado a passar disso, no máximo 140 KiB. Antes, um módulo sob demanda
     não tinha teto.
 
@@ -123,7 +149,7 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
   - A decisão de mostrar a sala é uma função pura, testada sem navegador.
   - Todo módulo sob demanda passa a ter teto de peso.
 - Negativas:
-  - Uma dependência de execução nova, de 131,6 KiB em gzip: onze vezes o orçamento de JavaScript inicial de
+  - Uma dependência de execução nova, de 135,3 KiB em gzip: onze vezes o orçamento de JavaScript inicial de
     uma página. Só é baixada em ensaios, por leitores com janela larga e placa gráfica, e fica em cache.
   - A sala só existe a partir de cerca de 1 540 px de largura. Em telas de 1 366, 1 440 ou 1 536 px ela não
     aparece.
@@ -131,22 +157,26 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
     parada e que nenhum texto fica fora da folha, não que a imagem está bonita.
   - O CI desenha WebGL por software, que o modo automático recusa de propósito. Os testes exercitam a cena
     pela preferência `on`; o caminho automático com placa gráfica não é coberto.
-  - O tempo de quadro em placa gráfica real não foi medido: o ambiente de desenvolvimento não tem uma.
+  - O tempo de quadro em placa gráfica real não foi medido: o ambiente de desenvolvimento não tem uma. Em
+    renderização por software (SwiftShader, quatro núcleos, 1920 × 1080), o navegador entregou de 17 a 21
+    quadros por segundo; é o pior caso, e é o que o modo automático recusa.
+  - A leitura do progresso para a vela e a chuva é a do artigo inteiro, incluídas as referências.
   - A textura do papel da folha é fixa na janela, enquanto a do corpo rola com a página. A diferença é de
     um ruído com 4 % de opacidade.
 
 ## Verificação
 
-| O quê                                                                                | Onde                                   |
-| ------------------------------------------------------------------------------------ | -------------------------------------- |
-| Modo, degraus de qualidade, governador, calma, cintilação e calhas (21 propriedades) | `tests/unit/chrome/room.test.ts`       |
-| Tela sem calha ou preferência desligada nunca pedem o pedaço da cena                 | `tests/e2e/room.spec.ts`               |
-| Com a sala ligada, nenhum glifo de nenhum ensaio fica fora da folha                  | idem, um teste por ensaio              |
-| axe com a sala ligada, tema claro e escuro                                           | idem                                   |
-| Movimento reduzido: o _canvas_ não muda; sem ele, muda                               | idem                                   |
-| Desligar a preferência remove a camada e devolve o fundo da página                   | idem                                   |
-| Tokens da sala dentro do gamut sRGB                                                  | `pnpm verify:palette`                  |
-| Teto de peso por módulo e da cena                                                    | `pnpm check:budgets`; testes de guarda |
+| O quê                                                                                    | Onde                                   |
+| ---------------------------------------------------------------------------------------- | -------------------------------------- |
+| Modo, qualidade, governador, calma, cintilação, calhas, estante, vela, chuva (33 testes) | `tests/unit/chrome/room.test.ts`       |
+| Tela sem calha ou preferência desligada nunca pedem o pedaço da cena                     | `tests/e2e/room.spec.ts`               |
+| Com a sala ligada, nenhum glifo de nenhum ensaio fica fora da folha                      | idem, um teste por ensaio              |
+| axe com a sala ligada, tema claro e escuro                                               | idem                                   |
+| Movimento reduzido: o _canvas_ não muda; sem ele, muda                                   | idem                                   |
+| A vela é um relógio: no meio do artigo o quadro é outro, e depois não muda mais          | idem                                   |
+| Desligar a preferência remove a camada e devolve o fundo da página                       | idem                                   |
+| Tokens da sala dentro do gamut sRGB                                                      | `pnpm verify:palette`                  |
+| Teto de peso por módulo e da cena                                                        | `pnpm check:budgets`; testes de guarda |
 
 ## Pendências para o autor
 

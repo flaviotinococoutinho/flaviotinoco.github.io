@@ -44,8 +44,8 @@ Medições de 21/10/2026 (`dist/` da branch `fix/html-budgets`): a página mais 
 95,0 KiB; CSS bloqueante máximo 20,7 KiB (com o KaTeX); JavaScript inicial 2,5 KiB em toda página; núcleos
 16,0 + 10,2 + 10,2 KiB. Custo marginal da ontologia: ≈ 1,1 KiB por conceito no mapa e ≈ 0,27 KiB na árvore.
 
-Medições de 15/11/2026: a cena da sala de leitura pesa 131,6 KiB em gzip e o elemento que decide carregá-la,
-3,2 KiB; o maior módulo sob demanda fora ela é `ft-lab-kit`, com 12,7 KiB. O JavaScript inicial não mudou.
+Medições de 15/11/2026: a cena da sala de leitura pesa 135,3 KiB em gzip e o elemento que decide carregá-la,
+3,9 KiB; o maior módulo sob demanda fora ela é `ft-lab-kit`, com 12,7 KiB. O JavaScript inicial não mudou.
 
 ## 2. Acessibilidade
 
