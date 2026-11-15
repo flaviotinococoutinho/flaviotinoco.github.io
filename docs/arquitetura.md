@@ -220,6 +220,10 @@ diretiva explícita > frontmatter > dicionário:
   gama sRGB, separabilidade CIEDE2000 sob protanopia/deuteranopia/tritanopia e luminosidade monótona sob
   acromatopsia. Cor nunca é o único portador de significado.
 - Textura: ruído fractal discreto (feTurbulence) no fundo; nenhum gradiente linear.
+- Compartilhamento: cada ensaio e laboratório tem um cartão de 1200 × 630 (`og:image`), e as demais páginas, o
+  cartão do site. O cartão é descrito por um modelo puro (`src/core/chrome/card.ts`: estrato com glifo e nome,
+  título, descrição, disciplinas, miniatura do laboratório) e rasterizado na compilação por satori e resvg, com
+  as cores dos tokens convertidas de OKLCH (`src/core/design/oklch.ts`).
 - Ambiente: nos ensaios, em janelas largas, uma sala de leitura desenhada com three.js ocupa as calhas ao lado
   da folha (ADR 0014). É uma camada atrás da página: o texto continua sobre os tokens de papel. A decisão de
   mostrá-la (`off`, `still`, `live`) é uma função pura de `src/core/chrome/room.ts`; o leitor a controla pela

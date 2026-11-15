@@ -18,6 +18,7 @@
  */
 import { getEntry, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { cardPath } from '../core/chrome/card.ts';
 import MathAssets from '../components/MathAssets.astro';
 import ArgumentGlyphs from '../components/reading/ArgumentGlyphs.astro';
 import ArgumentMap from '../components/reading/ArgumentMap.astro';
@@ -113,7 +114,14 @@ const IDS = {
 } as const;
 ---
 
-<BaseLayout locale={locale} title={data.title} description={data.description} alternates={alternates} ogType="article">
+<BaseLayout
+  locale={locale}
+  title={data.title}
+  description={data.description}
+  alternates={alternates}
+  ogType="article"
+  card={cardPath(locale, 'essay', data.slug)}
+>
   {meta.hasMath && <MathAssets slot="head" />}
   {meta.argument.nodes.length > 0 && <ArgumentGlyphs />}
   <ft-reading-room sheet=".essay" stratum={data.stratum} shelf={encodeShelf(shelf)} data-eager></ft-reading-room>

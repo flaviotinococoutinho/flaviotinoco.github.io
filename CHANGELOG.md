@@ -35,6 +35,11 @@ próprio frontmatter.
   144 vendas; depois de cada etapa, a informação mútua com a venda inteira e com uma pergunta escolhida pelo
   leitor, calculada por `information.wasm`, e a etapa em que a pergunta deixa de ser respondida
   (`src/core/labs/pipeline.ts`, `ft-lab-pipeline`); embutido no ensaio de ETL.
+- Cartões de compartilhamento: um PNG de 1200 × 630 por ensaio e laboratório e um do site por língua
+  (`/<lang>/card/<tipo>/<slug>.png`), gerados na compilação por satori e resvg a partir de um modelo puro
+  (`src/core/chrome/card.ts`): estrato com glifo e nome, título, descrição, disciplinas e, nos laboratórios, a
+  miniatura. Toda página declara `og:image` (com dimensões e texto alternativo) e `twitter:card`. As fontes dos
+  cartões são instâncias TTF estáticas (`scripts/fonts/build_card_fonts.py`), porque o satori não lê WOFF2.
 - Orçamentos: todo módulo do pacote do site passa a ter teto de 16 KiB em gzip, e a cena da sala de leitura,
   de 140 KiB (`pnpm check:budgets`).
 

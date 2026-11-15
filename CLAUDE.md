@@ -12,7 +12,8 @@ deployed to GitHub Pages as a project site under `/flaviotinoco.github.io/`.
 - `src/islands/` — `registry.ts` (the only global script) lazy-loads `elements/ft-*.ts` custom elements;
   `scenes/` holds what an element imports on demand after deciding to use it (the three.js reading room, ADR 0014).
 - `src/views/` compose pages; `src/components/` are stateless; `src/pages/` only dispatch routes and serve the
-  per-locale endpoints (RSS, `palette.json`, `preferences.json`: chrome content fetched on demand, ADR 0009).
+  per-locale endpoints (RSS, `palette.json`, `preferences.json`: chrome content fetched on demand, ADR 0009;
+  `card/<kind>/<slug>.png`: the share cards, described by `src/core/chrome/card.ts`, rendered by satori + resvg).
 - `src/content/{essays,labs,strata,pages}/{pt,en}/*.md` + `concepts/*.json` + `formulas/*.json` — data, never code.
 - Formulas: every `$$` block of the content carries `\label{eq:…}` and is bound by that label to a formula of
   `src/content/formulas/` (version in words; ADR 0011, [docs/guia-latex.md](docs/guia-latex.md) §1.2); a missing

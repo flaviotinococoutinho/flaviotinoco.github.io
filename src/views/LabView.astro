@@ -15,6 +15,7 @@
  */
 import { getEntry, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { cardPath } from '../core/chrome/card.ts';
 import MathAssets from '../components/MathAssets.astro';
 import RelatedWorks from '../components/ontology/RelatedWorks.astro';
 import AbstractBlock from '../components/reading/AbstractBlock.astro';
@@ -71,7 +72,14 @@ const IDS = {
 } as const;
 ---
 
-<BaseLayout locale={locale} title={data.title} description={data.description} alternates={alternates} ogType="article">
+<BaseLayout
+  locale={locale}
+  title={data.title}
+  description={data.description}
+  alternates={alternates}
+  ogType="article"
+  card={cardPath(locale, 'lab', data.slug)}
+>
   {meta.hasMath && <MathAssets slot="head" />}
   <div class="page-grid lab-page" data-stratum={data.stratum}>
     <header class="lab-page__header">

@@ -1,0 +1,29 @@
+{
+  "source": "https://github.com/google/fonts",
+  "commit": "47d54ca1ebb14fd864695f1d39dc734f39017c33",
+  "fonts": [
+    {
+      "file": "card-literata-600.ttf",
+      "family": "Literata",
+      "axes": {
+        "opsz": 36,
+        "wght": 600
+      },
+      "source": "https://raw.githubusercontent.com/google/fonts/47d54ca1ebb14fd864695f1d39dc734f39017c33/ofl/literata/Literata%5Bopsz,wght%5D.ttf",
+      "sourceSha256": "b41138c9373112f32abb589cc22e8674b06ed4048b0c513be922bdd26f274440",
+      "bytes": 44544,
+      "sha256": "20a19fb9d79c2914b03b60a55ed0d97e00acd91b9f65f6ad7fe2ea6362bab4f1"
+    },
+    {
+      "file": "card-atkinson-500.ttf",
+      "family": "Atkinson Hyperlegible Next",
+      "axes": {
+        "wght": 500
+      },
+      "source": "https://raw.githubusercontent.com/google/fonts/47d54ca1ebb14fd864695f1d39dc734f39017c33/ofl/atkinsonhyperlegiblenext/AtkinsonHyperlegibleNext%5Bwght%5D.ttf",
+      "sourceSha256": "5a455d1cfa099b601ab70751bb9673e8fe1854dc4500c80e1a220d0d75e31745",
+      "bytes": 30816,
+      "sha256": "fe7c6d3893df3463f602db78d13b7fda3731ee12bbc1142c502501b77882314d"
+    }
+  ]
+}
