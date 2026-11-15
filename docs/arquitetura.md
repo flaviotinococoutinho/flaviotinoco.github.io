@@ -13,7 +13,7 @@ de 11/10/2026 em `docs/research/` mantêm suas datas e limites originais.
 | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | Núcleo funcional (`src/core/`)              | `algebra`, `domain`, `i18n`, `design`, `latex`, `formulas`, `bibliography`, `lexicon`, `abnt`, `ontology`, `reading`, `fold`, `chrome`, `labs`, `web` — 150+ módulos puros       | `pnpm check:lint` (pureza, camadas); `pnpm test` com cobertura                                            |
 | Pipeline Markdown (`src/adapters/unified/`) | estágios `integrity`, `latex`, `citations`, `reading`, `concepts`, `embeds`, `abnt`, `meta`, na ordem de `pipeline.ts`                                                           | testes de cada estágio; `pnpm build:site` (estrito)                                                       |
-| Ilhas (`src/islands/elements/`)             | 27 elementos `ft-*` carregados sob demanda pelo `registry.ts`; `src/islands/scenes/` guarda a cena three.js da sala de leitura, importada só quando a sala é mostrada (ADR 0014) | e2e (`chrome`, `labs`, `keyboard`, `motion`)                                                              |
+| Ilhas (`src/islands/elements/`)             | 28 elementos `ft-*` carregados sob demanda pelo `registry.ts`; `src/islands/scenes/` guarda a cena three.js da sala de leitura, importada só quando a sala é mostrada (ADR 0014) | e2e (`chrome`, `labs`, `keyboard`, `motion`)                                                              |
 | Conteúdo (contagem de 14/11/2026)           | 8 ensaios, 8 laboratórios, 4 estratos e 2 páginas por língua; 72 conceitos; 45 fórmulas com versão em palavras (ADR 0011); `bibliography/main.bib`; 5 léxicos                    | `pnpm check:i18n`; testes de `content`, `bibliography/seed`, `ontology`, `lexicon`, `guardrails/formulas` |
 | WebAssembly (`wasm/`, `src/adapters/wasm/`) | três núcleos `no_std` (`signal`, `information`, `dynamics`), ABI v1, sem importações                                                                                             | `pnpm check:wasm`; `pnpm test:wasm`; orçamento ≤ 48 KiB                                                   |
 | Vistas e rotas                              | `src/pages` só despacha; `src/views` compõe; codec de rotas bijetivo com as páginas da ontologia, do acervo de fórmulas e do escopo                                              | `routes.test.ts`; `pnpm check:links`                                                                      |
@@ -220,6 +220,9 @@ diretiva explícita > frontmatter > dicionário:
   gama sRGB, separabilidade CIEDE2000 sob protanopia/deuteranopia/tritanopia e luminosidade monótona sob
   acromatopsia. Cor nunca é o único portador de significado.
 - Textura: ruído fractal discreto (feTurbulence) no fundo; nenhum gradiente linear.
+- Memória de leitura: ao voltar a um ensaio, um aviso acima do artigo diz onde o leitor parou e oferece
+  continuar dali ou esquecer (`ft-reading-memory`; regras puras em `src/core/reading/memory.ts`). O registro
+  fica só no navegador, e a vela da sala de leitura parte dele.
 - Compartilhamento: cada ensaio e laboratório tem um cartão de 1200 × 630 (`og:image`), e as demais páginas, o
   cartão do site. O cartão é descrito por um modelo puro (`src/core/chrome/card.ts`: estrato com glifo e nome,
   título, descrição, disciplinas, miniatura do laboratório) e rasterizado na compilação por satori e resvg, com

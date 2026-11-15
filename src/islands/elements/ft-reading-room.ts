@@ -49,6 +49,7 @@ import {
 } from '../../core/chrome/room.ts';
 import { DAYPARTS, type Daypart } from '../../core/chrome/daypart.ts';
 import { STRATA, isStratum } from '../../core/domain/strata.ts';
+import { MEMORY_STORAGE_KEY, decodeMemory } from '../../core/reading/memory.ts';
 import { pinnedProgress } from '../../core/reading/scroll.ts';
 import type { ReadingRoom, Rgb, RoomColors } from '../scenes/reading-room.ts';
 
@@ -128,6 +129,8 @@ class FtReadingRoom extends HTMLElement {
   #top = 0;
   #height = 0;
   #progress = 0;
+  /** How far the reader got on earlier visits (ft-reading-memory): the candle does not grow back. */
+  #remembered = 0;
   #gust = 0;
   #scrollY = 0;
   /** Seconds since the flame was lit (the room's first live frame). */
@@ -149,6 +152,11 @@ class FtReadingRoom extends HTMLElement {
     this.#canvas = canvas;
     this.#sheet = sheet;
     this.#governor = governorAt(startTier(navigator.hardwareConcurrency || 0));
+    try {
+      this.#remembered = decodeMemory(localStorage.getItem(MEMORY_STORAGE_KEY))[location.pathname]?.furthest ?? 0;
+    } catch {
+      this.#remembered = 0;
+    }
     this.#calm = calm(window.scrollY, window.innerHeight);
 
     this.#abort = new AbortController();
@@ -421,7 +429,7 @@ class FtReadingRoom extends HTMLElement {
       rainTime,
       flicker: flicker(time, liveliness) * (still ? 1 : kindle(this.#lit)),
       liveliness,
-      burn: burn(this.#progress),
+      burn: burn(Math.max(this.#progress, this.#remembered)),
       rainfall: rainfall(this.#progress),
       gust: still ? 0 : this.#gust,
     });

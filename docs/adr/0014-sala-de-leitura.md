@@ -114,6 +114,9 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
     | A intensidade da chuva                       | `rainfall`: constante nos três primeiros quintos, depois cede até uma garoa                   |
     | A inclinação da chama                        | `gust`: a corrente de ar da página rolada, com decaimento exponencial                         |
 
+    A vela também lembra: quem volta a um ensaio a encontra tão gasta quanto a deixou, porque a altura parte
+    do ponto mais adiantado já lido, guardado só no navegador (`ft-reading-memory`, `src/core/reading/memory.ts`).
+
     A prateleira tem o comprimento que os livros pedem, então cresce com o acervo. A estante viaja no HTML
     como um atributo compacto (`encodeShelf`, com a lei `decode ∘ encode = id`): dois caracteres por obra.
     Com movimento reduzido, a vela é um estado e não uma animação: o quadro único é refeito quando a rolagem

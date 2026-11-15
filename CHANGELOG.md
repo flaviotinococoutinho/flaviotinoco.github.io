@@ -40,6 +40,10 @@ próprio frontmatter.
   (`src/core/chrome/card.ts`): estrato com glifo e nome, título, descrição, disciplinas e, nos laboratórios, a
   miniatura. Toda página declara `og:image` (com dimensões e texto alternativo) e `twitter:card`. As fontes dos
   cartões são instâncias TTF estáticas (`scripts/fonts/build_card_fonts.py`), porque o satori não lê WOFF2.
+- Memória de leitura (`ft-reading-memory`, `src/core/reading/memory.ts`): ao voltar a um ensaio, o leitor vê
+  onde parou (seção e porcentagem) e pode continuar dali, com o foco levado à seção, ou esquecer. O registro
+  fica só no `localStorage`, limitado a 40 ensaios; uma visita que só espia o topo não apaga o lugar. A vela da
+  sala de leitura começa tão gasta quanto o leitor a deixou.
 - Orçamentos: todo módulo do pacote do site passa a ter teto de 16 KiB em gzip, e a cena da sala de leitura,
   de 140 KiB (`pnpm check:budgets`).
 
