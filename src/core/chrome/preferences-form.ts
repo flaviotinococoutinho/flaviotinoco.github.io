@@ -59,6 +59,7 @@ const HINTS: Partial<
     | 'prefs.spacing.hint'
     | 'prefs.ruler.hint'
     | 'prefs.focus.hint'
+    | 'prefs.room.hint'
     | 'prefs.shortcut.hint'
     | 'prefs.cvd.hint'
   >
@@ -67,6 +68,7 @@ const HINTS: Partial<
   spacing: 'prefs.spacing.hint',
   ruler: 'prefs.ruler.hint',
   focus: 'prefs.focus.hint',
+  room: 'prefs.room.hint',
   shortcut: 'prefs.shortcut.hint',
   cvd: 'prefs.cvd.hint',
 };

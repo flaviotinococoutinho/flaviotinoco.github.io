@@ -49,6 +49,11 @@ export const PREFERENCE_DOMAINS = {
   focus: ['off', 'on'],
   texture: ['on', 'off'],
   /**
+   * Reading room: the decorative three.js scene in the gutters of the essay pages (ADR 0014). `auto` shows
+   * it where the device can afford it (src/core/chrome/room.ts); `on` asks for it; `off` never loads it.
+   */
+  room: ['auto', 'on', 'off'],
+  /**
    * The single-character shortcut "/" that opens the command palette. WCAG 2.2
    * SC 2.1.4 (Character Key Shortcuts, level A) requires a way to turn such a
    * shortcut off: speech-input users can trigger it by dictation. The chorded
@@ -74,6 +79,7 @@ export const PREFERENCE_KEYS = [
   'ruler',
   'focus',
   'texture',
+  'room',
   'shortcut',
   'cvd',
 ] as const satisfies readonly PreferenceKey[];
@@ -94,6 +100,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   ruler: 'off',
   focus: 'off',
   texture: 'on',
+  room: 'auto',
   shortcut: 'on',
   cvd: 'none',
 };

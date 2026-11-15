@@ -12,6 +12,9 @@
  * .essay__main spans main → margin as a subgrid holding the article (main) and,
  * beside it, the sticky argument map and the side notes (margin). Ids used here
  * are reserved for headings by src/core/reading/records.ts (PAGE_IDS).
+ *
+ * <ft-reading-room> is the decorative layer behind the page (ADR 0014): it stays hidden unless the
+ * island decides the device and the reader allow the room, and it never contains the article.
  */
 import { getEntry, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -94,6 +97,7 @@ const IDS = {
 <BaseLayout locale={locale} title={data.title} description={data.description} alternates={alternates} ogType="article">
   {meta.hasMath && <MathAssets slot="head" />}
   {meta.argument.nodes.length > 0 && <ArgumentGlyphs />}
+  <ft-reading-room sheet=".essay" data-eager></ft-reading-room>
   <div class="page-grid essay" data-stratum={data.stratum}>
     <ReadingProgress target={IDS.article} />
     <header class="essay__header">

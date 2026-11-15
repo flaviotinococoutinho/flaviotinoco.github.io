@@ -23,6 +23,14 @@ próprio frontmatter.
   autômato recusa e a redundância do histórico (`src/core/labs/flags.ts`, `ft-lab-flags`).
 - Página inicial: a proposição do site como título, as chamadas, o acervo em números e o laboratório de flags
   em forma compacta na primeira tela; sem JavaScript, a mesma figura desenhada na compilação.
+- Sala de leitura ([ADR 0014](docs/adr/0014-sala-de-leitura.md)): nos ensaios, em janelas largas, uma cena
+  three.js (mesa, estante, janela com chuva, vela) ocupa as calhas ao lado do texto, que continua sobre uma
+  folha opaca com os tokens de papel. A decisão de mostrá-la é uma função pura (`src/core/chrome/room.ts`):
+  nada é baixado sem calha, com economia de dados, contraste aumentado ou renderizador por software; com
+  movimento reduzido fica um quadro. Preferência `room` (automática, ligada, desligada) no painel; tokens
+  `--room-*`; dependência `three` 0.187.0, isolada num módulo sob demanda.
+- Orçamentos: todo módulo do pacote do site passa a ter teto de 16 KiB em gzip, e a cena da sala de leitura,
+  de 140 KiB (`pnpm check:budgets`).
 
 - Frentes temáticas e orientação de lugar digital na página inicial (`Frentes de investigação` com marcas
   vetoriais estruturais para engenharia de software, otimização, sistemas de informação e filosofia aplicada;

@@ -33,6 +33,8 @@ Os requisitos seguem quatro regras, derivadas da teoria que o site expõe:
 | CSS bloqueante por página     | gzip nível 6 das folhas ligadas e dos `<style>` (o que atrasa a primeira pintura)                           | ≤ 30 KiB                | idem                                          |
 | JavaScript inicial por página | gzip do fecho transitivo das importações estáticas (`import.meta.glob` das ilhas é sob demanda e não conta) | ≤ 12 KiB                | idem                                          |
 | Núcleo WebAssembly            | bytes brutos de cada módulo, sem `wasm-bindgen` nem importações (ADR 0003)                                  | ≤ 48 KiB cada           | `scripts/build-wasm.mjs` · job `wasm`         |
+| Módulo sob demanda            | gzip de cada módulo do pacote do site, inicial ou não: uma ilha é um download, ainda que tardio (ADR 0014)  | ≤ 16 KiB cada           | `pnpm check:budgets`                          |
+| Cena da sala de leitura       | gzip do único módulo autorizado a passar do teto: three.js e a cena, baixados só onde a sala aparece        | ≤ 140 KiB               | idem; `tests/e2e/room.spec.ts`                |
 | Fontes pré-carregadas         | bytes brutos; aviso, não erro (woff2 já é comprimido; o preload disputa banda com o HTML)                   | ≤ 100 KiB (aviso)       | `pnpm check:budgets`                          |
 | Comportamento sob demanda     | um `<script>` global (`registry.ts`); cada `ft-*` é importado ao aproximar-se da viewport                   | 0 frameworks no cliente | lint de camadas; `check:budgets` (JS inicial) |
 | Busca sem servidor            | índice estático Pagefind, carregado só quando a paleta abre                                                 | —                       | `pnpm search:index`; e2e da paleta            |
@@ -41,6 +43,9 @@ Medições de 21/10/2026 (`dist/` da branch `fix/html-budgets`): a página mais 
 `pt/ensaios/amostrar-e-decidir`, 145,2 KiB de HTML (62 fórmulas com MathML); a visão geral da ontologia,
 95,0 KiB; CSS bloqueante máximo 20,7 KiB (com o KaTeX); JavaScript inicial 2,5 KiB em toda página; núcleos
 16,0 + 10,2 + 10,2 KiB. Custo marginal da ontologia: ≈ 1,1 KiB por conceito no mapa e ≈ 0,27 KiB na árvore.
+
+Medições de 15/11/2026: a cena da sala de leitura pesa 131,6 KiB em gzip e o elemento que decide carregá-la,
+3,2 KiB; o maior módulo sob demanda fora ela é `ft-lab-kit`, com 12,7 KiB. O JavaScript inicial não mudou.
 
 ## 2. Acessibilidade
 

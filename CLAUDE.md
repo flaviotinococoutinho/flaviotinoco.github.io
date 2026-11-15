@@ -9,7 +9,8 @@ deployed to GitHub Pages as a project site under `/flaviotinoco.github.io/`.
 - `src/core/**` — functional core: pure, deterministic, total TypeScript. Business rules live here only.
 - `src/adapters/unified/` — one remark/rehype stage per file; order and contracts in `pipeline.ts`.
 - `src/adapters/astro/`, `src/adapters/wasm/` — glue to Astro (i18n, content queries, fonts) and to the kernels.
-- `src/islands/` — `registry.ts` (the only global script) lazy-loads `elements/ft-*.ts` custom elements.
+- `src/islands/` — `registry.ts` (the only global script) lazy-loads `elements/ft-*.ts` custom elements;
+  `scenes/` holds what an element imports on demand after deciding to use it (the three.js reading room, ADR 0014).
 - `src/views/` compose pages; `src/components/` are stateless; `src/pages/` only dispatch routes and serve the
   per-locale endpoints (RSS, `palette.json`, `preferences.json`: chrome content fetched on demand, ADR 0009).
 - `src/content/{essays,labs,strata,pages}/{pt,en}/*.md` + `concepts/*.json` + `formulas/*.json` — data, never code.
@@ -24,6 +25,9 @@ deployed to GitHub Pages as a project site under `/flaviotinoco.github.io/`.
 - `tests/unit/**` (Vitest + fast-check), `tests/e2e/**` (Playwright + axe on the built site).
 - Folder patterns: parser `unknown → Result`, codec `decode ∘ encode = id`, transform, fold, compiler, formatter.
 - Shell code (adapters, islands, views, scripts) may do I/O and fail loudly; the core returns `Result`.
+- Reading room (ADR 0014): a decorative three.js scene in the gutters of the essay pages, behind an opaque
+  sheet that carries the text. `src/core/chrome/room.ts` decides off / still / live before anything is
+  downloaded; `three` is imported only by `src/islands/scenes/reading-room.ts` and has its own budget.
 - Scope (ADR 0013): the `domains` facet is closed and two-tiered — eleven core disciplines and eleven
   foundations (`src/core/domain/facets.ts`, rules in `src/core/domain/scope.ts`). Every essay declares at least
   one core discipline (the content schema rejects it otherwise); both locales of a work declare the same
@@ -66,6 +70,8 @@ pnpm format           # prettier --write (never on src/content: it is ignored on
 5. **Tokens only.** Use `--paper*`, `--ink*`, `--rule*`, `--link`, `--focus`, `--mark`, `--stratum-*`, `--step-*`,
    `--space-*`, `--duration-*`, `--ease-*`, `--font-*`, `--leading-*`, `--measure`. No hard-coded colours, no
    `linear-gradient()`, durations only from `--duration-*`. Respect `--motion`, reduced motion, forced colors.
+   The `--room-*` tokens colour the reading room only (decorative, never behind text); its shaders take every
+   colour from tokens too.
 6. **Strata are never shown by colour alone**: always simplex glyph + text label (WCAG 1.4.1).
 7. **i18n with parity.** UI strings come from `src/core/i18n/catalogs/*.ts` (`defineMessages`, pt-BR + en, same
    keys and `{placeholders}`). Every essay, lab and page exists in both locales with the same `translationKey`.

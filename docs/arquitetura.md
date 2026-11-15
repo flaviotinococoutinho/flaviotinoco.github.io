@@ -9,18 +9,18 @@ Inspeção de 21/10/2026 sobre a `main`. Cada linha diz o que existe no código 
 comprova; "verificado" significa que o comando passou nessa data (CI: `.github/workflows/ci.yml`). As pesquisas
 de 11/10/2026 em `docs/research/` mantêm suas datas e limites originais.
 
-| Área                                        | Estado no código versionado                                                                                                                                                | Comprovação                                                                                               |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Núcleo funcional (`src/core/`)              | `algebra`, `domain`, `i18n`, `design`, `latex`, `formulas`, `bibliography`, `lexicon`, `abnt`, `ontology`, `reading`, `fold`, `chrome`, `labs`, `web` — 150+ módulos puros | `pnpm check:lint` (pureza, camadas); `pnpm test` com cobertura                                            |
-| Pipeline Markdown (`src/adapters/unified/`) | estágios `integrity`, `latex`, `citations`, `reading`, `concepts`, `embeds`, `abnt`, `meta`, na ordem de `pipeline.ts`                                                     | testes de cada estágio; `pnpm build:site` (estrito)                                                       |
-| Ilhas (`src/islands/elements/`)             | 25 elementos `ft-*` carregados sob demanda pelo `registry.ts` (`ft-reading-ruler` é o único eager: fica ocioso até a preferência ligar)                                    | e2e (`chrome`, `labs`, `keyboard`, `motion`)                                                              |
-| Conteúdo (contagem de 14/11/2026)           | 7 ensaios, 7 laboratórios, 4 estratos e 2 páginas por língua; 67 conceitos; 43 fórmulas com versão em palavras (ADR 0011); `bibliography/main.bib`; 5 léxicos              | `pnpm check:i18n`; testes de `content`, `bibliography/seed`, `ontology`, `lexicon`, `guardrails/formulas` |
-| WebAssembly (`wasm/`, `src/adapters/wasm/`) | três núcleos `no_std` (`signal`, `information`, `dynamics`), ABI v1, sem importações                                                                                       | `pnpm check:wasm`; `pnpm test:wasm`; orçamento ≤ 48 KiB                                                   |
-| Vistas e rotas                              | `src/pages` só despacha; `src/views` compõe; codec de rotas bijetivo com as páginas da ontologia, do acervo de fórmulas e do escopo                                        | `routes.test.ts`; `pnpm check:links`                                                                      |
-| Verificações                                | tokens, paleta, tipos, lint, formatação, i18n, testes, wasm, links, orçamentos, `robots`, e2e (axe nos dois temas)                                                         | `pnpm check`; jobs `quality`, `wasm`, `build`, `e2e`                                                      |
-| Automação e decisões                        | `ci.yml`, `deploy.yml`, `codeql.yml`, `release.yml`; Dependabot; ADRs 0001–0013; `CLAUDE.md`                                                                               | `tests/unit/guardrails/workflows.test.ts`                                                                 |
-| Publicação                                  | Pages com origem "GitHub Actions"; `main` protegida por conjunto de regras; `noindex` até o lançamento (ADR 0008)                                                          | job `Deploy`; `pnpm check:robots`                                                                         |
-| Pendente                                    | CLI `ft` (`cli/`, issue #20); complementos de leitura (#19); resenhas (#17, #18); camada de acidentes (#14)                                                                | branches `ws/*`                                                                                           |
+| Área                                        | Estado no código versionado                                                                                                                                                      | Comprovação                                                                                               |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Núcleo funcional (`src/core/`)              | `algebra`, `domain`, `i18n`, `design`, `latex`, `formulas`, `bibliography`, `lexicon`, `abnt`, `ontology`, `reading`, `fold`, `chrome`, `labs`, `web` — 150+ módulos puros       | `pnpm check:lint` (pureza, camadas); `pnpm test` com cobertura                                            |
+| Pipeline Markdown (`src/adapters/unified/`) | estágios `integrity`, `latex`, `citations`, `reading`, `concepts`, `embeds`, `abnt`, `meta`, na ordem de `pipeline.ts`                                                           | testes de cada estágio; `pnpm build:site` (estrito)                                                       |
+| Ilhas (`src/islands/elements/`)             | 26 elementos `ft-*` carregados sob demanda pelo `registry.ts`; `src/islands/scenes/` guarda a cena three.js da sala de leitura, importada só quando a sala é mostrada (ADR 0014) | e2e (`chrome`, `labs`, `keyboard`, `motion`)                                                              |
+| Conteúdo (contagem de 14/11/2026)           | 8 ensaios, 7 laboratórios, 4 estratos e 2 páginas por língua; 72 conceitos; 45 fórmulas com versão em palavras (ADR 0011); `bibliography/main.bib`; 5 léxicos                    | `pnpm check:i18n`; testes de `content`, `bibliography/seed`, `ontology`, `lexicon`, `guardrails/formulas` |
+| WebAssembly (`wasm/`, `src/adapters/wasm/`) | três núcleos `no_std` (`signal`, `information`, `dynamics`), ABI v1, sem importações                                                                                             | `pnpm check:wasm`; `pnpm test:wasm`; orçamento ≤ 48 KiB                                                   |
+| Vistas e rotas                              | `src/pages` só despacha; `src/views` compõe; codec de rotas bijetivo com as páginas da ontologia, do acervo de fórmulas e do escopo                                              | `routes.test.ts`; `pnpm check:links`                                                                      |
+| Verificações                                | tokens, paleta, tipos, lint, formatação, i18n, testes, wasm, links, orçamentos, `robots`, e2e (axe nos dois temas)                                                               | `pnpm check`; jobs `quality`, `wasm`, `build`, `e2e`                                                      |
+| Automação e decisões                        | `ci.yml`, `deploy.yml`, `codeql.yml`, `release.yml`; Dependabot; ADRs 0001–0014; `CLAUDE.md`                                                                                     | `tests/unit/guardrails/workflows.test.ts`                                                                 |
+| Publicação                                  | Pages com origem "GitHub Actions"; `main` protegida por conjunto de regras; `noindex` até o lançamento (ADR 0008)                                                                | job `Deploy`; `pnpm check:robots`                                                                         |
+| Pendente                                    | CLI `ft` (`cli/`, issue #20); complementos de leitura (#19); resenhas (#17, #18); camada de acidentes (#14)                                                                      | branches `ws/*`                                                                                           |
 
 Os requisitos abaixo definem a arquitetura pretendida e os contratos entre as partes. Um requisito não comprova
 que um recurso funciona: a tabela acima, os ADRs e o CI comprovam.
@@ -220,6 +220,10 @@ diretiva explícita > frontmatter > dicionário:
   gama sRGB, separabilidade CIEDE2000 sob protanopia/deuteranopia/tritanopia e luminosidade monótona sob
   acromatopsia. Cor nunca é o único portador de significado.
 - Textura: ruído fractal discreto (feTurbulence) no fundo; nenhum gradiente linear.
+- Ambiente: nos ensaios, em janelas largas, uma sala de leitura desenhada com three.js ocupa as calhas ao lado
+  da folha (ADR 0014). É uma camada atrás da página: o texto continua sobre os tokens de papel. A decisão de
+  mostrá-la (`off`, `still`, `live`) é uma função pura de `src/core/chrome/room.ts`; o leitor a controla pela
+  preferência `room`.
 
 ## 7. Ilhas (comportamento no cliente)
 
@@ -228,6 +232,8 @@ diretiva explícita > frontmatter > dicionário:
 - Todo elemento tem conteúdo de fallback útil sem JavaScript, respeita `--motion`, é operável por teclado e
   anuncia resultados relevantes em `aria-live="polite"`.
 - Lógica não trivial (layout de grafo, mapeamentos de rolagem, easing) fica no núcleo e é testada.
+- Uma ilha que precisa de uma biblioteca pesada a importa de `src/islands/scenes/`, com `import()`, depois de
+  decidir que vai usá-la. Hoje há um caso: a cena da sala de leitura (three.js, 131,6 KiB em gzip).
 
 ## 8. Verificações
 
