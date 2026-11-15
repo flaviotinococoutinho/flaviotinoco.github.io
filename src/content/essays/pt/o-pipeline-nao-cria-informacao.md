@@ -95,6 +95,10 @@ Somar perde informação, e ainda assim é o que a diretoria pediu. A teoria tem
 
 A palavra que decide é *para*. Suficiência é uma relação entre uma transformação e uma pergunta, não uma propriedade da transformação. A mesma tabela não é suficiente para “a que horas as lojas vendem mais?”, porque o instante de cada venda ficou na transformação, nem para “que forma de pagamento está crescendo?”, porque esse campo ficou na extração. Um pipeline é projetado para as perguntas conhecidas hoje. A desigualdade do processamento de dados diz o que acontece com as de amanhã: só poderão ser respondidas com o que foi guardado.:sidenote[Esta leitura, que aplica a desigualdade ao desenho de pipelines, é do ensaio; as fontes citadas enunciam o teorema e a noção de suficiência, não a consequência de projeto.]
 
+O laboratório abaixo monta essa cadeia sobre uma distribuição exata de vendas: escolha as etapas e a pergunta, e veja em que etapa a resposta deixa de ser possível.
+
+::lab{widget=pipeline}
+
 ## O que isso decide num pipeline {#decisoes .application depends="suficiencia"}
 
 **Guardar o extrato bruto.** Se toda transformação só perde, o lugar seguro para a informação é antes da primeira. Tratar a entrada como imutável e tudo o mais como derivado — recalculável a partir dela — é o que permite corrigir uma transformação errada e refazer as saídas [@kleppmann2017, cap. 10]. É a mesma separação entre :concept[registro]{ref=record} e estado que o ensaio [O registro não é a coisa](../o-registro-nao-e-a-coisa/) defende: o fato gravado é a fonte, e a tabela consultada é uma projeção dele [@helland2015].

@@ -140,7 +140,7 @@ Medições de 15/11/2026: a cena da sala de leitura pesa 135,3 KiB em gzip e o e
 | Cobertura medida         | matriz disciplina × estrato dobrada do acervo; a página de escopo mostra as lacunas                               | —              | `scope.test.ts` (homomorfismo de monoide); `pnpm check:links`    |
 | Mesmo escopo nas línguas | as duas línguas de uma obra declaram os mesmos domínios, na mesma ordem                                           | 0 divergências | `tests/unit/content/scope.test.ts`                               |
 
-Medição de 14/11/2026: 13 de 15 obras por língua declaram uma disciplina do núcleo (87 %); tecnologia da
+Medição de 15/11/2026: 14 de 16 obras por língua declaram uma disciplina do núcleo (88 %); tecnologia da
 informação não tem obra publicada.
 
 ## 10. O processo

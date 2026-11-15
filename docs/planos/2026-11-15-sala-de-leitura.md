@@ -92,4 +92,3 @@ propriedade; a cena passou de 131,6 para 135,3 KiB em gzip.
 | -------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | Medir o tempo de quadro em aparelhos reais (um notebook com gráficos integrados) | calibra os degraus de qualidade e o limiar do governador  |
 | Trocar o three.js por WebGL 2 direto, se o peso incomodar                        | de 135,3 KiB para menos de 10 KiB; ADR 0014, alternativas |
-| Laboratório do pipeline para o ensaio de ETL                                     | plano de 14/11/2026, §7                                   |

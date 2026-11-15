@@ -176,7 +176,16 @@ export const CONCEPT_IDS: ReadonlySet<string> = new Set([
   'data-lineage',
 ]);
 
-export const WIDGETS: ReadonlySet<string> = new Set(['fourier', 'sampling', 'entropy', 'channel', 'logistic', 'clt']);
+export const WIDGETS: ReadonlySet<string> = new Set([
+  'fourier',
+  'sampling',
+  'entropy',
+  'channel',
+  'logistic',
+  'clt',
+  'flags',
+  'pipeline',
+]);
 
 /** Argument-node kinds (Toulmin, 1958) accepted by the reading stage. */
 export const ARGUMENT_KINDS: ReadonlySet<string> = new Set([

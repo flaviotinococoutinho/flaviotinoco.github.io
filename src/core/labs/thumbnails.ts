@@ -8,6 +8,7 @@ import { absurd } from '../algebra/match.ts';
 import { bscCapacity, binaryEntropy } from './channel.ts';
 import { binEdges, irwinHallDensity, normalPdf } from './clt.ts';
 import { FLAG_NAMES, configurations, flagsOfIndex, meaningOf } from './flags.ts';
+import { ESSAY_PIPELINE, run as runPipeline, stagesOf } from './pipeline.ts';
 import { partialSum } from './fourier.ts';
 import { logisticOrbit, logisticStep } from './logistic.ts';
 import { barsPath, cobwebPoints, functionPath, pointsPath, polylinePath } from './path.ts';
@@ -147,6 +148,29 @@ const flags = (): readonly Shape[] => {
   ];
 };
 
+const pipeline = (): readonly Shape[] => {
+  // The information about the source after each stage of the essay's pipeline, as falling bars: the data
+  // processing inequality drawn as a staircase that never climbs (src/core/labs/pipeline.ts).
+  const r = runPipeline(stagesOf(ESSAY_PIPELINE), 'shop');
+  const n = r.results.length;
+  const width = 26;
+  const gap = 12;
+  const x0 = (W - (n * width + (n - 1) * gap)) / 2;
+  const top = 18;
+  const base = H - 18;
+  const scale = (base - top) / r.sourceEntropy;
+  const bars: string[] = [];
+  const kept: string[] = [];
+  r.results.forEach((s, i) => {
+    const x = x0 + i * (width + gap);
+    const h = Math.max(1, s.aboutSource * scale);
+    bars.push(`M${x} ${base}V${base - h}H${x + width}V${base}Z`);
+    const q = Math.max(1, s.aboutQuestion * scale);
+    kept.push(`M${x + 6} ${base}V${base - q}H${x + width - 6}V${base}Z`);
+  });
+  return [axis(base), { role: 'reference', d: bars.join('') }, { role: 'bars', d: kept.join('') }];
+};
+
 /** The preview of a widget. */
 export const thumbnail = (widget: Widget): Thumbnail => {
   const shapes = (() => {
@@ -165,6 +189,8 @@ export const thumbnail = (widget: Widget): Thumbnail => {
         return clt();
       case 'flags':
         return flags();
+      case 'pipeline':
+        return pipeline();
       default:
         return absurd(widget);
     }

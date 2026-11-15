@@ -686,3 +686,80 @@
     outline-color: Highlight;
   }
 }
+
+/* ── Pipeline (ft-lab-pipeline): the data processing inequality as a column of falling bars ── */
+.pipeline {
+  display: grid;
+  gap: var(--space-0);
+  min-inline-size: 0;
+}
+.pipeline__add,
+.pipeline__edit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-n2);
+}
+.pipeline__figure {
+  margin: 0;
+}
+.pipeline__chain {
+  display: grid;
+  gap: var(--space-n1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pipeline__row {
+  display: grid;
+  gap: var(--space-n3);
+  padding: var(--space-n2) var(--space-n1);
+  border-inline-start: 2px solid var(--rule);
+}
+/* The stage after which the question is no longer fully answered: dashed rule, ✕ and a sentence. */
+.pipeline__row[data-loss] {
+  border-inline-start: 2px dashed var(--ink);
+}
+.pipeline__name,
+.pipeline__figures,
+.pipeline__loss {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+}
+.pipeline__name {
+  font-weight: 600;
+}
+.pipeline__figures {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+.pipeline__loss {
+  font-weight: 600;
+}
+/* Two bars per row, as long as the information they stand for (share of H(X)); decorative: the figures say it. */
+.pipeline__bars {
+  display: grid;
+  gap: 2px;
+}
+.pipeline__bar {
+  display: block;
+  block-size: 0.5rem;
+  inline-size: calc(var(--share, 0) * 100%);
+  min-inline-size: 1px;
+  transition: inline-size calc(var(--duration-3) * var(--motion)) var(--ease-standard);
+}
+.pipeline__bar--sale {
+  background-color: var(--rule-strong);
+}
+.pipeline__bar--question {
+  block-size: 0.3rem;
+  background-color: var(--link);
+}
+@media (forced-colors: active) {
+  .pipeline__bar--sale {
+    background-color: CanvasText;
+  }
+  .pipeline__bar--question {
+    background-color: LinkText;
+  }
+}

@@ -10,10 +10,12 @@
   "tex": "\\I(X; Z) \\leq \\I(X; Y)",
   "labels": {
     "pt-BR": [
-      "eq:processamento-de-dados"
+      "eq:processamento-de-dados",
+      "eq:processamento-de-dados-lab"
     ],
     "en": [
-      "eq:data-processing"
+      "eq:data-processing",
+      "eq:data-processing-lab"
     ]
   },
   "concept": "data-processing-inequality",

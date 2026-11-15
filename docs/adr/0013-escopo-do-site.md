@@ -62,7 +62,7 @@ apoio, e a página não tinha como dizer o que o acervo de fato cobre.
   - As lacunas ficam visíveis. Em 14/11/2026, tecnologia da informação não tem obra publicada.
 - Negativas:
   - Acrescentar uma disciplina exige mudar o núcleo, os catálogos nas duas línguas e as rotas.
-  - O limiar de 75 % é uma escolha, não um resultado. Em 14/11/2026 o acervo está em 87 % (13 de 15 obras).
+  - O limiar de 75 % é uma escolha, não um resultado. Em 15/11/2026 o acervo está em 88 % (14 de 16 obras).
   - Um ensaio legítimo sobre um fundamento precisa ser escrito a partir da disciplina que o usa.
 - Mudanças no conteúdo existente: `technology` passou a `information-technology`; quatro ensaios e treze
   conceitos ganharam as disciplinas de que já tratavam. Nenhuma prosa mudou, e cada ensaio registra a

@@ -8,6 +8,7 @@ import type { Locale } from '../domain/locale.ts';
 import catalog from '../i18n/catalogs/labs.ts';
 import { plural, translator } from '../i18n/messages.ts';
 import { bitsOf, type FlagsRun } from './flags.ts';
+import type { PipelineRun } from './pipeline.ts';
 import { GIBBS_FRACTION, type Crest, type Waveform } from './fourier.ts';
 import { capitalize, fixed, frequency, list, percent, upTo } from './format.ts';
 import { exponentSign } from './logistic.ts';
@@ -204,5 +205,34 @@ export const flagsSummary = (locale: Locale, run: FlagsRun): string => {
             one: t('flags.summary.refused.one'),
             other: t('flags.summary.refused.other'),
           }),
+  });
+};
+
+/**
+ * The pipeline lab: how much of what the source said about the question survives the pipeline, whether the
+ * output is still sufficient for it, and how much of the whole sale is left.
+ */
+export const pipelineSummary = (locale: Locale, run: PipelineRun): string => {
+  const t = tr(locale);
+  const last = run.results.at(-1);
+  const stages =
+    run.stages.length === 0
+      ? t('pipeline.summary.empty')
+      : list(
+          locale,
+          run.stages.map((s) => t(`pipeline.stage.${s}`)),
+        );
+  const lostAt = run.firstLoss === null ? undefined : run.stages[run.firstLoss - 1];
+  return t('pipeline.summary', {
+    stages,
+    question: t(`pipeline.question.${run.question}`),
+    kept: fixed(locale, last?.aboutQuestion ?? 0, 2),
+    total: fixed(locale, run.questionEntropy, 2),
+    verdict:
+      lostAt === undefined
+        ? t('pipeline.summary.sufficient')
+        : t('pipeline.summary.lost', { n: upTo(locale, run.firstLoss ?? 0, 0), stage: t(`pipeline.stage.${lostAt}`) }),
+    sale: fixed(locale, last?.aboutSource ?? 0, 2),
+    source: fixed(locale, run.sourceEntropy, 2),
   });
 };

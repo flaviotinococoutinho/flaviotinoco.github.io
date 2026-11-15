@@ -31,6 +31,10 @@ próprio frontmatter.
   um caderno por laboratório, cor do estrato), a obra lida fica sobre a mesa sob o simplexo do seu estrato, a
   vela queima com o progresso da leitura e a chuva cede no fim. Preferência `room` (automática, ligada,
   desligada) no painel; tokens `--room-*`; dependência `three` 0.187.0, isolada num módulo sob demanda.
+- Laboratório `pipeline` ("O pipeline"): um pipeline de ETL de até seis etapas sobre uma distribuição exata de
+  144 vendas; depois de cada etapa, a informação mútua com a venda inteira e com uma pergunta escolhida pelo
+  leitor, calculada por `information.wasm`, e a etapa em que a pergunta deixa de ser respondida
+  (`src/core/labs/pipeline.ts`, `ft-lab-pipeline`); embutido no ensaio de ETL.
 - Orçamentos: todo módulo do pacote do site passa a ter teto de 16 KiB em gzip, e a cena da sala de leitura,
   de 140 KiB (`pnpm check:budgets`).
 
@@ -64,6 +68,8 @@ próprio frontmatter.
 
 ### Corrigido
 
+- Laboratórios: o campo de texto pede o teclado numérico só quando o alfabeto é de dígitos; o histórico de eventos
+  de "Flags e estados" e as etapas de "O pipeline" são letras, que o teclado numérico do celular não digita.
 - Mapa do argumento aberto (`ArgumentMap.astro`, `ft-argument-map.ts`): removido o elemento `<title>` redundante
   dentro dos nós SVG cujo `aria-label` já nomeia o tipo e a seção, evitando concatenação duplicada do texto
   visível na auditoria do critério 2.5.3 da WCAG 2.2 (`label-content-name-mismatch`).

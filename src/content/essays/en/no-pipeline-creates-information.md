@@ -96,6 +96,10 @@ Adding up loses information, and yet it is what the board asked for. The theory 
 
 The word that decides is *for*. Sufficiency is a relation between a transformation and a question, not a property of the transformation. The same table is not sufficient for “at what time do the shops sell most?”, because the instant of each sale stayed behind in the transformation, nor for “which payment method is growing?”, because that field stayed behind in the extraction. A pipeline is designed for the questions known today. The data processing inequality says what happens to tomorrow's: they can only be answered with what was kept.:sidenote[This reading, which applies the inequality to the design of pipelines, is the essay's own; the sources cited state the theorem and the notion of sufficiency, not the design consequence.]
 
+The lab below builds that chain over an exact distribution of sales: choose the stages and the question, and see at which stage the answer stops being possible.
+
+::lab{widget=pipeline}
+
 ## What this decides in a pipeline {#decisions .application depends="sufficiency"}
 
 **Keep the raw extract.** If every transformation only loses, the safe place for information is before the first one. Treating the input as immutable and everything else as derived — recomputable from it — is what makes it possible to fix a wrong transformation and redo the outputs [@kleppmann2017, ch. 10]. It is the same separation between :concept[record]{ref=record} and state that the essay [The record is not the thing](../the-record-is-not-the-thing/) argues for: the recorded fact is the source, and the table that gets queried is a projection of it [@helland2015].

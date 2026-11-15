@@ -95,7 +95,9 @@ O laboratório "flags e estados" entrou em 14/11/2026: envia eventos ao reprodut
 em duas representações e mede a redundância do histórico. O ensaio "O pipeline não cria informação"
 (14/11/2026) é a primeira obra de engenharia de dados e ETL: lê o pipeline como cadeia de Markov e tira da
 desigualdade do processamento de dados (Cover e Thomas, 2006) as decisões de guardar o extrato bruto,
-registrar a linhagem e escrever etapas reexecutáveis; o laboratório do pipeline ainda não existe. Pelas regras
+registrar a linhagem e escrever etapas reexecutáveis. O laboratório "O pipeline" (15/11/2026) monta essa cadeia
+sobre uma distribuição exata de 144 vendas e mede, etapa por etapa, a informação mútua com a fonte e com uma
+pergunta escolhida pelo leitor; está embutido no ensaio. Pelas regras
 do escopo, a única disciplina sem obra publicada nessa data é tecnologia da informação.
 
 Ensaios previstos que usam os conceitos-ponte: "Escolher custa bits" ganha a leitura pela otimização
