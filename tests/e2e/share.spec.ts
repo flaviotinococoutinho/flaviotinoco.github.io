@@ -11,12 +11,13 @@ import { COORDS, loadSitePages } from './support/site.ts';
 
 const ESSAY_OR_LAB = /^(?:pt\/(?:ensaios|laboratorio)|en\/(?:essays|lab))\/([^/]+)\/$/;
 
+/** The content of the <meta> whose property or name is `key`. Parses attributes; builds no pattern from the key. */
 const meta = (html: string, key: string): string | undefined => {
-  const pattern = new RegExp(
-    `<meta[^>]+(?:property|name)="${key.replace(/[.:]/g, '\\$&')}"[^>]+content="([^"]*)"`,
-    'i',
-  );
-  return pattern.exec(html)?.[1];
+  for (const [tag] of html.matchAll(/<meta\b[^>]*>/gi)) {
+    const attrs = new Map([...tag.matchAll(/([\w:-]+)="([^"]*)"/g)].map(([, name = '', value = '']) => [name, value]));
+    if (attrs.get('property') === key || attrs.get('name') === key) return attrs.get('content');
+  }
+  return undefined;
 };
 
 /** Width and height from the IHDR chunk of a PNG (bytes 16–23), or null if it is not a PNG. */
