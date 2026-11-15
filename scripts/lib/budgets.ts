@@ -9,6 +9,10 @@
  *   CSS  (gzip, render-blocking) ≤  30 KiB per page  — linked stylesheets + inline <style> (KaTeX ≈ 7 KiB gz included).
  *   JS   (gzip, initial)         ≤  12 KiB per page  — scripts that run at load: inline + src + their static import
  *                                                      graph + modulepreload. Dynamic import() (islands) is excluded.
+ *   JS   (gzip, on demand)       ≤  16 KiB per module — what an island may weigh; it loads when its element nears
+ *                                                      the viewport, so it is not initial JS, but it is still a download.
+ *   JS   (gzip, the scene)       ≤ 140 KiB           — the one module allowed above that: the three.js scene of the
+ *                                                      reading room (ADR 0014), fetched only where the room is shown.
  *   WASM (raw, each module)      ≤  48 KiB           — kernels without wasm-bindgen (ADR 0003).
  *   Fonts preloaded (raw)        ≤ 100 KiB per page  — warning only: woff2 is already compressed and
  *                                                      preloads compete with the HTML for bandwidth.
@@ -29,6 +33,10 @@ export interface Budgets {
   readonly htmlRaw: number;
   readonly cssGzip: number;
   readonly jsGzip: number;
+  /** Any module of the bundle, initial or lazy. */
+  readonly moduleGzip: number;
+  /** The reading-room scene (isSceneModule). */
+  readonly sceneGzip: number;
   readonly wasmRaw: number;
   /** Advisory: exceeding it prints a warning, it does not fail the build. */
   readonly fontPreloadRaw: number;
@@ -38,6 +46,8 @@ export const BUDGETS: Budgets = {
   htmlRaw: 160 * KiB,
   cssGzip: 30 * KiB,
   jsGzip: 12 * KiB,
+  moduleGzip: 16 * KiB,
+  sceneGzip: 140 * KiB,
   wasmRaw: 48 * KiB,
   fontPreloadRaw: 100 * KiB,
 };
@@ -159,7 +169,7 @@ export interface PageMeasure {
 
 export interface Violation {
   readonly subject: string;
-  readonly metric: 'html' | 'css' | 'js' | 'wasm' | 'fonts';
+  readonly metric: 'html' | 'css' | 'js' | 'module' | 'scene' | 'wasm' | 'fonts';
   readonly actual: number;
   readonly limit: number;
   readonly severity: 'error' | 'warning';
@@ -179,6 +189,18 @@ export const evaluatePage = (m: PageMeasure, b: Budgets): readonly Violation[] =
 
 export const evaluateWasm = (file: string, raw: number, b: Budgets): readonly Violation[] =>
   raw > b.wasmRaw ? [{ subject: file, metric: 'wasm', actual: raw, limit: b.wasmRaw, severity: 'error' }] : [];
+
+/** The bundler's name for the scene chunk: src/islands/scenes/reading-room.ts → _astro/reading-room.<hash>.js. */
+export const isSceneModule = (file: string): boolean => /(?:^|\/)reading-room\.[\w-]+\.js$/.test(file);
+
+/** Every module of the site's own bundle has a ceiling; the scene has its own, and it is the only exception. */
+export const evaluateModule = (file: string, gzip: number, b: Budgets): readonly Violation[] => {
+  const scene = isSceneModule(file);
+  const limit = scene ? b.sceneGzip : b.moduleGzip;
+  return gzip > limit
+    ? [{ subject: file, metric: scene ? 'scene' : 'module', actual: gzip, limit, severity: 'error' }]
+    : [];
+};
 
 export const formatKiB = (bytes: number): string => `${(bytes / KiB).toFixed(1)} KiB`;
 

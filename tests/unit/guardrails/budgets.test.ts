@@ -5,7 +5,9 @@ import {
   BUDGETS,
   KiB,
   evaluatePage,
+  evaluateModule,
   evaluateWasm,
+  isSceneModule,
   formatKiB,
   formatTable,
   moduleClosure,
@@ -114,6 +116,23 @@ describe('budget evaluation', () => {
     ]);
     expect(evaluateWasm('k.wasm', BUDGETS.wasmRaw, BUDGETS)).toEqual([]);
     expect(evaluateWasm('k.wasm', BUDGETS.wasmRaw + 1, BUDGETS)[0]?.metric).toBe('wasm');
+  });
+
+  it('caps every module of the bundle and lets only the scene weigh more', () => {
+    const island = '_astro/ft-lab-kit.B1Rd8u2u.js';
+    const scene = '_astro/reading-room.iDcRdLaw.js';
+    expect(isSceneModule(scene)).toBe(true);
+    // The element that decides whether to load the scene is an island like any other.
+    expect(isSceneModule('_astro/ft-reading-room.k5Dq1x-z.js')).toBe(false);
+    expect(isSceneModule(island)).toBe(false);
+    expect(evaluateModule(island, BUDGETS.moduleGzip, BUDGETS)).toEqual([]);
+    expect(evaluateModule(island, BUDGETS.moduleGzip + 1, BUDGETS)[0]?.metric).toBe('module');
+    expect(evaluateModule(scene, BUDGETS.sceneGzip, BUDGETS)).toEqual([]);
+    expect(evaluateModule(scene, BUDGETS.sceneGzip + 1, BUDGETS)[0]).toMatchObject({
+      metric: 'scene',
+      severity: 'error',
+    });
+    expect(BUDGETS.sceneGzip).toBeGreaterThan(BUDGETS.moduleGzip);
   });
 
   it('only warns about preloaded fonts', () => {
