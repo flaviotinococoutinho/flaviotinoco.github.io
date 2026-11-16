@@ -29,8 +29,8 @@ próprio frontmatter.
   nada é baixado sem calha, com economia de dados, contraste aumentado ou renderizador por software; com
   movimento reduzido fica um quadro. A sala é calculada do site: a estante é o acervo (uma lombada por ensaio,
   um caderno por laboratório, cor do estrato), a obra lida fica sobre a mesa sob o simplexo do seu estrato, a
-  vela queima com o progresso da leitura e a chuva cede no fim. Preferência `room` (automática, ligada,
-  desligada) no painel; tokens `--room-*`; dependência `three` 0.187.0, isolada num módulo sob demanda.
+  vela queima com o progresso da leitura e a chuva cede no fim. Preferência `room` (desligada por padrão,
+  automática, ligada) no painel; tokens `--room-*`; dependência `three` 0.187.0, isolada num módulo sob demanda.
 - Laboratório `pipeline` ("O pipeline"): um pipeline de ETL de até seis etapas sobre uma distribuição exata de
   144 vendas; depois de cada etapa, a informação mútua com a venda inteira e com uma pergunta escolhida pelo
   leitor, calculada por `information.wasm`, e a etapa em que a pergunta deixa de ser respondida
@@ -57,9 +57,22 @@ próprio frontmatter.
   aproximação, complexidade essencial e acidental, camadas de ritmo, gramática visual, registro de decisão
   arquitetural e lei de Conway), cinco fichas de fórmula com versão em palavras e 23 referências primárias
   verificadas em `bibliography/main.bib`, além do ensaio `A segunda flag`.
+- Sala de leitura interativa ([ADR 0014](docs/adr/0014-sala-de-leitura.md), decisões 15 e 16): para quando o
+  leitor para (todos os quadros enquanto ele se mexe, 15 por segundo até 20 s, depois um quadro parado, `pace`
+  em `src/core/chrome/room.ts`) e responde à mão nas calhas: o olho acompanha o ponteiro (paralaxe), a chama se
+  inclina com o ar da mão, o vidro embaçado se limpa por onde ela passa, e o livro sob o ponteiro sai da
+  estante com o título ao lado; um clique abre a obra. Títulos e endereços em `/<lang>/shelf.json`, da mesma
+  lista que o atributo `shelf` (`src/adapters/astro/shelf.ts`), baixados só depois que a sala acende.
 
 ### Alterado
 
+- Sala de leitura desligada por padrão (a preferência `room` passa a `off` | `auto` | `on`, com `off` por
+  padrão): nada dela é baixado até o leitor pedir. O pedido mais perto é o botão "Sala de leitura" no
+  cabeçalho do ensaio (`ft-room-switch`, botão de alternância com `aria-pressed`), que só aparece onde a sala
+  cabe e grava a mesma preferência do painel. Quem havia escolhido "ligada" continua com a sala.
+- Preferências: ler, gravar e aplicar ficam num armazenamento compartilhado (`src/islands/preferences-store.ts`)
+  que relê o que está guardado antes de mudar uma chave, para que o painel e o botão da sala não se
+  sobrescrevam; o painel espelha mudanças feitas por outro controle da página.
 - Faceta de domínio: `technology` passa a `information-technology`; entram `software-architecture`,
   `systems-design`, `systems-optimization` e `data-engineering`; quatro ensaios e treze conceitos foram
   reclassificados (sem mudança de prosa; a revisão está registrada em cada ensaio).
