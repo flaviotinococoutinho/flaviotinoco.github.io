@@ -76,7 +76,7 @@ export default defineMessages({
     'prefs.room.on': 'Ligada',
     'prefs.room.off': 'Desligada',
     'prefs.room.hint':
-      'Nos ensaios, em telas largas, uma sala desenhada em 3D ocupa as laterais da folha: mesa, estante, janela com chuva e uma vela. Automática mostra a sala só onde o aparelho dá conta; com movimento reduzido ela fica parada.',
+      'Nos ensaios, em telas largas, uma sala desenhada em 3D nas laterais da folha: mesa, estante, janela com chuva e uma vela. Desligada por padrão; o botão “Sala de leitura” do ensaio também a acende. Automática mostra a sala só onde o aparelho dá conta. Ela para quando você para, e com movimento reduzido.',
     'prefs.face': 'Fonte do texto',
     'prefs.face.serif': 'Com serifa (Literata)',
     'prefs.face.sans': 'Sem serifa (Atkinson Hyperlegible Next)',
@@ -251,7 +251,7 @@ export default defineMessages({
     'prefs.room.on': 'On',
     'prefs.room.off': 'Off',
     'prefs.room.hint':
-      'On essay pages, on wide screens, a room drawn in 3D fills the sides of the sheet: desk, shelf, a window in the rain and a candle. Automatic shows the room only where the device can afford it; with reduced motion it stays still.',
+      'On essay pages, on wide screens, a room drawn in 3D at the sides of the sheet: desk, shelf, a window in the rain and a candle. Off by default; the “Reading room” button on the essay lights it too. Automatic shows the room only where the device can afford it. It holds still while you do, and with reduced motion.',
     'prefs.face': 'Text typeface',
     'prefs.face.serif': 'Serif (Literata)',
     'prefs.face.sans': 'Sans serif (Atkinson Hyperlegible Next)',

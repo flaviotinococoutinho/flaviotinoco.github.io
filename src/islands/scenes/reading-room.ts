@@ -38,15 +38,18 @@ import {
   BufferGeometry,
   Color,
   CylinderGeometry,
+  DataTexture,
   Euler,
   InstancedBufferAttribute,
   InstancedMesh,
+  LinearFilter,
   Matrix4,
   Mesh,
   PerspectiveCamera,
   PlaneGeometry,
   Points,
   Quaternion,
+  RedFormat,
   SRGBColorSpace,
   Scene,
   ShaderMaterial,
@@ -57,7 +60,7 @@ import {
   WebGLRenderer,
   type IUniform,
 } from 'three';
-import type { ShelfBook } from '../../core/chrome/room.ts';
+import { refog, type ShelfBook } from '../../core/chrome/room.ts';
 import { STRATA } from '../../core/domain/strata.ts';
 import { mulberry32, type PrngState } from '../../core/ontology/prng.ts';
 
@@ -110,8 +113,13 @@ export interface RoomFrame {
   readonly burn: number;
   /** How hard it rains, RAIN_FLOOR…1 (rainfall). */
   readonly rainfall: number;
-  /** The draught of the scrolling page, −1…1 (gust). */
+  /** The draught of the scrolling page and of the reader's hand, −1…1 (gust). */
   readonly gust: number;
+  /** Offset of the eye from its place, in metres (eyeFor, smoothed): motion parallax. */
+  readonly eye: readonly [x: number, y: number];
+  /** The book under the pointer (index in RoomContents.books, −1 for none), and how far it is pulled out, 0…1. */
+  readonly pulled: number;
+  readonly pull: number;
 }
 
 export interface ReadingRoom {
@@ -119,6 +127,13 @@ export interface ReadingRoom {
   recolor(colors: RoomColors, light: RoomLight): void;
   furnish(contents: RoomContents): void;
   render(frame: RoomFrame): void;
+  /**
+   * What is under the viewport point (x, y) in CSS px: the index of a book on the shelf, or −1. With `wipe`,
+   * a point on the window clears the fog there (it comes back by itself, refog).
+   */
+  pointAt(x: number, y: number, wipe: boolean): number;
+  /** Where the flame is on the screen, in CSS px. */
+  flameAt(): readonly [x: number, y: number];
   dispose(): void;
 }
 
@@ -139,6 +154,11 @@ const SEED = 0x5a1a;
 /** Height of the unburnt candle and the radius of its wax, in metres of the scene. */
 const CANDLE_HEIGHT = 0.34;
 const CANDLE_RADIUS = 0.046;
+/** Texels of the mask that says where the glass has been wiped, and the reach of a fingertip on it (uv). */
+const WIPE = 64;
+const WIPE_REACH = 0.1;
+/** How far a book comes off the shelf towards the reader when it is pointed at, in metres. */
+const PULL_OUT = 0.07;
 
 const NOISE = /* glsl */ `
 float hash21(vec2 p) {
@@ -354,7 +374,8 @@ void main() {
 /**
  * The window: a frame with one mullion and one transom, and old glass lit from outside. Rain is two
  * layers of drops sliding down tall cells along paths bent by noise, each with a head and the trail it
- * leaves; uRainfall thins them out. The lower panes fog, and a trail wipes the fog where it ran. At night
+ * leaves; uRainfall thins them out. The lower panes fog, and a trail wipes the fog where it ran, as does the
+ * reader's pointer (uWipe, a mask that fades as the glass fogs over again). At night
  * three out-of-focus street lamps give the drops something to catch.
  */
 const WINDOW = /* glsl */ `
@@ -365,6 +386,7 @@ uniform vec2 uSize;
 uniform float uRain;
 uniform float uRainfall;
 uniform float uNight;
+uniform sampler2D uWipe;
 vec2 rainLayer(vec2 q, float t, float scale, float seed) {
   vec2 st = q * vec2(scale, scale * 0.28);
   float column = floor(st.x);
@@ -395,9 +417,13 @@ void main() {
   }
   vec2 rain = rainLayer(q, uRain, 9.0, 1.0) + 0.6 * rainLayer(q, uRain * 1.3, 17.0, 5.0);
   float fog = (0.25 + 0.75 * uRainfall) * smoothstep(0.9, 0.0, vUv.y) * (0.45 + 0.55 * vnoise(q * 5.0)) * (1.0 - 0.85 * min(1.0, rain.y + rain.x));
+  fog *= 1.0 - texture2D(uWipe, vUv).r;
   float mist = 0.12 * step(0.992, hash21(floor(q * 140.0)));
-  vec3 glass = sky * (1.0 + 0.55 * rain.x + 0.3 * rain.y + mist) + uCandleColor * (uNight * 0.55 * lamps * (1.0 + rain.x));
-  glass = mix(glass, uGlass * 1.05 * clearing, 0.5 * fog);
+  float seen = 1.0 - 0.7 * fog;
+  vec3 glass = sky * (1.0 + (0.55 * rain.x + 0.3 * rain.y) * seen + mist) + uCandleColor * (uNight * 0.55 * lamps * (1.0 + rain.x) * seen);
+  // Condensation scatters what reaches it: the daylight by day, the candle at night.
+  vec3 haze = uGlass * mix(1.45, 1.05, uNight) * clearing + uCandleColor * (uNight * 0.22 * uCandle);
+  glass = mix(glass, haze, 0.72 * fog);
   vec3 wood = uWood * (1.05 + 0.3 * stripes(q.y + 0.02 * vnoise(q * 4.0), 140.0)) * roomLight(vWorld, normalize(vNormal));
   gl_FragColor = finish(mix(glass * uWindow, wood, frame));
 }
@@ -606,7 +632,14 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
     uBlob: { value: [new Vector4(0, 0, 1, 0), new Vector4(0, 0, 1, 0)] },
     uShelfA: { value: new Vector3(0, 0, 9) },
     uShelfB: { value: new Vector3(0, 0, 9) },
+    uWipe: { value: new DataTexture(new Uint8Array(WIPE * WIPE), WIPE, WIPE, RedFormat) },
   } satisfies Record<string, IUniform>;
+  const wiped = own.uWipe.value;
+  wiped.magFilter = LinearFilter;
+  wiped.minFilter = LinearFilter;
+  wiped.needsUpdate = true;
+  const mask = wiped.image.data as Uint8Array;
+  let fogging = false;
 
   const lit = (fragmentShader: string, uniforms: Record<string, IUniform>, vertexShader = VERTEX): ShaderMaterial =>
     new ShaderMaterial({ vertexShader, fragmentShader, uniforms: { ...shared, ...uniforms } });
@@ -639,6 +672,7 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
       uRain: own.uRain,
       uRainfall: own.uRainfall,
       uNight: own.uNight,
+      uWipe: own.uWipe,
     }),
     boxes: lit(BOXES, { uGilt: own.uGilt, uPages: own.uPages }),
     wax: lit(SOLID, { uTint: own.uWax, uGlow: { value: 0.7 }, uShine: { value: 0.05 } }, WAX_VERTEX),
@@ -745,6 +779,24 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
     count += 1;
   };
 
+  /** A standing book: which work it is, its instance, and its box (centre, size, lean) for picking and pulling. */
+  interface Spine {
+    readonly book: number;
+    readonly instance: number;
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+    readonly sx: number;
+    readonly sy: number;
+    readonly sz: number;
+    readonly lean: number;
+    readonly tint: Color;
+  }
+  const spines = new Map<number, Spine>();
+  /** The book pointed at, and how far out it is: one instance's matrix is recomposed when either changes. */
+  let pulledNow = -1;
+  let pullNow = 0;
+
   const coverOf = (book: ShelfBook): Color => {
     const cloth = covers[STRATA.indexOf(book.stratum)] ?? woodTint;
     return book.form === 'lab' ? notebook.copy(cloth).lerp(own.uPages.value, 0.35) : cloth;
@@ -755,15 +807,21 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
    * the order given, a gap where the work being read belongs, and its neighbour leaning into the gap.
    * Oldest works are left out if the gutter cannot hold them all. Returns the board for the wall's shadow.
    */
-  const shelve = (row: readonly ShelfBook[], x0: number, y: number, room: number, next: () => number): Vector3 => {
+  const shelve = (
+    row: readonly (readonly [book: ShelfBook, index: number])[],
+    x0: number,
+    y: number,
+    room: number,
+    next: () => number,
+  ): Vector3 => {
     let from = 0;
-    const need = (): number => row.slice(from).reduce((sum, b) => sum + thickness(b) + 0.004, 0);
+    const need = (): number => row.slice(from).reduce((sum, [b]) => sum + thickness(b) + 0.004, 0);
     while (from < row.length - 1 && need() > room - 0.1) from += 1;
     const width = Math.min(room, Math.max(0.3, need() + 0.2));
     put(x0, y, WALL_Z + 0.13, width, 0.035, 0.26, woodTint, 0);
     let x = x0 - width / 2 + 0.04;
     let lean = false;
-    for (const book of row.slice(from)) {
+    for (const [book, index] of row.slice(from)) {
       const thick = thickness(book);
       if (book.current) {
         x += thick * 0.9;
@@ -774,7 +832,20 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
       const deep = 0.17 + 0.04 * next();
       const tilt = lean ? 0.17 : (next() - 0.5) * 0.02;
       const shift = lean ? -tall * 0.085 : 0;
-      put(x + thick / 2 + shift, y + 0.0175 + tall / 2, WALL_Z + 0.13, thick, tall, deep, coverOf(book), 1, 0, tilt);
+      const spine = {
+        book: index,
+        instance: count,
+        x: x + thick / 2 + shift,
+        y: y + 0.0175 + tall / 2,
+        z: WALL_Z + 0.13,
+        sx: thick,
+        sy: tall,
+        sz: deep,
+        lean: tilt,
+        tint: coverOf(book).clone(),
+      };
+      if (index >= 0 && count < MAX_BOXES) spines.set(index, spine);
+      put(spine.x, spine.y, spine.z, thick, tall, deep, spine.tint, 1, 0, tilt);
       lean = false;
       x += thick + 0.004;
     }
@@ -790,6 +861,8 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
     const leftNdc = sheetLeft / width - 1;
     const rightNdc = sheetRight / width;
     count = 0;
+    spines.clear();
+    pulledNow = -1;
 
     // Right gutter, on the wall: the window and its sill.
     const windowY = 1.5;
@@ -814,24 +887,30 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
     // Left gutter, on the wall: the corpus. Essays above, labs below; without data, an anonymous row.
     const room = Math.min(1.6, Math.max(0.3, spanAt(sheetLeft, WALL_Z) * 0.82));
     const shelfX = xAt(leftNdc, WALL_Z);
-    const anonymous = (n: number): readonly ShelfBook[] =>
-      Array.from({ length: n }, () => ({
-        stratum: STRATA[Math.floor(next() * STRATA.length)] ?? 'value',
-        form: 'essay' as const,
-        size: Math.floor(next() * 8),
-        current: false,
-      }));
-    const essays = contents.books.filter((b) => b.form === 'essay');
-    const labs = contents.books.filter((b) => b.form === 'lab');
-    own.uShelfA.value.copy(shelve(essays.length > 0 ? essays : anonymous(9), shelfX, 1.52, room, next));
-    own.uShelfB.value.copy(shelve(labs.length > 0 ? labs : anonymous(7), shelfX, 0.92, room, next));
+    const anonymous = (n: number): readonly (readonly [ShelfBook, number])[] =>
+      Array.from({ length: n }, () => [
+        {
+          stratum: STRATA[Math.floor(next() * STRATA.length)] ?? 'value',
+          form: 'essay' as const,
+          size: Math.floor(next() * 8),
+          current: false,
+        },
+        -1,
+      ]);
+    const indexed = contents.books.map((b, i) => [b, i] as const);
+    const essayRow = indexed.filter(([b]) => b.form === 'essay');
+    const labRow = indexed.filter(([b]) => b.form === 'lab');
+    own.uShelfA.value.copy(shelve(essayRow.length > 0 ? essayRow : anonymous(9), shelfX, 1.52, room, next));
+    own.uShelfB.value.copy(shelve(labRow.length > 0 ? labRow : anonymous(7), shelfX, 0.92, room, next));
+    const essays = essayRow.map(([b]) => b);
+    const labs = labRow.map(([b]) => b);
 
     // Left gutter, on the desk: the work being read, on top of the works published before and after it.
     const row = contents.books.some((b) => b.current && b.form === 'lab') ? labs : essays;
     const at = row.findIndex((b) => b.current);
     const below = [row[at + 1], row[at - 1]].flatMap((b) => (b === undefined ? [] : [b]));
     const reading = row[at];
-    const pile = reading === undefined ? anonymous(3) : [...below, reading];
+    const pile = reading === undefined ? anonymous(3).map(([b]) => b) : [...below, reading];
     const stackX = xAt(leftNdc, STACK_Z);
     const stackWidth = Math.min(0.46, Math.max(0.2, spanAt(sheetLeft, STACK_Z) * 0.6));
     let top = 0;
@@ -899,6 +978,88 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
     shared.uCandlePos.value.set(candleX, tip + 0.11, CANDLE_Z);
   };
 
+  /** Recomposes one standing book's matrix, `out` of the way off the shelf (0 in place, 1 pulled). */
+  const pose = (spine: Spine | undefined, out: number): void => {
+    if (spine === undefined) return;
+    quaternion.setFromEuler(euler.set(0, 0, spine.lean * (1 - out)));
+    matrix.compose(
+      position.set(spine.x, spine.y + 0.01 * out, spine.z + PULL_OUT * out),
+      quaternion,
+      scale.set(spine.sx, spine.sy, spine.sz),
+    );
+    boxes.setMatrixAt(spine.instance, matrix);
+    boxes.instanceMatrix.needsUpdate = true;
+  };
+
+  /** The glass fogs over again: every texel of the wipe mask decays (refog) by the time since the last frame. */
+  let lastTime = Number.NaN;
+  const breathe = (time: number): void => {
+    const dt = Number.isFinite(lastTime) ? Math.max(0, Math.min(0.1, time - lastTime)) : 0;
+    lastTime = time;
+    if (!fogging || dt === 0) return;
+    const k = refog(1, dt);
+    let any = false;
+    for (let i = 0; i < mask.length; i++) {
+      const v = Math.floor((mask[i] ?? 0) * k);
+      mask[i] = v;
+      any ||= v > 0;
+    }
+    fogging = any;
+    wiped.needsUpdate = true;
+  };
+
+  /** A fingertip on the glass at (u, v): a soft disc of clear glass, round on the pane whatever its proportions. */
+  const wipeAt = (u: number, v: number): void => {
+    const aspect = own.uSize.value.x / Math.max(1e-6, own.uSize.value.y);
+    const ru = WIPE_REACH;
+    const rv = WIPE_REACH * aspect;
+    for (let j = Math.max(0, Math.floor((v - rv) * WIPE)); j <= Math.min(WIPE - 1, Math.ceil((v + rv) * WIPE)); j++) {
+      for (let i = Math.max(0, Math.floor((u - ru) * WIPE)); i <= Math.min(WIPE - 1, Math.ceil((u + ru) * WIPE)); i++) {
+        const du = ((i + 0.5) / WIPE - u) / ru;
+        const dv = ((j + 0.5) / WIPE - v) / rv;
+        const d = du * du + dv * dv;
+        if (d >= 1) continue;
+        const k = j * WIPE + i;
+        mask[k] = Math.max(mask[k] ?? 0, Math.round(255 * (1 - d) * (1 - d)));
+      }
+    }
+    fogging = true;
+    wiped.needsUpdate = true;
+  };
+
+  const origin = new Vector3();
+  const direction = new Vector3();
+  /** The ray from the eye through the viewport point (x, y), CSS px, in world space. */
+  const rayAt = (x: number, y: number): void => {
+    origin.copy(camera.position);
+    direction
+      .set((x / Math.max(1, layout.width)) * 2 - 1, 1 - (y / Math.max(1, layout.height)) * 2, 0.5)
+      .unproject(camera)
+      .sub(origin)
+      .normalize();
+  };
+  /** Distance along the ray to an axis-aligned box (centre, half sizes), or Infinity (the slab method). */
+  const hitBox = (cx: number, cy: number, cz: number, hx: number, hy: number, hz: number): number => {
+    let near = 0;
+    let far = Number.POSITIVE_INFINITY;
+    for (const [o, d, c, h] of [
+      [origin.x, direction.x, cx, hx],
+      [origin.y, direction.y, cy, hy],
+      [origin.z, direction.z, cz, hz],
+    ] as const) {
+      if (Math.abs(d) < 1e-9) {
+        if (Math.abs(o - c) > h) return Number.POSITIVE_INFINITY;
+        continue;
+      }
+      const a = (c - h - o) / d;
+      const b = (c + h - o) / d;
+      near = Math.max(near, Math.min(a, b));
+      far = Math.min(far, Math.max(a, b));
+      if (near > far) return Number.POSITIVE_INFINITY;
+    }
+    return near;
+  };
+
   let disposed = false;
   return {
     resize(next) {
@@ -946,6 +1107,14 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
     },
     render(frame) {
       if (disposed) return;
+      camera.position.set(CAMERA.x + frame.eye[0], CAMERA.y + frame.eye[1], CAMERA.z);
+      if (frame.pulled !== pulledNow || frame.pull !== pullNow) {
+        if (frame.pulled !== pulledNow) pose(spines.get(pulledNow), 0);
+        pulledNow = frame.pulled;
+        pullNow = frame.pull;
+        pose(spines.get(pulledNow), pullNow);
+      }
+      breathe(frame.time);
       burnTo(frame.burn);
       shared.uCandle.value = strength * frame.flicker;
       shared.uBrightness.value = 0.82 + 0.18 * frame.liveliness;
@@ -969,9 +1138,34 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
         renderer.render(scene, camera);
       }
     },
+    pointAt(x, y, wipe) {
+      if (disposed) return -1;
+      rayAt(x, y);
+      let best = -1;
+      let nearest = Number.POSITIVE_INFINITY;
+      for (const spine of spines.values()) {
+        const t = hitBox(spine.x, spine.y, spine.z, spine.sx / 2 + 0.004, spine.sy / 2, spine.sz / 2);
+        if (t < nearest) {
+          nearest = t;
+          best = spine.book;
+        }
+      }
+      if (wipe && best < 0 && Math.abs(direction.z) > 1e-9) {
+        const t = (glass.position.z - origin.z) / direction.z;
+        const u = (origin.x + t * direction.x - glass.position.x) / glass.scale.x + 0.5;
+        const v = (origin.y + t * direction.y - glass.position.y) / glass.scale.y + 0.5;
+        if (t > 0 && u >= 0 && u <= 1 && v >= 0 && v <= 1) wipeAt(u, v);
+      }
+      return best;
+    },
+    flameAt() {
+      origin.copy(flame.position).project(camera);
+      return [((origin.x + 1) / 2) * layout.width, ((1 - origin.y) / 2) * layout.height];
+    },
     dispose() {
       if (disposed) return;
       disposed = true;
+      wiped.dispose();
       canvas.removeEventListener('webglcontextlost', lost);
       for (const material of Object.values(materials)) material.dispose();
       for (const geometry of [plane, box, cylinder, prism, tetrahedron, sphere, dust]) geometry.dispose();

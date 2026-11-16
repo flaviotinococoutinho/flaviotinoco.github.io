@@ -242,11 +242,15 @@ diretiva explícita > frontmatter > dicionário:
   cartão do site. O cartão é descrito por um modelo puro (`src/core/chrome/card.ts`: estrato com glifo e nome,
   título, descrição, disciplinas, miniatura do laboratório) e rasterizado na compilação por satori e resvg, com
   as cores dos tokens convertidas de OKLCH (`src/core/design/oklch.ts`).
-- Ambiente: nos ensaios, em janelas largas, uma sala de leitura desenhada com three.js ocupa as calhas ao lado
-  da folha (ADR 0014). É uma camada atrás da página: o texto continua sobre os tokens de papel. A decisão de
-  mostrá-la (`off`, `still`, `live`) é uma função pura de `src/core/chrome/room.ts`; o leitor a controla pela
-  preferência `room`. A sala é calculada do site: a estante é o acervo, a obra lida fica sobre a mesa sob o
-  simplexo do seu estrato, e a vela queima com o progresso da leitura.
+- Ambiente: nos ensaios, em janelas largas, uma sala de leitura desenhada com three.js pode ocupar as calhas ao
+  lado da folha (ADR 0014). Fica desligada até o leitor pedir: o botão "Sala de leitura" do cabeçalho do
+  ensaio (`ft-room-switch`, um botão de alternância que só aparece onde a sala cabe) ou a preferência `room`.
+  É uma camada atrás da página: o texto continua sobre os tokens de papel. A decisão de mostrá-la (`off`,
+  `still`, `live`) e o ritmo dela (`full`, `ambient`, `rest`: para quando o leitor para) são funções puras de
+  `src/core/chrome/room.ts`. A sala é calculada do site: a estante é o acervo, a obra lida fica sobre a mesa sob
+  o simplexo do seu estrato, e a vela queima com o progresso da leitura. Responde à mão só nas calhas: o olho
+  acompanha o ponteiro (paralaxe), a chama se inclina com o ar que a mão move, o vidro embaçado se limpa por
+  onde ela passa, e o livro sob o ponteiro sai da estante com o título ao lado; um clique abre a obra.
 
 ## 7. Ilhas (comportamento no cliente)
 
@@ -256,7 +260,7 @@ diretiva explícita > frontmatter > dicionário:
   anuncia resultados relevantes em `aria-live="polite"`.
 - Lógica não trivial (layout de grafo, mapeamentos de rolagem, easing) fica no núcleo e é testada.
 - Uma ilha que precisa de uma biblioteca pesada a importa de `src/islands/scenes/`, com `import()`, depois de
-  decidir que vai usá-la. Hoje há um caso: a cena da sala de leitura (three.js, 135,3 KiB em gzip).
+  decidir que vai usá-la. Hoje há um caso: a cena da sala de leitura (three.js, 136,4 KiB em gzip).
 
 ## 8. Verificações
 

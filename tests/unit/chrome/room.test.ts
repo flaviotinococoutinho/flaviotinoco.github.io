@@ -6,8 +6,23 @@ import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
 import { DAYPARTS } from '../../../src/core/chrome/daypart.ts';
 import {
+  AMBIENT_AFTER_S,
+  AMBIENT_FPS,
+  BREATH_REACH_PX,
+  PARALLAX_X,
+  PARALLAX_Y,
+  REFOG_SECONDS,
+  approach,
+  breath,
+  decodeShelfLabels,
+  encodeShelfLabels,
+  eyeFor,
+  refog,
   CALM_FLOOR,
   FLICKER_AMPLITUDE,
+  REST_AFTER_S,
+  pace,
+  paceInterval,
   FLICKER_PERIOD_S,
   ROOM_MIN_GUTTER_PX,
   ROOM_MODES,
@@ -201,6 +216,38 @@ describe('governor', () => {
   );
 });
 
+describe('pace: the room holds still when the reader does', () => {
+  const RANK = { full: 2, ambient: 1, rest: 0 } as const;
+
+  test.prop([fc.double({ min: 0, max: 1e6, noNaN: true }), fc.double({ min: 0, max: 1e6, noNaN: true })])(
+    'never speeds up as the reader stays still longer',
+    (a, b) => {
+      const [early, late] = a <= b ? [a, b] : [b, a];
+      expect(RANK[pace(late)]).toBeLessThanOrEqual(RANK[pace(early)]);
+    },
+  );
+
+  it('moves at full pace a moment after input, slows, then rests', () => {
+    expect(pace(0)).toBe('full');
+    expect(pace(AMBIENT_AFTER_S - 0.01)).toBe('full');
+    expect(pace(AMBIENT_AFTER_S)).toBe('ambient');
+    expect(pace(REST_AFTER_S - 0.01)).toBe('ambient');
+    expect(pace(REST_AFTER_S)).toBe('rest');
+    expect(pace(Number.NaN)).toBe('full');
+    expect(pace(-1)).toBe('full');
+  });
+
+  test.prop([fc.integer({ min: 0, max: ROOM_TIERS.length - 1 })])(
+    'ambient is never faster than the rung nor than AMBIENT_FPS; rest renders nothing',
+    (tier) => {
+      expect(paceInterval('full', tier)).toBe(frameIntervalOf(tier));
+      expect(paceInterval('ambient', tier)).toBeGreaterThanOrEqual(frameIntervalOf(tier));
+      expect(paceInterval('ambient', tier)).toBeGreaterThanOrEqual(1000 / AMBIENT_FPS);
+      expect(paceInterval('rest', tier)).toBe(Number.POSITIVE_INFINITY);
+    },
+  );
+});
+
 describe('calm', () => {
   it('is 1 at the top and the floor one screen down', () => {
     expect(calm(0, 900)).toBe(1);
@@ -374,5 +421,99 @@ describe('the room follows the reading', () => {
     for (let i = 0; i < 30 * 5; i++) g = gust(g, 0, 1 / 30, 900);
     expect(Math.abs(g)).toBeLessThan(0.001);
     expect(gust(1, 0, GUST_DECAY_SECONDS, 900)).toBeCloseTo(Math.exp(-1), 12);
+  });
+});
+
+describe("the room answers the reader's hand", () => {
+  const finite = fc.double({ min: -1e3, max: 1e3, noNaN: true });
+  const positive = fc.double({ min: 1e-3, max: 1e3, noNaN: true });
+
+  test.prop([finite, finite, positive, positive])(
+    'approach moves towards the target and never past it',
+    (current, target, seconds, tau) => {
+      const next = approach(current, target, seconds, tau);
+      expect(Math.abs(next - target)).toBeLessThanOrEqual(Math.abs(current - target) + 1e-9);
+      expect((next - target) * (current - target)).toBeGreaterThanOrEqual(-1e-12);
+    },
+  );
+
+  it('approach is total', () => {
+    expect(approach(Number.NaN, 2, 1, 1)).toBe(2);
+    expect(approach(1, Number.NaN, 1, 1)).toBe(1);
+    expect(approach(1, 2, 0, 1)).toBe(1);
+    expect(approach(1, 2, 1, 0)).toBe(2);
+  });
+
+  test.prop([fc.double({ noNaN: false }), fc.double({ noNaN: false })])(
+    'the eye moves a few centimetres at most, whatever the pointer reports',
+    (x, y) => {
+      const [ex, ey] = eyeFor(x, y);
+      expect(Math.abs(ex)).toBeLessThanOrEqual(PARALLAX_X);
+      expect(Math.abs(ey)).toBeLessThanOrEqual(PARALLAX_Y);
+      expect(Number.isFinite(ex) && Number.isFinite(ey)).toBe(true);
+    },
+  );
+
+  test.prop([finite, finite, finite])(
+    "the hand's draught is never stronger than the hand, and keeps its sign",
+    (dx, dy, vx) => {
+      const b = breath(dx, dy, vx);
+      expect(Math.abs(b)).toBeLessThanOrEqual(Math.abs(vx));
+      expect(b * vx).toBeGreaterThanOrEqual(0);
+    },
+  );
+
+  it('the draught fades with distance from the flame', () => {
+    expect(breath(0, 0, 500)).toBe(500);
+    expect(breath(BREATH_REACH_PX, 0, 500)).toBeCloseTo(500 / Math.E, 6);
+    expect(breath(10 * BREATH_REACH_PX, 0, 500)).toBeLessThan(1e-30);
+    expect(breath(Number.NaN, 0, 500)).toBe(0);
+  });
+
+  test.prop([
+    fc.double({ min: 0, max: 1, noNaN: true }),
+    fc.double({ min: 0, max: 1e3, noNaN: true }),
+    fc.double({ min: 0, max: 1e3, noNaN: true }),
+  ])('wiped glass fogs over again: never clearer later, and two waits are one', (w, a, b) => {
+    expect(refog(w, a)).toBeLessThanOrEqual(w);
+    expect(refog(refog(w, a), b)).toBeCloseTo(refog(w, a + b), 9);
+  });
+
+  it('refogs to 1/e in REFOG_SECONDS', () => {
+    expect(refog(1, REFOG_SECONDS)).toBeCloseTo(1 / Math.E, 9);
+    expect(refog(2, 0)).toBe(1);
+    expect(refog(0.5, Number.NaN)).toBe(0.5);
+  });
+
+  const label = fc.record({
+    title: fc.string({ minLength: 1, maxLength: 40 }).filter((t) => t.trim() !== ''),
+    href: fc.stringMatching(/^\/[a-z0-9-]{1,12}(\/[a-z0-9-]{1,12}){0,3}\/$/),
+  });
+
+  test.prop([fc.array(label, { maxLength: SHELF_MAX })])(
+    'labels survive the endpoint (decode ∘ parse ∘ encode = id)',
+    (labels) => {
+      expect(decodeShelfLabels(JSON.parse(encodeShelfLabels(labels)))).toEqual(labels);
+    },
+  );
+
+  it('keeps the position of an entry it rejects, and rejects links that leave the site', () => {
+    const decoded = decodeShelfLabels([
+      { title: 'A', href: '/pt/ensaios/a/' },
+      { title: 'B', href: 'https://example.com/' },
+      { title: 'C', href: '//example.com/c/' },
+      { title: '', href: '/pt/ensaios/d/' },
+      'nonsense',
+      { title: 'E', href: '/pt/ensaios/e/' },
+    ]);
+    expect(decoded).toEqual([
+      { title: 'A', href: '/pt/ensaios/a/' },
+      null,
+      null,
+      null,
+      null,
+      { title: 'E', href: '/pt/ensaios/e/' },
+    ]);
+    expect(decodeShelfLabels({ not: 'an array' })).toEqual([]);
   });
 });

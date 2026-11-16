@@ -1,11 +1,13 @@
 # ADR 0014 — Sala de leitura: uma cena three.js nas calhas dos ensaios
 
-- **Estado:** Aceito; a composição, as cores e o padrão da preferência aguardam revisão do autor
-- **Data:** 2026-11-15
+- **Estado:** Aceito; a composição e as cores aguardam revisão do autor
+- **Data:** 2026-11-15; revisto em 2026-11-16 (desligada por padrão, interruptor no ensaio, repouso, interação)
 - **Escopo:** `src/core/chrome/room.ts`, `src/islands/elements/ft-reading-room.ts`,
-  `src/islands/scenes/reading-room.ts`, `src/styles/components/room.css`, `src/views/EssayView.astro`,
-  `src/core/chrome/preferences.ts`, `src/core/design/tokens.json`, `scripts/lib/budgets.ts`,
-  `tests/unit/chrome/room.test.ts`, `tests/e2e/room.spec.ts`
+  `src/islands/scenes/reading-room.ts`, `src/islands/elements/ft-room-switch.ts`,
+  `src/islands/preferences-store.ts`, `src/styles/components/room.css`, `src/views/EssayView.astro`,
+  `src/adapters/astro/shelf.ts`, `src/pages/[lang]/shelf.json.ts`, `src/core/chrome/preferences.ts`,
+  `src/core/design/tokens.json`, `scripts/lib/budgets.ts`, `tests/unit/chrome/room.test.ts`,
+  `tests/e2e/room.spec.ts`
 - **Relacionados:** ADR 0001 (núcleo funcional), ADR 0004 (cor verificável), ADR 0009 (moldura sob demanda);
   [requisitos não funcionais](../requisitos-nao-funcionais.md) §1 e §2;
   [plano de 15/11/2026](../planos/2026-11-15-sala-de-leitura.md)
@@ -44,14 +46,14 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
    `live` a partir do que a casca mede. O three.js só é importado quando o modo não é `off`, e em tempo
    ocioso, depois da primeira pintura.
 
-   | Condição                                                          | `auto`  | `on`    |
-   | ----------------------------------------------------------------- | ------- | ------- |
-   | preferência `off`; modo de foco; cores forçadas; sem WebGL 2      | `off`   | `off`   |
-   | calha menor que 96 px de cada lado                                | `off`   | `off`   |
-   | economia de dados; contraste aumentado; renderizador por software | `off`   | —       |
-   | movimento reduzido                                                | `still` | `still` |
-   | até 2 núcleos ou até 2 GiB de memória                             | `still` | —       |
-   | nenhuma das anteriores                                            | `live`  | `live`  |
+   | Condição                                                                | `auto`  | `on`    |
+   | ----------------------------------------------------------------------- | ------- | ------- |
+   | preferência `off` (o padrão); modo de foco; cores forçadas; sem WebGL 2 | `off`   | `off`   |
+   | calha menor que 96 px de cada lado                                      | `off`   | `off`   |
+   | economia de dados; contraste aumentado; renderizador por software       | `off`   | —       |
+   | movimento reduzido                                                      | `still` | `still` |
+   | até 2 núcleos ou até 2 GiB de memória                                   | `still` | —       |
+   | nenhuma das anteriores                                                  | `live`  | `live`  |
 
    Limites duros valem sempre; limites brandos só valem no automático, porque quem ligou a sala conhece o
    próprio aparelho melhor que uma heurística. Lei testada por propriedade: acrescentar uma restrição nunca
@@ -59,7 +61,8 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
 
 3. **three.js entra como dependência, isolado num pedaço sob demanda.** `three@0.187.0`, versão fixada (a
    biblioteca não segue versionamento semântico), importado só por `src/islands/scenes/reading-room.ts` com
-   importações nomeadas. O pedaço pesa 135,3 KiB em gzip; o elemento que decide carregá-lo, 3,9 KiB.
+   importações nomeadas. O pedaço pesa 136,4 KiB em gzip; o elemento que decide carregá-lo, 5,5 KiB (15/11:
+   135,3 e 3,9; a diferença é a interação da decisão 16).
 
 4. **A cena é procedural: nenhum arquivo além do código.** Veios da madeira, reboco, chuva e chama são
    _shaders_ de fragmento. Não há sistema de luzes, mapas de sombra nem pós-processamento: uma luz pontual
@@ -98,9 +101,15 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
 10. **A vela não pisca.** `flicker` é a soma de três senoides abaixo de 3 Hz, com desvio máximo de 7 %: fica
     sob a taxa e sob a variação de luminância que definem um _flash_ (WCAG 2.2, critério 2.3.1).
 
-11. **O leitor manda.** Preferência `room` (`auto` | `on` | `off`) no painel de preferências, com explicação.
-    O modo de foco desliga a sala. Com isso há um mecanismo para parar ou esconder o movimento (WCAG 2.2,
-    critério 2.2.2).
+11. **O leitor manda, e a sala só existe quando ele pede.** A preferência `room` (`off` | `auto` | `on`) vale
+    `off` por padrão (decisão do autor em 16/11: a sala não era para ficar sempre ativa). O pedido mais perto
+    está no próprio ensaio: `ft-room-switch`, um botão de alternância ("Sala de leitura", `aria-pressed`, uma
+    vela acesa ou apagada) no cabeçalho, que só aparece onde a sala cabe (`data-scene-able`, calculado sem
+    criar contexto WebGL) e grava a mesma preferência do painel, pelo armazenamento compartilhado
+    (`src/islands/preferences-store.ts`: toda gravação relê o armazenamento antes, então o botão e o painel não
+    se sobrescrevem). O botão é montado pela ilha: sem JavaScript não há sala nem botão, e o HTML não carrega
+    bytes que ninguém usaria. O modo de foco desliga a sala. Há, assim, um mecanismo para parar ou esconder o
+    movimento (WCAG 2.2, critério 2.2.2).
 
 12. **A sala é a deste site, não um cenário.** Os dados saem do acervo e da leitura; a cena só os desenha.
 
@@ -133,16 +142,41 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
     gzip, e a cena, o único módulo autorizado a passar disso, no máximo 140 KiB. Antes, um módulo sob demanda
     não tinha teto.
 
+15. **A sala para quando o leitor para.** O laço tem três ritmos (`pace`, puro): todos os quadros que o
+    degrau permite enquanto o leitor rola, aponta ou digita e até 3 s depois; 15 quadros por segundo até
+    20 s; depois, nenhum: o último quadro fica na tela até o próximo movimento, que religa o laço. Movimento
+    na periferia captura a atenção qualquer que seja a tarefa (Franconeri e Simons, _Perception &
+    Psychophysics_ 65(7), 2003): quem se fixou num parágrafo ganha uma sala parada, e a bateria descansa.
+
+16. **A sala responde à mão, e só nas calhas.** Os gestos são do ponteiro sobre o fundo nu da página fora da
+    folha (nunca sobre o texto, o cabeçalho, um diálogo ou um _popover_), com modelos puros testados:
+
+    | Gesto                       | Resposta                                                                                           |
+    | --------------------------- | -------------------------------------------------------------------------------------------------- |
+    | mover o ponteiro numa calha | o olho acompanha alguns centímetros (`eyeFor`, `approach`): paralaxe, as verticais continuam retas |
+    | passar perto da chama       | ela se inclina com o ar que a mão move (`breath`, somado à corrente da rolagem em `gust`)          |
+    | passar sobre a janela       | o vidro embaçado se limpa por onde a mão passou e embaça de novo em segundos (`refog`)             |
+    | apontar um livro            | ele sai da estante, com o título num papel ao lado; o cursor vira mão                              |
+    | clicar no livro             | abre a obra (com tecla modificadora, numa aba nova)                                                |
+
+    Os títulos e os endereços vêm de `/<lang>/shelf.json`, baixado só depois que a sala acende; a lista é a
+    mesma do atributo `shelf` (`siteShelf`), e o _n_-ésimo rótulo é do _n_-ésimo livro. O decodificador guarda
+    as posições e recusa endereços fora do site. Nada disso é necessário para ler ou navegar: a sala continua
+    `aria-hidden`, e as obras da estante estão no índice de ensaios e na paleta de comandos, pelo teclado.
+    Com movimento reduzido o livro sai num quadro só, e não há paralaxe, corrente de ar nem embaçado.
+
 ## Alternativas consideradas
 
-| Alternativa                                         | Por que não                                                                                                                                                                                                      |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| WebGL 2 direto, um _shader_ de tela cheia           | Pesaria entre 5 e 8 KiB em vez de 131,7. Descartada porque o pedido foi three.js. Fica como saída: a cena usa só malhas simples e `ShaderMaterial`, e a troca caberia em `src/islands/scenes/reading-room.ts`.   |
-| Imagem ou vídeo de fundo                            | Não se adapta ao tema, à largura da calha nem à hora; um vídeo em laço pesa mais que a biblioteca e não tem quadro único para movimento reduzido.                                                                |
-| Colocar o artigo dentro da cena (textura ou CSS 3D) | Tiraria o texto do fluxo do documento: seleção, busca, leitor de tela, zoom e contraste deixariam de ser garantidos pelo navegador. Contraria a regra do pedido.                                                 |
-| Mostrar a sala em qualquer largura                  | Abaixo de 96 px de calha não há onde ela aparecer; o leitor pagaria o download por algo que a folha cobre.                                                                                                       |
-| Materiais e luzes do próprio three.js               | Compilam _shaders_ maiores e trazem o sistema de luzes para o laço de renderização; a cena precisa de uma luz e de nenhuma sombra projetada.                                                                     |
-| Sala desligada por padrão                           | É a opção mais conservadora e continua a uma linha de distância (`DEFAULT_PREFERENCES.room`). O automático foi escolhido porque o pedido era chamar a atenção de quem visita, e os limites acima contêm o custo. |
+| Alternativa                                         | Por que não                                                                                                                                                                                                    |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| WebGL 2 direto, um _shader_ de tela cheia           | Pesaria entre 5 e 8 KiB em vez de 131,7. Descartada porque o pedido foi three.js. Fica como saída: a cena usa só malhas simples e `ShaderMaterial`, e a troca caberia em `src/islands/scenes/reading-room.ts`. |
+| Imagem ou vídeo de fundo                            | Não se adapta ao tema, à largura da calha nem à hora; um vídeo em laço pesa mais que a biblioteca e não tem quadro único para movimento reduzido.                                                              |
+| Colocar o artigo dentro da cena (textura ou CSS 3D) | Tiraria o texto do fluxo do documento: seleção, busca, leitor de tela, zoom e contraste deixariam de ser garantidos pelo navegador. Contraria a regra do pedido.                                               |
+| Mostrar a sala em qualquer largura                  | Abaixo de 96 px de calha não há onde ela aparecer; o leitor pagaria o download por algo que a folha cobre.                                                                                                     |
+| Materiais e luzes do próprio three.js               | Compilam _shaders_ maiores e trazem o sistema de luzes para o laço de renderização; a cena precisa de uma luz e de nenhuma sombra projetada.                                                                   |
+| Sala ligada por padrão (automático)                 | Foi o padrão de 15/11. O autor decidiu em 16/11 que a sala não fica sempre ativa: ela custa download, bateria e atenção a quem não a pediu. O interruptor no ensaio a deixa a um clique.                       |
+| A estante navegável pelo teclado                    | Seria uma segunda navegação, sobre uma cena que o leitor de tela não vê; as mesmas obras já estão no índice de ensaios e na paleta de comandos, com foco visível.                                              |
+| Animação contínua enquanto a sala está acesa        | Gasta bateria e atenção enquanto o leitor lê parado; o repouso (decisão 15) devolve o mesmo quadro sem custo.                                                                                                  |
 
 ## Consequências
 
@@ -152,8 +186,9 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
   - A decisão de mostrar a sala é uma função pura, testada sem navegador.
   - Todo módulo sob demanda passa a ter teto de peso.
 - Negativas:
-  - Uma dependência de execução nova, de 135,3 KiB em gzip: onze vezes o orçamento de JavaScript inicial de
-    uma página. Só é baixada em ensaios, por leitores com janela larga e placa gráfica, e fica em cache.
+  - Uma dependência de execução nova, de 136,4 KiB em gzip: onze vezes o orçamento de JavaScript inicial de
+    uma página. Só é baixada em ensaios, por leitores que pediram a sala e têm janela larga, e fica em cache.
+  - Desligada por padrão, a sala só é vista por quem encontra o botão; o botão só aparece onde ela cabe.
   - A sala só existe a partir de cerca de 1 540 px de largura. Em telas de 1 366, 1 440 ou 1 536 px ela não
     aparece.
   - _Shaders_ são código difícil de testar: os testes garantem que compilam, que a cena se move ou fica
@@ -169,22 +204,26 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
 
 ## Verificação
 
-| O quê                                                                                    | Onde                                   |
-| ---------------------------------------------------------------------------------------- | -------------------------------------- |
-| Modo, qualidade, governador, calma, cintilação, calhas, estante, vela, chuva (33 testes) | `tests/unit/chrome/room.test.ts`       |
-| Tela sem calha ou preferência desligada nunca pedem o pedaço da cena                     | `tests/e2e/room.spec.ts`               |
-| Com a sala ligada, nenhum glifo de nenhum ensaio fica fora da folha                      | idem, um teste por ensaio              |
-| axe com a sala ligada, tema claro e escuro                                               | idem                                   |
-| Movimento reduzido: o _canvas_ não muda; sem ele, muda                                   | idem                                   |
-| A vela é um relógio: no meio do artigo o quadro é outro, e depois não muda mais          | idem                                   |
-| Desligar a preferência remove a camada e devolve o fundo da página                       | idem                                   |
-| Tokens da sala dentro do gamut sRGB                                                      | `pnpm verify:palette`                  |
-| Teto de peso por módulo e da cena                                                        | `pnpm check:budgets`; testes de guarda |
+| O quê                                                                                                                                                      | Onde                                   |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| Modo, qualidade, governador, calma, cintilação, calhas, estante, vela, chuva; ritmo, olho, corrente de ar da mão, embaçado, rótulos da estante (45 testes) | `tests/unit/chrome/room.test.ts`       |
+| Desligada por padrão; tela sem calha ou preferência desligada nunca pedem o pedaço da cena                                                                 | `tests/e2e/room.spec.ts`               |
+| O interruptor aparece só com calha, acende e apaga pelo teclado, e a escolha vale na próxima página                                                        | idem                                   |
+| A sala desacelera e para com o leitor parado, e acorda quando ele se mexe                                                                                  | idem                                   |
+| Numa calha, o livro sob o ponteiro tem nome e o clique abre a obra; sobre a folha, nada responde                                                           | idem                                   |
+| Com a sala ligada, nenhum glifo de nenhum ensaio fica fora da folha                                                                                        | idem, um teste por ensaio              |
+| axe com a sala ligada, tema claro e escuro                                                                                                                 | idem                                   |
+| Movimento reduzido: o _canvas_ não muda; sem ele, muda                                                                                                     | idem                                   |
+| A vela é um relógio: no meio do artigo o quadro é outro, e depois não muda mais                                                                            | idem                                   |
+| Desligar a preferência remove a camada e devolve o fundo da página                                                                                         | idem                                   |
+| Tokens da sala dentro do gamut sRGB                                                                                                                        | `pnpm verify:palette`                  |
+| Teto de peso por módulo e da cena                                                                                                                          | `pnpm check:budgets`; testes de guarda |
 
 ## Pendências para o autor
 
 1. **Comparar a cena com a imagem de referência** e dizer o que mudar: disposição, proporções, cores dos
    tokens `--room-*`.
-2. **Confirmar o padrão da preferência**: automático (como está) ou desligado.
-3. **Limiar da calha** (96 px): mais baixo mostra a sala em notebooks, como uma faixa estreita.
-4. **Estender a outras páginas** (laboratórios, conceitos): hoje só os ensaios têm a sala.
+2. **Limiar da calha** (96 px): mais baixo mostra a sala em notebooks, como uma faixa estreita.
+3. **Estender a outras páginas** (laboratórios, conceitos): hoje só os ensaios têm a sala.
+4. **Rever a interação** numa placa gráfica real: a amplitude da paralaxe (4 cm), o alcance do ar da mão
+   (140 px), o tempo para o vidro embaçar de novo (6 s) e os tempos do repouso (3 s, 20 s).
