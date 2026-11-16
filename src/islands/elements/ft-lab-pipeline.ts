@@ -26,6 +26,7 @@ import {
   type Stage,
 } from '../../core/labs/pipeline.ts';
 import { pipelineSummary } from '../../core/labs/summary.ts';
+import { runIn } from '../../core/chrome/runin.ts';
 import type { ParamSpec, Widget } from '../../core/labs/widgets.ts';
 import { loadInformation, type InformationKernel } from '../../adapters/wasm/information.ts';
 import { html, LabElement, type ControlOptions } from './ft-lab-kit.ts';
@@ -138,11 +139,11 @@ class FtLabPipeline extends LabElement<InformationKernel> {
         html(
           'p',
           { class: 'pipeline__figures' },
-          [
+          runIn([
             this.t('pipeline.row.sale', { value: bits(sale) }),
             this.t('pipeline.row.question', { question: label, value: bits(answer) }),
             this.t('pipeline.row.outcomes', { n: upTo(this.locale, stage.outcomes, 0) }),
-          ].join(' · '),
+          ]),
           item,
         );
         if (lost) html('p', { class: 'pipeline__loss' }, `✕ ${this.t('pipeline.row.loss')}`, item);

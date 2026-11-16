@@ -736,30 +736,37 @@
 .pipeline__loss {
   font-weight: 600;
 }
-/* Two bars per row, as long as the information they stand for (share of H(X)); decorative: the figures say it. */
+/*
+ * One gauge per row, as long as the information it stands for (share of H(X)); decorative: the figures say it.
+ * Both bars share one cell: the outline is what the stage still knows about the sale, the fill is the part of
+ * it that answers the question. The question is a function of the sale, so the fill never passes the outline
+ * (the data-processing inequality the lab is about): the two measures differ by fill, not by a hue, which
+ * stays reserved for links, focus and strata.
+ */
 .pipeline__bars {
   display: grid;
-  gap: 2px;
 }
 .pipeline__bar {
   display: block;
-  block-size: 0.5rem;
+  grid-area: 1 / 1;
+  box-sizing: border-box;
+  block-size: 0.6rem;
   inline-size: calc(var(--share, 0) * 100%);
-  min-inline-size: 1px;
   transition: inline-size calc(var(--duration-3) * var(--motion)) var(--ease-standard);
 }
 .pipeline__bar--sale {
-  background-color: var(--rule-strong);
+  min-inline-size: 1px;
+  border: 1px solid var(--rule-strong);
 }
 .pipeline__bar--question {
-  block-size: 0.3rem;
-  background-color: var(--link);
+  background-color: var(--ink-muted);
 }
 @media (forced-colors: active) {
   .pipeline__bar--sale {
-    background-color: CanvasText;
+    border-color: CanvasText;
   }
   .pipeline__bar--question {
-    background-color: LinkText;
+    forced-color-adjust: none;
+    background-color: CanvasText;
   }
 }

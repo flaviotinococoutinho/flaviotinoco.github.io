@@ -15,6 +15,8 @@ import { href } from '../../adapters/astro/i18n.ts';
 
 export interface ScopeWork {
   readonly id: string;
+  /** The work's identity across locales (`translationKey`). */
+  readonly key: string;
   readonly form: 'essay' | 'lab';
   readonly title: string;
   readonly description: string;
@@ -33,7 +35,7 @@ export interface ScopeConcept {
 }
 
 export interface SiteScope {
-  /** Essays and labs of the locale, most recent first. */
+  /** Essays and labs of the locale, most recent first (same day: by translation key, alike in both locales). */
   readonly works: readonly ScopeWork[];
   /** Concepts, sorted by label in the locale. */
   readonly concepts: readonly ScopeConcept[];
@@ -47,6 +49,8 @@ export interface SiteScope {
   readonly conceptsOf: (discipline: CoreDomain) => readonly ScopeConcept[];
 }
 
+const compareKeys = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+
 const cache = new Map<Locale, Promise<SiteScope>>();
 
 const build = async (locale: Locale): Promise<SiteScope> => {
@@ -54,6 +58,7 @@ const build = async (locale: Locale): Promise<SiteScope> => {
   const works: readonly ScopeWork[] = [
     ...allEssays.map((e): ScopeWork => ({
       id: e.id,
+      key: e.data.translationKey,
       form: 'essay',
       title: e.data.title,
       description: e.data.description,
@@ -64,6 +69,7 @@ const build = async (locale: Locale): Promise<SiteScope> => {
     })),
     ...allLabs.map((l): ScopeWork => ({
       id: l.id,
+      key: l.data.translationKey,
       form: 'lab',
       title: l.data.title,
       description: l.data.description,
@@ -72,7 +78,9 @@ const build = async (locale: Locale): Promise<SiteScope> => {
       domains: l.data.domains,
       published: l.data.published,
     })),
-  ].sort((a, b) => b.published.getTime() - a.published.getTime() || a.title.localeCompare(b.title, locale));
+    // Works of the same day are ordered by their key, not by the localized title: both locales then agree on
+    // which work is the most recent (the home page shows it under its line of inquiry).
+  ].sort((a, b) => b.published.getTime() - a.published.getTime() || compareKeys(a.key, b.key));
 
   const collator = new Intl.Collator(locale, { sensitivity: 'base' });
   const scopeConcepts: readonly ScopeConcept[] = allConcepts

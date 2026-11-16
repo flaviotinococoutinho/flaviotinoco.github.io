@@ -122,13 +122,9 @@ ft-essay-filter {
 }
 
 /*
- * Code blocks: Shiki with two themes and defaultColor:false writes the colours
- * of each token as CSS variables (--shiki-light / --shiki-dark, and -bg,
- * -font-style, -font-weight); the theme is chosen here, explicitly by
- * [data-theme] and otherwise by prefers-color-scheme. The block takes the
- * theme's own background, not the sunken paper of the page: it is the one its
- * token colours were designed for and are measured against
- * (src/adapters/astro/code.ts).
+ * Code blocks: the site's own Shiki theme writes each token as `color: var(--ink)` or `var(--ink-muted)`, with
+ * `font-weight: bold` on reserved words (src/adapters/astro/code.ts), so one theme follows every colour scheme
+ * through the tokens and nothing here chooses between themes.
  */
 .prose pre {
   overflow-x: auto;
@@ -141,34 +137,6 @@ ft-essay-filter {
 }
 .prose pre code {
   font-size: inherit;
-}
-.prose .astro-code {
-  background-color: var(--shiki-light-bg, var(--paper-sunken));
-}
-:root[data-theme='dark'] .prose .astro-code {
-  background-color: var(--shiki-dark-bg, var(--paper-sunken));
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .prose .astro-code {
-    background-color: var(--shiki-dark-bg, var(--paper-sunken));
-  }
-}
-.prose :is(.astro-code, .astro-code span) {
-  color: var(--shiki-light);
-  font-style: var(--shiki-light-font-style, inherit);
-  font-weight: var(--shiki-light-font-weight, inherit);
-}
-:root[data-theme='dark'] .prose :is(.astro-code, .astro-code span) {
-  color: var(--shiki-dark);
-  font-style: var(--shiki-dark-font-style, inherit);
-  font-weight: var(--shiki-dark-font-weight, inherit);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .prose :is(.astro-code, .astro-code span) {
-    color: var(--shiki-dark);
-    font-style: var(--shiki-dark-font-style, inherit);
-    font-weight: var(--shiki-dark-font-weight, inherit);
-  }
 }
 
 /* Tables: horizontal rules only (booktabs: top, mid and bottom rules). */
@@ -482,9 +450,10 @@ ft-scrolly:defined .scrolly__step[data-active] {
   font-size: var(--step-n1);
   color: var(--ink-muted);
 }
+/* No-break space: the arrow never wraps alone to a line of its own. */
 .horizontal__hint::after {
-  content: ' →';
-  content: ' →' / '';
+  content: '\a0→';
+  content: '\a0→' / '';
 }
 /* Pinned: vertical scroll drives the track (ft-horizontal sets data-mode). */
 @property --h-progress {
@@ -666,10 +635,12 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
   color: var(--ink-muted);
   font-variant-numeric: lining-nums;
 }
-.essay__meta > :not(:first-child)::before {
+/* The dot goes after an item, not before the next: a wrapped line may end with it, never start with it
+   (src/core/chrome/runin.ts). */
+.essay__meta > :not(:last-child)::after {
   content: '·';
   content: '·' / '';
-  margin-inline-end: var(--space-n1);
+  margin-inline-start: var(--space-n1);
 }
 .essay__expandable {
   margin-inline-start: var(--space-n3);
@@ -1162,10 +1133,10 @@ ft-reading-progress[data-mode='js'] {
 .essay-card__description {
   margin: var(--space-n3) 0 0;
 }
-.essay-card__meta > :not(:first-child)::before {
+.essay-card__meta > :not(:last-child)::after {
   content: '·';
   content: '·' / '';
-  margin-inline-end: var(--space-0);
+  margin-inline-start: var(--space-0);
 }
 .essay-card__meta {
   display: flex;

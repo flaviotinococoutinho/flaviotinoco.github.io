@@ -220,6 +220,21 @@ diretiva explícita > frontmatter > dicionário:
   gama sRGB, separabilidade CIEDE2000 sob protanopia/deuteranopia/tritanopia e luminosidade monótona sob
   acromatopsia. Cor nunca é o único portador de significado.
 - Textura: ruído fractal discreto (feTurbulence) no fundo; nenhum gradiente linear.
+- Signos: cada dimensão de significado tem um repertório de formas próprio, e nenhum repertório empresta formas
+  de outro. Um signo novo entra num repertório existente ou abre outro, descrito aqui.
+  - Estrato: os simplexos (pontos ligados por arestas, de 0 a 3 dimensões) e as cores `--stratum-*`. São
+    diagramas no sentido de Peirce: a dimensão do simplexo é a ordem do estrato. Só eles usam essas cores.
+  - Papel no argumento (`src/core/reading/argument.ts`): a notação lógica convencional, em pares de opostos ou
+    complementos — premissa ∵ e conclusão ∴, tese ⊢ (Frege, 1879) e aplicação ⊨, objeção ¬ e resposta ¬¬,
+    pergunta ? e prova ∎ (Halmos), definição ≔ e exemplo ∈. São símbolos, valem por convenção, e por isso
+    andam sempre com o rótulo. Os pontos de ∵ e ∴ não se ligam: arestas entre pontos são dos simplexos. Na tinta,
+    nunca na cor de um estrato.
+  - Forma da obra (¶ ensaio, † nota, frasco do laboratório, § conceito, Σ fórmula) e frentes de investigação:
+    pictogramas na tinta, sem cor de estrato.
+  - Interface: setas, chevrons, lupa, engrenagem, os sinais de estado do laboratório (✓, ✕ e traço tracejado).
+  - Cor de matiz só em quatro papéis: estrato, link, foco e marca de realce (`--mark`). O resto (código,
+    gráficos, laboratórios) se distingue por tinta, peso, preenchimento e traço: no código, palavras reservadas
+    em negrito e comentários na tinta secundária (`src/adapters/astro/code.ts`).
 - Memória de leitura: ao voltar a um ensaio, um aviso acima do artigo diz onde o leitor parou e oferece
   continuar dali ou esquecer (`ft-reading-memory`; regras puras em `src/core/reading/memory.ts`). O registro
   fica só no navegador, e a vela da sala de leitura parte dele.

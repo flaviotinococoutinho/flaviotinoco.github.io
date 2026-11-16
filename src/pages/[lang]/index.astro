@@ -7,7 +7,8 @@
  *             compact form (<ft-lab-flags>), whose static picture after
  *             play() and pause() is what a reader without JavaScript sees
  *   scope     the five lines of inquiry with their core disciplines, generated
- *             from the scope model (ADR 0013), each with its most recent work
+ *             from the scope model (ADR 0013), each with a recent work of its own
+ *             (latestByAxis: a matching, so no work is shown under two lines)
  *   latest    the most recent essays of this locale (section omitted when empty)
  *   bridge    the four strata as a path, under the simplices in depth
  *             (<ft-depth-scene>), each with its guiding question and method
@@ -41,7 +42,8 @@ import {
 import { localeCodec, type Locale } from '../../core/domain/locale.ts';
 import { STRATA, STRATUM_SPECS } from '../../core/domain/strata.ts';
 import { FORM_GLYPH } from '../../core/domain/facets.ts';
-import { AXES, AXIS_OF, disciplinesOf, listing } from '../../core/domain/scope.ts';
+import { AXES, disciplinesOf, latestByAxis } from '../../core/domain/scope.ts';
+import { runIn } from '../../core/chrome/runin.ts';
 
 export const getStaticPaths = localeStaticPaths;
 
@@ -69,15 +71,12 @@ const bridge = STRATA.map((s) => {
 const sc = useTranslations(scopeCatalog, locale);
 const [scope, formulas] = await Promise.all([siteScope(locale), siteFormulas()]);
 
-/** Lines of inquiry: disciplines and the most recent work that declares one of them (none: the axis says so by omission). */
-const axes = AXES.map((axis) => ({
-  axis,
-  disciplines: disciplinesOf(axis),
-  latest: scope.works.find((w) => {
-    const l = listing(w.domains);
-    return l.role === 'direct' && l.disciplines.some((d) => AXIS_OF[d] === axis);
-  }),
-}));
+/**
+ * Lines of inquiry: disciplines and the most recent work matched to the line (latestByAxis): a work that declares
+ * disciplines of two lines stands for one of them only; a line without any work says so by omission.
+ */
+const newest = latestByAxis(scope.works);
+const axes = AXES.map((axis) => ({ axis, disciplines: disciplinesOf(axis), latest: newest[axis] }));
 
 /** The corpus in numbers, each a way in. */
 const count = (n: number, key: 'essays' | 'labs' | 'concepts' | 'formulas'): string =>
@@ -216,12 +215,7 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
               <p class="entry__description">{e.data.description}</p>
               <p class="entry__meta ui">
                 <StratumMark stratum={e.data.stratum} locale={locale} size="s" />
-                <span class="entry__domains">
-                  {e.data.domains
-                    .slice(0, 3)
-                    .map((d) => r(`domain.${d}`))
-                    .join(' · ')}
-                </span>
+                <span class="entry__domains">{runIn(e.data.domains.slice(0, 3).map((d) => r(`domain.${d}`)))}</span>
                 <time datetime={e.data.published.toISOString().slice(0, 10)}>
                   {t('date.published', { date: formatDate(locale, e.data.published) })}
                 </time>
