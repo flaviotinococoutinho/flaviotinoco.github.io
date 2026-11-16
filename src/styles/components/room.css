@@ -11,6 +11,76 @@
  * The element's own padding carries two tokens the island measures (resolved lengths, not strings):
  * inline — how far the sheet extends beyond the text columns; block — the rim of the wooden stand.
  */
+/*
+ * The rustic room without the scene (ADR 0014, decision 17): on every essay page, the article is a sheet of
+ * paper on its wooden stand, lying on an aged desk. Static CSS — no script, no download, no motion — so it
+ * holds for every reader, while the 3D room stays the lit version, at the reader's request.
+ *
+ * The sheet is the text columns plus var(--space-1) on each side, like the scene's sheet. The side tracks of
+ * .page-grid are equal (1fr) and the middle ones are tokens, so the columns are centred and their width is
+ * known: the sheet is centred too, and every line of the essay lies on it (tests/e2e/room.spec.ts). On a
+ * phone the sheet takes the whole width and no wood shows.
+ */
+.essay {
+  --sheet: calc(var(--measure) + var(--space-2) + var(--margin));
+  position: relative;
+  isolation: isolate;
+  background-color: var(--room-wood);
+  background-image: var(--wood-image);
+  background-size: 640px 320px;
+}
+@media (width < 72rem) {
+  .essay {
+    --sheet: var(--measure);
+  }
+}
+.essay::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 50%;
+  z-index: -1;
+  inline-size: min(100%, 100% - 2 * var(--gutter) + 2 * var(--space-1), var(--sheet) + 2 * var(--space-1));
+  translate: -50% 0;
+  background-color: var(--paper);
+  background-image: var(--grain-image);
+  background-size: 256px 256px;
+  /* The stand shows at the sides only: above and below are the header and the footer, and on a phone, where the
+     sheet takes the whole width, the rim falls outside the screen instead of drawing a band under the header. */
+  box-shadow:
+    calc(-1 * var(--space-n1)) 0 0 0 var(--room-board),
+    var(--space-n1) 0 0 0 var(--room-board);
+}
+/* Nothing decorative in focus mode, with more contrast or a system palette, on paper; and the lit room
+   brings its own desk and sheet. */
+:root:is([data-scene], [data-focus='on'], [data-contrast='more']) .essay {
+  background: none;
+}
+:root:is([data-scene], [data-focus='on'], [data-contrast='more']) .essay::before {
+  content: none;
+}
+@media (prefers-contrast: more) {
+  :root:not([data-contrast='normal']) .essay {
+    background: none;
+  }
+  :root:not([data-contrast='normal']) .essay::before {
+    content: none;
+  }
+}
+@media (forced-colors: active) {
+  .essay::before {
+    content: none;
+  }
+}
+@media print {
+  .essay {
+    background: none;
+  }
+  .essay::before {
+    content: none;
+  }
+}
+
 ft-reading-room {
   position: fixed;
   inset: 0;
