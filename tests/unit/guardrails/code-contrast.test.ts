@@ -1,23 +1,26 @@
 /**
- * Contrast of code blocks (WCAG 2.2 SC 1.4.3, AA: 4.5:1).
+ * Code blocks: the site's typographic highlighting (src/adapters/astro/code.ts) and its contrast.
  *
- * The colours of a highlighted code block are third-party values (Shiki themes)
- * that the palette verification never sees. This guard renders samples in the
- * languages the site writes about with the very configuration of the build
- * (src/adapters/astro/code.ts) and measures every colour that comes out against
- * the background of its theme, in the light and in the dark scheme.
+ * Hue is reserved on this site (strata, links, focus, the selection mark), so a code block may carry only the
+ * body ink, the secondary ink, the sunken paper and bold. This guard renders samples in the languages the site
+ * writes about with the very configuration of the build and checks that
+ * - nothing else comes out (a third-party colour or a new property would be a silent change of the sign system);
+ * - the grammar is applied in every language: reserved words in bold, comments in the secondary ink;
+ * - bold falls on words only, never on operator symbols;
+ * - the two inks reach WCAG 2.2 AAA (SC 1.4.6, 7:1) on the sunken paper in all four colour schemes.
  *
- * It exists because the defect is silent: `github-dark` draws comments at
- * 3.05:1 and `github-light` draws variables at 3.49:1, and a page only shows it
- * when a snippet happens to contain that kind of token.
+ * It replaces a guard over third-party themes, which had to exist because the defect was silent:
+ * `github-dark` drew comments at 3.05:1 and `github-light` drew variables at 3.49:1.
  */
+import { readFileSync } from 'node:fs';
 import { createMarkdownProcessor } from '@astrojs/markdown-remark';
 import Color from 'colorjs.io';
 import { describe, expect, it } from 'vitest';
-import { SHIKI_CONFIG } from '../../../src/adapters/astro/code.ts';
+import { CODE_INK, SHIKI_CONFIG } from '../../../src/adapters/astro/code.ts';
+import { parseTokens, type ColorScheme, type ColorTable } from '../../../src/core/design/tokens.ts';
 
-/** Minimum contrast of normal-size text (SC 1.4.3). */
-const AA = 4.5;
+/** Minimum contrast of the inks (SC 1.4.6, AAA): the level the site promises for text. */
+const AAA = 7;
 
 /** One snippet per language, each with comments, strings, keywords, numbers, names and calls. */
 const SAMPLES: Readonly<Record<string, string>> = {
@@ -94,56 +97,143 @@ const SAMPLES: Readonly<Record<string, string>> = {
   ].join('\n'),
 };
 
-interface Painted {
-  readonly language: string;
-  readonly scheme: 'light' | 'dark';
-  readonly background: string;
-  readonly colours: ReadonlySet<string>;
-}
-
-/** Value of a CSS custom property in a `style` attribute, e.g. `--shiki-dark:#8B949E`. */
-const property = (style: string, name: string): string | undefined =>
-  new RegExp(`${name}:\\s*([^;"]+)`, 'u').exec(style)?.[1]?.trim();
-
-const paint = async (): Promise<readonly Painted[]> => {
-  const processor = await createMarkdownProcessor({
-    syntaxHighlight: { type: 'shiki', excludeLangs: ['math'] },
-    shikiConfig: SHIKI_CONFIG,
-  });
-  const out: Painted[] = [];
-  for (const [language, code] of Object.entries(SAMPLES)) {
-    const { code: html } = await processor.render(`\`\`\`${language}\n${code}\n\`\`\`\n`);
-    const styles = [...html.matchAll(/style="([^"]*)"/gu)].map((m) => m[1] ?? '');
-    for (const scheme of ['light', 'dark'] as const) {
-      const background = styles.map((s) => property(s, `--shiki-${scheme}-bg`)).find((v) => v !== undefined);
-      const colours = new Set(
-        styles.map((s) => property(s, `--shiki-${scheme}`)).filter((v): v is string => v !== undefined),
-      );
-      out.push({ language, scheme, background: background ?? '', colours });
-    }
-  }
-  return out;
+/** Which marks each sample must show: HTML has no reserved words, JSON no comments. */
+const EXPECTED: Readonly<Record<string, { readonly bold: boolean; readonly comment: boolean }>> = {
+  java: { bold: true, comment: true },
+  typescript: { bold: true, comment: true },
+  rust: { bold: true, comment: true },
+  python: { bold: true, comment: true },
+  sql: { bold: true, comment: true },
+  json: { bold: true, comment: false },
+  yaml: { bold: true, comment: true },
+  bash: { bold: true, comment: true },
+  css: { bold: true, comment: true },
+  html: { bold: false, comment: true },
 };
 
-describe('code blocks meet the AA contrast in both colour schemes', () => {
-  it('uses one theme per colour scheme and no default colour (the CSS chooses the theme)', () => {
-    expect(Object.keys(SHIKI_CONFIG.themes).sort()).toEqual(['dark', 'light']);
-    expect(SHIKI_CONFIG.defaultColor).toBe(false);
+/** The declarations a code block may carry; `overflow-x: auto` is Astro's own, on the <pre>. */
+const ALLOWED: ReadonlySet<string> = new Set([
+  `color:${CODE_INK.text}`,
+  `color:${CODE_INK.comment}`,
+  `background-color:${CODE_INK.background}`,
+  'font-weight:bold',
+  'overflow-x:auto',
+]);
+
+interface Span {
+  readonly declarations: readonly string[];
+  readonly text: string;
+}
+
+interface Rendered {
+  readonly language: string;
+  readonly declarations: ReadonlySet<string>;
+  readonly spans: readonly Span[];
+}
+
+const declarationsOf = (style: string): readonly string[] =>
+  style
+    .split(';')
+    .map((d) => d.replace(/\s+/gu, '').trim())
+    .filter((d) => d !== '');
+
+const decode = (text: string): string =>
+  text.replace(/&#x([0-9a-f]+);/giu, (_, hex: string) => String.fromCodePoint(Number.parseInt(hex, 16)));
+
+let rendered: Promise<readonly Rendered[]> | undefined;
+const render = (): Promise<readonly Rendered[]> =>
+  (rendered ??= (async () => {
+    const processor = await createMarkdownProcessor({
+      syntaxHighlight: { type: 'shiki', excludeLangs: ['math'] },
+      shikiConfig: SHIKI_CONFIG,
+    });
+    const out: Rendered[] = [];
+    for (const [language, code] of Object.entries(SAMPLES)) {
+      const { code: html } = await processor.render(`\`\`\`${language}\n${code}\n\`\`\`\n`);
+      const declarations = new Set([...html.matchAll(/style="([^"]*)"/gu)].flatMap((m) => declarationsOf(m[1] ?? '')));
+      const spans = [...html.matchAll(/<span style="([^"]*)">([^<]*)<\/span>/gu)].map((m) => ({
+        declarations: declarationsOf(m[1] ?? ''),
+        text: decode(m[2] ?? ''),
+      }));
+      out.push({ language, declarations, spans });
+    }
+    return out;
+  })());
+
+const tokens = parseTokens(
+  JSON.parse(readFileSync(new URL('../../../src/core/design/tokens.json', import.meta.url), 'utf8')) as Parameters<
+    typeof parseTokens
+  >[0],
+);
+
+/** The colour table of a scheme; the *-more tables override the base ones (as in scripts/verify-palette.ts). */
+const table = (scheme: ColorScheme): ColorTable => {
+  if (!tokens.ok) throw new Error(tokens.error.join('\n'));
+  const { colors } = tokens.value;
+  return scheme === 'light-more'
+    ? { ...colors.light, ...colors['light-more'] }
+    : scheme === 'dark-more'
+      ? { ...colors.dark, ...colors['dark-more'] }
+      : colors[scheme];
+};
+
+/** `var(--ink-muted)` → `ink-muted`. */
+const tokenName = (value: string): string => /^var\(--([a-z-]+)\)$/u.exec(value)?.[1] ?? value;
+
+describe('code blocks are set with the site tokens only', () => {
+  it('uses one theme of the site, the same in every colour scheme', () => {
+    expect(SHIKI_CONFIG).not.toHaveProperty('themes');
+    expect(SHIKI_CONFIG.theme.name).toBe('reading');
   });
 
-  it('highlights every sample (a guard over uncoloured text would prove nothing)', async () => {
-    const thin = (await paint())
-      .filter((p) => p.background === '' || p.colours.size < 3)
-      .map((p) => `${p.language} (${p.scheme}): background "${p.background}", ${p.colours.size} colour(s)`);
-    expect(thin).toEqual([]);
+  it('emits no declaration but the two inks, the sunken paper and bold', async () => {
+    const foreign = (await render()).flatMap(({ language, declarations }) =>
+      [...declarations].filter((d) => !ALLOWED.has(d)).map((d) => `${language}: ${d}`),
+    );
+    expect(foreign).toEqual([]);
   });
 
-  it('draws every token at 4.5:1 or more against the background of its theme', async () => {
+  it('sets reserved words in bold and comments in the secondary ink, in every language', async () => {
+    const missing: string[] = [];
+    for (const { language, spans } of await render()) {
+      const expected = EXPECTED[language];
+      if (expected === undefined) {
+        missing.push(`${language}: no expectation`);
+        continue;
+      }
+      const bold = spans.some((s) => s.declarations.includes('font-weight:bold'));
+      const comment = spans.some((s) => s.declarations.includes(`color:${CODE_INK.comment}`));
+      if (bold !== expected.bold) missing.push(`${language}: bold ${String(bold)}`);
+      if (comment !== expected.comment) missing.push(`${language}: comment ${String(comment)}`);
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('puts bold on words only, never on operator symbols', async () => {
+    const symbols = (await render()).flatMap(({ language, spans }) =>
+      spans
+        .filter((s) => s.declarations.includes('font-weight:bold'))
+        .map((s) => s.text.trim())
+        .filter((text) => !/^[@#!]?\p{L}[\p{L}\p{N}_ ]*$/u.test(text))
+        .map((text) => `${language}: "${text}"`),
+    );
+    expect(symbols).toEqual([]);
+  });
+
+  it('draws both inks at 7:1 or more on the sunken paper, in all four colour schemes', () => {
     const failures: string[] = [];
-    for (const { language, scheme, background, colours } of await paint()) {
-      for (const colour of colours) {
-        const ratio = new Color(background).contrast(new Color(colour), 'WCAG21');
-        if (ratio < AA) failures.push(`${language} (${scheme}): ${colour} on ${background} is ${ratio.toFixed(2)}:1`);
+    const background = tokenName(CODE_INK.background);
+    for (const scheme of ['light', 'dark', 'light-more', 'dark-more'] as const) {
+      const colours = table(scheme);
+      const paper = colours[background];
+      for (const ink of [CODE_INK.text, CODE_INK.comment].map(tokenName)) {
+        const value = colours[ink];
+        if (paper === undefined || value === undefined) {
+          failures.push(`${scheme}: missing ${ink} or ${background}`);
+          continue;
+        }
+        const ratio = new Color('oklch', [...paper]).contrast(new Color('oklch', [...value]), 'WCAG21');
+        if (ratio < AAA) failures.push(`${scheme}: ${ink} on ${background} is ${ratio.toFixed(2)}:1`);
       }
     }
     expect(failures).toEqual([]);

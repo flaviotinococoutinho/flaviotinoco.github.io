@@ -225,8 +225,9 @@ algarismos de texto (_oldstyle_) na prosa e alinhados/tabulares em tabelas, cód
 generoso acima (passos de φ); citações longas pela ABNT NBR 10520:2023, 7.1.1 (bloco recuado, corpo menor,
 entrelinha simples, sem aspas); tabelas só com filetes horizontais (_booktabs_); separador `---` como três pontos
 espaçados; capitular no primeiro parágrafo com `initial-letter` (e `::first-letter` flutuante como alternativa);
-pontuação pendente onde houver suporte; nunca texto justificado. Blocos de código usam os dois temas do Shiki
-(`--shiki-light`/`--shiki-dark`), escolhidos por `[data-theme]` ou por `prefers-color-scheme`.
+pontuação pendente onde houver suporte; nunca texto justificado. Blocos de código usam um tema do próprio site,
+tipográfico: palavras reservadas em negrito, comentários na tinta secundária, o resto na tinta do texto, sobre o
+papel rebaixado (`src/adapters/astro/code.ts`); sem matiz, que no site é dos estratos, dos links e do foco.
 
 ## 7. Notas de implementação
 
