@@ -11,6 +11,8 @@ published: 2026-11-15
 revisions:
   - date: 2026-11-15
     note: First version, from the example of the essay “No pipeline creates information”.
+  - date: 2026-11-16
+    note: The observations speak of the outline-and-fill gauge that replaced the two bars.
 epistemic:
   confidence: almost-certain
   evidence: proof
@@ -56,12 +58,12 @@ The lab computes the exact :concept[mutual information]{ref=mutual-information},
 
 The pipeline starts with the three stages of the essay’s table: drop the payment, the period and the amount.
 
-1. With the question “the shop”, the short bar does not fall at any stage: the total per shop is sufficient to know the shop. The long bar, the whole sale, falls at every stage.
+1. With the question “the shop”, the fill does not shrink at any stage: the total per shop is sufficient to know the shop. The outline, the whole sale, shrinks at every stage.
 2. Change the question to “the payment method”. The loss appears at the first stage, marked with ✕, but it is not total: 0.12 bits are left, because the amount still says something about how the sale was paid. At the third stage, when the amount goes too, nothing is left. What the extraction left behind no later stage recovers.
 3. Change to “the amount”. Nothing is lost until the third stage, and there the information drops to zero: the payment, which said something about the amount, had already gone at the first. With the pipeline reduced to “drop the amount”, 0.12 bits about the amount are left, kept in the payment.
 4. Go back to “the shop” and add a typing error. No field disappears, the output has the same 144 possibilities, and yet it stops being sufficient: a noisy channel is also a stage that loses.
-5. Add “reformat” anywhere. Both bars stay the same: a reversible stage is the case in which the inequality becomes an equality.
-6. Try to make a bar rise. No combination of stages can.
+5. Add “reformat” anywhere. Both measures stay the same: a reversible stage is the case in which the inequality becomes an equality.
+6. Try to make the outline or the fill grow. No combination of stages can.
 
 ## Limits of the model
 
