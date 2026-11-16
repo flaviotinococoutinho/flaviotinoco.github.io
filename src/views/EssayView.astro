@@ -12,9 +12,13 @@
  * .essay__main spans main → margin as a subgrid holding the article (main) and,
  * beside it, the sticky argument map and the side notes (margin). Ids used here
  * are reserved for headings by src/core/reading/records.ts (PAGE_IDS).
+ *
+ * <ft-reading-room> is the decorative layer behind the page (ADR 0014): it stays hidden unless the
+ * island decides the device and the reader allow the room, and it never contains the article.
  */
 import { getEntry, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { cardPath } from '../core/chrome/card.ts';
 import MathAssets from '../components/MathAssets.astro';
 import ArgumentGlyphs from '../components/reading/ArgumentGlyphs.astro';
 import ArgumentMap from '../components/reading/ArgumentMap.astro';
@@ -30,6 +34,7 @@ import reading from '../core/i18n/catalogs/reading.ts';
 import { formatNumber, plural } from '../core/i18n/messages.ts';
 import { parseDocumentMeta } from '../core/fold/meta.ts';
 import { WORDS_PER_MINUTE } from '../core/fold/words.ts';
+import { bookSize, encodeShelf, type ShelfBook } from '../core/chrome/room.ts';
 import { bridgeTarget, isoDate, lastRevision } from '../core/reading/essay.ts';
 import {
   alternatesByKey,
@@ -78,6 +83,24 @@ const nextEssays =
   next === null ? [] : (await essays(locale)).filter((e) => e.data.stratum === next && e.id !== entry.id);
 const nextLabs = next === null ? [] : (await labs(locale)).filter((l) => l.data.stratum === next);
 
+// The reading room's shelf is the corpus of this locale, oldest first: essays, then labs (ADR 0014).
+const oldestFirst = <T extends { readonly data: { readonly published: Date } }>(works: readonly T[]): T[] =>
+  [...works].sort((a, b) => a.data.published.valueOf() - b.data.published.valueOf());
+const shelf: readonly ShelfBook[] = [
+  ...oldestFirst(await essays(locale)).map((e) => ({
+    stratum: e.data.stratum,
+    form: 'essay' as const,
+    size: bookSize(e.body?.length ?? 0),
+    current: e.id === entry.id,
+  })),
+  ...oldestFirst(await labs(locale)).map((l) => ({
+    stratum: l.data.stratum,
+    form: 'lab' as const,
+    size: bookSize(l.body?.length ?? 0),
+    current: false,
+  })),
+];
+
 const IDS = {
   title: 'essay-title',
   status: 'essay-status',
@@ -91,9 +114,17 @@ const IDS = {
 } as const;
 ---
 
-<BaseLayout locale={locale} title={data.title} description={data.description} alternates={alternates} ogType="article">
+<BaseLayout
+  locale={locale}
+  title={data.title}
+  description={data.description}
+  alternates={alternates}
+  ogType="article"
+  card={cardPath(locale, 'essay', data.slug)}
+>
   {meta.hasMath && <MathAssets slot="head" />}
   {meta.argument.nodes.length > 0 && <ArgumentGlyphs />}
+  <ft-reading-room sheet=".essay" stratum={data.stratum} shelf={encodeShelf(shelf)} data-eager></ft-reading-room>
   <div class="page-grid essay" data-stratum={data.stratum}>
     <ReadingProgress target={IDS.article} />
     <header class="essay__header">
@@ -134,6 +165,8 @@ const IDS = {
         <span>{words}</span>
       </p>
     </header>
+
+    <ft-reading-memory class="essay__memory" article={IDS.article} data-eager hidden></ft-reading-memory>
 
     <EpistemicStatus
       locale={locale}

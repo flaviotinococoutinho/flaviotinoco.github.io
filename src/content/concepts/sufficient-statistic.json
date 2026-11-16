@@ -1,0 +1,32 @@
+{
+  "slug": {
+    "pt-BR": "estatistica-suficiente",
+    "en": "sufficient-statistic"
+  },
+  "prefLabel": {
+    "pt-BR": "Estatística suficiente",
+    "en": "Sufficient statistic"
+  },
+  "definition": {
+    "pt-BR": "Função dos dados que conserva tudo o que eles informam sobre um parâmetro: conhecer a função dispensa os dados, no que diz respeito a esse parâmetro.",
+    "en": "A function of the data that keeps everything the data tell about a parameter: knowing the function makes the data dispensable, as far as that parameter is concerned."
+  },
+  "stratum": "formal",
+  "category": "operation",
+  "domains": [
+    "information-theory",
+    "probability"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "data-processing-inequality"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q1099110"
+  ],
+  "sources": [
+    "cover2006"
+  ]
+}

@@ -1,0 +1,81 @@
+/*
+ * Reading room (docs/adr/0014-sala-de-leitura.md) — the layer behind the essay pages.
+ *
+ * <ft-reading-room> is a fixed layer below the page (z-index −1, above the root background and under
+ * every element in flow). It holds the canvas of the three.js scene and, over it, the sheet: an opaque
+ * strip of the paper tokens exactly as wide as the text columns, so the article reads on the same
+ * surface as without the room and the scene shows only in the gutters. The header and the footer cross
+ * the gutters, so they become opaque too. Nothing here applies until the island publishes
+ * data-scene on <html>; without it the layer stays hidden and the page is unchanged.
+ *
+ * The element's own padding carries two tokens the island measures (resolved lengths, not strings):
+ * inline — how far the sheet extends beyond the text columns; block — the rim of the wooden stand.
+ */
+ft-reading-room {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  visibility: hidden;
+  pointer-events: none;
+  contain: strict;
+  padding-inline-start: var(--space-1);
+  padding-block-start: var(--space-n1);
+}
+:root[data-scene] ft-reading-room {
+  visibility: visible;
+}
+
+.room__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  background-color: var(--room-wall);
+}
+
+/* The paper on its stand: the sheet, and the rim of wood that shows around it. The island measures the
+   columns in physical pixels from the left edge (both locales are left-to-right). */
+.room__sheet {
+  position: absolute;
+  inset-block: 0;
+  left: var(--sheet-left, 0);
+  inline-size: var(--sheet-width, 100%);
+  background-color: var(--paper);
+  background-image: var(--grain-image);
+  background-size: 256px 256px;
+  box-shadow: 0 0 0 var(--space-n1) var(--room-board);
+}
+
+/* The page background is painted by <html> (base.css); <body> repeats it as an ordinary block, which
+   would cover a layer at z-index −1. With the room on, the sheet carries the paper instead. */
+:root[data-scene] body {
+  background-color: transparent;
+  background-image: none;
+}
+:root[data-scene] :is(.site-header, .site-footer) {
+  background-color: var(--paper);
+  background-image: var(--grain-image);
+  background-size: 256px 256px;
+}
+
+/* The scene arrives after the page: it fades in once, and only where motion is welcome. */
+@keyframes room-in {
+  from {
+    opacity: 0;
+  }
+}
+:root[data-scene] .room__canvas {
+  animation: room-in calc(var(--duration-5) * var(--motion)) var(--ease-standard);
+}
+
+@media (forced-colors: active) {
+  ft-reading-room {
+    display: none;
+  }
+}
+@media print {
+  ft-reading-room {
+    display: none;
+  }
+}

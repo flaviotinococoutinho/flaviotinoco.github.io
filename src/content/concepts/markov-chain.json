@@ -1,0 +1,41 @@
+{
+  "slug": {
+    "pt-BR": "cadeia-de-markov",
+    "en": "markov-chain"
+  },
+  "prefLabel": {
+    "pt-BR": "Cadeia de Markov",
+    "en": "Markov chain"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "cadeia markoviana"
+    ],
+    "en": [
+      "Markov sequence"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Sequência de variáveis aleatórias em que cada uma depende das anteriores só por meio da imediatamente anterior: dado o presente, o futuro é independente do passado.",
+    "en": "A sequence of random variables in which each one depends on the earlier ones only through the one immediately before it: given the present, the future is independent of the past."
+  },
+  "notation": "p(x, y, z) = p(x)\\,p(y \\mid x)\\,p(z \\mid y)",
+  "stratum": "formal",
+  "category": "entity",
+  "domains": [
+    "probability",
+    "information-theory"
+  ],
+  "relations": [
+    {
+      "type": "related",
+      "target": "channel"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q176645"
+  ],
+  "sources": [
+    "cover2006"
+  ]
+}

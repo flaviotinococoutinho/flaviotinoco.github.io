@@ -76,9 +76,12 @@ descrição do PR.
 
 ## 7. Próximos passos sugeridos
 
-| Frente                                                                                   | Disciplina                |
-| ---------------------------------------------------------------------------------------- | ------------------------- |
-| Ensaio sobre ETL e a desigualdade do processamento de dados, com laboratório do pipeline | engenharia de dados e ETL |
-| Camada de acidentes: ferramentas que realizam conceitos (issue #14)                      | tecnologia da informação  |
-| Ensaio "Estado em produção" (programa editorial §5)                                      | design de sistemas        |
-| Cartões de compartilhamento (imagem por página) e dados estruturados por obra            | —                         |
+O ensaio sobre ETL e a desigualdade do processamento de dados ("O pipeline não cria informação") entrou no
+mesmo dia, em PR próprio, com cinco conceitos, duas fórmulas e três fontes novas; o laboratório "O pipeline"
+entrou em 15/11/2026.
+
+| Frente                                                                        | Disciplina               |
+| ----------------------------------------------------------------------------- | ------------------------ |
+| Camada de acidentes: ferramentas que realizam conceitos (issue #14)           | tecnologia da informação |
+| Ensaio "Estado em produção" (programa editorial §5)                           | design de sistemas       |
+| Cartões de compartilhamento (imagem por página) e dados estruturados por obra | —                        |

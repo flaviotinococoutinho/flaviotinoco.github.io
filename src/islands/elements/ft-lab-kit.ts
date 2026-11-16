@@ -550,7 +550,9 @@ export abstract class LabElement<K> extends HTMLElement {
               undefined,
               row,
             );
-        if (spec.alphabet !== undefined) field.setAttribute('inputmode', 'numeric');
+        // A numeric keypad only helps when the alphabet is digits (the channel's bits); the flags and the
+        // pipeline are words over letters, which a numeric keypad cannot type.
+        if (spec.alphabet !== undefined && /^\d+$/.test(spec.alphabet)) field.setAttribute('inputmode', 'numeric');
         const sync = (v: ParamValue): void => {
           field.value = String(v);
           field.removeAttribute('aria-invalid');

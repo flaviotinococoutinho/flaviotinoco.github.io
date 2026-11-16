@@ -13,8 +13,9 @@
 import { err, ok, type Result } from '../algebra/result.ts';
 import { show } from '../algebra/show.ts';
 import { EVENT_ALPHABET, MAX_EVENTS } from './flags.ts';
+import { ESSAY_PIPELINE, FIELDS, MAX_STAGES, STAGE_ALPHABET } from './pipeline.ts';
 
-export const WIDGETS = ['fourier', 'sampling', 'entropy', 'channel', 'logistic', 'clt', 'flags'] as const;
+export const WIDGETS = ['fourier', 'sampling', 'entropy', 'channel', 'logistic', 'clt', 'flags', 'pipeline'] as const;
 export type Widget = (typeof WIDGETS)[number];
 
 export type KernelName = 'signal' | 'information' | 'dynamics';
@@ -28,6 +29,7 @@ export const WIDGET_KERNEL: Readonly<Record<Widget, KernelName>> = {
   logistic: 'dynamics',
   clt: 'dynamics',
   flags: 'information',
+  pipeline: 'information',
 };
 
 export const isWidget = (value: unknown): value is Widget =>
@@ -104,6 +106,11 @@ export const PARAMS: Readonly<Record<Widget, readonly ParamSpec[]>> = {
   clt: [number('n', 1, 50, 1, 1), number('samples', 1000, 200000, 1000, 20000), number('seed', 0, 999999, 1, 42)],
   // The whole state is the history of events sent to the player (src/core/labs/flags.ts): p, a, s, r.
   flags: [{ kind: 'text', key: 'events', maxLength: MAX_EVENTS, alphabet: EVENT_ALPHABET, default: '' }],
+  // The pipeline is a word over one letter per stage (src/core/labs/pipeline.ts); the question is a field.
+  pipeline: [
+    { kind: 'text', key: 'stages', maxLength: MAX_STAGES, alphabet: STAGE_ALPHABET, default: ESSAY_PIPELINE },
+    { kind: 'choice', key: 'question', options: FIELDS, default: 'shop' },
+  ],
 };
 
 /** The specification of `key` in `widget`, or undefined. */

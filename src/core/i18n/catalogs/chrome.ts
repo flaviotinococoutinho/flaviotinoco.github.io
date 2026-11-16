@@ -71,6 +71,12 @@ export default defineMessages({
     'prefs.texture': 'Textura do papel',
     'prefs.texture.on': 'Ligada',
     'prefs.texture.off': 'Desligada',
+    'prefs.room': 'Sala de leitura',
+    'prefs.room.auto': 'Automática',
+    'prefs.room.on': 'Ligada',
+    'prefs.room.off': 'Desligada',
+    'prefs.room.hint':
+      'Nos ensaios, em telas largas, uma sala desenhada em 3D ocupa as laterais da folha: mesa, estante, janela com chuva e uma vela. Automática mostra a sala só onde o aparelho dá conta; com movimento reduzido ela fica parada.',
     'prefs.face': 'Fonte do texto',
     'prefs.face.serif': 'Com serifa (Literata)',
     'prefs.face.sans': 'Sem serifa (Atkinson Hyperlegible Next)',
@@ -88,7 +94,7 @@ export default defineMessages({
     'prefs.focus.off': 'Desligado',
     'prefs.focus.on': 'Ligado',
     'prefs.focus.hint':
-      'Esconde a textura e o campo animado e deixa discretos as notas laterais e o mapa do argumento até você apontar ou focar neles.',
+      'Esconde a textura, o campo animado e a sala de leitura e deixa discretos as notas laterais e o mapa do argumento até você apontar ou focar neles.',
     'prefs.shortcut': 'Atalho de tecla única (/)',
     'prefs.shortcut.on': 'Ligado',
     'prefs.shortcut.off': 'Desligado',
@@ -240,6 +246,12 @@ export default defineMessages({
     'prefs.texture': 'Paper texture',
     'prefs.texture.on': 'On',
     'prefs.texture.off': 'Off',
+    'prefs.room': 'Reading room',
+    'prefs.room.auto': 'Automatic',
+    'prefs.room.on': 'On',
+    'prefs.room.off': 'Off',
+    'prefs.room.hint':
+      'On essay pages, on wide screens, a room drawn in 3D fills the sides of the sheet: desk, shelf, a window in the rain and a candle. Automatic shows the room only where the device can afford it; with reduced motion it stays still.',
     'prefs.face': 'Text typeface',
     'prefs.face.serif': 'Serif (Literata)',
     'prefs.face.sans': 'Sans serif (Atkinson Hyperlegible Next)',
@@ -257,7 +269,7 @@ export default defineMessages({
     'prefs.focus.off': 'Off',
     'prefs.focus.on': 'On',
     'prefs.focus.hint':
-      'Hides the paper texture and the ambient field, and keeps side notes and the argument map discreet until you point at or focus them.',
+      'Hides the paper texture, the ambient field and the reading room, and keeps side notes and the argument map discreet until you point at or focus them.',
     'prefs.shortcut': 'Single-key shortcut (/)',
     'prefs.shortcut.on': 'On',
     'prefs.shortcut.off': 'Off',

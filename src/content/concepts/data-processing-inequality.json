@@ -1,0 +1,49 @@
+{
+  "slug": {
+    "pt-BR": "desigualdade-do-processamento-de-dados",
+    "en": "data-processing-inequality"
+  },
+  "prefLabel": {
+    "pt-BR": "Desigualdade do processamento de dados",
+    "en": "Data processing inequality"
+  },
+  "altLabel": {
+    "pt-BR": [
+      "teorema do processamento de dados"
+    ],
+    "en": [
+      "data-processing theorem"
+    ]
+  },
+  "definition": {
+    "pt-BR": "Se X, Y e Z formam uma cadeia de Markov nessa ordem, a informação mútua entre X e Z não passa da informação mútua entre X e Y: nenhum processamento de Y aumenta o que ele informa sobre X.",
+    "en": "If X, Y and Z form a Markov chain in that order, the mutual information between X and Z does not exceed the mutual information between X and Y: no processing of Y increases what it tells about X."
+  },
+  "notation": "I(X; Z) \\leq I(X; Y)",
+  "stratum": "formal",
+  "category": "proposition",
+  "domains": [
+    "information-theory",
+    "data-engineering"
+  ],
+  "relations": [
+    {
+      "type": "dependsOn",
+      "target": "mutual-information"
+    },
+    {
+      "type": "dependsOn",
+      "target": "markov-chain"
+    },
+    {
+      "type": "appliesTo",
+      "target": "etl"
+    }
+  ],
+  "exactMatch": [
+    "http://www.wikidata.org/entity/Q20707568"
+  ],
+  "sources": [
+    "cover2006"
+  ]
+}

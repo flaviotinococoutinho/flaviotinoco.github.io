@@ -56,6 +56,12 @@
   --stratum-formal: oklch(49% 0.088 175);
   --stratum-value: oklch(56% 0.16 30);
   --grain: oklch(35% 0.02 70);
+  --room-wall: oklch(46% 0.018 70);
+  --room-wood: oklch(36% 0.05 55);
+  --room-board: oklch(44% 0.055 58);
+  --room-glass: oklch(82% 0.025 240);
+  --room-flame: oklch(86% 0.11 75);
+  --room-wax: oklch(90% 0.03 90);
 }
 
 :root[data-theme="dark"] {
@@ -76,6 +82,12 @@
   --stratum-formal: oklch(71% 0.127 175);
   --stratum-value: oklch(63.5% 0.15 30);
   --grain: oklch(85% 0.02 80);
+  --room-wall: oklch(19% 0.012 65);
+  --room-wood: oklch(20% 0.035 52);
+  --room-board: oklch(30% 0.04 55);
+  --room-glass: oklch(34% 0.045 250);
+  --room-flame: oklch(82% 0.13 70);
+  --room-wax: oklch(78% 0.04 85);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -97,6 +109,12 @@
     --stratum-formal: oklch(71% 0.127 175);
     --stratum-value: oklch(63.5% 0.15 30);
     --grain: oklch(85% 0.02 80);
+    --room-wall: oklch(19% 0.012 65);
+    --room-wood: oklch(20% 0.035 52);
+    --room-board: oklch(30% 0.04 55);
+    --room-glass: oklch(34% 0.045 250);
+    --room-flame: oklch(82% 0.13 70);
+    --room-wax: oklch(78% 0.04 85);
   }
 }
 

@@ -23,6 +23,29 @@ próprio frontmatter.
   autômato recusa e a redundância do histórico (`src/core/labs/flags.ts`, `ft-lab-flags`).
 - Página inicial: a proposição do site como título, as chamadas, o acervo em números e o laboratório de flags
   em forma compacta na primeira tela; sem JavaScript, a mesma figura desenhada na compilação.
+- Sala de leitura ([ADR 0014](docs/adr/0014-sala-de-leitura.md)): nos ensaios, em janelas largas, uma cena
+  three.js (mesa, estante, janela com chuva, vela) ocupa as calhas ao lado do texto, que continua sobre uma
+  folha opaca com os tokens de papel. A decisão de mostrá-la é uma função pura (`src/core/chrome/room.ts`):
+  nada é baixado sem calha, com economia de dados, contraste aumentado ou renderizador por software; com
+  movimento reduzido fica um quadro. A sala é calculada do site: a estante é o acervo (uma lombada por ensaio,
+  um caderno por laboratório, cor do estrato), a obra lida fica sobre a mesa sob o simplexo do seu estrato, a
+  vela queima com o progresso da leitura e a chuva cede no fim. Preferência `room` (automática, ligada,
+  desligada) no painel; tokens `--room-*`; dependência `three` 0.187.0, isolada num módulo sob demanda.
+- Laboratório `pipeline` ("O pipeline"): um pipeline de ETL de até seis etapas sobre uma distribuição exata de
+  144 vendas; depois de cada etapa, a informação mútua com a venda inteira e com uma pergunta escolhida pelo
+  leitor, calculada por `information.wasm`, e a etapa em que a pergunta deixa de ser respondida
+  (`src/core/labs/pipeline.ts`, `ft-lab-pipeline`); embutido no ensaio de ETL.
+- Cartões de compartilhamento: um PNG de 1200 × 630 por ensaio e laboratório e um do site por língua
+  (`/<lang>/card/<tipo>/<slug>.png`), gerados na compilação por satori e resvg a partir de um modelo puro
+  (`src/core/chrome/card.ts`): estrato com glifo e nome, título, descrição, disciplinas e, nos laboratórios, a
+  miniatura. Toda página declara `og:image` (com dimensões e texto alternativo) e `twitter:card`. As fontes dos
+  cartões são instâncias TTF estáticas (`scripts/fonts/build_card_fonts.py`), porque o satori não lê WOFF2.
+- Memória de leitura (`ft-reading-memory`, `src/core/reading/memory.ts`): ao voltar a um ensaio, o leitor vê
+  onde parou (seção e porcentagem) e pode continuar dali, com o foco levado à seção, ou esquecer. O registro
+  fica só no `localStorage`, limitado a 40 ensaios; uma visita que só espia o topo não apaga o lugar. A vela da
+  sala de leitura começa tão gasta quanto o leitor a deixou.
+- Orçamentos: todo módulo do pacote do site passa a ter teto de 16 KiB em gzip, e a cena da sala de leitura,
+  de 140 KiB (`pnpm check:budgets`).
 
 - Frentes temáticas e orientação de lugar digital na página inicial (`Frentes de investigação` com marcas
   vetoriais estruturais para engenharia de software, otimização, sistemas de informação e filosofia aplicada;
@@ -54,6 +77,8 @@ próprio frontmatter.
 
 ### Corrigido
 
+- Laboratórios: o campo de texto pede o teclado numérico só quando o alfabeto é de dígitos; o histórico de eventos
+  de "Flags e estados" e as etapas de "O pipeline" são letras, que o teclado numérico do celular não digita.
 - Mapa do argumento aberto (`ArgumentMap.astro`, `ft-argument-map.ts`): removido o elemento `<title>` redundante
   dentro dos nós SVG cujo `aria-label` já nomeia o tipo e a seção, evitando concatenação duplicada do texto
   visível na auditoria do critério 2.5.3 da WCAG 2.2 (`label-content-name-mismatch`).

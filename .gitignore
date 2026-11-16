@@ -28,3 +28,6 @@ wasm/target/
 
 # agent worktrees (parallel workstreams; merged through their ws/* branches)
 .claude/worktrees/
+
+# Python bytecode (scripts/fonts/*.py import one another)
+__pycache__/

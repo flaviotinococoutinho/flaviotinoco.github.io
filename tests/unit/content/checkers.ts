@@ -98,6 +98,10 @@ export const CITATION_KEYS: ReadonlySet<string> = new Set([
   'christiansen2023',
   'selby2023',
   'hendel2013',
+  // data engineering: ETL, provenance and batch processing
+  'kimball2004',
+  'buneman2001',
+  'dean2008',
 ]);
 
 /** SKOS concept ids provided by the ontology workstream (src/content/concepts/*.json). */
@@ -164,9 +168,24 @@ export const CONCEPT_IDS: ReadonlySet<string> = new Set([
   'visual-grammar',
   'architecture-decision-record',
   'conways-law',
+  // data engineering
+  'etl',
+  'data-processing-inequality',
+  'markov-chain',
+  'sufficient-statistic',
+  'data-lineage',
 ]);
 
-export const WIDGETS: ReadonlySet<string> = new Set(['fourier', 'sampling', 'entropy', 'channel', 'logistic', 'clt']);
+export const WIDGETS: ReadonlySet<string> = new Set([
+  'fourier',
+  'sampling',
+  'entropy',
+  'channel',
+  'logistic',
+  'clt',
+  'flags',
+  'pipeline',
+]);
 
 /** Argument-node kinds (Toulmin, 1958) accepted by the reading stage. */
 export const ARGUMENT_KINDS: ReadonlySet<string> = new Set([

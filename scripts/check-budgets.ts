@@ -4,7 +4,8 @@
  *   node scripts/check-budgets.ts [dist]        (pnpm check:budgets)
  *
  * Per page: raw HTML, render-blocking CSS (gzip), initial JS (gzip, static
- * import graph included) and preloaded fonts; every .wasm module (raw).
+ * import graph included) and preloaded fonts; every module of the bundle
+ * (gzip, lazy ones included); every .wasm module (raw).
  * Budgets and their rationale: scripts/lib/budgets.ts. Prints a table sorted by
  * weight and fails on any budget error (font preloads only warn).
  */
@@ -17,6 +18,7 @@ import { listFiles, positional } from './lib/fs.ts';
 import { distTargetOf, pageUrlOf, siteCoordinates } from './lib/site.ts';
 import {
   BUDGETS,
+  evaluateModule,
   evaluatePage,
   evaluateWasm,
   formatKiB,
@@ -108,8 +110,16 @@ const wasm = await Promise.all(
   files.filter((f) => f.endsWith('.wasm')).map(async (f) => ({ file: f, raw: (await load(f))?.byteLength ?? 0 })),
 );
 
+// The site's own bundle (Vite emits it under _astro/); Pagefind's files are a third party's and load on search.
+const bundle = await Promise.all(
+  files
+    .filter((f) => f.startsWith('_astro/') && f.endsWith('.js'))
+    .map(async (f) => ({ file: f, gzip: await gzFile(f) })),
+);
+
 const violations: Violation[] = [
   ...rows.flatMap((r) => evaluatePage(r, BUDGETS)),
+  ...bundle.flatMap((m) => evaluateModule(m.file, m.gzip, BUDGETS)),
   ...wasm.flatMap((w) => evaluateWasm(w.file, w.raw, BUDGETS)),
 ];
 
@@ -118,6 +128,14 @@ console.log(formatTable(rows, BUDGETS));
 if (wasm.length > 0) {
   console.log(`\nWebAssembly (raw, ≤ ${formatKiB(BUDGETS.wasmRaw)} each)`);
   for (const w of [...wasm].sort((a, b) => b.raw - a.raw)) console.log(`  ${formatKiB(w.raw).padStart(10)}  ${w.file}`);
+}
+if (bundle.length > 0) {
+  console.log(
+    `\nModules (gzip, ≤ ${formatKiB(BUDGETS.moduleGzip)} each; the scene ≤ ${formatKiB(BUDGETS.sceneGzip)}), heaviest first`,
+  );
+  for (const m of [...bundle].sort((a, b) => b.gzip - a.gzip).slice(0, 5)) {
+    console.log(`  ${formatKiB(m.gzip).padStart(10)}  ${m.file}`);
+  }
 }
 for (const m of missing) console.warn(`warning: referenced asset not found (see check:links): ${m}`);
 

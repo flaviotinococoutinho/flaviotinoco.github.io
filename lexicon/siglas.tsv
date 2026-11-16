@@ -100,6 +100,7 @@ ADR	mul	exact	registro de decisão arquitetural	architecture decision record	en
 CRUD	mul	exact	criar, ler, atualizar e excluir	create, read, update and delete	en
 ACID	mul	exact	atomicidade, consistência, isolamento e durabilidade	atomicity, consistency, isolation and durability	en
 SQL	mul	exact	linguagem de consulta estruturada	Structured Query Language	en
+ETL	mul	exact	extrair, transformar e carregar	extract, transform, load	en
 SAT	mul	exact	satisfatibilidade booleana	Boolean satisfiability	en
 GDPR	mul	exact	Regulamento Geral sobre a Proteção de Dados	General Data Protection Regulation	en
 GPL	mul	exact	Licença Pública Geral GNU	GNU General Public License	en

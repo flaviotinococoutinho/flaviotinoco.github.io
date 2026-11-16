@@ -1,0 +1,57 @@
+{
+  "slug": {
+    "pt-BR": "cadeia-de-markov",
+    "en": "markov-chain"
+  },
+  "name": {
+    "pt-BR": "Cadeia de Markov de três variáveis",
+    "en": "Markov chain of three variables"
+  },
+  "tex": "p(x, y, z) = p(x)\\,p(y \\mid x)\\,p(z \\mid y)",
+  "labels": {
+    "pt-BR": [
+      "eq:cadeia-de-markov"
+    ],
+    "en": [
+      "eq:markov-chain"
+    ]
+  },
+  "concept": "markov-chain",
+  "meaning": {
+    "pt-BR": "Três variáveis formam uma cadeia de Markov quando a probabilidade conjunta se decompõe em três fatores: a da primeira, a da segunda dada a primeira e a da terceira dada só a segunda. A terceira não consulta a primeira diretamente; tudo o que sabe dela chega pela segunda.",
+    "en": "Three variables form a Markov chain when the joint probability factors into three terms: that of the first, that of the second given the first, and that of the third given the second alone. The third does not consult the first directly; all it knows about it arrives through the second."
+  },
+  "spoken": {
+    "pt-BR": "A probabilidade conjunta de x, y e z é a probabilidade de x, vezes a de y dado x, vezes a de z dado y.",
+    "en": "The joint probability of x, y and z is the probability of x, times that of y given x, times that of z given y."
+  },
+  "symbols": [
+    {
+      "tex": "p(x, y, z)",
+      "text": {
+        "pt-BR": "probabilidade conjunta das três variáveis",
+        "en": "joint probability of the three variables"
+      }
+    },
+    {
+      "tex": "p(y \\mid x)",
+      "text": {
+        "pt-BR": "probabilidade de y quando x é conhecido",
+        "en": "probability of y when x is known"
+      }
+    },
+    {
+      "tex": "p(z \\mid y)",
+      "text": {
+        "pt-BR": "probabilidade de z quando y é conhecido",
+        "en": "probability of z when y is known"
+      }
+    }
+  ],
+  "concepts": [
+    "data-processing-inequality"
+  ],
+  "sources": [
+    "cover2006"
+  ]
+}

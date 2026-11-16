@@ -159,8 +159,9 @@ describe('check-budgets', () => {
       '_astro/a.css': 'body{margin:0}',
       '_astro/entry.js': 'import"./dep.js";const l=()=>import("./lazy.js");',
       '_astro/dep.js': 'export const d=1;',
-      // A lazy chunk far above the budget must not count as initial JS.
-      '_astro/lazy.js': randomBytes(40 * 1024).toString('base64'),
+      // A lazy chunk above the budget of initial JS (12 KiB) must not count as initial JS;
+      // it is under the ceiling every module has (16 KiB), so nothing fails.
+      '_astro/lazy.js': randomBytes(14 * 1024).toString('base64'),
       '_astro/k.wasm': Buffer.alloc(1024),
     });
     const r = run('check-budgets.ts', [dir]);
@@ -169,7 +170,23 @@ describe('check-budgets', () => {
     expect(r.out).toContain('all budgets met');
   });
 
-  it('fails on oversized initial JS, CSS, HTML and wasm', () => {
+  it('caps lazy modules too, and lets only the reading-room scene weigh more', () => {
+    const noise = (kib: number): string => randomBytes(kib * 1024).toString('base64');
+    const dir = tempSite({
+      'en/index.html': page('<h1>ok</h1>'),
+      '_astro/a.css': 'body{margin:0}',
+      '_astro/entry.js': 'const l=()=>import("./lazy.js");const s=()=>import("./reading-room.abc123.js");',
+      '_astro/lazy.js': noise(40),
+      '_astro/reading-room.abc123.js': noise(40),
+    });
+    const r = run('check-budgets.ts', [dir]);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain('1 budget violation(s)');
+    expect(r.out).toMatch(/_astro\/lazy\.js: module .* > 16\.0 KiB/);
+    expect(r.out).not.toMatch(/reading-room\.abc123\.js: /);
+  });
+
+  it('fails on oversized initial JS, CSS, HTML, modules and wasm', () => {
     const noise = (kib: number): string => randomBytes(kib * 1024).toString('base64');
     const dir = tempSite({
       'en/index.html': page(`<p>${noise(120)}</p>`),
@@ -180,7 +197,8 @@ describe('check-budgets', () => {
     });
     const r = run('check-budgets.ts', [dir]);
     expect(r.code).toBe(1);
-    expect(r.out).toContain('4 budget violation(s)');
+    expect(r.out).toContain('5 budget violation(s)');
+    expect(r.out).toMatch(/_astro\/dep\.js: module .* > 16\.0 KiB/);
     expect(r.out).toMatch(/en\/index\.html: html .* > 160\.0 KiB/);
     expect(r.out).toMatch(/en\/index\.html: css .* > 30\.0 KiB/);
     expect(r.out).toMatch(/en\/index\.html: js .* > 12\.0 KiB/);
