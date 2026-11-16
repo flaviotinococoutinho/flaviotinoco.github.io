@@ -28,10 +28,6 @@ abstract: >-
   limits of the model: the stop method is a choice of this lab, the four situations are taken as mutually
   exclusive, and a flat machine with several independent dimensions grows the way the flags did.
 keywords: [state machine, boolean flags, finite automaton, redundancy]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Drafted with AI assistance (Claude) in the scope round of 14 November 2026, from the example and the sources of the essay “The second flag”; awaiting review by the author.
 draft: false
 kernel: information
 widget: flags

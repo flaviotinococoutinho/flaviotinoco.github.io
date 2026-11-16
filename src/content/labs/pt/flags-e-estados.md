@@ -29,10 +29,6 @@ abstract: >-
   tomadas como mutuamente exclusivas, e uma máquina plana com mais dimensões independentes cresce como as
   flags cresciam.
 keywords: [máquina de estados, flags booleanas, autômato finito, redundância]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Redigido com assistência de IA (Claude) na rodada de escopo de 14 de novembro de 2026, a partir do exemplo e das fontes do ensaio “A segunda flag”; aguarda revisão do autor.
 draft: false
 kernel: information
 widget: flags

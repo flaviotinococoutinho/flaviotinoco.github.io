@@ -32,10 +32,6 @@ abstract: >-
   proved worst-case ratio, and heuristics governed by Herbert Simon's satisficing threshold. Engineering maturity,
   it concludes, lies in matching formal guarantees to the real budget of decision and maintenance.
 keywords: [combinatorial optimization, Amdahl's law, approximation algorithm, satisficing, software engineering]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Drafted with AI assistance (Gemini) under the site's editorial programme; primary sources and theorems verified on 13 November 2026; awaiting review by the author.
 draft: false
 ---
 

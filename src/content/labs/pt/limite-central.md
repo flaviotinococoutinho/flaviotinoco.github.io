@@ -29,10 +29,6 @@ abstract: >-
   convergência; distribuições assimétricas convergem mais devagar; e o histograma, feito com um número finito
   de sorteios pseudoaleatórios, flutua em torno da forma limite.
 keywords: [teorema central do limite, distribuição normal, probabilidade, convolução]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Texto-semente redigido com assistência de IA (Claude) como demonstração do modelo; aguarda revisão do autor.
 draft: false
 kernel: dynamics
 widget: clt

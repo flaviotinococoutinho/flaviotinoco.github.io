@@ -52,6 +52,49 @@ const sceneRequests = (page: Page): string[] => {
   return seen;
 };
 
+/**
+ * Text of <main> that lies outside [left, right] (viewport px): the glyphs that would sit on the room instead
+ * of the paper. What a scroll or clip container hides is not on screen, so each glyph box is clipped by every
+ * ancestor that does not let its content overflow (the horizontal passages do this).
+ */
+const textOutside = (page: Page, left: number, right: number): Promise<string[]> =>
+  page.evaluate(
+    ([sheetLeft, sheetRight]) => {
+      const main = document.querySelector('main');
+      const outside: string[] = [];
+      if (main === null) return ['no main'];
+      const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
+      const range = document.createRange();
+      for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+        const parent = node.parentElement;
+        if (parent === null || (node.textContent ?? '').trim() === '') continue;
+        if (!parent.checkVisibility({ visibilityProperty: true, opacityProperty: true })) continue;
+        if (parent.closest('.visually-hidden') !== null) continue;
+        let clipLeft = -Infinity;
+        let clipRight = Infinity;
+        for (let a: Element | null = parent; a !== null && a !== main; a = a.parentElement) {
+          if (getComputedStyle(a).overflowX === 'visible') continue;
+          const box = a.getBoundingClientRect();
+          clipLeft = Math.max(clipLeft, box.left);
+          clipRight = Math.min(clipRight, box.right);
+        }
+        range.selectNodeContents(node);
+        for (const rect of range.getClientRects()) {
+          if (rect.width === 0 || rect.height === 0) continue;
+          const l = Math.max(rect.left, clipLeft);
+          const r = Math.min(rect.right, clipRight);
+          if (r <= l) continue;
+          if (l < (sheetLeft ?? 0) - 0.5 || r > (sheetRight ?? 0) + 0.5) {
+            outside.push(`${parent.localName}.${parent.className}: “${(node.textContent ?? '').trim().slice(0, 40)}”`);
+            break;
+          }
+        }
+      }
+      return outside;
+    },
+    [left, right],
+  );
+
 /** Long enough for the idle-time import to have started if it was ever going to. */
 const idle = async (page: Page): Promise<void> => {
   await settle(page);
@@ -125,51 +168,13 @@ test.describe('reading room: reading keeps the priority', () => {
       await expect(layer).toHaveAttribute('aria-hidden', 'true');
       expect(await layer.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
 
-      const report = await page.evaluate(() => {
-        const sheet = document.querySelector('.room__sheet')?.getBoundingClientRect();
-        if (sheet === undefined) return { sheet: null, outside: ['no sheet'] };
-        const main = document.querySelector('main');
-        const outside: string[] = [];
-        if (main !== null) {
-          const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
-          const range = document.createRange();
-          for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
-            const parent = node.parentElement;
-            if (parent === null || (node.textContent ?? '').trim() === '') continue;
-            if (!parent.checkVisibility({ visibilityProperty: true, opacityProperty: true })) continue;
-            if (parent.closest('.visually-hidden') !== null) continue;
-            // What a scroll or clip container hides is not on screen: clip the glyphs' box by every
-            // ancestor that does not let its content overflow (the horizontal passages do this).
-            let clipLeft = -Infinity;
-            let clipRight = Infinity;
-            for (let a: Element | null = parent; a !== null && a !== main; a = a.parentElement) {
-              if (getComputedStyle(a).overflowX === 'visible') continue;
-              const box = a.getBoundingClientRect();
-              clipLeft = Math.max(clipLeft, box.left);
-              clipRight = Math.min(clipRight, box.right);
-            }
-            range.selectNodeContents(node);
-            for (const rect of range.getClientRects()) {
-              if (rect.width === 0 || rect.height === 0) continue;
-              const left = Math.max(rect.left, clipLeft);
-              const right = Math.min(rect.right, clipRight);
-              if (right <= left) continue;
-              if (left < sheet.left - 0.5 || right > sheet.right + 0.5) {
-                const text = (node.textContent ?? '').trim().slice(0, 40);
-                outside.push(`${parent.localName}.${parent.className}: “${text}”`);
-                break;
-              }
-            }
-          }
-        }
-        return { sheet: { left: sheet.left, right: sheet.right, width: innerWidth }, outside };
+      const sheet = await page.locator('.room__sheet').evaluate((el) => {
+        const box = el.getBoundingClientRect();
+        return { left: box.left, right: box.right, width: innerWidth };
       });
+      const report = { sheet, outside: await textOutside(page, sheet.left, sheet.right) };
       expect(report.outside, 'text outside the opaque sheet').toEqual([]);
-      const { sheet } = report;
-      expect(sheet).not.toBeNull();
-      if (sheet !== null) {
-        expect(Math.min(sheet.left, sheet.width - sheet.right)).toBeGreaterThanOrEqual(ROOM_MIN_GUTTER_PX);
-      }
+      expect(Math.min(sheet.left, sheet.width - sheet.right)).toBeGreaterThanOrEqual(ROOM_MIN_GUTTER_PX);
 
       // The bands that cross the gutters are opaque too.
       for (const selector of ['.site-header', '.site-footer']) {
@@ -370,5 +375,48 @@ test.describe('reading room: rest and the hand', () => {
       await page.mouse.click(found.x, found.y);
       await page.waitForURL((url) => url.pathname === opened?.href);
     }
+  });
+});
+
+test.describe('reading room without the scene: the desk', () => {
+  // A laptop window: gutters too narrow for the scene, wide enough for the desk to show.
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  /** The paper (the essay's ::before) in viewport px, and whether the desk is drawn at all. */
+  const desk = (page: Page) =>
+    page.locator('.essay').evaluate((essay) => {
+      const box = essay.getBoundingClientRect();
+      const sheet = getComputedStyle(essay, '::before');
+      const width = Number.parseFloat(sheet.width);
+      return {
+        drawn: sheet.content !== 'none' && getComputedStyle(essay).backgroundColor !== 'rgba(0, 0, 0, 0)',
+        left: box.left + (box.width - width) / 2,
+        right: box.left + (box.width + width) / 2,
+      };
+    });
+
+  for (const { path } of essays) {
+    test(`every glyph on the paper, none on the wood: /${path}`, async ({ page }) => {
+      await page.goto(path);
+      await settle(page);
+      const d = await desk(page);
+      expect(d.drawn, 'the desk is there without the scene').toBe(true);
+      expect(d.left, 'wood shows beside the paper').toBeGreaterThan(0);
+      expect(await textOutside(page, d.left, d.right), 'text on the wood').toEqual([]);
+    });
+  }
+
+  test('nothing decorative in focus mode or with more contrast', async ({ page }) => {
+    await page.goto(sample[0]?.path ?? '');
+    await settle(page);
+    for (const attribute of [
+      ['data-focus', 'on'],
+      ['data-contrast', 'more'],
+    ] as const) {
+      await page.evaluate(([name, value]) => document.documentElement.setAttribute(name, value), attribute);
+      expect((await desk(page)).drawn, `${attribute.join('=')}: no desk`).toBe(false);
+      await page.evaluate(([name]) => document.documentElement.removeAttribute(name), attribute);
+    }
+    expect((await desk(page)).drawn).toBe(true);
   });
 });

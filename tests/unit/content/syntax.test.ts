@@ -25,11 +25,12 @@ const ABSTRACT_RANGE = [150, 250] as const;
 
 /**
  * The seed corpus: the nine works drafted on 2026-10-11 as a demonstration of
- * the template. They stay bound to the agreed wording (publication day,
- * provenance label and note, one passage per essay) until the author reviews
- * them: only that review changes the label (docs/programa-editorial.md §7).
- * Works published afterwards declare their own date and provenance, and follow
- * the general contract every work follows.
+ * the template. They keep the agreed publication day and one passage per essay
+ * (docs/programa-editorial.md §7). Their provenance label was withdrawn by the
+ * author on 2026-11-16, with that of every work published until then: a work
+ * declares provenance only if the author chooses to (docs/guia-editorial.md §3).
+ * Works published afterwards declare their own date, and follow the general
+ * contract every work follows.
  */
 const SEED_PUBLISHED = '2026-10-11';
 const SEED_WORKS: ReadonlySet<string> = new Set([
@@ -43,11 +44,6 @@ const SEED_WORKS: ReadonlySet<string> = new Set([
   'labs/logistic-map',
   'labs/central-limit',
 ]);
-const SEED_PROVENANCE_NOTE: Readonly<Record<'pt-BR' | 'en', string>> = {
-  'pt-BR':
-    'Texto-semente redigido com assistência de IA (Claude) como demonstração do modelo; aguarda revisão do autor.',
-  en: 'Seed text drafted with AI assistance (Claude) as a demonstration of the template; awaiting review by the author.',
-};
 const workKey = (doc: Doc): string => `${doc.collection}/${String(doc.frontmatter['translationKey'])}`;
 const isSeed = (doc: Doc): boolean => SEED_WORKS.has(workKey(doc));
 const iso = (value: unknown): string =>
@@ -124,11 +120,14 @@ describe('content corpus', () => {
       const dates = revisions.map((r) => iso(r.date));
       if (dates.some((date, i) => i > 0 && date < (dates[i - 1] ?? '')))
         problems.push('revisions must be in date order');
-      // Editorial ethics (docs/guia-editorial.md §3): the reader is told what the assistance was.
-      const provenance = (fm['provenance'] ?? {}) as Record<string, unknown>;
-      const note = typeof provenance['note'] === 'string' ? provenance['note'].trim() : '';
-      if ((provenance['assistance'] !== 'none' || provenance['reviewed'] !== true) && note === '')
-        problems.push('assisted, generated or unreviewed text needs a provenance note');
+      // Editorial ethics (docs/guia-editorial.md §3): a work that declares assistance or a pending review
+      // tells the reader what it was. Declaring provenance is the author's choice.
+      const provenance = fm['provenance'] as Record<string, unknown> | undefined;
+      if (provenance !== undefined) {
+        const note = typeof provenance['note'] === 'string' ? provenance['note'].trim() : '';
+        if ((provenance['assistance'] !== 'none' || provenance['reviewed'] !== true) && note === '')
+          problems.push('assisted, generated or unreviewed text needs a provenance note');
+      }
       if (fm['draft'] !== false) problems.push('draft must be false');
       expect(problems).toEqual([]);
     },
@@ -149,12 +148,6 @@ describe('content corpus', () => {
       const fm = doc.frontmatter;
       const problems: string[] = [];
       if (iso(fm['published']) !== SEED_PUBLISHED) problems.push(`published must be ${SEED_PUBLISHED}`);
-      const provenance = (fm['provenance'] ?? {}) as Record<string, unknown>;
-      if (provenance['assistance'] !== 'generated' || provenance['reviewed'] !== false) {
-        problems.push('provenance must declare generated, unreviewed text');
-      }
-      if (provenance['note'] !== SEED_PROVENANCE_NOTE[LOCALE_DIRS[doc.dir]])
-        problems.push('provenance note differs from the agreed wording');
       if (doc.collection === 'essays' && fm['bridgesTo'] === undefined)
         problems.push('every seed essay is a passage (bridgesTo)');
       expect(problems).toEqual([]);

@@ -28,10 +28,6 @@ abstract: >-
   existem sem dizer como construí-los de modo eficiente; erros reais costumam vir em rajadas, não
   independentes; e a probabilidade de erro precisa ser conhecida.
 keywords: [capacidade de canal, canal binário simétrico, ruído, teorema de Shannon]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Texto-semente redigido com assistência de IA (Claude) como demonstração do modelo; aguarda revisão do autor.
 draft: false
 kernel: information
 widget: channel

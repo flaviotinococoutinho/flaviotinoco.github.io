@@ -33,10 +33,6 @@ abstract: >-
   a repertoire of possible messages shared by sender and receiver, a receiver able to tell them apart, and a
   probability distribution assigned by someone, that is, a model. That presupposition is the bridge to theory.
 keywords: [sign, information, entropy, meaning, semiotics]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Seed text drafted with AI assistance (Claude) as a demonstration of the template; awaiting review by the author.
 draft: false
 ---
 

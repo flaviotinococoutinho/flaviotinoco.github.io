@@ -28,10 +28,6 @@ abstract: >-
   the exponent converge slowly near the bifurcations, and the map is a deliberately simplified model of
   populations with separate generations, useful for thinking rather than for forecasting.
 keywords: [logistic map, deterministic chaos, bifurcation, Feigenbaum constant, Lyapunov exponent]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Seed text drafted with AI assistance (Claude) as a demonstration of the template; awaiting review by the author.
 draft: false
 kernel: dynamics
 widget: logistic

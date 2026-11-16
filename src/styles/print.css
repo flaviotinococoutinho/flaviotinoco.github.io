@@ -13,6 +13,7 @@
     --ink-muted: #222;
     --link: #000;
     --grain-image: none;
+    --wood-image: none;
   }
   body {
     font-size: 12pt;

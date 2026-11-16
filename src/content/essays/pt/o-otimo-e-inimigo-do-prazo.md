@@ -33,10 +33,6 @@ abstract: >-
   caso provada e heurísticas orientadas pelo satisficing de Herbert Simon. Conclui que a maturidade em engenharia
   consiste em casar a garantia formal com o orçamento real de decisão.
 keywords: [otimização combinatória, lei de Amdahl, algoritmo de aproximação, satisficing, engenharia de software]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Redigido com assistência de IA (Gemini) segundo o programa editorial do site; fontes primárias e teoremas conferidos em 13 de novembro de 2026; aguarda revisão do autor.
 draft: false
 ---
 

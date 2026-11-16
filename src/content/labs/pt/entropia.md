@@ -28,10 +28,6 @@ abstract: >-
   codificação em blocos reduz; e a própria tabela do código teria de ser transmitida. O ensaio sobre o custo de
   escolher aplica as mesmas ideias à organização de menus.
 keywords: [entropia, código de Huffman, codificação de fonte, compressão]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Texto-semente redigido com assistência de IA (Claude) como demonstração do modelo; aguarda revisão do autor.
 draft: false
 kernel: information
 widget: entropy

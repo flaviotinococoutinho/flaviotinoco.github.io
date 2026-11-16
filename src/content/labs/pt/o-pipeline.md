@@ -29,10 +29,6 @@ abstract: >-
   modelo: a distribuição é inventada, as etapas são poucas e uma junção com outra fonte fica de fora, porque
   quebra a cadeia.
 keywords: [ETL, desigualdade do processamento de dados, informação mútua, estatística suficiente]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Redigido com assistência de IA (Claude) em 15 de novembro de 2026, a partir do exemplo e das fontes do ensaio “O pipeline não cria informação”; aguarda revisão do autor.
 draft: false
 kernel: information
 widget: pipeline

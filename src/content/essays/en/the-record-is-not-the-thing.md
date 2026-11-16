@@ -32,10 +32,6 @@ abstract: >-
   an information system, it concludes, is deciding openly what an institution promises to remember and what it
   chooses to forget.
 keywords: [information system, record, immutability, state, applied philosophy]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Drafted with AI assistance (Gemini) under the site's editorial programme; primary sources and locators verified on 13 November 2026; awaiting review by the author.
 draft: false
 ---
 

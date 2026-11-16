@@ -31,10 +31,6 @@ abstract: >-
   valor, guardar tudo tem custo e a hipótese de Markov falha quando uma etapa lê entradas laterais. Conclui com
   um critério para decidir o que uma etapa pode descartar e com a pergunta sobre quem paga pela decisão.
 keywords: [ETL, engenharia de dados, desigualdade do processamento de dados, informação mútua, linhagem de dados]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Redigido com assistência de IA (Claude) na rodada de escopo de 14 de novembro de 2026; fontes conferidas no Crossref e na Open Library nessa data; aguarda revisão do autor.
 draft: false
 ---
 

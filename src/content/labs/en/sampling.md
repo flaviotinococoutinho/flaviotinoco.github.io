@@ -28,10 +28,6 @@ abstract: >-
   outside the band do not fold onto the ones that matter. The companion essay discusses the shared history of
   the result and the sense in which it is deterministic.
 keywords: [sampling, aliasing, Nyquist–Shannon theorem, interpolation]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Seed text drafted with AI assistance (Claude) as a demonstration of the template; awaiting review by the author.
 draft: false
 kernel: signal
 widget: sampling

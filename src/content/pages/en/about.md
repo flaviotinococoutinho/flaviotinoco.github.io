@@ -11,6 +11,8 @@ revisions:
     note: Declared focus on software engineering and computing; fourth essay.
   - date: 2026-11-13
     note: Seven essays across all four strata; fronts in optimization and information systems.
+  - date: 2026-11-16
+    note: The works no longer declare their provenance, by the author's decision.
 ---
 
 :::aside
@@ -47,9 +49,9 @@ There is no need to read in order. The essays are written to allow several paths
 - **Figures that follow the scroll.** Some sequences advance as the page scrolls, and others cross the page sideways; without JavaScript, or with reduced motion, they remain readable step by step, without animation.
 - **Linked concepts.** Technical terms lead to concept pages organised as a small ontology — in Gruber's sense, the specification of a representational vocabulary for a shared domain of discourse [@gruber1993]. Every item on the site is located by independent facets (stratum, form, domain, concepts), as in Ranganathan's faceted classification [@ranganathan1933], and the closeness between concepts is estimated with measures based on information content [@resnik1995; @lin1998; @seco2004].
 
-## Epistemic status and provenance
+## Epistemic status
 
-Every essay and lab states how confident the author is and what kind of support its claims rest on. Confidence uses the scale of estimative expressions proposed by Sherman Kent, in which “probable” corresponds to about 75 %, give or take 12 points [@kent1964]; the kind of support is proof, empirical evidence, argument or speculation. Each text also reports its provenance: whether it was written without assistance, with assistance, or generated with AI help, and whether the author has reviewed it. The texts published so far were generated with AI assistance and are labelled as unreviewed until the author reviews them.
+Every essay and lab states how confident the author is and what kind of support its claims rest on. Confidence uses the scale of estimative expressions proposed by Sherman Kent, in which “probable” corresponds to about 75 %, give or take 12 points [@kent1964]; the kind of support is proof, empirical evidence, argument or speculation.
 
 The essays exist in Portuguese and in English. Both versions were written to read naturally in each language rather than translated word for word, so they may differ in phrasing. Citations follow, in Portuguese, the standards of the Brazilian Association of Technical Standards (ABNT; from the Portuguese :foreign[Associação Brasileira de Normas Técnicas]{lang=pt-BR}) and, in English, the style of the American Psychological Association (APA); the [colophon](../colophon/) has the details.
 

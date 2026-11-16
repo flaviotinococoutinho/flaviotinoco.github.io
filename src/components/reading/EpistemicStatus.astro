@@ -6,8 +6,8 @@
  * six positions drawn as marks on a line, the essay's level a filled diamond
  * (shape), its word and probability band printed beside it (text) — so neither
  * colour nor position alone carries the meaning. Evidence names the kind of
- * support. The provenance notice appears when AI assistance was used or the
- * author has not reviewed the text.
+ * support. The provenance notice appears when the work declares AI assistance
+ * or that the author has not reviewed it.
  */
 import type { Confidence, Evidence } from '../../core/domain/epistemic.ts';
 import type { Locale } from '../../core/domain/locale.ts';
@@ -19,7 +19,8 @@ export interface Props {
   readonly locale: Locale;
   readonly confidence: Confidence;
   readonly evidence: Evidence;
-  readonly provenance: Provenance & { readonly note?: string | undefined };
+  /** Declared provenance, if the work declares it (optional since 2026-11-16). */
+  readonly provenance?: (Provenance & { readonly note?: string | undefined }) | undefined;
   /** Id of the section heading (for aria-labelledby). */
   readonly headingId: string;
 }
@@ -29,7 +30,7 @@ const t = useTranslations(reading, locale);
 const scale = confidenceScale(confidence);
 const position = scale.findIndex((s) => s.active) + 1;
 const band = kentBand(confidence, locale);
-const notice = provenanceMessage(provenance);
+const notice = provenance === undefined ? null : provenanceMessage(provenance);
 const STEP = 16;
 const width = STEP * (scale.length - 1) + 12;
 ---
@@ -72,7 +73,7 @@ const width = STEP * (scale.length - 1) + 12;
       <dd>{t(`evidence.${evidence}`)}</dd>
     </div>
   </dl>
-  {notice !== null && (
+  {provenance !== undefined && notice !== null && (
     <p class="provenance" data-assistance={provenance.assistance} data-reviewed={String(provenance.reviewed)}>
       <span class="provenance__title">{t('provenance.title')}:</span> {t(notice)}
       {provenance.note !== undefined && provenance.note.length > 0 && (
