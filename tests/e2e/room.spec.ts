@@ -4,13 +4,18 @@
  * What is checked is the rule of the design — the room makes the atmosphere, the reading keeps the
  * priority — as observable facts:
  *
- *   cost      on a viewport without gutters, or with the preference off, the scene's chunk is never
- *             requested; on a software renderer the automatic mode does not load it either;
+ *   cost      the room is off by default; on a viewport without gutters, or with the preference off, the
+ *             scene's chunk is never requested; on a software renderer the automatic mode does not load it;
+ *   switch    on a wide window the essay offers a switch (a toggle button), which lights the room and puts
+ *             it out, by keyboard too, and the choice holds on the next page; without gutters, no switch;
  *   reading   with the room on, every piece of text of every essay lies on the opaque sheet (no glyph
  *             over the scene), and axe finds no violation in the light or in the dark scheme;
  *   motion    with prefers-reduced-motion the room is one still frame, redrawn only after the reader
  *             scrolled (the candle is a reading clock: a state, not an animation);
- *   control   turning the preference off removes the layer and returns the page to what it was.
+ *   control   turning the preference off removes the layer and returns the page to what it was;
+ *   rest      a reader who does not move gets a room that slows, then holds still, and wakes when they do;
+ *   the hand  in a gutter, the book under the pointer is named and a click opens its work; over the sheet,
+ *             nothing of the room answers.
  *
  * The test browser draws WebGL on the CPU (SwiftShader), which the automatic mode refuses on purpose, so
  * the scene itself is exercised with the reader's preference set to "on". The `guard` fixture fails any
@@ -31,7 +36,7 @@ const sample = essays.filter((p, i) => essays.findIndex((q) => q.locale === p.lo
 const WIDE = { width: 1920, height: 1080 };
 const SCENE_CHUNK = /\/reading-room\.[\w-]+\.js$/;
 
-const withPreference = async (page: Page, room: 'on' | 'off'): Promise<void> => {
+const withPreference = async (page: Page, room: 'on' | 'off' | 'auto'): Promise<void> => {
   await page.addInitScript(
     ([key, value]) => localStorage.setItem(key as string, value as string),
     [PREFS_STORAGE_KEY, JSON.stringify({ room })],
@@ -79,9 +84,19 @@ test.describe('reading room: cost', () => {
     expect(requests).toEqual([]);
   });
 
+  test('off by default: a wide viewport never requests the scene until the reader asks', async ({ page }) => {
+    await page.setViewportSize(WIDE);
+    const requests = sceneRequests(page);
+    await page.goto(essay);
+    await idle(page);
+    expect(await scene(page)).toBeNull();
+    expect(requests).toEqual([]);
+  });
+
   test('automatic: a software renderer gets no room and no download', async ({ page }) => {
     await page.setViewportSize(WIDE);
     const requests = sceneRequests(page);
+    await withPreference(page, 'auto');
     await page.goto(essay);
     await idle(page);
     const software = await page.evaluate(() => {
@@ -249,5 +264,111 @@ test.describe('reading room: motion and control', () => {
     await expect(page.locator('html')).not.toHaveAttribute('data-scene', /.*/);
     expect(await page.locator('ft-reading-room').evaluate((el) => getComputedStyle(el).visibility)).toBe('hidden');
     expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(paper);
+  });
+});
+
+test.describe('reading room: the switch', () => {
+  test.skip(sample.length === 0, 'the build has no essay');
+  const essay = sample[0]?.path ?? '';
+  const button = (page: Page) => page.locator('ft-room-switch button');
+
+  test('no gutter, no switch: the default desktop viewport does not offer the room', async ({ page }) => {
+    await page.goto(essay);
+    await idle(page);
+    await expect(page.locator('ft-room-switch')).toBeHidden();
+  });
+
+  test('lights the room and puts it out, by keyboard; the choice holds on the next page', async ({ page }) => {
+    await page.setViewportSize(WIDE);
+    const requests = sceneRequests(page);
+    await page.goto(essay);
+    await settle(page);
+    await expect(button(page)).toBeVisible();
+    await expect(button(page)).toHaveAttribute('aria-pressed', 'false');
+    await expect(button(page)).toHaveAccessibleName(/Sala de leitura|Reading room/);
+
+    await button(page).focus();
+    await page.keyboard.press('Space');
+    await expect(page.locator('html')).toHaveAttribute('data-scene', 'live', { timeout: 20_000 });
+    await expect(button(page)).toHaveAttribute('aria-pressed', 'true');
+    expect(requests.length, 'the scene is downloaded once asked for').toBeGreaterThan(0);
+
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-scene', 'live', { timeout: 20_000 });
+    await expect(button(page)).toHaveAttribute('aria-pressed', 'true');
+
+    await button(page).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('html')).not.toHaveAttribute('data-scene', /.*/);
+    await expect(button(page)).toHaveAttribute('aria-pressed', 'false');
+    await expect(button(page)).toBeFocused();
+    // Off is the default: nothing is left in storage for the room.
+    expect(await page.evaluate((key) => localStorage.getItem(key) ?? '{}', PREFS_STORAGE_KEY)).not.toContain('room');
+  });
+});
+
+test.describe('reading room: rest and the hand', () => {
+  test.use({ viewport: WIDE });
+  test.skip(sample.length === 0, 'the build has no essay');
+  const essay = sample[0]?.path ?? '';
+  const pace = (page: Page): Promise<string | null> =>
+    page.locator('ft-reading-room').evaluate((el) => el.getAttribute('data-pace'));
+
+  test('a still reader gets a room that slows, then holds still; moving wakes it', async ({ page }) => {
+    test.setTimeout(90_000);
+    await withPreference(page, 'on');
+    await page.goto(essay);
+    await expect(page.locator('html')).toHaveAttribute('data-scene', 'live', { timeout: 20_000 });
+    await expect.poll(() => pace(page), { timeout: 15_000 }).toBe('ambient');
+    await expect.poll(() => pace(page), { timeout: 40_000 }).toBe('rest');
+    const before = await page.locator('.room__canvas').screenshot();
+    await page.waitForTimeout(700);
+    expect((await page.locator('.room__canvas').screenshot()).equals(before), 'at rest nothing is drawn').toBe(true);
+    await page.mouse.move(10, 500);
+    await expect.poll(() => pace(page)).toBe('full');
+  });
+
+  test('in a gutter the book under the pointer is named and opens its work; over the sheet nothing answers', async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await withPreference(page, 'on');
+    await page.goto(essay);
+    await expect(page.locator('html')).toHaveAttribute('data-scene', 'live', { timeout: 20_000 });
+    await settle(page);
+    const labels = (await page.evaluate(async () => {
+      const url = document.querySelector('ft-reading-room')?.getAttribute('labels') ?? '';
+      return (await (await fetch(url)).json()) as unknown;
+    })) as readonly { readonly title: string; readonly href: string }[];
+    expect(labels.length).toBeGreaterThan(0);
+
+    const sheetLeft = await page.locator('.room__sheet').evaluate((el) => el.getBoundingClientRect().left);
+    const label = page.locator('.room__label');
+    let found: { readonly x: number; readonly y: number } | null = null;
+    for (let y = 120; y < WIDE.height - 120 && found === null; y += 14) {
+      for (let x = 12; x < sheetLeft - 24 && found === null; x += 12) {
+        await page.mouse.move(x, y);
+        if (await page.locator('html[data-room-point]').count()) found = { x, y };
+      }
+    }
+    expect(found, 'a book on the shelf answers the pointer').not.toBeNull();
+    await expect(label).toBeVisible();
+    const title = (await label.textContent()) ?? '';
+    const target = labels.find((l) => l.title === title);
+    expect(target, `the label names a work of the shelf (“${title}”)`).toBeDefined();
+
+    // Over the sheet the room does not answer: no name, no hand.
+    await page.mouse.move(sheetLeft + 200, 600);
+    await expect(label).toBeHidden();
+    await expect(page.locator('html[data-room-point]')).toHaveCount(0);
+
+    if (found !== null && target !== undefined) {
+      await page.mouse.move(found.x, found.y);
+      await expect(page.locator('html[data-room-point]')).toHaveCount(1);
+      const named = (await label.textContent()) ?? '';
+      const opened = labels.find((l) => l.title === named);
+      await page.mouse.click(found.x, found.y);
+      await page.waitForURL((url) => url.pathname === opened?.href);
+    }
   });
 });

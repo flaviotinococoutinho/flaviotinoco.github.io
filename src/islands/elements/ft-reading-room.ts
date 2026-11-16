@@ -24,28 +24,39 @@
  * reduced motion these are states, not animations: the still frame is redrawn when scrolling stops.
  * The attributes `shelf` (the corpus, encodeShelf) and `stratum` say what the room holds.
  *
- * The reader's preference `room` (auto | on | off) arrives as data-room on <html>; the state of the layer
- * is published as data-scene="live" | "still" on <html>, where src/styles/components/room.css reads it.
+ * The reader's preference `room` (off | auto | on; off by default) arrives as data-room on <html>; the
+ * state of the layer is published as data-scene="live" | "still" on <html>, where
+ * src/styles/components/room.css reads it, and data-scene-able says that the room could be shown here if
+ * the reader asked for it (<ft-room-switch> shows itself only then).
  */
 import {
+  EYE_TAU,
+  approach,
+  breath,
   burn,
   calm,
   candleStrength,
   decodeShelf,
+  decodeShelfLabels,
+  eyeFor,
   flicker,
-  frameIntervalOf,
   govern,
   governorAt,
   gust,
   gutters,
+  KINDLE_SECONDS,
   kindle,
+  pace,
+  paceInterval,
   pixelRatioOf,
   rainfall,
   roomMode,
   simplexOf,
   startTier,
   type Governor,
+  type Pace,
   type RoomMode,
+  type ShelfLabel,
 } from '../../core/chrome/room.ts';
 import { DAYPARTS, type Daypart } from '../../core/chrome/daypart.ts';
 import { STRATA, isStratum } from '../../core/domain/strata.ts';
@@ -54,6 +65,10 @@ import { pinnedProgress } from '../../core/reading/scroll.ts';
 import type { ReadingRoom, Rgb, RoomColors } from '../scenes/reading-room.ts';
 
 const TAG = 'ft-reading-room';
+/** Seconds for a book to come off the shelf (or go back) to 63 %. */
+const PULL_TAU = 0.12;
+/** A pointer that has not moved for this long (ms) is still: its draught is over. */
+const STILL_POINTER_MS = 80;
 /** Time shown by the single frame of the still mode: the rain a little way down the glass. */
 const STILL_TIME = 2;
 const WATCHED = ['data-theme', 'data-contrast', 'data-motion', 'data-daypart', 'data-focus', 'data-room', 'data-cvd'];
@@ -139,6 +154,22 @@ class FtReadingRoom extends HTMLElement {
   /** What the scene was last sized for, and whether something (colours, mode) asks for a new frame. */
   #sized = '';
   #stale = true;
+  /** When the reader last scrolled, pointed or typed (performance.now()), and the pace that follows. */
+  #input = 0;
+  #pace: Pace = 'full';
+  /** The pointer when it is over a gutter (CSS px), its horizontal speed (px/s) and when it last moved. */
+  #pointer: { readonly x: number; readonly y: number } | null = null;
+  #pointerVx = 0;
+  #pointerAt = 0;
+  /** The eye's offset (motion parallax), smoothed towards eyeFor(pointer). */
+  #eye: readonly [number, number] = [0, 0];
+  /** The book under the pointer, the one drawn off the shelf, and how far out it is. */
+  #hover = -1;
+  #pulled = -1;
+  #pull = 0;
+  /** Titles and links of the books (/<lang>/shelf.json), fetched once the room is lit. */
+  #labels: readonly (ShelfLabel | null)[] = [];
+  #label: HTMLElement | null = null;
 
   connectedCallback(): void {
     this.#target = document.querySelector(this.getAttribute('sheet') ?? '');
@@ -148,7 +179,11 @@ class FtReadingRoom extends HTMLElement {
     canvas.className = 'room__canvas';
     const sheet = document.createElement('div');
     sheet.className = 'room__sheet';
-    this.append(canvas, sheet);
+    const label = document.createElement('p');
+    label.className = 'room__label';
+    label.hidden = true;
+    this.append(canvas, sheet, label);
+    this.#label = label;
     this.#canvas = canvas;
     this.#sheet = sheet;
     this.#governor = governorAt(startTier(navigator.hardwareConcurrency || 0));
@@ -185,9 +220,27 @@ class FtReadingRoom extends HTMLElement {
       );
     }
     document.addEventListener('visibilitychange', () => this.#schedule(), { signal });
+    // The reader moving wakes a resting room (pace); the listeners are passive and do nothing else.
+    this.#input = performance.now();
+    this.dataset['pace'] = this.#pace;
+    for (const type of ['pointermove', 'pointerdown', 'wheel', 'keydown'] as const) {
+      window.addEventListener(type, () => this.#wake(), { passive: true, signal });
+    }
+    // The hand in a gutter: where the eye goes, which book comes off the shelf, where the glass clears.
+    document.addEventListener('pointermove', (event) => this.#point(event), { passive: true, signal });
+    document.addEventListener('pointerdown', (event) => this.#point(event), { passive: true, signal });
+    document.addEventListener(
+      'pointerout',
+      (event) => {
+        if (event.relatedTarget === null) this.#leave();
+      },
+      { passive: true, signal },
+    );
+    document.addEventListener('click', (event) => this.#open(event), { signal });
     window.addEventListener(
       'scroll',
       () => {
+        this.#wake();
         this.#follow();
         if (this.#mode !== 'still') return;
         // Reduced motion: the candle is a state, not an animation — one new frame once scrolling stops.
@@ -204,10 +257,108 @@ class FtReadingRoom extends HTMLElement {
     this.#abort = null;
     clearTimeout(this.#settle);
     this.#stop();
+    delete document.documentElement.dataset['sceneAble'];
     this.#canvas?.remove();
     this.#sheet?.remove();
+    this.#label?.remove();
     this.#canvas = null;
     this.#sheet = null;
+    this.#label = null;
+  }
+
+  /** Is the event over a gutter, on the bare page (not on the header, a dialog, a popover or any content)? */
+  #inGutter(event: MouseEvent): boolean {
+    if (this.#room === null || this.#mode === 'off') return false;
+    const rim = this.#rim();
+    if (event.clientX >= this.#left - rim && event.clientX <= this.#right + rim) return false;
+    const t = event.target;
+    return (
+      t === document.documentElement ||
+      t === document.body ||
+      t === this.#target ||
+      (t instanceof Element && t.localName === 'main')
+    );
+  }
+
+  #point(event: PointerEvent): void {
+    const room = this.#room;
+    if (room === null || !this.#inGutter(event)) {
+      this.#leave();
+      return;
+    }
+    const now = performance.now();
+    const before = this.#pointer;
+    this.#pointerVx =
+      before !== null && now > this.#pointerAt ? ((event.clientX - before.x) / (now - this.#pointerAt)) * 1000 : 0;
+    this.#pointer = { x: event.clientX, y: event.clientY };
+    this.#pointerAt = now;
+    const book = room.pointAt(event.clientX, event.clientY, this.#mode === 'live');
+    this.#hoverTo(this.#labels[book] ? book : -1);
+    this.#placeLabel();
+  }
+
+  #leave(): void {
+    this.#pointer = null;
+    this.#pointerVx = 0;
+    this.#hoverTo(-1);
+  }
+
+  /** The book under the pointer changed: name it (a label that is not read aloud: it repeats a link). */
+  #hoverTo(book: number): void {
+    if (book === this.#hover) return;
+    this.#hover = book;
+    const label = this.#labels[book] ?? null;
+    const root = document.documentElement;
+    if (label === null) delete root.dataset['roomPoint'];
+    else root.dataset['roomPoint'] = '';
+    if (this.#label !== null) {
+      this.#label.textContent = label?.title ?? '';
+      this.#label.hidden = label === null;
+    }
+    if (this.#mode === 'still') {
+      // Reduced motion: the book is simply out, in one new frame.
+      this.#pulled = book;
+      this.#pull = book >= 0 ? 1 : 0;
+      this.#draw(STILL_TIME, STILL_TIME, 1, true);
+    }
+  }
+
+  /** The label beside the pointer, inside the gutter it is in (never over the sheet). */
+  #placeLabel(): void {
+    const label = this.#label;
+    const p = this.#pointer;
+    if (label === null || p === null || label.hidden) return;
+    const rim = this.#rim();
+    const left = p.x < this.#left;
+    const min = (left ? 0 : this.#right + rim) + 8;
+    const max = (left ? this.#left - rim : window.innerWidth) - 8;
+    label.style.maxInlineSize = `${String(Math.max(80, max - min))}px`;
+    const x = Math.max(min, Math.min(max - label.offsetWidth, p.x + 14));
+    const y = Math.max(8, Math.min(window.innerHeight - label.offsetHeight - 8, p.y + 18));
+    label.style.transform = `translate(${String(x)}px, ${String(y)}px)`;
+  }
+
+  /** A click on a book opens the work (with a modifier key, in a new tab). */
+  #open(event: MouseEvent): void {
+    const room = this.#room;
+    if (room === null || event.button !== 0 || event.defaultPrevented || !this.#inGutter(event)) return;
+    const label = this.#labels[room.pointAt(event.clientX, event.clientY, false)] ?? null;
+    if (label === null) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey) window.open(label.href, '_blank', 'noopener');
+    else window.location.assign(label.href);
+  }
+
+  async #fetchLabels(): Promise<void> {
+    const url = this.getAttribute('labels');
+    if (url === null || url === '' || this.#labels.length > 0) return;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${String(response.status)}`);
+      this.#labels = decodeShelfLabels(await response.json());
+    } catch (error: unknown) {
+      // Decorative: without the labels the books are only books.
+      console.warn(`[${TAG}] shelf labels unavailable (${url})`, error);
+    }
   }
 
   /** Where the sheet's edges are: the text columns of the target plus this element's padding (a token). */
@@ -242,12 +393,18 @@ class FtReadingRoom extends HTMLElement {
     return Number.parseFloat(getComputedStyle(this).paddingBlockStart) || 0;
   }
 
-  #decide(): RoomMode {
+  /**
+   * The mode, and whether the room could be shown at all if the reader asked for it (`able`: what the
+   * switch on the page needs to know). `able` judges only what costs nothing to measure — the gutters, the
+   * system palette, focus mode — and a WebGL probe already made; no context is created to answer it.
+   */
+  #decide(): { readonly mode: RoomMode; readonly able: boolean } {
     const root = document.documentElement;
     const preference = root.dataset['room'];
     const g = gutters(window.innerWidth, this.#left - this.#rim(), this.#right + this.#rim());
     const base = {
-      preference: preference === 'on' || preference === 'off' ? preference : 'auto',
+      // The default (no attribute) is off: the room appears only when the reader asks for it.
+      preference: preference === 'on' || preference === 'auto' ? preference : 'off',
       focus: root.dataset['focus'] === 'on',
       gutterPx: Math.min(g.left, g.right),
       forcedColors: matchMedia('(forced-colors: active)').matches,
@@ -262,17 +419,26 @@ class FtReadingRoom extends HTMLElement {
       cores: navigator.hardwareConcurrency || 0,
       memoryGiB: (navigator as Navigator & { readonly deviceMemory?: number }).deviceMemory ?? null,
     } as const;
+    const able =
+      !this.#lost &&
+      roomMode({ ...base, preference: 'on', webgl: this.#probe?.webgl ?? true, software: false }) !== 'off';
     // Ask for a context only when everything else already allows the room.
-    if (roomMode({ ...base, webgl: true, software: false }) === 'off') return 'off';
+    if (roomMode({ ...base, webgl: true, software: false }) === 'off') return { mode: 'off', able };
     this.#probe ??= probeWebgl();
     const mode = roomMode({ ...base, ...this.#probe });
-    return mode === 'live' && this.#exhausted ? 'still' : mode;
+    return { mode: mode === 'live' && this.#exhausted ? 'still' : mode, able: able && this.#probe.webgl };
   }
 
   #evaluate(): void {
-    if (this.#canvas === null || this.#lost) return;
+    if (this.#canvas === null) return;
+    if (this.#lost) {
+      delete document.documentElement.dataset['sceneAble'];
+      return;
+    }
     this.#measure();
-    const mode = this.#decide();
+    const { mode, able } = this.#decide();
+    if (able) document.documentElement.dataset['sceneAble'] = '';
+    else delete document.documentElement.dataset['sceneAble'];
     this.#mode = mode;
     if (mode === 'off') {
       this.#stop();
@@ -306,9 +472,11 @@ class FtReadingRoom extends HTMLElement {
           this.#room = createReadingRoom(canvas, () => {
             this.#lost = true;
             this.#stop();
+            this.#evaluate();
           });
           if (this.#room === null) {
             this.#lost = true;
+            this.#evaluate();
             return;
           }
           const stratum = this.getAttribute('stratum');
@@ -316,6 +484,7 @@ class FtReadingRoom extends HTMLElement {
             books: decodeShelf(this.getAttribute('shelf')),
             simplex: simplexOf(isStratum(stratum) ? stratum : 'philosophy'),
           });
+          void this.#fetchLabels();
           this.#recolor();
           this.#evaluate();
         },
@@ -323,6 +492,7 @@ class FtReadingRoom extends HTMLElement {
           // Decorative: the page stays as it is without the room.
           this.#loading = false;
           this.#lost = true;
+          this.#evaluate();
           console.warn(`[${TAG}] scene unavailable`, error);
         },
       );
@@ -336,6 +506,10 @@ class FtReadingRoom extends HTMLElement {
     this.#room?.dispose();
     this.#room = null;
     this.#sized = '';
+    this.#leave();
+    this.#pulled = -1;
+    this.#pull = 0;
+    this.#eye = [0, 0];
     delete document.documentElement.dataset['scene'];
   }
 
@@ -382,9 +556,22 @@ class FtReadingRoom extends HTMLElement {
     this.#stale = true;
   }
 
-  /** Starts or stops the loop: it runs only for the live mode, in a visible tab. */
+  /** The reader moved: the room returns to its full pace, and the loop restarts if it was resting. */
+  #wake(): void {
+    this.#input = performance.now();
+    if (this.#pace === 'rest') this.#setPace('full');
+    this.#schedule();
+  }
+
+  #setPace(next: Pace): void {
+    if (next === this.#pace) return;
+    this.#pace = next;
+    this.dataset['pace'] = next;
+  }
+
+  /** Starts or stops the loop: it runs only for the live mode, in a visible tab, while the room is not at rest. */
   #schedule(): void {
-    const run = this.#room !== null && this.#mode === 'live' && !document.hidden;
+    const run = this.#room !== null && this.#mode === 'live' && !document.hidden && this.#pace !== 'rest';
     if (run && this.#frame === 0) {
       this.#lastFrame = 0;
       this.#scrollY = window.scrollY;
@@ -409,7 +596,16 @@ class FtReadingRoom extends HTMLElement {
       if (this.#governor.tier !== before.tier) this.#resize();
     }
     this.#lastFrame = now;
-    if (now - this.#lastRender >= frameIntervalOf(this.#governor.tier) - 1) {
+    // The flame catching counts as movement: the room is not left half lit.
+    const still = this.#lit < KINDLE_SECONDS ? 0 : (now - this.#input) / 1000;
+    const current = pace(still);
+    if (current === 'rest') {
+      // The last frame stays on screen; the next input restarts the loop (#wake).
+      this.#setPace('rest');
+      return;
+    }
+    this.#setPace(current);
+    if (now - this.#lastRender >= paceInterval(current, this.#governor.tier) - 1) {
       const dt = this.#lastRender === 0 ? 0 : Math.min(0.1, (now - this.#lastRender) / 1000);
       this.#lastRender = now;
       this.#time += dt;
@@ -417,11 +613,33 @@ class FtReadingRoom extends HTMLElement {
       this.#rain += dt * (0.4 + 0.6 * this.#calm);
       const velocity = dt > 0 ? (window.scrollY - this.#scrollY) / dt : 0;
       this.#scrollY = window.scrollY;
-      this.#gust = gust(this.#gust, velocity, dt, window.innerHeight);
+      this.#gust = gust(this.#gust, this.#air(velocity, now), dt, window.innerHeight);
+      this.#ease(dt);
       this.#draw(this.#time, this.#rain, this.#calm, false);
     }
     this.#schedule();
   };
+
+  /** The stronger of the two draughts: the scrolled page, or the hand moving near the flame. */
+  #air(scrollVelocity: number, now: number): number {
+    const p = this.#pointer;
+    if (p === null || this.#room === null || now - this.#pointerAt > STILL_POINTER_MS) return scrollVelocity;
+    const [fx, fy] = this.#room.flameAt();
+    const hand = breath(p.x - fx, p.y - fy, this.#pointerVx);
+    return Math.abs(hand) > Math.abs(scrollVelocity) ? hand : scrollVelocity;
+  }
+
+  /** The eye follows the pointer in a gutter and comes back to its place without it; a pointed book comes out. */
+  #ease(dt: number): void {
+    const p = this.#pointer;
+    const [tx, ty] =
+      p === null ? [0, 0] : eyeFor((p.x / window.innerWidth) * 2 - 1, 1 - (p.y / window.innerHeight) * 2);
+    this.#eye = [approach(this.#eye[0], tx, dt, EYE_TAU), approach(this.#eye[1], ty, dt, EYE_TAU)];
+    // One book out at a time: the last one goes back before the next comes out.
+    if (this.#hover !== this.#pulled && this.#pull < 0.02) this.#pulled = this.#hover;
+    const out = this.#pulled >= 0 && this.#pulled === this.#hover ? 1 : 0;
+    this.#pull = approach(this.#pull, out, dt, PULL_TAU);
+  }
 
   #draw(time: number, rainTime: number, liveliness: number, still: boolean): void {
     this.#room?.render({
@@ -432,6 +650,9 @@ class FtReadingRoom extends HTMLElement {
       burn: burn(Math.max(this.#progress, this.#remembered)),
       rainfall: rainfall(this.#progress),
       gust: still ? 0 : this.#gust,
+      eye: still ? [0, 0] : this.#eye,
+      pulled: this.#pulled,
+      pull: this.#pull,
     });
   }
 }
