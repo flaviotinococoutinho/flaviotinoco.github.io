@@ -9,6 +9,8 @@ revisions:
     note: First version (seed text).
   - date: 2026-11-13
     note: Visual grammar, hierarchic grid, diagrammatic semiotics and custom-domain hosting.
+  - date: 2026-11-16
+    note: The works no longer declare their provenance, by the author's decision.
 ---
 
 :::aside
@@ -72,7 +74,6 @@ The source code is at <https://github.com/flaviotinococoutinho/flaviotinoco.gith
 
 Every essay and lab declares:
 
-- its **provenance**: whether it was written without assistance, with assistance, or generated with AI help, and whether the author has reviewed it;
 - its **epistemic status**: confidence on Kent's scale [@kent1964] and the kind of support — proof, empirical evidence, argument or speculation;
 - its **revision history**, with the date and a note for each significant change.
 

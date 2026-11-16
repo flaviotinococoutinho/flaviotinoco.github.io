@@ -9,6 +9,8 @@ revisions:
     note: Versão inicial (texto-semente).
   - date: 2026-11-13
     note: Gramática visual, grade hierárquica, semiótica diagramática e hospedagem em domínio próprio.
+  - date: 2026-11-16
+    note: Retirada a declaração de proveniência das obras, por decisão do autor.
 ---
 
 :::aside
@@ -72,7 +74,6 @@ O código-fonte está em <https://github.com/flaviotinococoutinho/flaviotinoco.g
 
 Cada ensaio e laboratório declara:
 
-- sua **proveniência**: se foi escrito sem assistência, com assistência ou gerado com ajuda de IA, e se o autor já o revisou;
 - seu **status epistêmico**: a confiança, na escala de Kent [@kent1964], e o tipo de apoio — prova, evidência empírica, argumento ou especulação;
 - seu **histórico de revisões**, com :raw[data] e nota de cada mudança relevante.
 

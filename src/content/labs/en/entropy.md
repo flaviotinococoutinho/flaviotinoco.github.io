@@ -28,10 +28,6 @@ abstract: >-
   blocks reduces; and the code table itself would have to be transmitted. The essay on the cost of choosing
   applies the same ideas to the organisation of menus.
 keywords: [entropy, Huffman coding, source coding, compression]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Seed text drafted with AI assistance (Claude) as a demonstration of the template; awaiting review by the author.
 draft: false
 kernel: information
 widget: entropy

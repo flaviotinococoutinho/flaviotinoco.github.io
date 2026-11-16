@@ -30,10 +30,6 @@ abstract: >-
   do modelo, que nenhum sinal real satisfaz exatamente, e conclui que amostrar é decidir duas vezes: quais
   frequências importam e quanto se aceita pagar, em números por segundo, para preservá-las.
 keywords: [amostragem, transformada de Fourier, aliasing, teorema de Nyquist–Shannon, sinais]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Texto-semente redigido com assistência de IA (Claude) como demonstração do modelo; aguarda revisão do autor.
 draft: false
 ---
 

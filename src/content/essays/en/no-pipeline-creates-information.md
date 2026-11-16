@@ -32,10 +32,6 @@ abstract: >-
   fails when a stage reads side inputs. It closes with a criterion for deciding what a stage may discard and
   with the question of who pays for the decision.
 keywords: [ETL, data engineering, data processing inequality, mutual information, data lineage]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Drafted with AI assistance (Claude) in the scope round of 14 November 2026; sources checked against Crossref and Open Library on that date; awaiting review by the author.
 draft: false
 ---
 

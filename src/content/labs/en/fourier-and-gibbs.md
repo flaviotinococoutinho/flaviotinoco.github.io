@@ -28,10 +28,6 @@ abstract: >-
   soften at the price of a less steep jump. The same phenomenon reappears whenever a signal with sharp
   transitions is rebuilt from a truncated spectrum, as the essay on the sampling theorem discusses.
 keywords: [Fourier series, Gibbs phenomenon, convergence, square wave]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Seed text drafted with AI assistance (Claude) as a demonstration of the template; awaiting review by the author.
 draft: false
 kernel: signal
 widget: fourier

@@ -34,10 +34,6 @@ abstract: >-
   tabela não resolve concorrência nem persistência. Conclui com um critério de escolha e com o custo que ele
   impõe a quem mantém o sistema.
 keywords: [máquina de estados, flags booleanas, autômato finito, redundância, engenharia de software]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Redigido com assistência de IA (Claude) a partir do artigo, dos slides e do código de demonstração que o autor apresentou em 23 de novembro de 2025; fontes conferidas nos originais em 10 de novembro de 2026; aguarda revisão do autor.
 draft: false
 ---
 

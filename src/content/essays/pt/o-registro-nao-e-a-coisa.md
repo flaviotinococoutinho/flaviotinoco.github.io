@@ -32,10 +32,6 @@ abstract: >-
   esquemas. Conclui que projetar um sistema de informação é decidir o que uma instituição promete lembrar e o
   que aceita esquecer.
 keywords: [sistema de informação, registro, imutabilidade, estado, filosofia aplicada]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Redigido com assistência de IA (Gemini) segundo o programa editorial do site; fontes primárias e paginações conferidas em 13 de novembro de 2026; aguarda revisão do autor.
 draft: false
 ---
 

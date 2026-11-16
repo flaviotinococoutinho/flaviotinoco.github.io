@@ -28,10 +28,6 @@ abstract: >-
   salto menos íngreme. O fenômeno reaparece sempre que se reconstrói um sinal com transições bruscas a partir
   de um espectro truncado, como discute o ensaio sobre o teorema da amostragem.
 keywords: [série de Fourier, fenômeno de Gibbs, convergência, onda quadrada]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Texto-semente redigido com assistência de IA (Claude) como demonstração do modelo; aguarda revisão do autor.
 draft: false
 kernel: signal
 widget: fourier

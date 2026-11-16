@@ -29,10 +29,6 @@ abstract: >-
   shows; dependence between the terms can prevent convergence; skewed distributions converge more slowly; and
   the histogram, built from a finite number of pseudo-random draws, fluctuates around the limiting shape.
 keywords: [central limit theorem, normal distribution, probability, convolution]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Seed text drafted with AI assistance (Claude) as a demonstration of the template; awaiting review by the author.
 draft: false
 kernel: dynamics
 widget: clt

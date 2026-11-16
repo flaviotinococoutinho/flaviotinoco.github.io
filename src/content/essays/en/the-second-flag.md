@@ -35,10 +35,6 @@ abstract: >-
   persistence. It closes with a criterion for choosing and with the cost that the criterion places on whoever
   maintains the system.
 keywords: [state machine, boolean flags, finite automaton, redundancy, software engineering]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Drafted with AI assistance (Claude) from the article, the slides and the demonstration code the author presented on 23 November 2025; sources checked against the originals on 10 November 2026; awaiting review by the author.
 draft: false
 ---
 
