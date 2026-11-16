@@ -2,9 +2,11 @@
  * The reading room — the three.js scene behind the essay pages (docs/adr/0014-sala-de-leitura.md).
  *
  * A desk of aged wood, shelves, a window in the rain and a candle. The article is not in the scene: it is
- * the DOM sheet in the middle of the page, opaque, and this scene is only ever visible in the gutters
- * beside it. Loaded on demand by <ft-reading-room> (src/islands/elements/ft-reading-room.ts), which decides
- * whether it runs at all; nothing here reads the DOM beyond the canvas it is given.
+ * the DOM sheet in the middle of the page, opaque, and this scene is only ever visible where the sheet is
+ * not: the band above it and, on wide screens, the gutters beside it. Two stages (roomStage): in the gutters
+ * the room keeps its own proportions and the sheet cuts it; in the band the room is composed as one strip at
+ * the band's scale. Loaded on demand by <ft-reading-room> (src/islands/elements/ft-reading-room.ts), which
+ * decides whether it runs at all; nothing here reads the DOM beyond the canvas it is given.
  *
  * The room is this site's room, not a stock one (the data come from src/core/chrome/room.ts):
  *   - the shelves hold the corpus: one spine per essay (upper shelf) and one notebook per lab (lower), in
@@ -24,7 +26,8 @@
  *   - no light system, shadow maps or post-processing: one analytic point light (the candle), one area
  *     term (the window) and analytic contact shadows, evaluated per material with shared uniforms;
  *   - about a dozen draw calls; every box of the room is one InstancedMesh;
- *   - only the gutters are shaded: the frame is rendered twice under a scissor rectangle, once per gutter;
+ *   - only what the page leaves uncovered is shaded: the frame is rendered once under a scissor rectangle per
+ *     region it is given (roomRegions), and not at all when there is none;
  *   - patterns finer than a pixel fade out by their screen-space derivative instead of aliasing;
  *   - the pixel ratio and the frame rate come from outside, below the display's.
  *
@@ -60,7 +63,7 @@ import {
   WebGLRenderer,
   type IUniform,
 } from 'three';
-import { refog, type ShelfBook } from '../../core/chrome/room.ts';
+import { refog, type Rect, type RoomStage, type ShelfBook } from '../../core/chrome/room.ts';
 import { STRATA } from '../../core/domain/strata.ts';
 import { mulberry32, type PrngState } from '../../core/ontology/prng.ts';
 
@@ -82,9 +85,14 @@ export interface RoomLayout {
   readonly width: number;
   readonly height: number;
   readonly pixelRatio: number;
-  /** Edges of the opaque sheet in CSS px; the scene is drawn left of the first and right of the second. */
+  /** Edges of the sheet of paper in CSS px. */
   readonly sheetLeft: number;
   readonly sheetRight: number;
+  /** Where the furniture goes (roomStage): in the gutters, or composed in the band above the sheet. */
+  readonly stage: RoomStage;
+  /** The band above the sheet with the page at its top: from the header's bottom to the paper's top, CSS px. */
+  readonly bandTop: number;
+  readonly bandBottom: number;
 }
 
 export interface RoomLight {
@@ -120,6 +128,12 @@ export interface RoomFrame {
   /** The book under the pointer (index in RoomContents.books, −1 for none), and how far it is pulled out, 0…1. */
   readonly pulled: number;
   readonly pull: number;
+  /** The parts of the viewport the paper leaves to the room (roomRegions): the only pixels drawn. */
+  readonly regions: readonly Rect[];
+  /** The top of the paper in the viewport, CSS px: the room darkens towards it as it does towards the sides. */
+  readonly paperTop: number;
+  /** How far the room has drifted up behind the page, CSS px at the wall (scrollDrift): parallax. */
+  readonly drift: number;
 }
 
 export interface ReadingRoom {
@@ -159,6 +173,9 @@ const WIPE = 64;
 const WIPE_REACH = 0.1;
 /** How far a book comes off the shelf towards the reader when it is pointed at, in metres. */
 const PULL_OUT = 0.07;
+/** The shadow of the sheet on the room: how far it reaches from the paper's edges (CSS px) and how dark it gets. */
+const SHADE_REACH = 56;
+const SHADE_DEPTH = 0.45;
 
 const NOISE = /* glsl */ `
 float hash21(vec2 p) {
@@ -184,6 +201,8 @@ uniform float uWindow;
 uniform float uAmbient;
 uniform float uBrightness;
 uniform vec4 uSheet;
+uniform float uSheetTop;
+uniform vec2 uViewport;
 varying vec3 vWorld;
 varying vec3 vNormal;
 varying vec3 vLocal;
@@ -213,13 +232,21 @@ float stripes(float x, float frequency) {
   float f = x * frequency;
   return mix(0.5 + 0.5 * sin(f), 0.5, smoothstep(0.6, 2.4, fwidth(f)));
 }
-/* The sheet stands above the desk: the room darkens towards its edges (uSheet: left, right, reach, depth; device px). */
+/*
+ * The sheet stands above the room: the room darkens towards its edges, the sides and the top alike
+ * (uSheet: left, right, reach, depth; uSheetTop: the top edge; device px, y from the bottom).
+ */
 float sheetShade() {
-  float d = max(uSheet.x - gl_FragCoord.x, gl_FragCoord.x - uSheet.y);
-  return mix(1.0 - uSheet.w, 1.0, smoothstep(0.0, uSheet.z, d));
+  vec2 d = vec2(max(uSheet.x - gl_FragCoord.x, gl_FragCoord.x - uSheet.y), gl_FragCoord.y - uSheetTop);
+  return mix(1.0 - uSheet.w, 1.0, smoothstep(0.0, uSheet.z, length(max(d, 0.0))));
+}
+/* Candlelight does not reach the corners of a room: they fall off, and the paper in the middle is the light. */
+float vignette() {
+  vec2 q = (gl_FragCoord.xy / uViewport - 0.5) * vec2(1.0, 0.8);
+  return 1.0 - 0.3 * smoothstep(0.3, 0.8, length(q));
 }
 vec4 finish(vec3 linear) {
-  vec4 o = linearToOutputTexel(vec4(linear * uBrightness * sheetShade(), 1.0));
+  vec4 o = linearToOutputTexel(vec4(linear * uBrightness * sheetShade() * vignette(), 1.0));
   o.rgb += (hash21(gl_FragCoord.xy) - 0.5) / 255.0;
   return o;
 }
@@ -383,6 +410,7 @@ ${COMMON}
 uniform vec3 uGlass;
 uniform vec3 uWood;
 uniform vec2 uSize;
+uniform float uScale;
 uniform float uRain;
 uniform float uRainfall;
 uniform float uNight;
@@ -403,16 +431,18 @@ vec2 rainLayer(vec2 q, float t, float scale, float seed) {
   return step(1.0 - 0.5 * uRainfall, n) * vec2(head, trail);
 }
 void main() {
-  vec2 q = vUv * uSize;
-  float edge = min(min(q.x, uSize.x - q.x), min(q.y, uSize.y - q.y));
+  // In the window's own metres (uScale shrinks the whole window in the band: frame, drops and lamps alike).
+  vec2 size = uSize / uScale;
+  vec2 q = vUv * size;
+  float edge = min(min(q.x, size.x - q.x), min(q.y, size.y - q.y));
   float frame = 1.0 - smoothstep(0.06, 0.066, edge);
-  frame = max(frame, 1.0 - smoothstep(0.02, 0.026, abs(q.x - uSize.x * 0.5)));
-  frame = max(frame, 1.0 - smoothstep(0.02, 0.026, abs(q.y - uSize.y * 0.58)));
+  frame = max(frame, 1.0 - smoothstep(0.02, 0.026, abs(q.x - size.x * 0.5)));
+  frame = max(frame, 1.0 - smoothstep(0.02, 0.026, abs(q.y - size.y * 0.58)));
   float clearing = 1.0 + 0.3 * (1.0 - uRainfall);
   vec3 sky = uGlass * mix(0.6, 1.15, vUv.y) * clearing * (0.95 + 0.1 * vnoise(q * 2.3));
   float lamps = 0.0;
   for (int i = 0; i < 3; i++) {
-    vec2 c = vec2(hash21(vec2(float(i), 1.0)), 0.25 + 0.5 * hash21(vec2(float(i), 2.0))) * uSize;
+    vec2 c = vec2(hash21(vec2(float(i), 1.0)), 0.25 + 0.5 * hash21(vec2(float(i), 2.0))) * size;
     lamps += smoothstep(0.16, 0.02, length(q - c));
   }
   vec2 rain = rainLayer(q, uRain, 9.0, 1.0) + 0.6 * rainLayer(q, uRain * 1.3, 17.0, 5.0);
@@ -611,12 +641,15 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
     uAmbient: { value: 0.5 },
     uBrightness: { value: 1 },
     uSheet: { value: new Vector4(0, 0, 1, 0) },
+    uSheetTop: { value: -1e6 },
+    uViewport: { value: new Vector2(1, 1) },
     uWood: { value: new Color() },
   } satisfies Record<string, IUniform>;
   const own = {
     uWall: { value: new Color() },
     uGlass: { value: new Color() },
     uSize: { value: new Vector2(1, 1) },
+    uScale: { value: 1 },
     uRain: { value: 0 },
     uRainfall: { value: 1 },
     uNight: { value: 0 },
@@ -669,6 +702,7 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
     window: lit(WINDOW, {
       uGlass: own.uGlass,
       uSize: own.uSize,
+      uScale: own.uScale,
       uRain: own.uRain,
       uRainfall: own.uRainfall,
       uNight: own.uNight,
@@ -739,12 +773,25 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
   flame.renderOrder = 3;
   scene.add(desk, wall, glass, boxes, wax, pool, holder, wick, halo, motes, flame, point, rod, ...ends, plate, solid);
 
-  let layout: RoomLayout = { width: 1, height: 1, pixelRatio: 1, sheetLeft: 0, sheetRight: 1 };
+  let layout: RoomLayout = {
+    width: 1,
+    height: 1,
+    pixelRatio: 1,
+    sheetLeft: 0,
+    sheetRight: 1,
+    stage: 'gutters',
+    bandTop: 0,
+    bandBottom: 0,
+  };
   let contents: RoomContents = { books: [], simplex: 0 };
   let covers: readonly Color[] = [new Color()];
   /** The candle's share of the light, before the flicker (set by recolor). */
   let strength = 1;
+  /** Where the candle stands (the base of its holder) and its scale: on the desk, or smaller on the sill. */
   let candleX = 0;
+  let candleY = 0;
+  let candleZ = CANDLE_Z;
+  let candleK = 1;
   const woodTint = new Color();
   const notebook = new Color();
 
@@ -752,6 +799,9 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
   const xAt = (ndc: number, z: number): number => ndc * (CAMERA.z - z) * tanHalf * camera.aspect;
   /** World width of `px` CSS pixels at depth z. */
   const spanAt = (px: number, z: number): number => (xAt(1, z) * 2 * px) / Math.max(1, layout.width);
+  /** World y of the point `py` CSS px below the top of the viewport at depth z, the eye at rest (shift lens). */
+  const yAt = (py: number, z: number): number =>
+    CAMERA.y + ((2 - (2 * py) / Math.max(1, layout.height)) / FRAME - 1) * (CAMERA.z - z) * tanHalf;
 
   const matrix = new Matrix4();
   const quaternion = new Quaternion();
@@ -779,7 +829,10 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
     count += 1;
   };
 
-  /** A standing book: which work it is, its instance, and its box (centre, size, lean) for picking and pulling. */
+  /**
+   * A standing book: which work it is, its instance, its box (centre, size, lean) for picking and pulling,
+   * and how far it comes out when pulled (PULL_OUT at the shelf's scale).
+   */
   interface Spine {
     readonly book: number;
     readonly instance: number;
@@ -790,6 +843,7 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
     readonly sy: number;
     readonly sz: number;
     readonly lean: number;
+    readonly reach: number;
     readonly tint: Color;
   }
   const spines = new Map<number, Spine>();
@@ -805,108 +859,139 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
   /**
    * One shelf: a board as long as its books need (so the shelf fills as the corpus grows), the books in
    * the order given, a gap where the work being read belongs, and its neighbour leaning into the gap.
-   * Oldest works are left out if the gutter cannot hold them all. Returns the board for the wall's shadow.
+   * Oldest works are left out if the room cannot hold them all. `place` puts the board's centre for its
+   * width; `k` scales the whole shelf (1 in the gutters). Returns the board for the wall's shadow.
    */
   const shelve = (
     row: readonly (readonly [book: ShelfBook, index: number])[],
-    x0: number,
+    place: (width: number) => number,
     y: number,
     room: number,
+    k: number,
     next: () => number,
   ): Vector3 => {
     let from = 0;
-    const need = (): number => row.slice(from).reduce((sum, [b]) => sum + thickness(b) + 0.004, 0);
-    while (from < row.length - 1 && need() > room - 0.1) from += 1;
-    const width = Math.min(room, Math.max(0.3, need() + 0.2));
-    put(x0, y, WALL_Z + 0.13, width, 0.035, 0.26, woodTint, 0);
-    let x = x0 - width / 2 + 0.04;
+    const gap = 0.004 * k;
+    const need = (): number => row.slice(from).reduce((sum, [b]) => sum + thickness(b) * k + gap, 0);
+    while (from < row.length - 1 && need() > room - 0.1 * k) from += 1;
+    const width = Math.min(room, Math.max(0.3 * k, need() + 0.2 * k));
+    const x0 = place(width);
+    const z = WALL_Z + 0.13 * k;
+    put(x0, y, z, width, 0.035 * k, 0.26 * k, woodTint, 0);
+    let x = x0 - width / 2 + 0.04 * k;
     let lean = false;
     for (const [book, index] of row.slice(from)) {
-      const thick = thickness(book);
+      const thick = thickness(book) * k;
       if (book.current) {
         x += thick * 0.9;
         lean = true;
         continue;
       }
-      const tall = (book.form === 'lab' ? 0.24 : 0.32) + (book.form === 'lab' ? 0.08 : 0.16) * next();
-      const deep = 0.17 + 0.04 * next();
+      const tall = ((book.form === 'lab' ? 0.24 : 0.32) + (book.form === 'lab' ? 0.08 : 0.16) * next()) * k;
+      const deep = (0.17 + 0.04 * next()) * k;
       const tilt = lean ? 0.17 : (next() - 0.5) * 0.02;
       const shift = lean ? -tall * 0.085 : 0;
       const spine = {
         book: index,
         instance: count,
         x: x + thick / 2 + shift,
-        y: y + 0.0175 + tall / 2,
-        z: WALL_Z + 0.13,
+        y: y + 0.0175 * k + tall / 2,
+        z,
         sx: thick,
         sy: tall,
         sz: deep,
         lean: tilt,
+        reach: PULL_OUT * k,
         tint: coverOf(book).clone(),
       };
       if (index >= 0 && count < MAX_BOXES) spines.set(index, spine);
       put(spine.x, spine.y, spine.z, thick, tall, deep, spine.tint, 1, 0, tilt);
       lean = false;
-      x += thick + 0.004;
+      x += thick + gap;
     }
     // A bookend of the shelf's wood holds the row.
-    put(x + 0.02, y + 0.0175 + 0.07, WALL_Z + 0.13, 0.022, 0.14, 0.12, woodTint, 0);
+    put(x + 0.02 * k, y + (0.0175 + 0.07) * k, z, 0.022 * k, 0.14 * k, 0.12 * k, woodTint, 0);
     return new Vector3(x0, width / 2, y);
   };
 
-  /** Places everything for the current gutters and contents. Deterministic: same input, same room. */
-  const arrange = (): void => {
-    const { width, sheetLeft, sheetRight } = layout;
-    const next = stream(SEED);
-    const leftNdc = sheetLeft / width - 1;
-    const rightNdc = sheetRight / width;
-    count = 0;
-    spines.clear();
-    pulledNow = -1;
-
-    // Right gutter, on the wall: the window and its sill.
-    const windowY = 1.5;
-    const w = Math.min(1, Math.max(0.3, spanAt(width - sheetRight, WALL_Z) * 0.7));
-    const h = Math.min(1.3, w * 1.4);
-    const windowX = xAt(rightNdc, WALL_Z);
-    glass.position.set(windowX, windowY, WALL_Z + 0.02);
+  /**
+   * The window on the wall, and under it a sill `deep` metres deep that runs `ledge` metres further left
+   * (in the band, deep and long enough to hold the candle beside the glass and the simplex before it).
+   */
+  const placeWindow = (x: number, y: number, w: number, h: number, deep: number, ledge: number, k: number): void => {
+    glass.position.set(x, y, WALL_Z + 0.02);
     glass.scale.set(w, h, 1);
     own.uSize.value.set(w, h);
-    shared.uWindowPos.value.set(windowX, windowY, WALL_Z + 0.4);
-    put(windowX, windowY - h / 2 - 0.02, WALL_Z + 0.07, w + 0.16, 0.04, 0.14, woodTint, 0);
+    own.uScale.value = k;
+    shared.uWindowPos.value.set(x, y, WALL_Z + 0.4);
+    put(x - ledge / 2, y - h / 2 - 0.02 * k, WALL_Z + deep / 2, w + 0.16 * k + ledge, 0.04 * k, deep, woodTint, 0);
+  };
 
-    // Right gutter, on the desk: the candle (its height is set every frame, by the reading).
-    candleX = xAt(rightNdc, CANDLE_Z);
-    holder.position.set(candleX, 0.015, CANDLE_Z);
-    holder.scale.set(0.125, 0.03, 0.125);
-    halo.scale.set(1.5, 1.5, 1);
-    flame.scale.set(0.11, 0.2, 1);
-    wick.scale.set(0.004, 0.03, 0.004);
-    motes.position.set(candleX, 0, CANDLE_Z);
+  /** The candle's holder at (x, y, z), at scale k; its wax and flame follow the reading every frame (burnTo). */
+  const placeCandle = (x: number, y: number, z: number, k: number): void => {
+    candleX = x;
+    candleY = y;
+    candleZ = z;
+    candleK = k;
+    holder.position.set(x, y + 0.015 * k, z);
+    holder.scale.set(0.125 * k, 0.03 * k, 0.125 * k);
+    halo.scale.set(1.5 * k, 1.5 * k, 1);
+    flame.scale.set(0.11 * k, 0.2 * k, 1);
+    wick.scale.set(0.004 * k, 0.03 * k, 0.004 * k);
+    motes.position.set(x, y, z);
+    motes.scale.setScalar(k);
+  };
 
-    // Left gutter, on the wall: the corpus. Essays above, labs below; without data, an anonymous row.
+  /**
+   * The simplex of the stratum, in brass, standing on (x, y, z) at scale k; only the essay's own is shown.
+   * `upright` stands the triangle on its edge, a plaque: in the band the eye is below the sill, and a plate
+   * lying flat on it would show nothing but its rim.
+   */
+  const placeSimplex = (x: number, y: number, z: number, k: number, upright: boolean): void => {
+    simplexes.forEach((meshes, i) => {
+      for (const mesh of meshes) mesh.visible = i === contents.simplex;
+    });
+    point.position.set(x, y + 0.032 * k, z);
+    point.scale.setScalar(0.032 * k);
+    rod.position.set(x, y + 0.014 * k, z);
+    rod.rotation.set(0, 0.5, Math.PI / 2);
+    rod.scale.set(0.006 * k, 0.17 * k, 0.006 * k);
+    ends.forEach((end, i) => {
+      const side = i === 0 ? -1 : 1;
+      end.position.set(x + side * 0.085 * k * Math.cos(0.5), y + 0.014 * k, z - side * 0.085 * k * Math.sin(0.5));
+      end.scale.setScalar(0.014 * k);
+    });
+    plate.position.set(x, y + (upright ? 0.07 : 0.006) * k, z);
+    // Upright, a vertex points up (△, the glyph of the stratum) and the face turns to the eye below the sill.
+    plate.rotation.set(upright ? -1.3 : 0, upright ? 0 : 0.3, 0);
+    plate.scale.set(0.075 * k, 0.012 * k, 0.075 * k);
+    solid.position.set(x, y + 0.045 * k, z);
+    solid.rotation.set(0, 0.3, 0);
+    solid.scale.set(0.062 * k, 0.09 * k, 0.062 * k);
+  };
+
+  type Row = readonly (readonly [book: ShelfBook, index: number])[];
+
+  /**
+   * The gutters stage: the room in its own proportions, cut by the sheet. The window and the candle on the
+   * right, on the wall and on the desk; the corpus on two shelves on the left (essays above, labs below), and
+   * on the desk the work being read on top of the works published before and after it, with the simplex on it.
+   */
+  const furnishGutters = (next: () => number, essays: Row, labs: Row, anonymous: (n: number) => Row): void => {
+    const { width, sheetLeft, sheetRight } = layout;
+    const leftNdc = sheetLeft / width - 1;
+    const rightNdc = sheetRight / width;
+
+    const w = Math.min(1, Math.max(0.3, spanAt(width - sheetRight, WALL_Z) * 0.7));
+    placeWindow(xAt(rightNdc, WALL_Z), 1.5, w, Math.min(1.3, w * 1.4), 0.14, 0, 1);
+    placeCandle(xAt(rightNdc, CANDLE_Z), 0, CANDLE_Z, 1);
+
     const room = Math.min(1.6, Math.max(0.3, spanAt(sheetLeft, WALL_Z) * 0.82));
     const shelfX = xAt(leftNdc, WALL_Z);
-    const anonymous = (n: number): readonly (readonly [ShelfBook, number])[] =>
-      Array.from({ length: n }, () => [
-        {
-          stratum: STRATA[Math.floor(next() * STRATA.length)] ?? 'value',
-          form: 'essay' as const,
-          size: Math.floor(next() * 8),
-          current: false,
-        },
-        -1,
-      ]);
-    const indexed = contents.books.map((b, i) => [b, i] as const);
-    const essayRow = indexed.filter(([b]) => b.form === 'essay');
-    const labRow = indexed.filter(([b]) => b.form === 'lab');
-    own.uShelfA.value.copy(shelve(essayRow.length > 0 ? essayRow : anonymous(9), shelfX, 1.52, room, next));
-    own.uShelfB.value.copy(shelve(labRow.length > 0 ? labRow : anonymous(7), shelfX, 0.92, room, next));
-    const essays = essayRow.map(([b]) => b);
-    const labs = labRow.map(([b]) => b);
+    own.uShelfA.value.copy(shelve(essays.length > 0 ? essays : anonymous(9), () => shelfX, 1.52, room, 1, next));
+    own.uShelfB.value.copy(shelve(labs.length > 0 ? labs : anonymous(7), () => shelfX, 0.92, room, 1, next));
 
-    // Left gutter, on the desk: the work being read, on top of the works published before and after it.
-    const row = contents.books.some((b) => b.current && b.form === 'lab') ? labs : essays;
+    const row = (contents.books.some((b) => b.current && b.form === 'lab') ? labs : essays).map(([b]) => b);
     const at = row.findIndex((b) => b.current);
     const below = [row[at + 1], row[at - 1]].flatMap((b) => (b === undefined ? [] : [b]));
     const reading = row[at];
@@ -931,33 +1016,78 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
       );
       top += thick;
     });
-
-    // On the pile: the simplex of the stratum.
-    simplexes.forEach((meshes, k) => {
-      for (const mesh of meshes) mesh.visible = k === contents.simplex;
-    });
-    const sx = stackX + stackWidth * 0.08;
-    point.position.set(sx, top + 0.032, STACK_Z);
-    point.scale.setScalar(0.032);
-    rod.position.set(sx, top + 0.014, STACK_Z);
-    rod.rotation.set(0, 0.5, Math.PI / 2);
-    rod.scale.set(0.006, 0.17, 0.006);
-    ends.forEach((end, i) => {
-      const side = i === 0 ? -1 : 1;
-      end.position.set(sx + side * 0.085 * Math.cos(0.5), top + 0.014, STACK_Z - side * 0.085 * Math.sin(0.5));
-      end.scale.setScalar(0.014);
-    });
-    plate.position.set(sx, top + 0.006, STACK_Z);
-    plate.rotation.set(0, 0.3, 0);
-    plate.scale.set(0.075, 0.012, 0.075);
-    solid.position.set(sx, top + 0.045, STACK_Z);
-    solid.rotation.set(0, 0.3, 0);
-    solid.scale.set(0.062, 0.09, 0.062);
+    placeSimplex(stackX + stackWidth * 0.08, top, STACK_Z, 1, false);
 
     // What stands on the desk darkens it: the pile and the candle holder.
     own.uBlob.value[0]?.set(stackX, STACK_Z, stackWidth * 0.75, 0.5);
     own.uBlob.value[1]?.set(candleX, CANDLE_Z, 0.17, 0.5);
+  };
 
+  /**
+   * The band stage: the strip of wall above the sheet, composed as one picture at the band's scale. One
+   * shelf of the whole corpus on the left (essays, then labs); on the right the window, and on its sill the
+   * candle beside the glass (never in front of it) and the simplex at the sill's front edge, where an eye
+   * below the sill still sees it, before the lower panes. The middle, over
+   * the title, is bare plaster in the candle's light.
+   */
+  const furnishBand = (next: () => number, essays: Row, labs: Row, anonymous: (n: number) => Row): void => {
+    const top = yAt(layout.bandTop, WALL_Z);
+    const bottom = yAt(layout.bandBottom, WALL_Z);
+    const tall = Math.max(0.1, top - bottom);
+    const k = Math.min(1, Math.max(0.3, tall / 0.8));
+    const left = xAt(-1, WALL_Z);
+    const right = xAt(1, WALL_Z);
+    const pad = Math.max(0.1 * k, (right - left) * 0.04);
+
+    const h = tall * 0.66;
+    const w = Math.min(h, (right - left) * 0.2);
+    const sill = bottom + tall * 0.16;
+    const ledge = 0.3 * k;
+    const wx = right - pad - w / 2 - 0.08 * k;
+    placeWindow(wx, sill + 0.02 * k + h / 2, w, h, 0.3 * k, ledge, k);
+    placeCandle(wx - w / 2 - ledge / 2, sill + 0.02 * k, WALL_Z + 0.15 * k, k);
+    placeSimplex(wx + w * 0.12, sill + 0.02 * k, WALL_Z + 0.25 * k, k, true);
+
+    const room = Math.max(0.3 * k, Math.min(0.62 * (right - left), wx - w / 2 - ledge - 0.3 * k - (left + pad)));
+    const row = [...essays, ...labs];
+    own.uShelfA.value.copy(
+      shelve(
+        row.length > 0 ? row : anonymous(12),
+        (width) => left + pad + width / 2,
+        bottom + tall * 0.1,
+        room,
+        k,
+        next,
+      ),
+    );
+    own.uShelfB.value.set(0, 0, 99);
+
+    // Nothing stands on the desk: no contact shadows on it.
+    own.uBlob.value[0]?.set(0, 0, 1, 0);
+    own.uBlob.value[1]?.set(0, 0, 1, 0);
+  };
+
+  /** Places everything for the current stage, sheet and contents. Deterministic: same input, same room. */
+  const arrange = (): void => {
+    const next = stream(SEED);
+    count = 0;
+    spines.clear();
+    pulledNow = -1;
+    const anonymous = (n: number): Row =>
+      Array.from({ length: n }, () => [
+        {
+          stratum: STRATA[Math.floor(next() * STRATA.length)] ?? 'value',
+          form: 'essay' as const,
+          size: Math.floor(next() * 8),
+          current: false,
+        },
+        -1,
+      ]);
+    const indexed = contents.books.map((b, i) => [b, i] as const);
+    const essays = indexed.filter(([b]) => b.form === 'essay');
+    const labs = indexed.filter(([b]) => b.form === 'lab');
+    if (layout.stage === 'band') furnishBand(next, essays, labs, anonymous);
+    else furnishGutters(next, essays, labs, anonymous);
     boxes.count = count;
     boxes.instanceMatrix.needsUpdate = true;
     tints.needsUpdate = true;
@@ -965,17 +1095,20 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
 
   /** The candle at what is left of it: wax, the pool it has run into, the wick, the flame and its light. */
   const burnTo = (left: number): void => {
-    const height = CANDLE_HEIGHT * left;
+    const k = candleK;
+    const height = CANDLE_HEIGHT * left * k;
     const spent = 1 - left;
-    wax.position.set(candleX, 0.03 + height / 2, CANDLE_Z);
-    wax.scale.set(CANDLE_RADIUS, height, CANDLE_RADIUS);
-    pool.position.set(candleX, 0.034, CANDLE_Z);
-    pool.scale.set(0.06 + 0.05 * spent, 0.008 + 0.012 * spent, 0.06 + 0.05 * spent);
-    const tip = 0.03 + height;
-    wick.position.set(candleX, tip + 0.005, CANDLE_Z);
-    flame.position.set(candleX, tip + 0.1, CANDLE_Z + 0.002);
-    halo.position.set(candleX, tip + 0.09, CANDLE_Z + 0.01);
-    shared.uCandlePos.value.set(candleX, tip + 0.11, CANDLE_Z);
+    const base = candleY + 0.03 * k;
+    wax.position.set(candleX, base + height / 2, candleZ);
+    wax.scale.set(CANDLE_RADIUS * k, height, CANDLE_RADIUS * k);
+    pool.position.set(candleX, candleY + 0.034 * k, candleZ);
+    const spread = (0.06 + 0.05 * spent) * k;
+    pool.scale.set(spread, (0.008 + 0.012 * spent) * k, spread);
+    const tip = base + height;
+    wick.position.set(candleX, tip + 0.005 * k, candleZ);
+    flame.position.set(candleX, tip + 0.1 * k, candleZ + 0.002);
+    halo.position.set(candleX, tip + 0.09 * k, candleZ + 0.01);
+    shared.uCandlePos.value.set(candleX, tip + 0.11 * k, candleZ);
   };
 
   /** Recomposes one standing book's matrix, `out` of the way off the shelf (0 in place, 1 pulled). */
@@ -983,7 +1116,7 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
     if (spine === undefined) return;
     quaternion.setFromEuler(euler.set(0, 0, spine.lean * (1 - out)));
     matrix.compose(
-      position.set(spine.x, spine.y + 0.01 * out, spine.z + PULL_OUT * out),
+      position.set(spine.x, spine.y + 0.14 * spine.reach * out, spine.z + spine.reach * out),
       quaternion,
       scale.set(spine.sx, spine.sy, spine.sz),
     );
@@ -1073,9 +1206,10 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
       shared.uSheet.value.set(
         next.sheetLeft * next.pixelRatio,
         next.sheetRight * next.pixelRatio,
-        72 * next.pixelRatio,
-        0.55,
+        SHADE_REACH * next.pixelRatio,
+        SHADE_DEPTH,
       );
+      shared.uViewport.value.set(next.width * next.pixelRatio, next.height * next.pixelRatio);
       own.uPixel.value = next.pixelRatio;
       arrange();
     },
@@ -1107,7 +1241,9 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
     },
     render(frame) {
       if (disposed) return;
-      camera.position.set(CAMERA.x + frame.eye[0], CAMERA.y + frame.eye[1], CAMERA.z);
+      // The drift is given in CSS px at the wall; the eye moves down by that much there, so the room rises.
+      const perPx = (2 * (CAMERA.z - WALL_Z) * tanHalf) / (Math.max(1, layout.height) * FRAME);
+      camera.position.set(CAMERA.x + frame.eye[0], CAMERA.y + frame.eye[1] - frame.drift * perPx, CAMERA.z);
       if (frame.pulled !== pulledNow || frame.pull !== pullNow) {
         if (frame.pulled !== pulledNow) pose(spines.get(pulledNow), 0);
         pulledNow = frame.pulled;
@@ -1125,16 +1261,13 @@ export const createReadingRoom = (canvas: HTMLCanvasElement, onLost: () => void)
       own.uSway.value =
         frame.liveliness * (0.06 * Math.sin(frame.time * 2.1) + 0.03 * Math.sin(frame.time * 5.3 + 1)) +
         0.32 * frame.gust;
-      const { width, height, sheetLeft, sheetRight } = layout;
+      shared.uSheetTop.value = (layout.height - frame.paperTop) * layout.pixelRatio;
       renderer.setScissorTest(false);
       renderer.clear();
       renderer.setScissorTest(true);
-      if (sheetLeft > 0) {
-        renderer.setScissor(0, 0, sheetLeft, height);
-        renderer.render(scene, camera);
-      }
-      if (sheetRight < width) {
-        renderer.setScissor(sheetRight, 0, width - sheetRight, height);
+      // Only what the page leaves uncovered is drawn: a scissor per region (WebGL's origin is bottom-left).
+      for (const r of frame.regions) {
+        renderer.setScissor(r.x, layout.height - r.y - r.height, r.width, r.height);
         renderer.render(scene, camera);
       }
     },

@@ -27,17 +27,22 @@ export type RoomMode = (typeof ROOM_MODES)[number];
 /** Order of the modes by how much the scene does: off < still < live. */
 export const modeRank = (mode: RoomMode): number => ROOM_MODES.indexOf(mode);
 
-/** Narrowest gutter (CSS px, on each side of the sheet) in which the room is worth its download. */
+/**
+ * Narrowest strip (CSS px) in which the room is worth its download: a gutter on each side of the sheet, or the
+ * band above it (the headroom between the header and the paper, which every essay has).
+ */
 export const ROOM_MIN_GUTTER_PX = 96;
 
 /** What the shell measures before deciding. Every field is a restriction or a capability, never a wish. */
 export interface RoomEnvironment {
-  /** The reader's preference: `auto` defers to the device, `on` asks for the room, `off` refuses it. */
+  /** The reader's preference: `auto` (the default) defers to the device, `on` asks for the room, `off` refuses it. */
   readonly preference: 'auto' | 'on' | 'off';
   /** Focus mode (preference `focus`): nothing decorative. */
   readonly focus: boolean;
   /** Width of the narrower gutter beside the sheet, in CSS px. */
   readonly gutterPx: number;
+  /** Height of the band above the sheet when the page is at its top (the headroom), in CSS px. */
+  readonly headroomPx: number;
   /** A WebGL 2 context can be created. */
   readonly webgl: boolean;
   /** The context is rendered by the CPU (SwiftShader, llvmpipe): every frame costs the reader's battery. */
@@ -69,12 +74,82 @@ const lowEnd = (env: RoomEnvironment): boolean =>
 export const roomMode = (env: RoomEnvironment): RoomMode => {
   if (env.preference === 'off' || env.focus) return 'off';
   if (!env.webgl || env.forcedColors) return 'off';
-  if (!(env.gutterPx >= ROOM_MIN_GUTTER_PX)) return 'off';
+  if (!(Math.max(env.gutterPx, env.headroomPx) >= ROOM_MIN_GUTTER_PX)) return 'off';
   if (env.preference === 'auto' && (env.reducedData || env.moreContrast || env.software)) return 'off';
   if (env.reducedMotion) return 'still';
   if (env.preference === 'auto' && lowEnd(env)) return 'still';
   return 'live';
 };
+
+/**
+ * Where the room shows its furniture: in the two gutters beside the sheet when they are wide enough (the
+ * shelf on the left, the window and the candle on the right), otherwise in the band above the sheet, the
+ * whole room composed as one strip. Either way the room is one scene behind the page, seen through every
+ * part of the screen the paper does not cover.
+ */
+export type RoomStage = 'gutters' | 'band';
+
+export const roomStage = (gutterPx: number): RoomStage => (gutterPx >= ROOM_MIN_GUTTER_PX ? 'gutters' : 'band');
+
+/** A rectangle of the viewport in CSS px, top-left origin. */
+export interface Rect {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** Where the paper and the opaque bands of the page are in the viewport, in CSS px (they move as it scrolls). */
+export interface PageFrame {
+  readonly width: number;
+  readonly height: number;
+  /** The sheet: its edges and its top and bottom (both may lie outside the viewport). */
+  readonly paperLeft: number;
+  readonly paperRight: number;
+  readonly paperTop: number;
+  readonly paperBottom: number;
+  /** The bottom of the site header and the top of the footer (opaque paper too). */
+  readonly headerBottom: number;
+  readonly footerTop: number;
+}
+
+const rect = (x0: number, y0: number, x1: number, y1: number): readonly Rect[] =>
+  x1 - x0 >= 1 && y1 - y0 >= 1 ? [{ x: x0, y: y0, width: x1 - x0, height: y1 - y0 }] : [];
+
+/**
+ * The parts of the viewport where the room can be seen: between the header and the footer, outside the paper.
+ * At most four rectangles (above the paper, beside it on each side, below it), disjoint, inside the viewport
+ * and never over the paper, the header or the footer — the scene is drawn there and nowhere else (a scissor
+ * per rectangle), so the pixels under the text cost nothing. Total: a degenerate frame gives no rectangle.
+ */
+export const roomRegions = (f: PageFrame): readonly Rect[] => {
+  const n = (v: number): number => (Number.isFinite(v) ? v : 0);
+  const w = Math.max(0, n(f.width));
+  const h = Math.max(0, n(f.height));
+  const top = Math.min(h, Math.max(0, n(f.headerBottom)));
+  const bottom = Math.max(top, Math.min(h, n(f.footerTop)));
+  const left = Math.min(w, Math.max(0, Math.min(n(f.paperLeft), n(f.paperRight))));
+  const right = Math.max(left, Math.min(w, Math.max(n(f.paperLeft), n(f.paperRight))));
+  const paperTop = Math.min(bottom, Math.max(top, Math.min(n(f.paperTop), n(f.paperBottom))));
+  const paperBottom = Math.max(paperTop, Math.min(bottom, Math.max(n(f.paperTop), n(f.paperBottom))));
+  return [
+    ...rect(0, top, w, paperTop),
+    ...rect(0, paperTop, left, paperBottom),
+    ...rect(right, paperTop, w, paperBottom),
+    ...rect(0, paperBottom, w, bottom),
+  ];
+};
+
+/** How much slower than the page the room moves as the reader scrolls the headroom away (motion parallax). */
+export const SCROLL_PARALLAX = 0.3;
+
+/**
+ * The room's drift, in CSS px, at `scrollY`: it follows the page at SCROLL_PARALLAX of its speed while the
+ * headroom (`reach` px) scrolls away, then stays. Things behind the paper move less than the paper: depth.
+ */
+export const scrollDrift = (scrollY: number, reach: number): number =>
+  SCROLL_PARALLAX *
+  Math.max(0, Math.min(Number.isFinite(reach) ? Math.max(0, reach) : 0, Number.isFinite(scrollY) ? scrollY : 0));
 
 /** A rung of the quality ladder: the cap on the device pixel ratio and the frame rate. */
 export interface RoomTier {

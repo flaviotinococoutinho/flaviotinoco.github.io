@@ -8,6 +8,11 @@ import { DAYPARTS } from '../../../src/core/chrome/daypart.ts';
 import {
   AMBIENT_AFTER_S,
   AMBIENT_FPS,
+  SCROLL_PARALLAX,
+  roomRegions,
+  roomStage,
+  scrollDrift,
+  type PageFrame,
   BREATH_REACH_PX,
   PARALLAX_X,
   PARALLAX_Y,
@@ -64,6 +69,7 @@ const environment: fc.Arbitrary<RoomEnvironment> = fc.record({
   preference: fc.constantFrom('auto', 'on', 'off'),
   focus: fc.boolean(),
   gutterPx: fc.oneof(fc.double({ noNaN: false }), fc.integer({ min: 0, max: 800 })),
+  headroomPx: fc.oneof(fc.double({ noNaN: false }), fc.integer({ min: 0, max: 300 })),
   webgl: fc.boolean(),
   software: fc.boolean(),
   forcedColors: fc.boolean(),
@@ -79,6 +85,7 @@ const ideal: RoomEnvironment = {
   preference: 'auto',
   focus: false,
   gutterPx: 400,
+  headroomPx: 0,
   webgl: true,
   software: false,
   forcedColors: false,
@@ -94,6 +101,7 @@ const restrictions: readonly ((env: RoomEnvironment) => RoomEnvironment)[] = [
   (e) => ({ ...e, preference: e.preference === 'on' ? 'auto' : 'off' }),
   (e) => ({ ...e, focus: true }),
   (e) => ({ ...e, gutterPx: Number.isFinite(e.gutterPx) ? e.gutterPx / 2 : 0 }),
+  (e) => ({ ...e, headroomPx: Number.isFinite(e.headroomPx) ? e.headroomPx / 2 : 0 }),
   (e) => ({ ...e, webgl: false }),
   (e) => ({ ...e, software: true }),
   (e) => ({ ...e, forcedColors: true }),
@@ -119,6 +127,15 @@ describe('roomMode', () => {
       expect(roomMode({ ...ideal, preference, gutterPx: Number.NaN })).toBe('off');
       expect(roomMode({ ...ideal, preference, gutterPx: ROOM_MIN_GUTTER_PX })).toBe('live');
     }
+  });
+
+  it('finds room in the band above the sheet when the gutters are narrow (laptops, phones)', () => {
+    const phone = { ...ideal, gutterPx: 0, headroomPx: ROOM_MIN_GUTTER_PX + 20 };
+    expect(roomMode(phone)).toBe('live');
+    expect(roomMode({ ...phone, headroomPx: ROOM_MIN_GUTTER_PX - 1 })).toBe('off');
+    expect(roomStage(0)).toBe('band');
+    expect(roomStage(ROOM_MIN_GUTTER_PX - 1)).toBe('band');
+    expect(roomStage(ROOM_MIN_GUTTER_PX)).toBe('gutters');
   });
 
   it('lets the reader who asked for the room overrule the heuristics, not the hard limits', () => {
@@ -516,4 +533,79 @@ describe("the room answers the reader's hand", () => {
     ]);
     expect(decodeShelfLabels({ not: 'an array' })).toEqual([]);
   });
+});
+
+describe('where the room can be seen', () => {
+  const px = fc.double({ min: -2000, max: 4000, noNaN: true });
+  const frame: fc.Arbitrary<PageFrame> = fc.record({
+    width: fc.double({ min: 0, max: 4000, noNaN: true }),
+    height: fc.double({ min: 0, max: 3000, noNaN: true }),
+    paperLeft: px,
+    paperRight: px,
+    paperTop: px,
+    paperBottom: px,
+    headerBottom: px,
+    footerTop: px,
+  });
+  const overlap = (a: { x: number; y: number; width: number; height: number }, b: typeof a): boolean =>
+    a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+  test.prop([frame])(
+    'rectangles inside the viewport, disjoint, never over the paper, the header or the footer',
+    (f) => {
+      const rects = roomRegions(f);
+      expect(rects.length).toBeLessThanOrEqual(4);
+      const [l, r] = [Math.min(f.paperLeft, f.paperRight), Math.max(f.paperLeft, f.paperRight)];
+      const [t, b] = [Math.min(f.paperTop, f.paperBottom), Math.max(f.paperTop, f.paperBottom)];
+      const paper = { x: l, y: t, width: r - l, height: b - t };
+      for (const [i, a] of rects.entries()) {
+        expect(a.width).toBeGreaterThanOrEqual(1);
+        expect(a.height).toBeGreaterThanOrEqual(1);
+        expect(a.x).toBeGreaterThanOrEqual(0);
+        expect(a.y).toBeGreaterThanOrEqual(0);
+        expect(a.x + a.width).toBeLessThanOrEqual(f.width + 1e-9);
+        expect(a.y + a.height).toBeLessThanOrEqual(f.height + 1e-9);
+        expect(a.y).toBeGreaterThanOrEqual(Math.min(f.height, Math.max(0, f.headerBottom)) - 1e-9);
+        if (f.footerTop >= 0) expect(a.y + a.height).toBeLessThanOrEqual(Math.max(f.footerTop, a.y) + 1e-9);
+        if (paper.width > 0 && paper.height > 0) expect(overlap(a, paper)).toBe(false);
+        for (const c of rects.slice(i + 1)) expect(overlap(a, c)).toBe(false);
+      }
+    },
+  );
+
+  it('a phone at the top of an essay: the band above the paper; scrolled into the text: nothing', () => {
+    const top = { width: 390, height: 844, paperLeft: 0, paperRight: 390, headerBottom: 56, footerTop: 9000 };
+    expect(roomRegions({ ...top, paperTop: 180, paperBottom: 9000 })).toEqual([
+      { x: 0, y: 56, width: 390, height: 124 },
+    ]);
+    expect(roomRegions({ ...top, headerBottom: -100, paperTop: -500, paperBottom: 8000 })).toEqual([]);
+  });
+
+  it('a wide window: the band, then the two gutters below it', () => {
+    const rects = roomRegions({
+      width: 1920,
+      height: 1080,
+      paperLeft: 300,
+      paperRight: 1620,
+      paperTop: 200,
+      paperBottom: 5000,
+      headerBottom: 60,
+      footerTop: 6000,
+    });
+    expect(rects).toEqual([
+      { x: 0, y: 60, width: 1920, height: 140 },
+      { x: 0, y: 200, width: 300, height: 880 },
+      { x: 1620, y: 200, width: 300, height: 880 },
+    ]);
+  });
+
+  test.prop([fc.double({ noNaN: false }), fc.double({ min: 0, max: 500, noNaN: true })])(
+    'the room drifts slower than the page, only while the headroom scrolls away',
+    (scrollY, reach) => {
+      const d = scrollDrift(scrollY, reach);
+      expect(d).toBeGreaterThanOrEqual(0);
+      expect(d).toBeLessThanOrEqual(SCROLL_PARALLAX * reach + 1e-9);
+      if (Number.isFinite(scrollY) && scrollY >= 0) expect(d).toBeLessThanOrEqual(scrollY);
+    },
+  );
 });

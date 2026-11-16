@@ -2,13 +2,19 @@
  * <ft-reading-room sheet=".essay"> — the room around the article (docs/adr/0014-sala-de-leitura.md).
  *
  * The rule: the room makes the atmosphere, the reading keeps the priority. So this element never touches
- * the article. It is a fixed layer behind the page (z-index −1) holding two things: a canvas, where the
- * three.js scene of src/islands/scenes/reading-room.ts is drawn, and, over the canvas, an opaque sheet of
- * paper exactly as wide as the text columns of the element named by `sheet`. Every line of the article
- * therefore sits on the same paper tokens as without the room, and the scene shows only in the gutters.
+ * the article. It is a fixed layer behind the page (z-index −1) holding a canvas, where the three.js scene
+ * of src/islands/scenes/reading-room.ts is drawn. The sheet of paper is the page's own (the ::before of the
+ * element named by `sheet`, src/styles/components/room.css), in flow and opaque: every line of the article
+ * sits on the same paper as without the room, and the scene shows where the paper is not — the band above
+ * the sheet (its headroom, on every screen) and, on wide screens, the gutters beside it. The page has the
+ * same layout with and without the scene, so lighting the room shifts nothing.
  *
  * Decorative: aria-hidden, no pointer events, nothing in it is needed to read the page. Without
- * JavaScript, without WebGL 2 or on a narrow screen the layer stays hidden and the page is what it was.
+ * JavaScript or without WebGL 2 the layer stays hidden and the page keeps its desk drawn in CSS.
+ *
+ * Economy: only the parts of the viewport the page leaves uncovered are drawn (roomRegions, a scissor per
+ * part), and when none is on screen — on a phone, once the band has scrolled away — no frame is drawn
+ * until the reader scrolls back.
  *
  * Restraint (the decisions are pure, in src/core/chrome/room.ts):
  *   - whether the room exists is decided before anything is downloaded: three.js is imported only when the
@@ -24,10 +30,10 @@
  * reduced motion these are states, not animations: the still frame is redrawn when scrolling stops.
  * The attributes `shelf` (the corpus, encodeShelf) and `stratum` say what the room holds.
  *
- * The reader's preference `room` (off | auto | on; off by default) arrives as data-room on <html>; the
- * state of the layer is published as data-scene="live" | "still" on <html>, where
- * src/styles/components/room.css reads it, and data-scene-able says that the room could be shown here if
- * the reader asked for it (<ft-room-switch> shows itself only then).
+ * The reader's preference `room` (auto | on | off; auto by default) arrives as data-room on <html> and is
+ * changed in the preferences panel. The state of the layer is published as data-scene="live" | "still" on
+ * <html>, where src/styles/components/room.css reads it, and where the furniture is (roomStage) as
+ * data-stage="gutters" | "band" on this element.
  */
 import {
   EYE_TAU,
@@ -51,11 +57,17 @@ import {
   pixelRatioOf,
   rainfall,
   roomMode,
+  roomRegions,
+  roomStage,
+  scrollDrift,
   simplexOf,
   startTier,
   type Governor,
   type Pace,
+  type PageFrame,
+  type Rect,
   type RoomMode,
+  type RoomStage,
   type ShelfLabel,
 } from '../../core/chrome/room.ts';
 import { DAYPARTS, type Daypart } from '../../core/chrome/daypart.ts';
@@ -71,6 +83,12 @@ const PULL_TAU = 0.12;
 const STILL_POINTER_MS = 80;
 /** Time shown by the single frame of the still mode: the rain a little way down the glass. */
 const STILL_TIME = 2;
+/**
+ * CSS px by which the drawn regions overreach the opaque parts of the page (the paper, the header, the
+ * footer cover the excess): the page scrolls on the compositor before the next frame is drawn, and a fast
+ * flick must not uncover bare canvas at the edge of the band.
+ */
+const SCROLL_SLACK = 48;
 const WATCHED = ['data-theme', 'data-contrast', 'data-motion', 'data-daypart', 'data-focus', 'data-room', 'data-cvd'];
 const MEDIA = [
   '(prefers-reduced-motion: reduce)',
@@ -121,7 +139,6 @@ const idle = (run: () => void): void => {
 
 class FtReadingRoom extends HTMLElement {
   #canvas: HTMLCanvasElement | null = null;
-  #sheet: HTMLElement | null = null;
   #target: Element | null = null;
   #abort: AbortController | null = null;
   #room: ReadingRoom | null = null;
@@ -138,8 +155,15 @@ class FtReadingRoom extends HTMLElement {
   #time = 0;
   #rain = 0;
   #calm = 1;
+  /** The sheet with its rim: edges in viewport px, top and bottom in document px. */
   #left = 0;
   #right = 0;
+  #paperTop = 0;
+  #paperBottom = 0;
+  /** The opaque bands of the page around the sheet, in document px: the header's bottom, the footer's top. */
+  #headerBottom = 0;
+  #footerTop = Number.POSITIVE_INFINITY;
+  #stage: RoomStage = 'gutters';
   /** The article's box in document coordinates, for the reading progress. */
   #top = 0;
   #height = 0;
@@ -163,6 +187,11 @@ class FtReadingRoom extends HTMLElement {
   #pointerAt = 0;
   /** The eye's offset (motion parallax), smoothed towards eyeFor(pointer). */
   #eye: readonly [number, number] = [0, 0];
+  /**
+   * A touch has no hover: the book it names is the one named before this touch began (null for a mouse). A
+   * click opens a work only if that book was already named, so the first tap names it and the second opens it.
+   */
+  #tap: number | null = null;
   /** The book under the pointer, the one drawn off the shelf, and how far out it is. */
   #hover = -1;
   #pulled = -1;
@@ -177,15 +206,12 @@ class FtReadingRoom extends HTMLElement {
     this.setAttribute('aria-hidden', 'true');
     const canvas = document.createElement('canvas');
     canvas.className = 'room__canvas';
-    const sheet = document.createElement('div');
-    sheet.className = 'room__sheet';
     const label = document.createElement('p');
     label.className = 'room__label';
     label.hidden = true;
-    this.append(canvas, sheet, label);
+    this.append(canvas, label);
     this.#label = label;
     this.#canvas = canvas;
-    this.#sheet = sheet;
     this.#governor = governorAt(startTier(navigator.hardwareConcurrency || 0));
     try {
       this.#remembered = decodeMemory(localStorage.getItem(MEMORY_STORAGE_KEY))[location.pathname]?.furthest ?? 0;
@@ -226,13 +252,14 @@ class FtReadingRoom extends HTMLElement {
     for (const type of ['pointermove', 'pointerdown', 'wheel', 'keydown'] as const) {
       window.addEventListener(type, () => this.#wake(), { passive: true, signal });
     }
-    // The hand in a gutter: where the eye goes, which book comes off the shelf, where the glass clears.
+    // The hand over the room: where the eye goes, which book comes off the shelf, where the glass clears.
     document.addEventListener('pointermove', (event) => this.#point(event), { passive: true, signal });
     document.addEventListener('pointerdown', (event) => this.#point(event), { passive: true, signal });
     document.addEventListener(
       'pointerout',
       (event) => {
-        if (event.relatedTarget === null) this.#leave();
+        // A finger leaves the screen after every tap: the book it named stays named until the next touch.
+        if (event.relatedTarget === null && event.pointerType !== 'touch') this.#leave();
       },
       { passive: true, signal },
     );
@@ -257,32 +284,66 @@ class FtReadingRoom extends HTMLElement {
     this.#abort = null;
     clearTimeout(this.#settle);
     this.#stop();
-    delete document.documentElement.dataset['sceneAble'];
     this.#canvas?.remove();
-    this.#sheet?.remove();
     this.#label?.remove();
     this.#canvas = null;
-    this.#sheet = null;
     this.#label = null;
   }
 
-  /** Is the event over a gutter, on the bare page (not on the header, a dialog, a popover or any content)? */
-  #inGutter(event: MouseEvent): boolean {
-    if (this.#room === null || this.#mode === 'off') return false;
-    const rim = this.#rim();
-    if (event.clientX >= this.#left - rim && event.clientX <= this.#right + rim) return false;
-    const t = event.target;
+  /** Where the sheet and the opaque bands of the page are in the viewport now (they scroll with the page). */
+  #frameNow(): PageFrame {
+    const y = window.scrollY;
+    return {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      paperLeft: this.#left,
+      paperRight: this.#right,
+      paperTop: this.#paperTop - y,
+      paperBottom: this.#paperBottom - y,
+      headerBottom: this.#headerBottom - y,
+      footerTop: this.#footerTop - y,
+    };
+  }
+
+  /**
+   * What a frame draws. Live, the uncovered parts of the viewport, overreaching the opaque parts of the page by
+   * SCROLL_SLACK; still, the whole viewport, since that one frame has to hold whatever a scroll uncovers.
+   */
+  #regionsNow(still: boolean): readonly Rect[] {
+    const f = this.#frameNow();
+    if (still) return [{ x: 0, y: 0, width: f.width, height: f.height }];
+    return roomRegions({
+      ...f,
+      headerBottom: f.headerBottom - SCROLL_SLACK,
+      paperTop: f.paperTop + SCROLL_SLACK,
+      paperBottom: f.paperBottom - SCROLL_SLACK,
+      footerTop: f.footerTop + SCROLL_SLACK,
+    });
+  }
+
+  /** The part of the room under the viewport point (x, y), or null when the page covers it. */
+  #regionAt(x: number, y: number): Rect | null {
     return (
-      t === document.documentElement ||
-      t === document.body ||
-      t === this.#target ||
-      (t instanceof Element && t.localName === 'main')
+      roomRegions(this.#frameNow()).find((r) => x >= r.x && x < r.x + r.width && y >= r.y && y < r.y + r.height) ?? null
     );
   }
 
+  /** Is the event over the room, on the bare page (not on the paper, the header, a dialog or any content)? */
+  #inRoom(event: MouseEvent): boolean {
+    if (this.#room === null || this.#mode === 'off') return false;
+    const t = event.target;
+    const bare =
+      t === document.documentElement ||
+      t === document.body ||
+      t === this.#target ||
+      (t instanceof Element && t.localName === 'main');
+    return bare && this.#regionAt(event.clientX, event.clientY) !== null;
+  }
+
   #point(event: PointerEvent): void {
+    if (event.type === 'pointerdown') this.#tap = event.pointerType === 'touch' ? this.#hover : null;
     const room = this.#room;
-    if (room === null || !this.#inGutter(event)) {
+    if (room === null || !this.#inRoom(event)) {
       this.#leave();
       return;
     }
@@ -323,27 +384,32 @@ class FtReadingRoom extends HTMLElement {
     }
   }
 
-  /** The label beside the pointer, inside the gutter it is in (never over the sheet). */
+  /** The label beside the pointer, inside the part of the room it is in (never over the sheet). */
   #placeLabel(): void {
     const label = this.#label;
     const p = this.#pointer;
     if (label === null || p === null || label.hidden) return;
-    const rim = this.#rim();
-    const left = p.x < this.#left;
-    const min = (left ? 0 : this.#right + rim) + 8;
-    const max = (left ? this.#left - rim : window.innerWidth) - 8;
+    const r = this.#regionAt(p.x, p.y);
+    if (r === null) return;
+    const min = r.x + 8;
+    const max = r.x + r.width - 8;
     label.style.maxInlineSize = `${String(Math.max(80, max - min))}px`;
     const x = Math.max(min, Math.min(max - label.offsetWidth, p.x + 14));
-    const y = Math.max(8, Math.min(window.innerHeight - label.offsetHeight - 8, p.y + 18));
+    const below = p.y + 18;
+    const y = Math.max(
+      r.y + 4,
+      below + label.offsetHeight <= r.y + r.height - 4 ? below : p.y - label.offsetHeight - 10,
+    );
     label.style.transform = `translate(${String(x)}px, ${String(y)}px)`;
   }
 
   /** A click on a book opens the work (with a modifier key, in a new tab). */
   #open(event: MouseEvent): void {
     const room = this.#room;
-    if (room === null || event.button !== 0 || event.defaultPrevented || !this.#inGutter(event)) return;
-    const label = this.#labels[room.pointAt(event.clientX, event.clientY, false)] ?? null;
-    if (label === null) return;
+    if (room === null || event.button !== 0 || event.defaultPrevented || !this.#inRoom(event)) return;
+    const book = room.pointAt(event.clientX, event.clientY, false);
+    const label = this.#labels[book] ?? null;
+    if (label === null || (this.#tap !== null && this.#tap !== book)) return;
     if (event.metaKey || event.ctrlKey || event.shiftKey) window.open(label.href, '_blank', 'noopener');
     else window.location.assign(label.href);
   }
@@ -361,25 +427,32 @@ class FtReadingRoom extends HTMLElement {
     }
   }
 
-  /** Where the sheet's edges are: the text columns of the target plus this element's padding (a token). */
+  /**
+   * Where the sheet is: the target's ::before (the paper of room.css, centred in the target and inset from its
+   * top by the headroom), with the rim of its stand; and where the header ends and the footer begins.
+   */
   #measure(): void {
     const target = this.#target;
     if (target === null) return;
+    const y = window.scrollY;
     const box = target.getBoundingClientRect();
-    this.#top = box.top + window.scrollY;
+    this.#top = box.top + y;
     this.#height = box.height;
     this.#follow();
-    // The used value lists the tracks in px between the line names: "[full-start] 385px [main-start] 648px …".
-    const tracks = [...getComputedStyle(target).gridTemplateColumns.matchAll(/(\d+(?:\.\d+)?)px/g)].map((m) =>
-      Number(m[1]),
-    );
-    const first = tracks[0] ?? 0;
-    const last = tracks.length > 1 ? (tracks[tracks.length - 1] ?? 0) : 0;
-    const pad = Number.parseFloat(getComputedStyle(this).paddingInlineStart) || 0;
-    this.#left = Math.max(0, box.left + first - pad);
-    this.#right = Math.min(window.innerWidth, box.right - last + pad);
-    this.#sheet?.style.setProperty('--sheet-left', `${this.#left}px`);
-    this.#sheet?.style.setProperty('--sheet-width', `${Math.max(0, this.#right - this.#left)}px`);
+    const rim = this.#rim();
+    const paper = getComputedStyle(target, '::before');
+    const width = Number.parseFloat(paper.width);
+    const inset = Number.parseFloat(paper.top);
+    const end = Number.parseFloat(paper.bottom);
+    const drawn = paper.content !== 'none' && Number.isFinite(width) && Number.isFinite(inset) && Number.isFinite(end);
+    const centre = box.left + box.width / 2;
+    this.#left = drawn ? Math.max(0, centre - width / 2 - rim) : 0;
+    this.#right = drawn ? Math.min(window.innerWidth, centre + width / 2 + rim) : window.innerWidth;
+    this.#paperTop = box.top + y + (drawn ? inset - rim : 0);
+    this.#paperBottom = box.bottom + y - (drawn ? end - rim : 0);
+    this.#headerBottom = (document.querySelector('.site-header')?.getBoundingClientRect().bottom ?? 0) + y;
+    const footer = document.querySelector('.site-footer');
+    this.#footerTop = footer === null ? Number.POSITIVE_INFINITY : footer.getBoundingClientRect().top + y;
   }
 
   /** Where the reader is: how calm the room should be and how far through the article they are. */
@@ -393,20 +466,18 @@ class FtReadingRoom extends HTMLElement {
     return Number.parseFloat(getComputedStyle(this).paddingBlockStart) || 0;
   }
 
-  /**
-   * The mode, and whether the room could be shown at all if the reader asked for it (`able`: what the
-   * switch on the page needs to know). `able` judges only what costs nothing to measure — the gutters, the
-   * system palette, focus mode — and a WebGL probe already made; no context is created to answer it.
-   */
-  #decide(): { readonly mode: RoomMode; readonly able: boolean } {
+  /** The mode: what the reader asked for, what the screen leaves room for, and what the device can do. */
+  #decide(): RoomMode {
     const root = document.documentElement;
     const preference = root.dataset['room'];
-    const g = gutters(window.innerWidth, this.#left - this.#rim(), this.#right + this.#rim());
+    const g = gutters(window.innerWidth, this.#left, this.#right);
+    this.#stage = roomStage(Math.min(g.left, g.right));
     const base = {
-      // The default (no attribute) is off: the room appears only when the reader asks for it.
-      preference: preference === 'on' || preference === 'auto' ? preference : 'off',
+      // The default (no attribute) is auto: the room shows wherever the device allows it.
+      preference: preference === 'on' || preference === 'off' ? preference : 'auto',
       focus: root.dataset['focus'] === 'on',
       gutterPx: Math.min(g.left, g.right),
+      headroomPx: this.#paperTop - this.#headerBottom,
       forcedColors: matchMedia('(forced-colors: active)').matches,
       reducedMotion: getComputedStyle(this).getPropertyValue('--motion').trim() === '0',
       reducedData:
@@ -419,26 +490,18 @@ class FtReadingRoom extends HTMLElement {
       cores: navigator.hardwareConcurrency || 0,
       memoryGiB: (navigator as Navigator & { readonly deviceMemory?: number }).deviceMemory ?? null,
     } as const;
-    const able =
-      !this.#lost &&
-      roomMode({ ...base, preference: 'on', webgl: this.#probe?.webgl ?? true, software: false }) !== 'off';
     // Ask for a context only when everything else already allows the room.
-    if (roomMode({ ...base, webgl: true, software: false }) === 'off') return { mode: 'off', able };
+    if (roomMode({ ...base, webgl: true, software: false }) === 'off') return 'off';
     this.#probe ??= probeWebgl();
     const mode = roomMode({ ...base, ...this.#probe });
-    return { mode: mode === 'live' && this.#exhausted ? 'still' : mode, able: able && this.#probe.webgl };
+    return mode === 'live' && this.#exhausted ? 'still' : mode;
   }
 
   #evaluate(): void {
-    if (this.#canvas === null) return;
-    if (this.#lost) {
-      delete document.documentElement.dataset['sceneAble'];
-      return;
-    }
+    if (this.#canvas === null || this.#lost) return;
     this.#measure();
-    const { mode, able } = this.#decide();
-    if (able) document.documentElement.dataset['sceneAble'] = '';
-    else delete document.documentElement.dataset['sceneAble'];
+    const mode = this.#decide();
+    this.dataset['stage'] = this.#stage;
     this.#mode = mode;
     if (mode === 'off') {
       this.#stop();
@@ -513,15 +576,18 @@ class FtReadingRoom extends HTMLElement {
     delete document.documentElement.dataset['scene'];
   }
 
-  /** Sizes the scene for the viewport, the sheet and the current rung; false when nothing changed. */
+  /** Sizes the scene for the viewport, the sheet, the stage and the current rung; false when nothing changed. */
   #resize(): boolean {
-    const rim = this.#rim();
     const layout = {
       width: window.innerWidth,
       height: window.innerHeight,
       pixelRatio: pixelRatioOf(this.#governor.tier, window.devicePixelRatio || 1),
-      sheetLeft: Math.max(0, this.#left - rim),
-      sheetRight: Math.min(window.innerWidth, this.#right + rim),
+      sheetLeft: this.#left,
+      sheetRight: this.#right,
+      stage: this.#stage,
+      // The band as it is with the page at its top: the furniture is placed once, and the scroll moves the eye.
+      bandTop: this.#headerBottom,
+      bandBottom: this.#paperTop,
     };
     const key = Object.values(layout).join(' ');
     if (this.#room === null || key === this.#sized) return false;
@@ -605,6 +671,8 @@ class FtReadingRoom extends HTMLElement {
       return;
     }
     this.#setPace(current);
+    // Nothing of the room on screen: no frame, and no loop until a scroll brings a part of it back (#wake).
+    if (this.#regionsNow(false).length === 0) return;
     if (now - this.#lastRender >= paceInterval(current, this.#governor.tier) - 1) {
       const dt = this.#lastRender === 0 ? 0 : Math.min(0.1, (now - this.#lastRender) / 1000);
       this.#lastRender = now;
@@ -629,7 +697,7 @@ class FtReadingRoom extends HTMLElement {
     return Math.abs(hand) > Math.abs(scrollVelocity) ? hand : scrollVelocity;
   }
 
-  /** The eye follows the pointer in a gutter and comes back to its place without it; a pointed book comes out. */
+  /** The eye follows the pointer over the room and comes back to its place without it; a pointed book comes out. */
   #ease(dt: number): void {
     const p = this.#pointer;
     const [tx, ty] =
@@ -641,8 +709,15 @@ class FtReadingRoom extends HTMLElement {
     this.#pull = approach(this.#pull, out, dt, PULL_TAU);
   }
 
+  /**
+   * One frame (#regionsNow says where). Live, the room drifts behind the page as the headroom scrolls away
+   * (scrollDrift); still (reduced motion) nothing drifts.
+   */
   #draw(time: number, rainTime: number, liveliness: number, still: boolean): void {
     this.#room?.render({
+      regions: this.#regionsNow(still),
+      paperTop: this.#paperTop - window.scrollY,
+      drift: still ? 0 : scrollDrift(window.scrollY, this.#paperTop),
       time,
       rainTime,
       flicker: flicker(time, liveliness) * (still ? 1 : kindle(this.#lit)),

@@ -29,8 +29,9 @@
  * document (detail: the Preferences object). The always-loaded islands
  * (<ft-palette-trigger>, <ft-depth-scene>) observe the data-* attributes on
  * <html> instead, so they never download the preference model. Reading,
- * writing and applying live in src/islands/preferences-store.ts, shared with
- * <ft-room-switch>; a change made there is mirrored here through the event.
+ * writing and applying live in src/islands/preferences-store.ts, which reads
+ * storage before every change; a change made by another control on the page
+ * is mirrored here through the event.
  *
  * Announcements come from the server catalog (no UI text here, no formatter
  * shipped): each option carries its sentence ("Tema: Escuro."), set on the
