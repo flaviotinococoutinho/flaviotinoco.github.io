@@ -23,14 +23,13 @@ próprio frontmatter.
   autômato recusa e a redundância do histórico (`src/core/labs/flags.ts`, `ft-lab-flags`).
 - Página inicial: a proposição do site como título, as chamadas, o acervo em números e o laboratório de flags
   em forma compacta na primeira tela; sem JavaScript, a mesma figura desenhada na compilação.
-- Sala de leitura ([ADR 0014](docs/adr/0014-sala-de-leitura.md)): nos ensaios, em janelas largas, uma cena
-  three.js (mesa, estante, janela com chuva, vela) ocupa as calhas ao lado do texto, que continua sobre uma
-  folha opaca com os tokens de papel. A decisão de mostrá-la é uma função pura (`src/core/chrome/room.ts`):
-  nada é baixado sem calha, com economia de dados, contraste aumentado ou renderizador por software; com
-  movimento reduzido fica um quadro. A sala é calculada do site: a estante é o acervo (uma lombada por ensaio,
+- Sala de leitura ([ADR 0014](docs/adr/0014-sala-de-leitura.md)): nos ensaios, uma cena three.js (mesa,
+  estante, janela com chuva, vela) atrás do texto, que continua sobre uma folha opaca com os tokens de papel.
+  A decisão de mostrá-la é uma função pura (`src/core/chrome/room.ts`): nada é baixado com economia de dados,
+  contraste aumentado ou renderizador por software; com movimento reduzido fica um quadro. A sala é calculada do site: a estante é o acervo (uma lombada por ensaio,
   um caderno por laboratório, cor do estrato), a obra lida fica sobre a mesa sob o simplexo do seu estrato, a
-  vela queima com o progresso da leitura e a chuva cede no fim. Preferência `room` (desligada por padrão,
-  automática, ligada) no painel; tokens `--room-*`; dependência `three` 0.187.0, isolada num módulo sob demanda.
+  vela queima com o progresso da leitura e a chuva cede no fim. Preferência `room` (automática por padrão,
+  ligada, desligada) no painel; tokens `--room-*`; dependência `three` 0.187.0, isolada num módulo sob demanda.
 - Laboratório `pipeline` ("O pipeline"): um pipeline de ETL de até seis etapas sobre uma distribuição exata de
   144 vendas; depois de cada etapa, a informação mútua com a venda inteira e com uma pergunta escolhida pelo
   leitor, calculada por `information.wasm`, e a etapa em que a pergunta deixa de ser respondida
@@ -68,20 +67,24 @@ próprio frontmatter.
 
 - Ambiente rústico em todo ensaio ([ADR 0014](docs/adr/0014-sala-de-leitura.md), decisão 17): o artigo é uma
   folha de papel no seu suporte de madeira, sobre uma mesa velha, só com CSS (`room.css`, `--wood-image` em
-  `texture.css`): sem script, sem download, sem movimento. A sala em 3D continua a versão acesa, pelo botão do
-  ensaio. A mesa some com a cena acesa, no modo de foco, com contraste aumentado, com cores forçadas e na
-  impressão.
+  `texture.css`): sem script, sem download, sem movimento. A sala em 3D é a versão acesa. A mesa dá lugar à cena
+  acesa e some no modo de foco, com contraste aumentado, com cores forçadas e na impressão.
 - Proveniência das obras: por decisão do autor, os ensaios e laboratórios publicados até 16/11/2026 deixam de
   declarar o uso de IA. O campo `provenance` passa a opcional (`src/content.config.ts`); o contrato editorial
   (`tests/unit/content/syntax.test.ts`) exige a nota só de quem declarar; guia e programa editoriais, "Sobre" e
   "Colofão" acompanham.
-- Sala de leitura desligada por padrão (a preferência `room` passa a `off` | `auto` | `on`, com `off` por
-  padrão): nada dela é baixado até o leitor pedir. O pedido mais perto é o botão "Sala de leitura" no
-  cabeçalho do ensaio (`ft-room-switch`, botão de alternância com `aria-pressed`), que só aparece onde a sala
-  cabe e grava a mesma preferência do painel. Quem havia escolhido "ligada" continua com a sala.
+- Sala de leitura em todas as telas ([ADR 0014](docs/adr/0014-sala-de-leitura.md), decisão 18): todo ensaio
+  reserva uma faixa entre o cabeçalho e a folha (`--room-headroom`, de 110 a 152 px), que é mesa sem a cena e
+  sala com ela; a folha passa a ser a da página, em fluxo, e acender a sala não move nada. Abaixo de 96 px de
+  calha a sala é composta na faixa (`roomStage`: estante com o acervo, janela, vela e simplexo no peitoril);
+  nas telas largas continua nas calhas. Só as partes da janela que a página deixa à vista são desenhadas
+  (`roomRegions`, uma tesoura por parte), e nenhum quadro quando nenhuma está na tela. Paralaxe de rolagem
+  (`scrollDrift`), sombra da folha também na borda de cima e vinheta. A preferência `room` (`auto` | `on` |
+  `off`) é automática por padrão e fica só no painel; no toque, o primeiro toque num livro o nomeia e o
+  segundo abre a obra.
 - Preferências: ler, gravar e aplicar ficam num armazenamento compartilhado (`src/islands/preferences-store.ts`)
-  que relê o que está guardado antes de mudar uma chave, para que o painel e o botão da sala não se
-  sobrescrevam; o painel espelha mudanças feitas por outro controle da página.
+  que relê o que está guardado antes de mudar uma chave, para que dois controles não se sobrescrevam; o painel
+  espelha mudanças feitas por outro controle da página.
 - Faceta de domínio: `technology` passa a `information-technology`; entram `software-architecture`,
   `systems-design`, `systems-optimization` e `data-engineering`; quatro ensaios e treze conceitos foram
   reclassificados (sem mudança de prosa; a revisão está registrada em cada ensaio).
