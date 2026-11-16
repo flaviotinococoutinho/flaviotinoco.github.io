@@ -42,6 +42,7 @@ import { localeCodec, type Locale } from '../../core/domain/locale.ts';
 import { STRATA, STRATUM_SPECS } from '../../core/domain/strata.ts';
 import { FORM_GLYPH } from '../../core/domain/facets.ts';
 import { AXES, AXIS_OF, disciplinesOf, listing } from '../../core/domain/scope.ts';
+import { runIn } from '../../core/chrome/runin.ts';
 
 export const getStaticPaths = localeStaticPaths;
 
@@ -216,12 +217,7 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
               <p class="entry__description">{e.data.description}</p>
               <p class="entry__meta ui">
                 <StratumMark stratum={e.data.stratum} locale={locale} size="s" />
-                <span class="entry__domains">
-                  {e.data.domains
-                    .slice(0, 3)
-                    .map((d) => r(`domain.${d}`))
-                    .join(' · ')}
-                </span>
+                <span class="entry__domains">{runIn(e.data.domains.slice(0, 3).map((d) => r(`domain.${d}`)))}</span>
                 <time datetime={e.data.published.toISOString().slice(0, 10)}>
                   {t('date.published', { date: formatDate(locale, e.data.published) })}
                 </time>

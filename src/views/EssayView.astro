@@ -46,6 +46,7 @@ import {
   routeOfLab,
 } from '../adapters/astro/content.ts';
 import { formatDate, href, useTranslations } from '../adapters/astro/i18n.ts';
+import { runIn } from '../core/chrome/runin.ts';
 
 export interface Props {
   readonly locale: Locale;
@@ -138,12 +139,7 @@ const IDS = {
             {t('essay.bridge', { from: tc(`strata.${data.stratum}`), to: tc(`strata.${data.bridgesTo}`) })}
           </span>
         )}
-        <span class="essay__domains">
-          {data.domains
-            .slice(0, 3)
-            .map((d) => t(`domain.${d}`))
-            .join(' · ')}
-        </span>
+        <span class="essay__domains">{runIn(data.domains.slice(0, 3).map((d) => t(`domain.${d}`)))}</span>
       </p>
       <h1 class="essay__title" id={IDS.title}>
         {data.title}

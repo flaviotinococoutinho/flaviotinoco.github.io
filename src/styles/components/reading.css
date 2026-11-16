@@ -450,9 +450,10 @@ ft-scrolly:defined .scrolly__step[data-active] {
   font-size: var(--step-n1);
   color: var(--ink-muted);
 }
+/* No-break space: the arrow never wraps alone to a line of its own. */
 .horizontal__hint::after {
-  content: ' →';
-  content: ' →' / '';
+  content: '\a0→';
+  content: '\a0→' / '';
 }
 /* Pinned: vertical scroll drives the track (ft-horizontal sets data-mode). */
 @property --h-progress {
@@ -634,10 +635,12 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
   color: var(--ink-muted);
   font-variant-numeric: lining-nums;
 }
-.essay__meta > :not(:first-child)::before {
+/* The dot goes after an item, not before the next: a wrapped line may end with it, never start with it
+   (src/core/chrome/runin.ts). */
+.essay__meta > :not(:last-child)::after {
   content: '·';
   content: '·' / '';
-  margin-inline-end: var(--space-n1);
+  margin-inline-start: var(--space-n1);
 }
 .essay__expandable {
   margin-inline-start: var(--space-n3);
@@ -1130,10 +1133,10 @@ ft-reading-progress[data-mode='js'] {
 .essay-card__description {
   margin: var(--space-n3) 0 0;
 }
-.essay-card__meta > :not(:first-child)::before {
+.essay-card__meta > :not(:last-child)::after {
   content: '·';
   content: '·' / '';
-  margin-inline-end: var(--space-0);
+  margin-inline-start: var(--space-0);
 }
 .essay-card__meta {
   display: flex;
