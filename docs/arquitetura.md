@@ -242,8 +242,9 @@ diretiva explícita > frontmatter > dicionário:
   cartão do site. O cartão é descrito por um modelo puro (`src/core/chrome/card.ts`: estrato com glifo e nome,
   título, descrição, disciplinas, miniatura do laboratório) e rasterizado na compilação por satori e resvg, com
   as cores dos tokens convertidas de OKLCH (`src/core/design/oklch.ts`).
-- Ambiente: nos ensaios, em janelas largas, uma sala de leitura desenhada com three.js pode ocupar as calhas ao
-  lado da folha (ADR 0014). Fica desligada até o leitor pedir: o botão "Sala de leitura" do cabeçalho do
+- Ambiente: em todo ensaio o artigo é uma folha de papel no suporte de madeira, sobre uma mesa velha, desenhada
+  só com CSS (ADR 0014, decisão 17; some no modo de foco, com contraste aumentado e na impressão). Em janelas
+  largas, uma sala de leitura desenhada com three.js pode ocupar as calhas ao lado da folha (ADR 0014). Fica desligada até o leitor pedir: o botão "Sala de leitura" do cabeçalho do
   ensaio (`ft-room-switch`, um botão de alternância que só aparece onde a sala cabe) ou a preferência `room`.
   É uma camada atrás da página: o texto continua sobre os tokens de papel. A decisão de mostrá-la (`off`,
   `still`, `live`) e o ritmo dela (`full`, `ambient`, `rest`: para quando o leitor para) são funções puras de

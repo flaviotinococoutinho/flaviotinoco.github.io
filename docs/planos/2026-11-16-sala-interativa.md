@@ -89,3 +89,22 @@ Três defeitos apareceram no caminho e foram corrigidos antes de entrar:
    mão (140 px), o tempo do embaçado (6 s) e os do repouso (3 s, 20 s).
 2. Dizer se o botão no cabeçalho é o lugar certo, ou se prefere a vela só no painel.
 3. De dia o efeito de limpar o vidro é discreto, de propósito; à noite é nítido. Dizer se quer mais.
+
+## 7. Segunda rodada do dia: o ambiente rústico para todos; a proveniência retirada
+
+Pedido do autor: continuar, aplicar o ambiente rústico e retirar das obras atuais a menção ao uso de IA.
+
+- **Ambiente rústico.** Com a cena desligada por padrão, o ensaio voltava a ser uma página de papel: o
+  ambiente do conceito só existia para quem acendesse a vela, e só em janelas a partir de cerca de 1 540 px. A
+  mesa e a folha passam a ser CSS em todo ensaio (ADR 0014, decisão 17): mesa de madeira velha com veio, folha
+  de papel no aro de madeira. A cena 3D continua sendo a versão acesa. Um teste por ensaio confere, numa janela
+  de 1 440 px, que nenhum glifo fica sobre a madeira.
+- **Proveniência.** O campo `provenance` passou a opcional e saiu das 32 obras (oito ensaios e oito
+  laboratórios, em duas línguas). Nada de falso foi escrito no lugar: as obras não se declaram "revisadas" nem
+  "sem assistência", só deixam de declarar. As frases de "Sobre" e "Colofão" que diziam que cada obra declara a
+  proveniência, e que os textos estavam marcados como não revisados, saíram também, com entrada de revisão. Os
+  avisos "Sobre este texto" dessas duas páginas, que falam da própria página, ficaram: o pedido foi sobre as
+  obras.
+
+Pendências desta rodada: decidir se os avisos "Sobre este texto" de "Sobre" e "Colofão" também saem; a revisão
+dos textos continua sendo do autor, e o histórico do repositório guarda as notas retiradas.

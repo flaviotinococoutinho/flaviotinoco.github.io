@@ -1,7 +1,8 @@
 # ADR 0014 — Sala de leitura: uma cena three.js nas calhas dos ensaios
 
 - **Estado:** Aceito; a composição e as cores aguardam revisão do autor
-- **Data:** 2026-11-15; revisto em 2026-11-16 (desligada por padrão, interruptor no ensaio, repouso, interação)
+- **Data:** 2026-11-15; revisto em 2026-11-16 (desligada por padrão, interruptor no ensaio, repouso, interação;
+  depois, a mesa e a folha em CSS em todo ensaio)
 - **Escopo:** `src/core/chrome/room.ts`, `src/islands/elements/ft-reading-room.ts`,
   `src/islands/scenes/reading-room.ts`, `src/islands/elements/ft-room-switch.ts`,
   `src/islands/preferences-store.ts`, `src/styles/components/room.css`, `src/views/EssayView.astro`,
@@ -165,6 +166,17 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
     `aria-hidden`, e as obras da estante estão no índice de ensaios e na paleta de comandos, pelo teclado.
     Com movimento reduzido o livro sai num quadro só, e não há paralaxe, corrente de ar nem embaçado.
 
+17. **O ambiente rústico vale para todo leitor; a cena é a versão acesa.** Pedido do autor em 16/11
+    ("aplique o ambiente rústico"), depois de a cena ficar desligada por padrão. Em todo ensaio, o artigo é uma
+    folha de papel no seu suporte de madeira, sobre uma mesa velha, desenhada só com CSS (`room.css`): a mesa é
+    `--room-wood` com um veio de ruído fractal esticado ao longo das tábuas (`--wood-image`, a mesma técnica do
+    grão do papel), e a folha é o `::before` de `.essay`, com os tokens de papel e um aro de `--room-board` dos
+    lados. As colunas laterais de `.page-grid` são iguais e as centrais são tokens, então a folha é centrada e a
+    sua largura é conhecida sem script. Não há download, movimento nem JavaScript; no celular a folha ocupa a
+    tela e a madeira não aparece. A mesa some quando a cena acende (ela traz a sua), no modo de foco, com
+    contraste aumentado, com cores forçadas e na impressão; o veio some também com a textura desligada. A
+    barra de progresso, fixa, saiu de `.essay`, que agora é um contexto de empilhamento.
+
 ## Alternativas consideradas
 
 | Alternativa                                         | Por que não                                                                                                                                                                                                    |
@@ -174,6 +186,7 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
 | Colocar o artigo dentro da cena (textura ou CSS 3D) | Tiraria o texto do fluxo do documento: seleção, busca, leitor de tela, zoom e contraste deixariam de ser garantidos pelo navegador. Contraria a regra do pedido.                                               |
 | Mostrar a sala em qualquer largura                  | Abaixo de 96 px de calha não há onde ela aparecer; o leitor pagaria o download por algo que a folha cobre.                                                                                                     |
 | Materiais e luzes do próprio three.js               | Compilam _shaders_ maiores e trazem o sistema de luzes para o laço de renderização; a cena precisa de uma luz e de nenhuma sombra projetada.                                                                   |
+| A mesa em CSS em todas as páginas                   | Índices, página inicial e conceitos usam a largura toda; madeira atrás deles poria texto sobre a madeira. A sala é a dos ensaios.                                                                              |
 | Sala ligada por padrão (automático)                 | Foi o padrão de 15/11. O autor decidiu em 16/11 que a sala não fica sempre ativa: ela custa download, bateria e atenção a quem não a pediu. O interruptor no ensaio a deixa a um clique.                       |
 | A estante navegável pelo teclado                    | Seria uma segunda navegação, sobre uma cena que o leitor de tela não vê; as mesmas obras já estão no índice de ensaios e na paleta de comandos, com foco visível.                                              |
 | Animação contínua enquanto a sala está acesa        | Gasta bateria e atenção enquanto o leitor lê parado; o repouso (decisão 15) devolve o mesmo quadro sem custo.                                                                                                  |
@@ -211,6 +224,7 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
 | O interruptor aparece só com calha, acende e apaga pelo teclado, e a escolha vale na próxima página                                                        | idem                                   |
 | A sala desacelera e para com o leitor parado, e acorda quando ele se mexe                                                                                  | idem                                   |
 | Numa calha, o livro sob o ponteiro tem nome e o clique abre a obra; sobre a folha, nada responde                                                           | idem                                   |
+| Sem a cena, em todo ensaio, nenhum glifo fica sobre a madeira; modo de foco e contraste aumentado tiram a mesa                                             | idem, um teste por ensaio              |
 | Com a sala ligada, nenhum glifo de nenhum ensaio fica fora da folha                                                                                        | idem, um teste por ensaio              |
 | axe com a sala ligada, tema claro e escuro                                                                                                                 | idem                                   |
 | Movimento reduzido: o _canvas_ não muda; sem ele, muda                                                                                                     | idem                                   |
