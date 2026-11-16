@@ -44,8 +44,10 @@ Medições de 21/10/2026 (`dist/` da branch `fix/html-budgets`): a página mais 
 95,0 KiB; CSS bloqueante máximo 20,7 KiB (com o KaTeX); JavaScript inicial 2,5 KiB em toda página; núcleos
 16,0 + 10,2 + 10,2 KiB. Custo marginal da ontologia: ≈ 1,1 KiB por conceito no mapa e ≈ 0,27 KiB na árvore.
 
-Medições de 15/11/2026: a cena da sala de leitura pesa 135,3 KiB em gzip e o elemento que decide carregá-la,
-3,9 KiB; o maior módulo sob demanda fora ela é `ft-lab-kit`, com 12,7 KiB. O JavaScript inicial não mudou.
+Medições de 16/11/2026: a cena da sala de leitura pesa 136,4 KiB em gzip e o elemento que decide carregá-la,
+5,5 KiB (15/11: 135,3 e 3,9; a diferença é a interação com o ponteiro); o maior módulo sob demanda fora ela é
+`ft-lab-kit`, com 12,7 KiB. O JavaScript inicial não mudou. A sala fica desligada por padrão: quem não a pede
+não baixa nada dela.
 
 ## 2. Acessibilidade
 
@@ -54,7 +56,7 @@ Medições de 15/11/2026: a cena da sala de leitura pesa 135,3 KiB em gzip e o e
 | Conformidade          | WCAG 2.2 nível AA, com contraste de texto AAA                                                                                                                                                 | 0 violações axe (2.0/2.1 A+AA, 2.2 AA)                                                            | `pnpm test:e2e` nas 140 páginas, temas claro e escuro · job `e2e`  |
 | Contraste de texto    | WCAG 1.4.6 (razão de luminância) e APCA (Lc)                                                                                                                                                  | ≥ 7:1 principal, ≥ 4,5:1 sutil; APCA ≥ 75; ≤ 16:1 (sem preto puro)                                | `pnpm verify:palette` (158 verificações) · job `quality`           |
 | Não texto             | WCAG 1.4.11                                                                                                                                                                                   | ≥ 3:1 bordas e foco                                                                               | idem                                                               |
-| Blocos de código      | WCAG 1.4.3 sobre as cores dos temas do Shiki, valores de terceiros que a paleta não cobre (`src/adapters/astro/code.ts`)                                                                      | ≥ 4,5:1 para todo token emitido, nos esquemas claro e escuro                                      | `guardrails/code-contrast` (dez linguagens); axe · job `quality`   |
+| Blocos de código      | Realce tipográfico do site (`src/adapters/astro/code.ts`): só `--ink`, `--ink-muted`, `--paper-sunken` e negrito em palavras reservadas; WCAG 1.4.6                                           | ≥ 7:1 para as duas tintas sobre o papel rebaixado, nos quatro esquemas; nenhuma outra declaração  | `guardrails/code-contrast` (dez linguagens); axe · job `quality`   |
 | Cor nunca sozinha     | WCAG 1.4.1; estratos codificados por forma (k-simplexo), posição e rótulo                                                                                                                     | —                                                                                                 | revisão; e2e (rótulos presentes)                                   |
 | Discromatopsia        | simulação de Machado, Oliveira e Fernandes (2009), severidade 1; distância CIEDE2000                                                                                                          | ΔE₀₀ ≥ 8 entre estratos (≥ 15 visão típica); luminosidade monótona sob acromatopsia               | `pnpm verify:palette`                                              |
 | Teclado               | WCAG 2.1.1, 2.4.1, 2.4.3, 2.4.7; APG para combobox, árvore, diálogo                                                                                                                           | primeiro Tab = link de pular; foco visível ≥ 2 px em cores forçadas                               | e2e `keyboard.spec`, `chrome.spec`                                 |

@@ -119,7 +119,8 @@
   font-size: var(--step-n1);
 }
 .concept-chip__stratum::after {
-  content: ' ·' / '';
+  content: '\a0·';
+  content: '\a0·' / '';
 }
 
 .chip-list {

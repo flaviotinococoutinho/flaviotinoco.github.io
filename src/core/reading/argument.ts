@@ -56,42 +56,73 @@ export const TOULMIN: Readonly<Record<ArgumentKind, ToulminRole | null>> = {
   conclusion: 'claim',
 };
 
-/** One stroke-or-fill path of a glyph, in a 16×16 view box centred on (8, 8). */
+/** One path of a glyph, in a 16×16 view box centred on (8, 8): stroked, filled too, or stroked wider (dots). */
 export interface GlyphPath {
   readonly d: string;
   readonly filled: boolean;
+  /** Stroke width when it differs from the shared one (GLYPH_PAINT). */
+  readonly width?: number;
 }
 export const GLYPH_VIEWBOX = '0 0 16 16';
+
+/** Paint shared by every glyph, set once on its container and inherited by its paths (hast property names). */
+export const GLYPH_PAINT = {
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.5,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+} as const;
 
 /** Id of the SVG <symbol> of a kind in the argument-map sprite (src/components/reading/ArgumentGlyphs.astro). */
 export const glyphSymbolId = (kind: ArgumentKind): `arg-${ArgumentKind}` => `arg-${kind}`;
 
-const CIRCLE = 'M8 2.5a5.5 5.5 0 1 0 0 11a5.5 5.5 0 1 0 0-11Z';
-const SQUARE = 'M3 3h10v10H3Z';
-const DIAMOND = 'M8 1.8 14.2 8 8 14.2 1.8 8Z';
+/** What a path adds to the shared paint (hast property names; the sprite writes them in SVG spelling). */
+export const pathPaint = (p: GlyphPath): { readonly fill?: 'currentColor'; readonly strokeWidth?: number } => ({
+  ...(p.filled ? { fill: 'currentColor' as const } : {}),
+  ...(p.width === undefined ? {} : { strokeWidth: p.width }),
+});
 
 /**
- * Shapes, chosen so that open/filled pairs share a meaning:
- *   question ○ (open: an issue not yet settled)   claim ● (the settled position)
- *   definition □ (a frame)                        proof ■ (Halmos' tombstone ∎)
- *   premise △ (a foundation)                      example ▽ (from the general down to a case)
- *   objection ◇ (a turn against)                  reply ◆ (the turn answered)
- *   application ⬡ (a tool: the hexagonal nut)     conclusion ◎ (the target reached)
+ * Points `size` units across: the dots of ?, ≔, ∵ and ∴. Each is a 0.01-unit segment whose round caps make a
+ * disc as wide as the stroke, the idiom of icon sets for dots (Lucide's "?" is `M12 17h.01`); one path per sign,
+ * however many dots.
+ */
+const dots = (size: number, ...at: readonly (readonly [x: number, y: number])[]): GlyphPath => ({
+  d: at.map(([x, y]) => `M${String(x)} ${String(y)}h.01`).join(''),
+  filled: false,
+  width: size,
+});
+const stroke = (d: string): GlyphPath => ({ d, filled: false });
+
+/**
+ * The marks of the argument roles are the signs of logic and of the mathematical page, not geometric
+ * figures. The site's geometric primitives — the point, the segment, the triangle and the tetrahedron —
+ * are the signs of the four strata (src/components/Glyphs.astro), and an essay shows its stratum and its
+ * argument roles on the same screen: a filled disc for the claim and an outline triangle for the premise
+ * (the previous marks) said "philosophy" and "formal" to a reader who had learnt the bridge. These are
+ * conventional symbols (Peirce's sense) that the site's readers already know, in pairs:
+ *
+ *   premise    ∵ because                 conclusion  ∴ therefore      (the inference, read across)
+ *   claim      ⊢ asserted (Frege 1879)   application ⊨ holds in a model (Tarski: satisfaction in practice)
+ *   objection  ¬ not so                  reply       ¬¬ the objection negated
+ *   question   ? at issue                proof       ∎ settled (Halmos's tombstone)
+ *   definition ≔ is defined as           example     ∈ an instance of the general
+ *
+ * ∵ and ∴ are three points with no edge between them; among the site's marks only the simplices join
+ * points with edges. Strokes are 1.5 units in a 16-unit box with round ends, like the rest of the set.
  */
 export const GLYPHS: Readonly<Record<ArgumentKind, readonly GlyphPath[]>> = {
-  question: [{ d: CIRCLE, filled: false }],
-  definition: [{ d: SQUARE, filled: false }],
-  premise: [{ d: 'M8 2.2 13.8 13H2.2Z', filled: false }],
-  claim: [{ d: CIRCLE, filled: true }],
-  proof: [{ d: SQUARE, filled: true }],
-  example: [{ d: 'M2.2 3h11.6L8 13.8Z', filled: false }],
-  objection: [{ d: DIAMOND, filled: false }],
-  reply: [{ d: DIAMOND, filled: true }],
-  application: [{ d: 'M5 2.6h6l3 5.4-3 5.4H5L2 8Z', filled: false }],
-  conclusion: [
-    { d: CIRCLE, filled: false },
-    { d: 'M8 5.8a2.2 2.2 0 1 0 0 4.4a2.2 2.2 0 1 0 0-4.4Z', filled: true },
-  ],
+  question: [stroke('M5.3 5.4a2.7 2.7 0 1 1 3.8 2.5C8.4 8.3 8 8.9 8 9.9'), dots(2.5, [8, 12.8])],
+  definition: [dots(2.5, [3.4, 5.8], [3.4, 10.2]), stroke('M6.6 5.8h6.9M6.6 10.2h6.9')],
+  premise: [dots(3.3, [3.8, 4.8], [12.2, 4.8], [8, 11.4])],
+  claim: [stroke('M4.2 2.8v10.4M4.2 8h8.8')],
+  proof: [{ d: 'M4.6 2.8h6.8v10.4H4.6Z', filled: true }],
+  example: [stroke('M12.6 3.4H8.4a4.6 4.6 0 0 0 0 9.2h4.2M3.8 8h8.6')],
+  objection: [stroke('M3 6h10v4.6')],
+  reply: [stroke('M1.6 6h5.2v4.6M9.2 6h5.2v4.6')],
+  application: [stroke('M4.2 2.8v10.4M4.2 6.3h8.8M4.2 9.7h8.8')],
+  conclusion: [dots(3.3, [8, 4.6], [3.8, 11.2], [12.2, 11.2])],
 };
 
 /** Identifier of a section (the id of its heading). Pandoc-compatible, Unicode letters allowed. */

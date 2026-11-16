@@ -11,6 +11,8 @@ published: 2026-11-15
 revisions:
   - date: 2026-11-15
     note: Versão inicial, a partir do exemplo do ensaio “O pipeline não cria informação”.
+  - date: 2026-11-16
+    note: As observações falam do indicador em contorno e preenchimento, que substituiu as duas barras.
 epistemic:
   confidence: almost-certain
   evidence: proof
@@ -56,12 +58,12 @@ O laboratório calcula a :concept[informação mútua]{ref=mutual-information} e
 
 O pipeline começa com as três etapas da tabela do ensaio: descartar o pagamento, o período e o valor.
 
-1. Com a pergunta “a loja”, a barra curta não desce em nenhuma etapa: o total por loja é suficiente para saber a loja. A barra longa, a venda inteira, cai a cada etapa.
+1. Com a pergunta “a loja”, o preenchimento não encolhe em nenhuma etapa: o total por loja é suficiente para saber a loja. O contorno, a venda inteira, encolhe a cada etapa.
 2. Troque a pergunta para “a forma de pagamento”. A perda aparece na primeira etapa, marcada com ✕, mas não é total: restam 0,12 bits, porque o valor ainda diz algo sobre como a venda foi paga. Na terceira etapa, quando o valor também sai, não resta nada. O que a extração deixou para trás nenhuma etapa seguinte recupera.
 3. Troque para “o valor”. Nada se perde até a terceira etapa, e ali a informação cai a zero: o pagamento, que dizia algo sobre o valor, já tinha saído na primeira. Com o pipeline reduzido a “descartar o valor”, sobram 0,12 bits sobre o valor, guardados no pagamento.
 4. Volte para “a loja” e acrescente um erro de digitação. Nenhum campo some, a saída tem as mesmas 144 possibilidades, e mesmo assim deixa de ser suficiente: um canal com ruído também é uma etapa que perde.
-5. Acrescente “reformatar” em qualquer ponto. As duas barras ficam iguais: uma etapa reversível é o caso em que a desigualdade vira igualdade.
-6. Tente fazer uma barra subir. Nenhuma combinação de etapas consegue.
+5. Acrescente “reformatar” em qualquer ponto. As duas medidas ficam iguais: uma etapa reversível é o caso em que a desigualdade vira igualdade.
+6. Tente fazer o contorno ou o preenchimento crescer. Nenhuma combinação de etapas consegue.
 
 ## Limites do modelo
 

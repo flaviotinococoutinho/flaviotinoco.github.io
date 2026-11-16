@@ -139,6 +139,40 @@ export const govern = (g: Governor, deltaMs: number): Governor => {
   return g.tier + 1 < ROOM_TIERS.length ? governorAt(g.tier + 1) : { tier: g.tier, ema, slow: 0, exhausted: true };
 };
 
+/**
+ * The pace of the live room, by how long the reader has been still (no scroll, pointer or key):
+ *   full     every frame the rung allows, while the reader moves and a moment after;
+ *   ambient  AMBIENT_FPS, enough for rain and a flame that change slowly;
+ *   rest     no loop at all: the last frame stays on screen until the reader moves again.
+ * Motion in the periphery captures attention whatever the task (Franconeri and Simons, "Moving and looming
+ * stimuli capture attention", Perception & Psychophysics 65(7), 2003): a reader who has settled on a
+ * paragraph gets a room that holds still, and the battery is spared.
+ */
+export type Pace = 'full' | 'ambient' | 'rest';
+export const AMBIENT_AFTER_S = 3;
+export const REST_AFTER_S = 20;
+export const AMBIENT_FPS = 15;
+
+export const pace = (stillSeconds: number): Pace => {
+  if (!(stillSeconds >= 0)) return 'full';
+  if (stillSeconds < AMBIENT_AFTER_S) return 'full';
+  return stillSeconds < REST_AFTER_S ? 'ambient' : 'rest';
+};
+
+/** Milliseconds between two rendered frames at a pace on a rung (rest has none: Infinity). */
+export const paceInterval = (p: Pace, tier: number): number => {
+  switch (p) {
+    case 'full':
+      return frameIntervalOf(tier);
+    case 'ambient':
+      return Math.max(frameIntervalOf(tier), 1000 / AMBIENT_FPS);
+    case 'rest':
+      return Number.POSITIVE_INFINITY;
+    default:
+      return absurd(p);
+  }
+};
+
 /** How quiet the room gets once the reader is one screen into the text. */
 export const CALM_FLOOR = 0.45;
 
@@ -331,3 +365,86 @@ export const gust = (previous: number, pixelsPerSecond: number, seconds: number,
   const target = Math.max(-1, Math.min(1, pixelsPerSecond / viewportHeight));
   return Math.abs(target) > Math.abs(decayed) ? target : decayed;
 };
+
+/* ───────────────────────── The room answers the reader's hand ─────────────────────────
+ * Every response is to the pointer in a gutter, where nothing of the text is: the room answers when the
+ * reader turns to it, and stays out of the way while they read. None of it is needed to read or navigate:
+ * the books on the shelf link to works that the essays index and the command palette also reach.
+ */
+
+/**
+ * Exponential approach of `current` to `target` with time constant `tau` seconds (a first-order low-pass):
+ * after `seconds` the remaining distance is multiplied by e^(−seconds/tau). Never overshoots; total.
+ */
+export const approach = (current: number, target: number, seconds: number, tau: number): number => {
+  if (!Number.isFinite(current)) return Number.isFinite(target) ? target : 0;
+  if (!Number.isFinite(target)) return current;
+  if (!(seconds > 0) || !(tau > 0)) return seconds > 0 ? target : current;
+  return target + (current - target) * Math.exp(-seconds / tau);
+};
+
+/** Largest offset of the eye, in metres of the scene, when the pointer is at the edge of the viewport. */
+export const PARALLAX_X = 0.04;
+export const PARALLAX_Y = 0.025;
+/** Seconds for the eye to cover 63 % of the way to where the pointer asks it to be. */
+export const EYE_TAU = 0.35;
+
+/**
+ * Where the eye moves for a pointer at (ndcX, ndcY), −1…1 from the left and the bottom: a few centimetres,
+ * which is enough for motion parallax (near objects slide against far ones) and too little to carry anything
+ * under the sheet. The camera keeps looking level, so the verticals stay vertical.
+ */
+export const eyeFor = (ndcX: number, ndcY: number): readonly [x: number, y: number] => {
+  const c = (v: number): number => (Number.isFinite(v) ? Math.max(-1, Math.min(1, v)) : 0);
+  return [PARALLAX_X * c(ndcX), PARALLAX_Y * c(ndcY)];
+};
+
+/** Reach of the hand's draught around the flame, in CSS px (the distance at which it falls to 1/e). */
+export const BREATH_REACH_PX = 140;
+
+/**
+ * The draught of a hand moving near the flame, as a horizontal speed in px/s that gust() takes like a
+ * scroll: the pointer's horizontal speed `vx`, weighted by a Gaussian of its distance (dx, dy) from the
+ * flame. Far away it is zero; the sign is the direction the hand moves, which is where the flame leans.
+ */
+export const breath = (dx: number, dy: number, vx: number): number => {
+  if (!Number.isFinite(dx) || !Number.isFinite(dy) || !Number.isFinite(vx)) return 0;
+  const d2 = (dx * dx + dy * dy) / (BREATH_REACH_PX * BREATH_REACH_PX);
+  return vx * Math.exp(-d2);
+};
+
+/** Seconds for wiped glass to fog over again to 1/e. */
+export const REFOG_SECONDS = 6;
+
+/** What is left of a wipe on the glass after `seconds`: the condensation comes back exponentially. */
+export const refog = (wiped: number, seconds: number): number => {
+  const w = Number.isFinite(wiped) ? Math.max(0, Math.min(1, wiped)) : 0;
+  return seconds > 0 && Number.isFinite(seconds) ? w * Math.exp(-seconds / REFOG_SECONDS) : w;
+};
+
+/** A book's title and where it leads; the n-th label belongs to the n-th book of the shelf attribute. */
+export interface ShelfLabel {
+  readonly title: string;
+  readonly href: string;
+}
+
+/** A path of this site: absolute, same origin (no scheme, no "//" host). */
+const isSitePath = (href: unknown): href is string =>
+  typeof href === 'string' && href.startsWith('/') && !href.startsWith('//') && !/[\s\\]/.test(href);
+
+export const encodeShelfLabels = (labels: readonly ShelfLabel[]): string =>
+  JSON.stringify(labels.slice(0, SHELF_MAX).map(({ title, href }) => ({ title, href })));
+
+/**
+ * Lenient and total, and it keeps positions: an entry that is not a label (or leads off the site) becomes
+ * null, so the n-th label still belongs to the n-th book. Law: decode(parse(encode(labels))) = labels for
+ * labels with site paths, up to SHELF_MAX.
+ */
+export const decodeShelfLabels = (json: unknown): readonly (ShelfLabel | null)[] =>
+  Array.isArray(json)
+    ? json.slice(0, SHELF_MAX).map((entry: unknown) => {
+        if (typeof entry !== 'object' || entry === null) return null;
+        const { title, href } = entry as { readonly title?: unknown; readonly href?: unknown };
+        return typeof title === 'string' && title.trim() !== '' && isSitePath(href) ? { title, href } : null;
+      })
+    : [];

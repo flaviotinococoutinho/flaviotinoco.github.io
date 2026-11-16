@@ -27,8 +27,18 @@ import {
 import { expect, settle, test } from './support/fixtures.ts';
 import { ROOT_PAGE, hasNotFoundPage, hasRootPage } from './support/site.ts';
 
+/**
+ * Waits until the shortcuts listen. They live in <ft-palette-trigger>, which the islands registry imports after
+ * the page has loaded (settle() does not wait for it): a key pressed earlier is lost, so Ctrl+K would not open
+ * the palette, and a check that "/" does nothing would pass only because nothing was listening yet.
+ */
+const shortcutsReady = async (page: Page): Promise<void> => {
+  await page.evaluate(() => customElements.whenDefined('ft-palette-trigger'));
+};
+
 /** Opens the palette with Ctrl+K and waits until <ft-command-palette> has upgraded the field. */
 const openPalette = async (page: Page): Promise<void> => {
+  await shortcutsReady(page);
   await page.keyboard.press('Control+k');
   await expect(page.locator(PALETTE_DIALOG)).toHaveAttribute('open', '');
   await expect(page.locator(PALETTE_INPUT)).toBeFocused();
@@ -73,6 +83,7 @@ test.describe('command palette', () => {
     await page.evaluate((key) => localStorage.setItem(key, JSON.stringify({ shortcut: 'off' })), PREFS_STORAGE_KEY);
     await page.reload();
     await settle(page);
+    await shortcutsReady(page);
     await page.keyboard.press('/');
     await expect(page.locator(PALETTE_DIALOG), '"/" is off').not.toHaveAttribute('open', '');
     await openPalette(page);
@@ -84,6 +95,7 @@ test.describe('command palette', () => {
   test('"/" opens the palette, except while typing — also inside a shadow root', async ({ page }) => {
     await page.goto('pt/');
     await settle(page);
+    await shortcutsReady(page);
     await page.evaluate(() => {
       const host = document.createElement('div');
       host.id = 'ft-e2e-shadow';

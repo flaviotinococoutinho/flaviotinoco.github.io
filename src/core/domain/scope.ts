@@ -181,6 +181,54 @@ export const listing = (
   return { role: 'supporting', disciplines: c.tier === 'foundation' ? c.supports : [] };
 };
 
+/**
+ * The work each line of inquiry shows as its most recent, for `works` ordered newest first. A line's candidates
+ * are the works that declare one of its disciplines (`listing`, direct role); a work that declares disciplines of
+ * several lines is a candidate of each, so choosing per line (the newest candidate of every line) repeats works.
+ * This is a maximum bipartite matching instead: no work stands for two lines, and every line that has a candidate
+ * left gets one. Kuhn's augmenting paths (H. W. Kuhn, "The Hungarian method for the assignment problem", Naval
+ * Research Logistics Quarterly 2, 1955): the lines are taken in display order, each trying its candidates newest
+ * first, and a line gives up its pick for an older candidate only when that is the way for a later line to have
+ * one. O(lines × works × lines); there are five lines.
+ */
+export const latestByAxis = <W extends { readonly domains: readonly Domain[] }>(
+  works: readonly W[],
+): Readonly<Record<Axis, W | undefined>> => {
+  const candidates = AXES.map((axis) =>
+    works.flatMap((w, i) => {
+      const l = listing(w.domains);
+      return l.role === 'direct' && l.disciplines.some((d) => AXIS_OF[d] === axis) ? [i] : [];
+    }),
+  );
+  /** Work index → index of the line it stands for. */
+  const owner = new Map<number, number>();
+  const augment = (line: number, seen: Set<number>): boolean => {
+    for (const w of candidates[line] ?? []) {
+      if (seen.has(w)) continue;
+      seen.add(w);
+      const other = owner.get(w);
+      if (other === undefined || augment(other, seen)) {
+        owner.set(w, line);
+        return true;
+      }
+    }
+    return false;
+  };
+  for (let line = 0; line < AXES.length; line++) augment(line, new Set());
+  const out: Record<Axis, W | undefined> = {
+    software: undefined,
+    optimization: undefined,
+    systems: undefined,
+    signals: undefined,
+    philosophy: undefined,
+  };
+  for (const [w, line] of owner) {
+    const axis = AXES[line];
+    if (axis !== undefined) out[axis] = works[w];
+  }
+  return out;
+};
+
 /** Coverage matrix discipline × stratum of a list of items (a fold; every cell present, zeros included). */
 export const coverage = (items: readonly ScopedItem[]): Coverage => {
   const cells = new Map<string, { direct: number; supporting: number }>();

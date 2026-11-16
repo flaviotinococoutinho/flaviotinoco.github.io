@@ -21,6 +21,7 @@ import {
   formatScopeProblem,
   foundationsOf,
   isCoreDomain,
+  latestByAxis,
   listing,
   rowTotal,
   uncovered,
@@ -28,6 +29,7 @@ import {
   type ScopedWork,
 } from '../../../src/core/domain/scope.ts';
 import { STRATA } from '../../../src/core/domain/strata.ts';
+import chrome from '../../../src/core/i18n/catalogs/chrome.ts';
 
 const domain = fc.constantFrom(...DOMAINS);
 const core = fc.constantFrom(...CORE_DOMAINS);
@@ -99,6 +101,79 @@ describe('classification', () => {
   it('has no class for an empty list', () => {
     expect(classify([])).toEqual({ tier: 'none' });
     expect(listing([])).toEqual({ role: 'supporting', disciplines: [] });
+  });
+});
+
+describe('copy that states the size of the vocabulary', () => {
+  /** Cardinal numbers as the catalogues write them (sentence case is checked case-insensitively). */
+  const WORDS = {
+    'pt-BR': ['zero', 'uma', 'duas', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze'],
+    en: ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'],
+  } as const;
+
+  it('says as many disciplines and lines of inquiry as the scope model holds', () => {
+    for (const locale of ['pt-BR', 'en'] as const) {
+      const lede = chrome[locale]['home.axes.lede'].toLowerCase();
+      const word = (n: number): string => WORDS[locale][n] ?? String(n);
+      expect(lede, locale).toContain(`${word(CORE_DOMAINS.length)} `);
+      expect(lede, locale).toContain(` ${word(AXES.length)} `);
+    }
+  });
+});
+
+describe('the most recent work of each line of inquiry', () => {
+  /** Does the work declare a discipline of the line (the candidates of a line)? */
+  const declares = (axis: (typeof AXES)[number], ds: readonly Domain[]): boolean => {
+    const l = listing(ds);
+    return l.role === 'direct' && l.disciplines.some((d) => AXIS_OF[d] === axis);
+  };
+
+  /** Size of a maximum matching lines × works, by exhaustive search (reference for small inputs). */
+  const maximum = (ws: readonly ScopedWork[], line = 0, used: ReadonlySet<number> = new Set()): number => {
+    const axis = AXES[line];
+    if (axis === undefined) return 0;
+    let best = maximum(ws, line + 1, used);
+    ws.forEach((w, i) => {
+      if (!used.has(i) && declares(axis, w.domains))
+        best = Math.max(best, 1 + maximum(ws, line + 1, new Set([...used, i])));
+    });
+    return best;
+  };
+
+  test.prop([fc.array(work, { maxLength: 9 })])(
+    'shows each work at most once, under a line it declares, and leaves no line empty that could have one',
+    (ws) => {
+      const latest = latestByAxis(ws);
+      const picked = AXES.flatMap((a) => {
+        const w = latest[a];
+        return w === undefined ? [] : [w];
+      });
+      expect(new Set(picked).size).toBe(picked.length);
+      for (const axis of AXES) {
+        const w = latest[axis];
+        if (w !== undefined) expect(declares(axis, w.domains)).toBe(true);
+      }
+      expect(picked.length).toBe(maximum(ws));
+    },
+  );
+
+  test.prop([fc.array(work, { maxLength: 20 })])(
+    'is the newest work of every line when no work declares two lines',
+    (ws) => {
+      const single = ws.filter((w) => AXES.filter((a) => declares(a, w.domains)).length <= 1);
+      const latest = latestByAxis(single);
+      for (const axis of AXES) expect(latest[axis]).toBe(single.find((w) => declares(axis, w.domains)));
+    },
+  );
+
+  it('does not repeat a work that declares two lines, nor leave the line that has only it empty', () => {
+    // Newest first: an essay on information systems and applied philosophy, then a lab on data engineering.
+    const record = { domains: ['information-systems', 'applied-philosophy'] as const };
+    const pipeline = { domains: ['data-engineering'] as const };
+    const older = { domains: ['information-systems'] as const };
+    const latest = latestByAxis([record, pipeline, older]);
+    expect(latest.philosophy).toBe(record);
+    expect(latest.systems).toBe(pipeline);
   });
 });
 

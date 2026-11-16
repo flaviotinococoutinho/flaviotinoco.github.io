@@ -192,8 +192,10 @@ ol.scope-list {
   display: inline-block;
   min-block-size: 1.5rem;
 }
-.scope-inline > li + li::before {
-  content: ' · ';
+/* The dot clings to the item before it (no-break space) and the break comes after it (src/core/chrome/runin.ts). */
+.scope-inline > li:not(:last-child)::after {
+  content: '\a0· ';
+  content: '\a0· ' / '';
   color: var(--ink-muted);
 }
 

@@ -220,6 +220,21 @@ diretiva explícita > frontmatter > dicionário:
   gama sRGB, separabilidade CIEDE2000 sob protanopia/deuteranopia/tritanopia e luminosidade monótona sob
   acromatopsia. Cor nunca é o único portador de significado.
 - Textura: ruído fractal discreto (feTurbulence) no fundo; nenhum gradiente linear.
+- Signos: cada dimensão de significado tem um repertório de formas próprio, e nenhum repertório empresta formas
+  de outro. Um signo novo entra num repertório existente ou abre outro, descrito aqui.
+  - Estrato: os simplexos (pontos ligados por arestas, de 0 a 3 dimensões) e as cores `--stratum-*`. São
+    diagramas no sentido de Peirce: a dimensão do simplexo é a ordem do estrato. Só eles usam essas cores.
+  - Papel no argumento (`src/core/reading/argument.ts`): a notação lógica convencional, em pares de opostos ou
+    complementos — premissa ∵ e conclusão ∴, tese ⊢ (Frege, 1879) e aplicação ⊨, objeção ¬ e resposta ¬¬,
+    pergunta ? e prova ∎ (Halmos), definição ≔ e exemplo ∈. São símbolos, valem por convenção, e por isso
+    andam sempre com o rótulo. Os pontos de ∵ e ∴ não se ligam: arestas entre pontos são dos simplexos. Na tinta,
+    nunca na cor de um estrato.
+  - Forma da obra (¶ ensaio, † nota, frasco do laboratório, § conceito, Σ fórmula) e frentes de investigação:
+    pictogramas na tinta, sem cor de estrato.
+  - Interface: setas, chevrons, lupa, engrenagem, os sinais de estado do laboratório (✓, ✕ e traço tracejado).
+  - Cor de matiz só em quatro papéis: estrato, link, foco e marca de realce (`--mark`). O resto (código,
+    gráficos, laboratórios) se distingue por tinta, peso, preenchimento e traço: no código, palavras reservadas
+    em negrito e comentários na tinta secundária (`src/adapters/astro/code.ts`).
 - Memória de leitura: ao voltar a um ensaio, um aviso acima do artigo diz onde o leitor parou e oferece
   continuar dali ou esquecer (`ft-reading-memory`; regras puras em `src/core/reading/memory.ts`). O registro
   fica só no navegador, e a vela da sala de leitura parte dele.
@@ -227,11 +242,15 @@ diretiva explícita > frontmatter > dicionário:
   cartão do site. O cartão é descrito por um modelo puro (`src/core/chrome/card.ts`: estrato com glifo e nome,
   título, descrição, disciplinas, miniatura do laboratório) e rasterizado na compilação por satori e resvg, com
   as cores dos tokens convertidas de OKLCH (`src/core/design/oklch.ts`).
-- Ambiente: nos ensaios, em janelas largas, uma sala de leitura desenhada com three.js ocupa as calhas ao lado
-  da folha (ADR 0014). É uma camada atrás da página: o texto continua sobre os tokens de papel. A decisão de
-  mostrá-la (`off`, `still`, `live`) é uma função pura de `src/core/chrome/room.ts`; o leitor a controla pela
-  preferência `room`. A sala é calculada do site: a estante é o acervo, a obra lida fica sobre a mesa sob o
-  simplexo do seu estrato, e a vela queima com o progresso da leitura.
+- Ambiente: nos ensaios, em janelas largas, uma sala de leitura desenhada com three.js pode ocupar as calhas ao
+  lado da folha (ADR 0014). Fica desligada até o leitor pedir: o botão "Sala de leitura" do cabeçalho do
+  ensaio (`ft-room-switch`, um botão de alternância que só aparece onde a sala cabe) ou a preferência `room`.
+  É uma camada atrás da página: o texto continua sobre os tokens de papel. A decisão de mostrá-la (`off`,
+  `still`, `live`) e o ritmo dela (`full`, `ambient`, `rest`: para quando o leitor para) são funções puras de
+  `src/core/chrome/room.ts`. A sala é calculada do site: a estante é o acervo, a obra lida fica sobre a mesa sob
+  o simplexo do seu estrato, e a vela queima com o progresso da leitura. Responde à mão só nas calhas: o olho
+  acompanha o ponteiro (paralaxe), a chama se inclina com o ar que a mão move, o vidro embaçado se limpa por
+  onde ela passa, e o livro sob o ponteiro sai da estante com o título ao lado; um clique abre a obra.
 
 ## 7. Ilhas (comportamento no cliente)
 
@@ -241,7 +260,7 @@ diretiva explícita > frontmatter > dicionário:
   anuncia resultados relevantes em `aria-live="polite"`.
 - Lógica não trivial (layout de grafo, mapeamentos de rolagem, easing) fica no núcleo e é testada.
 - Uma ilha que precisa de uma biblioteca pesada a importa de `src/islands/scenes/`, com `import()`, depois de
-  decidir que vai usá-la. Hoje há um caso: a cena da sala de leitura (three.js, 135,3 KiB em gzip).
+  decidir que vai usá-la. Hoje há um caso: a cena da sala de leitura (three.js, 136,4 KiB em gzip).
 
 ## 8. Verificações
 

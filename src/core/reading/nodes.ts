@@ -10,7 +10,7 @@
  */
 import type { Position } from 'unist';
 import { GENERATED, type HastChild, type HastElement, type HastProperties, type MdNode } from '../fold/tree.ts';
-import { GLYPHS, GLYPH_VIEWBOX, type ArgumentKind } from './argument.ts';
+import { GLYPHS, GLYPH_PAINT, GLYPH_VIEWBOX, pathPaint, type ArgumentKind } from './argument.ts';
 
 /** Node type of wrappers created by the reading stages (rendered through hName). */
 export const READING_NODE = 'readingElement';
@@ -85,17 +85,13 @@ export const glyphHast = (kind: ArgumentKind, className = 'arg-glyph'): HastElem
     height: 16,
     ariaHidden: 'true',
     focusable: 'false',
+    // Stroke attributes are inherited by every path; a filled path only adds its fill.
+    ...GLYPH_PAINT,
   },
   children: GLYPHS[kind].map((p): HastChild => ({
     type: 'element',
     tagName: 'path',
-    properties: {
-      d: p.d,
-      fill: p.filled ? 'currentColor' : 'none',
-      stroke: 'currentColor',
-      strokeWidth: 1.5,
-      strokeLinejoin: 'round',
-    },
+    properties: { d: p.d, ...pathPaint(p) },
     children: [],
   })),
 });

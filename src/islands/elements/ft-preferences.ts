@@ -28,7 +28,9 @@
  * Other code can react through the `ft:prefs-change` event dispatched on
  * document (detail: the Preferences object). The always-loaded islands
  * (<ft-palette-trigger>, <ft-depth-scene>) observe the data-* attributes on
- * <html> instead, so they never download the preference model.
+ * <html> instead, so they never download the preference model. Reading,
+ * writing and applying live in src/islands/preferences-store.ts, shared with
+ * <ft-room-switch>; a change made there is mirrored here through the event.
  *
  * Announcements come from the server catalog (no UI text here, no formatter
  * shipped): each option carries its sentence ("Tema: Escuro."), set on the
@@ -38,44 +40,14 @@ import {
   DEFAULT_PREFERENCES,
   PREFS_CHANGE_EVENT,
   PREFS_STORAGE_KEY,
-  decodePreferences,
-  encodePreferences,
-  isDefault,
   isPreferenceKey,
   isPreferenceValue,
-  preferenceAttributes,
-  withPreference,
   type Preferences,
 } from '../../core/chrome/preferences.ts';
 import { decodePreferencesForm, type PreferenceGroup } from '../../core/chrome/preferences-form.ts';
+import { applyPreferences, readPreferences, setPreference, writePreferences } from '../preferences-store.ts';
 
 const TAG = 'ft-preferences';
-
-const read = (): Preferences => {
-  try {
-    return decodePreferences(window.localStorage.getItem(PREFS_STORAGE_KEY));
-  } catch {
-    return DEFAULT_PREFERENCES; // storage blocked (privacy mode, sandboxed frame)
-  }
-};
-
-const write = (prefs: Preferences): void => {
-  try {
-    if (isDefault(prefs)) window.localStorage.removeItem(PREFS_STORAGE_KEY);
-    else window.localStorage.setItem(PREFS_STORAGE_KEY, encodePreferences(prefs));
-  } catch {
-    // Not persisted, but still applied for this page view.
-  }
-};
-
-const apply = (prefs: Preferences): void => {
-  const root = document.documentElement;
-  for (const [name, value] of preferenceAttributes(prefs)) {
-    if (value === null) root.removeAttribute(name);
-    else root.setAttribute(name, value);
-  }
-  document.dispatchEvent(new CustomEvent<Preferences>(PREFS_CHANGE_EVENT, { detail: prefs }));
-};
 
 /** One radio group of the form (fieldset + legend + options + optional hint), built with DOM APIs only. */
 const buildGroup = (group: PreferenceGroup): HTMLFieldSetElement => {
@@ -126,8 +98,8 @@ class FtPreferences extends HTMLElement {
     this.#abort = new AbortController();
     const { signal } = this.#abort;
 
-    this.#prefs = read();
-    apply(this.#prefs);
+    this.#prefs = readPreferences();
+    applyPreferences(this.#prefs);
     void this.#build(form);
 
     form.addEventListener(
@@ -137,9 +109,7 @@ class FtPreferences extends HTMLElement {
         if (!(input instanceof HTMLInputElement) || input.type !== 'radio' || !input.checked) return;
         const key = input.dataset['key'];
         if (!isPreferenceKey(key) || !isPreferenceValue(key, input.value)) return;
-        this.#prefs = withPreference(this.#prefs, key, input.value as never);
-        write(this.#prefs);
-        apply(this.#prefs);
+        this.#prefs = setPreference(key, input.value as never);
         this.#announce(input.dataset['announce'] ?? '');
       },
       { signal },
@@ -151,8 +121,8 @@ class FtPreferences extends HTMLElement {
       'click',
       () => {
         this.#prefs = DEFAULT_PREFERENCES;
-        write(this.#prefs);
-        apply(this.#prefs);
+        writePreferences(this.#prefs);
+        applyPreferences(this.#prefs);
         this.#sync(form);
         this.#announce(reset.dataset['announce'] ?? '');
       },
@@ -163,8 +133,18 @@ class FtPreferences extends HTMLElement {
       'storage',
       (event) => {
         if (event.key !== PREFS_STORAGE_KEY && event.key !== null) return;
-        this.#prefs = read();
-        apply(this.#prefs);
+        this.#prefs = readPreferences();
+        applyPreferences(this.#prefs);
+        this.#sync(form);
+      },
+      { signal },
+    );
+    // A change made by another control on this page (the room switch of an essay).
+    document.addEventListener(
+      PREFS_CHANGE_EVENT,
+      (event) => {
+        if (!(event instanceof CustomEvent)) return;
+        this.#prefs = event.detail as Preferences;
         this.#sync(form);
       },
       { signal },

@@ -23,7 +23,7 @@ export default defineMessages({
     'lab.widget': 'Laboratório interativo',
     'lab.theorem': 'Resultado',
     'index.lede':
-      'Seis laboratórios tornam tangíveis resultados de sinais, informação, dinâmica e probabilidade: mova um controle e veja a matemática responder. Os cálculos rodam no navegador, em WebAssembly; sem JavaScript, cada página continua legível como texto.',
+      'Cada laboratório torna tangível um resultado, nomeado no seu cartão: mova um controle e veja a matemática responder. Os cálculos rodam no navegador, em WebAssembly; sem JavaScript, cada página continua legível como texto.',
     'index.empty': 'Nenhum laboratório publicado ainda.',
 
     'unit.hz': '{value} Hz',
@@ -247,7 +247,7 @@ export default defineMessages({
     'pipeline.hint': 'Troque a pergunta e veja se a saída ainda a responde.',
     'pipeline.chain': 'O que cada etapa ainda diz sobre a fonte',
     'pipeline.chain.note':
-      'A barra longa é a informação mútua com a venda inteira; a curta, com a pergunta. As duas só descem ou ficam: é a desigualdade do processamento de dados.',
+      'O contorno é a informação mútua com a venda inteira; o preenchimento, com a pergunta, e nunca passa do contorno. As duas só descem ou ficam: é a desigualdade do processamento de dados.',
     'pipeline.row.source': 'Fonte: a venda inteira',
     'pipeline.row.stage': 'Etapa {n}: {stage}',
     'pipeline.row.sale': 'sobre a venda: {value}',
@@ -284,7 +284,7 @@ export default defineMessages({
     'lab.widget': 'Interactive lab',
     'lab.theorem': 'Result',
     'index.lede':
-      'Six labs make results from signals, information, dynamics and probability tangible: move a control and watch the mathematics respond. The computations run in the browser, in WebAssembly; without JavaScript, every page still reads as text.',
+      'Each lab makes one result tangible, named on its card: move a control and watch the mathematics respond. The computations run in the browser, in WebAssembly; without JavaScript, every page still reads as text.',
     'index.empty': 'No lab has been published yet.',
 
     'unit.hz': '{value} Hz',
@@ -507,7 +507,7 @@ export default defineMessages({
     'pipeline.hint': 'Change the question and see whether the output still answers it.',
     'pipeline.chain': 'What each stage still says about the source',
     'pipeline.chain.note':
-      'The long bar is the mutual information with the whole sale; the short one, with the question. Both only fall or stay: this is the data processing inequality.',
+      'The outline is the mutual information with the whole sale; the fill, with the question, and it never passes the outline. Both only fall or stay: this is the data processing inequality.',
     'pipeline.row.source': 'Source: the whole sale',
     'pipeline.row.stage': 'Stage {n}: {stage}',
     'pipeline.row.sale': 'about the sale: {value}',

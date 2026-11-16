@@ -59,6 +59,32 @@ ft-reading-room {
   background-size: 256px 256px;
 }
 
+/* The title of the book under the pointer, beside it and inside its gutter (the island keeps it off the
+   sheet). A slip of paper: the same tokens as the page, never a colour of the room. */
+.room__label {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  margin: 0;
+  padding: var(--space-n3) var(--space-n2);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background-color: var(--paper-raised);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+  inline-size: max-content;
+  pointer-events: none;
+}
+.room__label[hidden] {
+  display: none;
+}
+/* A book that opens a work: the hand says so. */
+:root[data-room-point] {
+  cursor: pointer;
+}
+
 /* The scene arrives after the page: it fades in once, and only where motion is welcome. */
 @keyframes room-in {
   from {
@@ -76,6 +102,62 @@ ft-reading-room {
 }
 @media print {
   ft-reading-room {
+    display: none;
+  }
+}
+
+/*
+ * The switch on the essay page (<ft-room-switch>): a toggle button whose candle is lit when the room is.
+ * The state is the pictogram (a flame or none) and aria-pressed, never a colour alone.
+ */
+.room-switch {
+  display: block;
+  margin-block-start: var(--space-n1);
+}
+.room-switch[hidden] {
+  display: none;
+}
+.room-switch__button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-n2);
+  min-block-size: 1.5rem;
+  padding: var(--space-n3) var(--space-n1);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background-color: var(--paper);
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+  cursor: pointer;
+}
+.room-switch__button[aria-pressed='true'] {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.room-switch__button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.room-switch__candle {
+  inline-size: 1em;
+  block-size: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.room-switch__flame {
+  visibility: hidden;
+}
+.room-switch__button[aria-pressed='true'] .room-switch__flame {
+  visibility: visible;
+  fill: currentColor;
+}
+@media print {
+  .room-switch {
     display: none;
   }
 }

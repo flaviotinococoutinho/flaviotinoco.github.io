@@ -29,8 +29,8 @@ próprio frontmatter.
   nada é baixado sem calha, com economia de dados, contraste aumentado ou renderizador por software; com
   movimento reduzido fica um quadro. A sala é calculada do site: a estante é o acervo (uma lombada por ensaio,
   um caderno por laboratório, cor do estrato), a obra lida fica sobre a mesa sob o simplexo do seu estrato, a
-  vela queima com o progresso da leitura e a chuva cede no fim. Preferência `room` (automática, ligada,
-  desligada) no painel; tokens `--room-*`; dependência `three` 0.187.0, isolada num módulo sob demanda.
+  vela queima com o progresso da leitura e a chuva cede no fim. Preferência `room` (desligada por padrão,
+  automática, ligada) no painel; tokens `--room-*`; dependência `three` 0.187.0, isolada num módulo sob demanda.
 - Laboratório `pipeline` ("O pipeline"): um pipeline de ETL de até seis etapas sobre uma distribuição exata de
   144 vendas; depois de cada etapa, a informação mútua com a venda inteira e com uma pergunta escolhida pelo
   leitor, calculada por `information.wasm`, e a etapa em que a pergunta deixa de ser respondida
@@ -57,9 +57,22 @@ próprio frontmatter.
   aproximação, complexidade essencial e acidental, camadas de ritmo, gramática visual, registro de decisão
   arquitetural e lei de Conway), cinco fichas de fórmula com versão em palavras e 23 referências primárias
   verificadas em `bibliography/main.bib`, além do ensaio `A segunda flag`.
+- Sala de leitura interativa ([ADR 0014](docs/adr/0014-sala-de-leitura.md), decisões 15 e 16): para quando o
+  leitor para (todos os quadros enquanto ele se mexe, 15 por segundo até 20 s, depois um quadro parado, `pace`
+  em `src/core/chrome/room.ts`) e responde à mão nas calhas: o olho acompanha o ponteiro (paralaxe), a chama se
+  inclina com o ar da mão, o vidro embaçado se limpa por onde ela passa, e o livro sob o ponteiro sai da
+  estante com o título ao lado; um clique abre a obra. Títulos e endereços em `/<lang>/shelf.json`, da mesma
+  lista que o atributo `shelf` (`src/adapters/astro/shelf.ts`), baixados só depois que a sala acende.
 
 ### Alterado
 
+- Sala de leitura desligada por padrão (a preferência `room` passa a `off` | `auto` | `on`, com `off` por
+  padrão): nada dela é baixado até o leitor pedir. O pedido mais perto é o botão "Sala de leitura" no
+  cabeçalho do ensaio (`ft-room-switch`, botão de alternância com `aria-pressed`), que só aparece onde a sala
+  cabe e grava a mesma preferência do painel. Quem havia escolhido "ligada" continua com a sala.
+- Preferências: ler, gravar e aplicar ficam num armazenamento compartilhado (`src/islands/preferences-store.ts`)
+  que relê o que está guardado antes de mudar uma chave, para que o painel e o botão da sala não se
+  sobrescrevam; o painel espelha mudanças feitas por outro controle da página.
 - Faceta de domínio: `technology` passa a `information-technology`; entram `software-architecture`,
   `systems-design`, `systems-optimization` e `data-engineering`; quatro ensaios e treze conceitos foram
   reclassificados (sem mudança de prosa; a revisão está registrada em cada ensaio).
@@ -74,18 +87,45 @@ próprio frontmatter.
   software e computação ([plano de 10/11/2026](docs/planos/2026-11-10-foco-em-engenharia-de-software.md)).
 - Léxico: `flag` e `statechart` em `lexicon/estrangeirismos.tsv`; vocabulários fechados dos testes de
   conteúdo com os conceitos e as chaves bibliográficas de estado e autômatos.
+- Signos do papel argumentativo (`src/core/reading/argument.ts`): círculos, quadrados e losangos davam lugar a
+  confusão com os simplexos dos estratos (o ponto da Filosofia lia-se como "pergunta"); passam à notação
+  lógica, em pares: premissa ∵ e conclusão ∴, tese ⊢ e aplicação ⊨, objeção ¬ e resposta ¬¬, pergunta ? e
+  prova ∎, definição ≔ e exemplo ∈. A gramática dos signos do site fica escrita em
+  [docs/arquitetura.md](docs/arquitetura.md) §6.
+- Blocos de código: um tema do próprio site no lugar dos temas do GitHub, cujos azuis, roxos, laranjas e
+  verdes competiam com as cores reservadas (um azul lia-se como link, um laranja como o estrato de valor) e cujo
+  fundo branco ou quase preto abria um buraco no papel. O realce passa a ser tipográfico, como nas linguagens de
+  publicação (ALGOL 60, WEB): palavras reservadas em negrito (só palavras, nunca `=` ou `=>`), comentários na
+  tinta secundária, o resto na tinta do texto, sobre o papel rebaixado (`src/adapters/astro/code.ts`). Um tema
+  só serve aos quatro esquemas de cor; as cores forçadas mantêm o negrito.
+- Laboratório "O pipeline": as duas barras de cada etapa (uma delas na cor dos links) passam a um indicador só,
+  contorno e preenchimento; o preenchimento, a pergunta, nunca passa do contorno, a venda inteira, o que é a
+  própria desigualdade do processamento de dados.
+- Página inicial: a obra "mais recente" de cada frente passa a vir de um emparelhamento máximo entre frentes e
+  obras (algoritmo de caminhos aumentantes de Kuhn, `latestByAxis` em `src/core/domain/scope.ts`): uma obra com
+  disciplinas de duas frentes aparece numa só ("Flags e estados" e "O pipeline" apareciam duas vezes cada), e
+  nenhuma frente que tem obras fica vazia. Obras do mesmo dia se ordenam pela chave de tradução, e não pelo
+  título traduzido, para que as duas línguas mostrem as mesmas obras.
+- Índice dos laboratórios: a abertura não diz mais quantos são nem de que áreas ("Seis laboratórios… de sinais,
+  informação, dinâmica e probabilidade" já eram oito, de mais áreas); cada cartão nomeia o seu resultado. A
+  abertura das frentes ("Onze disciplinas em cinco frentes") ganhou teste contra o modelo de escopo.
 
 ### Corrigido
 
+- Separadores "·" nas linhas de metadados (ensaio, cartões, listas de disciplinas, laboratório do pipeline): o
+  ponto ficava antes do item seguinte e abria a linha quando ela quebrava, lido como marcador de lista; agora
+  fica preso ao item anterior por um espaço não separável, e a quebra vem depois dele
+  (`src/core/chrome/runin.ts`, `::after` no CSS). A seta da dica das passagens horizontais não fica mais sozinha
+  numa linha.
 - Laboratórios: o campo de texto pede o teclado numérico só quando o alfabeto é de dígitos; o histórico de eventos
   de "Flags e estados" e as etapas de "O pipeline" são letras, que o teclado numérico do celular não digita.
 - Mapa do argumento aberto (`ArgumentMap.astro`, `ft-argument-map.ts`): removido o elemento `<title>` redundante
   dentro dos nós SVG cujo `aria-label` já nomeia o tipo e a seção, evitando concatenação duplicada do texto
   visível na auditoria do critério 2.5.3 da WCAG 2.2 (`label-content-name-mismatch`).
 - Contraste dos blocos de código (WCAG 2.2, critério 1.4.3): os temas `github-light` e `github-dark` do Shiki
-  desenhavam variáveis a 3,49:1 e comentários a 3,05:1; os temas passam a ser `github-light-default` e
-  `github-dark-default` (`src/adapters/astro/code.ts`), e o teste de guarda
-  `tests/unit/guardrails/code-contrast.test.ts` mede toda cor emitida em dez linguagens, nos dois esquemas.
+  desenhavam variáveis a 3,49:1 e comentários a 3,05:1. Os blocos passam ao tema tipográfico do site (em
+  "Alterado"), com as duas tintas a 7:1 ou mais nos quatro esquemas; o teste de guarda
+  `tests/unit/guardrails/code-contrast.test.ts` verifica dez linguagens.
 - Build na Hostinger sem `cargo`: módulos WebAssembly versionados, com validação de integridade e das fontes
   antes de compilar o site e o índice de busca ([ADR 0012](docs/adr/0012-hostinger-build.md)).
 - Validação portátil dos artefatos WASM: tamanho original e SHA-256 atestam integridade; o tamanho gzip é
