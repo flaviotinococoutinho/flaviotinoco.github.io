@@ -176,8 +176,7 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
     as posições e recusa endereços fora do site. Nada disso é necessário para ler ou navegar: a sala continua
     `aria-hidden`, e as obras da estante estão no índice de ensaios e na paleta de comandos, pelo teclado.
     Com movimento reduzido o livro sai num quadro só, e não há paralaxe, corrente de ar nem embaçado. No toque
-    não existe "passar sobre": por isso o nome vem antes da navegação, e um toque errado na faixa, perto do
-    cabeçalho, não leva o leitor para outra obra.
+    não existe "passar sobre": por isso o nome vem antes da navegação, e um toque errado na faixa, perto do cabeçalho, não leva o leitor para outra obra. Pela mesma razão o olho não acompanha o dedo: se acompanhasse, a estante deslizaria sob ele entre o toque que nomeia e o que abre.
 
 17. **O ambiente rústico vale para todo leitor; a cena é a versão acesa.** Pedido do autor em 16/11
     ("aplique o ambiente rústico"), depois de a cena ficar desligada por padrão. Em todo ensaio, o artigo é uma

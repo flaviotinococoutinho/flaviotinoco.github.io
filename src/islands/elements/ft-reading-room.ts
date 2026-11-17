@@ -181,8 +181,12 @@ class FtReadingRoom extends HTMLElement {
   /** When the reader last scrolled, pointed or typed (performance.now()), and the pace that follows. */
   #input = 0;
   #pace: Pace = 'full';
-  /** The pointer when it is over a gutter (CSS px), its horizontal speed (px/s) and when it last moved. */
-  #pointer: { readonly x: number; readonly y: number } | null = null;
+  /**
+   * The pointer when it is over the room (CSS px), its horizontal speed (px/s) and when it last moved; `hovers`
+   * is false for a finger, which only touches: the eye does not follow a tap, or the shelf would slide under
+   * the finger between the tap that names a book and the tap that opens it.
+   */
+  #pointer: { readonly x: number; readonly y: number; readonly hovers: boolean } | null = null;
   #pointerVx = 0;
   #pointerAt = 0;
   /** The eye's offset (motion parallax), smoothed towards eyeFor(pointer). */
@@ -351,7 +355,7 @@ class FtReadingRoom extends HTMLElement {
     const before = this.#pointer;
     this.#pointerVx =
       before !== null && now > this.#pointerAt ? ((event.clientX - before.x) / (now - this.#pointerAt)) * 1000 : 0;
-    this.#pointer = { x: event.clientX, y: event.clientY };
+    this.#pointer = { x: event.clientX, y: event.clientY, hovers: event.pointerType !== 'touch' };
     this.#pointerAt = now;
     const book = room.pointAt(event.clientX, event.clientY, this.#mode === 'live');
     this.#hoverTo(this.#labels[book] ? book : -1);
@@ -697,11 +701,14 @@ class FtReadingRoom extends HTMLElement {
     return Math.abs(hand) > Math.abs(scrollVelocity) ? hand : scrollVelocity;
   }
 
-  /** The eye follows the pointer over the room and comes back to its place without it; a pointed book comes out. */
+  /**
+   * The eye follows a hovering pointer over the room and comes back to its place without it; a pointed book
+   * comes out.
+   */
   #ease(dt: number): void {
     const p = this.#pointer;
     const [tx, ty] =
-      p === null ? [0, 0] : eyeFor((p.x / window.innerWidth) * 2 - 1, 1 - (p.y / window.innerHeight) * 2);
+      p === null || !p.hovers ? [0, 0] : eyeFor((p.x / window.innerWidth) * 2 - 1, 1 - (p.y / window.innerHeight) * 2);
     this.#eye = [approach(this.#eye[0], tx, dt, EYE_TAU), approach(this.#eye[1], ty, dt, EYE_TAU)];
     // One book out at a time: the last one goes back before the next comes out.
     if (this.#hover !== this.#pulled && this.#pull < 0.02) this.#pulled = this.#hover;
