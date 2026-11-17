@@ -43,7 +43,7 @@ confiança do que se tem é preferível a declarar mais.
 
 ## 3. Proveniência e uso de inteligência artificial
 
-O frontmatter declara **quem produziu o texto** — e o leitor vê essa declaração:
+O frontmatter pode declarar **quem produziu o texto**; quando declara, o leitor vê a declaração:
 
 ```yaml
 provenance:
@@ -57,6 +57,9 @@ provenance:
 - `generated`: o texto foi gerado por IA a partir de instruções do autor.
 - `reviewed: false` significa que o autor ainda não conferiu o texto; texto gerado por IA e não revisado é rotulado
   como tal para o leitor (`src/content.config.ts`, campo `provenance`).
+
+Declarar é decisão do autor: o campo é opcional. Em 16/11/2026 o autor retirou a declaração das obras publicadas
+até então. Quando uma obra declara assistência ou revisão pendente, a nota é obrigatória (teste de conteúdo).
 
 Regras: nunca atribuir a uma fonte algo que a IA “resumiu” sem conferir a fonte; toda citação direta é conferida no
 original; tradução feita por IA é tradução do autor para efeito de responsabilidade (“tradução nossa”) e deve ser

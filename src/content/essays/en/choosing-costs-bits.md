@@ -31,10 +31,6 @@ abstract: >-
   users as a measurable abuse, and concludes that value, in this narrow sense, is a reduction of uncertainty for
   someone at some cost, and that deciding who pays that cost is an ethical question rather than a technical one.
 keywords: [Hick–Hyman law, Huffman coding, entropy, interface design, decision]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Seed text drafted with AI assistance (Claude) as a demonstration of the template; awaiting review by the author.
 draft: false
 ---
 

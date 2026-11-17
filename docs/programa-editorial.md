@@ -127,9 +127,9 @@ Um ensaio que trate de uma dessas decisões cita o ADR; o ADR passa a citar o en
 
 ## 7. Regras de proveniência
 
-Todo texto declara estatuto epistêmico e proveniência ([guia editorial](guia-editorial.md) §2–3). Os
-textos-semente atuais estão marcados como não revisados pelo autor; nada neste programa muda esse rótulo: só
-a revisão do autor o muda. Os nove textos-semente (três ensaios e seis laboratórios, de 11/10/2026) mantêm a
-data e a nota combinadas, conferidas por teste; um texto publicado depois declara a própria data e a própria
-proveniência, e segue o contrato geral (resumo, palavras-chave, conceitos, primeira revisão no dia da
-publicação, nota de proveniência sempre que houver assistência ou faltar revisão).
+Todo texto declara estatuto epistêmico ([guia editorial](guia-editorial.md) §2); a proveniência é declarada
+quando o autor decide (§3). Em 16/11/2026 o autor retirou a declaração de proveniência das obras publicadas até
+então. Os nove textos-semente (três ensaios e seis laboratórios, de 11/10/2026) mantêm a data combinada,
+conferida por teste; um texto publicado depois declara a própria data e segue o contrato geral (resumo,
+palavras-chave, conceitos, primeira revisão no dia da publicação e, se declarar assistência ou revisão
+pendente, a nota de proveniência).

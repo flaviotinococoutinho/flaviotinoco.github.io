@@ -28,10 +28,6 @@ abstract: >-
   numéricas do expoente convergem devagar perto das bifurcações e o mapa é um modelo deliberadamente
   simplificado de populações com gerações separadas, útil para pensar, não para prever.
 keywords: [mapa logístico, caos determinístico, bifurcação, constante de Feigenbaum, expoente de Lyapunov]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Texto-semente redigido com assistência de IA (Claude) como demonstração do modelo; aguarda revisão do autor.
 draft: false
 kernel: dynamics
 widget: logistic

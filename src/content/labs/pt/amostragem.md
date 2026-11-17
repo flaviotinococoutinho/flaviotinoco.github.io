@@ -28,10 +28,6 @@ abstract: >-
   para que componentes fora da faixa não se dobrem sobre as que interessam. O ensaio correspondente discute a
   história repartida do resultado e o sentido em que ele é determinístico.
 keywords: [amostragem, aliasing, teorema de Nyquist–Shannon, interpolação]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Texto-semente redigido com assistência de IA (Claude) como demonstração do modelo; aguarda revisão do autor.
 draft: false
 kernel: signal
 widget: sampling

@@ -31,10 +31,6 @@ abstract: >-
   registros de decisão arquitetural (ADRs) preservam as restrições invisíveis no código-fonte e discute objeções
   contra a abstração prematura. Conclui que arquitetura é ética da manutenção: decidir quem pagará a próxima mudança.
 keywords: [arquitetura de software, ocultação de informação, camadas de ritmo, complexidade essencial, ADR]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Redigido com assistência de IA (Gemini) segundo o programa editorial do site; fontes primárias e paginações conferidas em 13 de novembro de 2026; aguarda revisão do autor.
 draft: false
 ---
 

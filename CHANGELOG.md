@@ -66,6 +66,15 @@ próprio frontmatter.
 
 ### Alterado
 
+- Ambiente rústico em todo ensaio ([ADR 0014](docs/adr/0014-sala-de-leitura.md), decisão 17): o artigo é uma
+  folha de papel no seu suporte de madeira, sobre uma mesa velha, só com CSS (`room.css`, `--wood-image` em
+  `texture.css`): sem script, sem download, sem movimento. A sala em 3D continua a versão acesa, pelo botão do
+  ensaio. A mesa some com a cena acesa, no modo de foco, com contraste aumentado, com cores forçadas e na
+  impressão.
+- Proveniência das obras: por decisão do autor, os ensaios e laboratórios publicados até 16/11/2026 deixam de
+  declarar o uso de IA. O campo `provenance` passa a opcional (`src/content.config.ts`); o contrato editorial
+  (`tests/unit/content/syntax.test.ts`) exige a nota só de quem declarar; guia e programa editoriais, "Sobre" e
+  "Colofão" acompanham.
 - Sala de leitura desligada por padrão (a preferência `room` passa a `off` | `auto` | `on`, com `off` por
   padrão): nada dela é baixado até o leitor pedir. O pedido mais perto é o botão "Sala de leitura" no
   cabeçalho do ensaio (`ft-room-switch`, botão de alternância com `aria-pressed`), que só aparece onde a sala

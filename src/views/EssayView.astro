@@ -120,8 +120,9 @@ const IDS = {
     labels={asset(`${localeCodec.encode(locale)}/shelf.json`)}
     data-eager
   ></ft-reading-room>
+  {/* Fixed hairline: outside .essay, which is a stacking context (the desk of room.css). */}
+  <ReadingProgress target={IDS.article} />
   <div class="page-grid essay" data-stratum={data.stratum}>
-    <ReadingProgress target={IDS.article} />
     <header class="essay__header">
       <p class="essay__stratum">
         <span class="visually-hidden">{t('essay.stratum')}:</span>

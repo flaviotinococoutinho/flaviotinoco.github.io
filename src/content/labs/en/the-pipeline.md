@@ -29,10 +29,6 @@ abstract: >-
   the limits of the model: the distribution is made up, the stages are few, and a join with another source is
   left out, because it breaks the chain.
 keywords: [ETL, data processing inequality, mutual information, sufficient statistic]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Drafted with AI assistance (Claude) on 15 November 2026, from the example and the sources of the essay “No pipeline creates information”; awaiting review by the author.
 draft: false
 kernel: information
 widget: pipeline

@@ -207,8 +207,9 @@ Em `file.data.astro.frontmatter` (chega à página como `remarkPluginFrontmatter
 Cabeçalho: marca do estrato (simplexo + rótulo + cor do estrato), título, subtítulo, a passagem da ponte
 ("Passagem de Filosofia para Teoria"), datas (`<time datetime>`), tempo de leitura e palavras. Depois, o
 **estado epistêmico** — a palavra estimativa de Kent (1964) numa escala ordinal de seis posições (forma: losango
-cheio na posição; texto: a palavra e a faixa de probabilidade) e o tipo de evidência — e, quando houver
-assistência de IA ou faltar a revisão do autor, o **aviso de procedência**. Resumo e palavras-chave segundo a
+cheio na posição; texto: a palavra e a faixa de probabilidade) e o tipo de evidência — e, quando a obra declara
+assistência de IA ou revisão pendente (declaração opcional, [guia editorial](guia-editorial.md) §3), o **aviso de
+procedência**. Resumo e palavras-chave segundo a
 ABNT NBR 6028:2021, 4.1.7 ("Palavras-chave: a; b; c."). O texto (`<article class="prose" lang>`), o histórico de
 revisões (`<details>`), os conceitos discutidos e "Próximo na ponte" (ensaios e laboratórios do estrato seguinte)
 fecham a página.

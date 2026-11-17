@@ -33,10 +33,6 @@ abstract: >-
   possíveis, um receptor capaz de distingui-las e uma distribuição de probabilidades atribuída por alguém, isto
   é, um modelo. Esse pressuposto é a ponte para o estrato teórico.
 keywords: [signo, informação, entropia, significado, semiótica]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Texto-semente redigido com assistência de IA (Claude) como demonstração do modelo; aguarda revisão do autor.
 draft: false
 ---
 

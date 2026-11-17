@@ -77,8 +77,9 @@ const work = z.object({
   /** Palavras-chave / keywords (NBR 6028: separated by semicolons when rendered). */
   keywords: z.array(z.string().min(1)).default([]),
   /**
-   * Provenance (editorial ethics): who/what produced the text and whether the
-   * author has reviewed it. Shown to readers; unreviewed AI-generated text is labelled.
+   * Provenance (docs/guia-editorial.md §3): who or what produced the text and whether the author has reviewed
+   * it, shown to readers when declared. Optional: the author decides whether a work declares it (on 2026-11-16
+   * the author withdrew it from the works published until then).
    */
   provenance: z
     .object({
@@ -86,7 +87,8 @@ const work = z.object({
       reviewed: z.boolean(),
       note: z.string().optional(),
     })
-    .strict(),
+    .strict()
+    .optional(),
   /** Per-document overrides of the automatic lexicon marking (precedence: directive > frontmatter > dictionary). */
   lexicon: z
     .object({

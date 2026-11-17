@@ -31,10 +31,6 @@ abstract: >-
   records (ADRs) preserve constraints that code alone cannot express, weighs objections against speculative
   indirection, and concludes that architecture is maintenance ethics: deciding who pays for the next change.
 keywords: [software architecture, information hiding, pace layering, essential complexity, ADR]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Drafted with AI assistance (Gemini) under the site's editorial programme; primary sources and locators verified on 13 November 2026; awaiting review by the author.
 draft: false
 ---
 

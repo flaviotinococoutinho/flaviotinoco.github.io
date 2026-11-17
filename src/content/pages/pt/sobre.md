@@ -11,6 +11,8 @@ revisions:
     note: Foco declarado em engenharia de software e computação; quarto ensaio.
   - date: 2026-11-13
     note: Sete ensaios distribuídos pelos quatro estratos; frentes em otimização e sistemas de informação.
+  - date: 2026-11-16
+    note: Retirada a declaração de proveniência das obras, por decisão do autor.
 ---
 
 :::aside
@@ -47,9 +49,9 @@ Não é preciso ler em ordem. Os ensaios são escritos para permitir vários per
 - **Figuras que acompanham a rolagem.** Algumas sequências avançam conforme a página rola, e outras atravessam a página na horizontal; sem JavaScript, ou com movimento reduzido, continuam legíveis passo a passo, sem animação.
 - **Conceitos ligados.** Termos técnicos levam a páginas de conceito, organizadas como uma pequena ontologia — no sentido de Gruber, a especificação de um vocabulário representacional para um domínio de discurso compartilhado [@gruber1993]. Cada item do site é localizado por facetas independentes (estrato, forma, domínio, conceitos), como na classificação facetada de Ranganathan [@ranganathan1933], e a proximidade entre conceitos é estimada com medidas baseadas em conteúdo informacional [@resnik1995; @lin1998; @seco2004].
 
-## Status epistêmico e proveniência
+## Status epistêmico
 
-Cada ensaio e laboratório declara quão seguro está o autor e em que tipo de apoio suas afirmações se baseiam. A confiança usa a escala de expressões de probabilidade proposta por Sherman Kent, em que “provável” corresponde a cerca de 75 %, com margem de 12 pontos para mais ou para menos [@kent1964]; o tipo de apoio é prova, evidência empírica, argumento ou especulação. Cada texto também informa sua proveniência: se foi escrito sem assistência, com assistência ou gerado com ajuda de IA, e se o autor já o revisou. Os textos publicados até aqui foram gerados com assistência de IA e estão marcados como não revisados até que o autor os revise.
+Cada ensaio e laboratório declara quão seguro está o autor e em que tipo de apoio suas afirmações se baseiam. A confiança usa a escala de expressões de probabilidade proposta por Sherman Kent, em que “provável” corresponde a cerca de 75 %, com margem de 12 pontos para mais ou para menos [@kent1964]; o tipo de apoio é prova, evidência empírica, argumento ou especulação.
 
 Os ensaios existem em português e em inglês. As duas versões foram escritas para soar naturais em cada língua, não traduzidas palavra por palavra; por isso podem diferir em detalhes de formulação. As citações seguem, em português, as normas da Associação Brasileira de Normas Técnicas (ABNT) e, em inglês, o estilo da :foreign[American Psychological Association]{lang=en} (APA); detalhes estão no [colofão](../colofao/).
 

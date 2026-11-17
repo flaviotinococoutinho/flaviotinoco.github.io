@@ -30,10 +30,6 @@ abstract: >-
   custo de decisão contra o usuário como abuso mensurável e conclui que valor, neste sentido, é redução de
   incerteza para alguém, a algum custo, e que decidir quem paga esse custo é uma questão ética, não técnica.
 keywords: [lei de Hick–Hyman, código de Huffman, entropia, interface, decisão]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Texto-semente redigido com assistência de IA (Claude) como demonstração do modelo; aguarda revisão do autor.
 draft: false
 ---
 

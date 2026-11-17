@@ -31,10 +31,6 @@ abstract: >-
   concludes that sampling means deciding twice: which frequencies matter, and how much one is willing to pay,
   in numbers per second, to keep them.
 keywords: [sampling, Fourier transform, aliasing, Nyquist–Shannon theorem, signals]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Seed text drafted with AI assistance (Claude) as a demonstration of the template; awaiting review by the author.
 draft: false
 ---
 

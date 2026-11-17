@@ -28,10 +28,6 @@ abstract: >-
   exist without saying how to build them efficiently; real errors often come in bursts rather than
   independently; and the error probability has to be known.
 keywords: [channel capacity, binary symmetric channel, noise, Shannon's theorem]
-provenance:
-  assistance: generated
-  reviewed: false
-  note: Seed text drafted with AI assistance (Claude) as a demonstration of the template; awaiting review by the author.
 draft: false
 kernel: information
 widget: channel
