@@ -259,9 +259,9 @@ test.describe('reading room: lighting it moves nothing', () => {
         const title = await page.locator('.essay__title').evaluate((el) => el.getBoundingClientRect().top);
         return [p.left, p.right, p.top, title];
       };
-      // One page per preference (an init script runs again on every load of its page).
+      // One page per preference (an init script runs again on every load of its page). Unlit: the automatic
+      // default, which the test browser's software renderer refuses.
       const unlitPage = await context.newPage();
-      await withPreference(unlitPage, 'off');
       await unlitPage.goto(path);
       await settle(unlitPage);
       const unlit = await where(unlitPage);
@@ -449,8 +449,11 @@ test.describe('reading room: rest and the hand', () => {
 
   test('in a gutter the book under the pointer is named and opens its work; over the sheet nothing answers', async ({
     page,
+    guard,
   }) => {
     test.setTimeout(90_000);
+    // The same aborted view transition as in the phone test (it reproduces on main, without the room).
+    guard.allow(/Transition was aborted because of invalid state\. ViewTransition opt-in disabled/);
     await withPreference(page, 'on');
     await page.goto(essay);
     await expect(page.locator('html')).toHaveAttribute('data-scene', 'live', { timeout: 20_000 });
@@ -498,7 +501,7 @@ test.describe('reading room without the scene: the desk', () => {
 
   for (const { path } of essays) {
     test(`every glyph on the paper, none on the wood: /${path}`, async ({ page }) => {
-      await withPreference(page, 'off');
+      // The automatic default: the software renderer of the test browser refuses the scene.
       await page.goto(path);
       await settle(page);
       const d = await paper(page);
@@ -511,7 +514,6 @@ test.describe('reading room without the scene: the desk', () => {
   }
 
   test('nothing decorative in focus mode or with more contrast: no desk, no band', async ({ page }) => {
-    await withPreference(page, 'off');
     await page.goto(sample[0]?.path ?? '');
     await settle(page);
     for (const attribute of [
@@ -525,5 +527,14 @@ test.describe('reading room without the scene: the desk', () => {
       await page.evaluate(([name]) => document.documentElement.removeAttribute(name), attribute);
     }
     expect((await paper(page)).drawn).toBe(true);
+  });
+
+  test('the room turned off: the desk stays, the band goes', async ({ page }) => {
+    await withPreference(page, 'off');
+    await page.goto(sample[0]?.path ?? '');
+    await settle(page);
+    const d = await paper(page);
+    expect(d.drawn, 'the desk is still there').toBe(true);
+    expect(d.headroom, 'no band above the sheet').toBe('0px');
   });
 });
