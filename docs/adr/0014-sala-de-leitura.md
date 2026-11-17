@@ -197,7 +197,7 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
     - **Onde.** Todo ensaio reserva, entre o cabeçalho e a folha, uma faixa (`--room-headroom`:
       `clamp(var(--space-4), 14svh, var(--space-4) + var(--space-2))`, de 110 a 152 px, cerca de um sétimo da
       altura da tela). A folha é o `::before` de `.essay`, em fluxo, recuada da faixa; o texto começa abaixo
-      dela. A faixa existe com e sem a cena: sem a cena é mesa, com a cena é a sala. Por isso acender a sala
+      dela. A faixa existe com e sem a cena: sem a cena é mesa, com a cena é a sala. Ela só não existe quando a sala nunca vai acender, o que se sabe antes da primeira pintura: a preferência desligada, ou economia de dados sem pedido. Por isso acender a sala
       não desloca nada (testado: a folha e o título ficam no mesmo lugar) e a folha não precisa mais ser uma cópia
       desenhada pela camada fixa. No modo de foco, com contraste aumentado, com cores forçadas e na impressão a
       faixa é zero e o ensaio é a página de antes.

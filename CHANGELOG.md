@@ -124,6 +124,14 @@ próprio frontmatter.
 
 ### Corrigido
 
+- Ritmo das páginas: toda página começa à mesma distância do cabeçalho (`--space-3`) e termina à mesma
+  distância do rodapé (`--space-4`), numa regra só de `layout.css`; antes o laboratório, a ontologia, as
+  fórmulas e o glossário começavam colados ao cabeçalho e o escopo a 42 px.
+- Transição entre páginas: respeita também a escolha de movimento reduzido do painel (a duração é escalada por
+  `--motion`), e não só a do sistema.
+- Sala de leitura: com a sala desligada no painel, ou com economia de dados sem pedido, o ensaio não reserva a
+  faixa acima da folha (só empurraria o texto); a mesa continua.
+
 - Separadores "·" nas linhas de metadados (ensaio, cartões, listas de disciplinas, laboratório do pipeline): o
   ponto ficava antes do item seguinte e abria a linha quando ela quebrava, lido como marcador de lista; agora
   fica preso ao item anterior por um espaço não separável, e a quebra vem depois dele
