@@ -76,8 +76,8 @@ importers:
         specifier: ^2.6.2
         version: 2.6.2
       '@retorquere/bibtex-parser':
-        specifier: ^11.0.0
-        version: 11.0.0
+        specifier: ^13.0.11
+        version: 13.0.11
       '@types/hast':
         specifier: ^3.0.5
         version: 3.0.5
@@ -803,8 +803,8 @@ packages:
     resolution: {integrity: sha512-xBaJish5OeGmniDj9cW5PRa/PtmuVU3ziqrbr5xJj901ZDN4TosrVaNZpEiLZAxdfnhAe7uQ7QFWfjPe9d9K2Q==}
     engines: {node: '>= 10'}
 
-  '@retorquere/bibtex-parser@11.0.0':
-    resolution: {integrity: sha512-8R6nkZajW0tfW+bOAQ50s2NxKhN9RA/GFXH1L39OpLK3c0ewW6fbZzYfDpi2gZjP3B0XPIdJJLjcjncft/PgIQ==}
+  '@retorquere/bibtex-parser@13.0.11':
+    resolution: {integrity: sha512-DwBqXMyH+132Ep3N8b4N+Jgr5HiRLmGikGEcFy8dTf+0IAv7HEqavr1OYMDegOUCub5+/g20OrZKpiIYktZuXQ==}
 
   '@rolldown/binding-android-arm-eabi@1.2.16':
     resolution: {integrity: sha512-ia3DwAs0OsMGS7+IConptSiyk9pEXkOx/AbJ2n/lAGxH3QkWQus1t8d7gnAT38FCU2sQu8lUbeR6AiZFv4JxaA==}
@@ -2761,8 +2761,8 @@ packages:
   unicode-trie@2.0.0:
     resolution: {integrity: sha512-x7bc76x0bm4prf1VLg79uhAzKw8DVboClSN5VxJuQ+LKDOVEW9CdH+VY7SP+vX7xCYQqzzgQpFqz15zeLvAtZQ==}
 
-  unicode2latex@7.0.35:
-    resolution: {integrity: sha512-MeIzmlykRkSuc+AsDDH17Iii4dEzCGRg5AnZ5XsVPLNRaD7cSti5LzUo4oNWaUtqmryGFqzPKY2QPO33IRwMtw==}
+  unicode2latex@7.0.38:
+    resolution: {integrity: sha512-PIpuGOESQul1e7Gk1D9D/N20f0KR7Tt3hsnJE+b4xbNIB73pmu2wpFSetyBD3VkDgrJ/uK40F7fuvaFAIuTpAA==}
 
   unified@10.1.2:
     resolution: {integrity: sha512-pUSWAi/RAnVy1Pif2kAoeWNBa3JVrx0MId2LASj8G+7AiHWoKZNTomq6LG326T68U7/e263X6fTdcXIy7XnF7Q==}
@@ -3780,7 +3780,7 @@ snapshots:
       '@resvg/resvg-js-win32-ia32-msvc': 2.6.2
       '@resvg/resvg-js-win32-x64-msvc': 2.6.2
 
-  '@retorquere/bibtex-parser@11.0.0':
+  '@retorquere/bibtex-parser@13.0.11':
     dependencies:
       '@unified-latex/unified-latex-util-pegjs': 1.8.4
       '@unified-latex/unified-latex-util-print-raw': 1.8.4
@@ -3790,7 +3790,7 @@ snapshots:
       lodash.merge: 4.6.2
       moo: 0.5.3
       nearley: 2.20.1
-      unicode2latex: 7.0.35
+      unicode2latex: 7.0.38
       wink-eng-lite-web-model: 1.8.1
       wink-nlp: 2.4.0
 
@@ -6355,7 +6355,7 @@ snapshots:
       pako: 0.2.9
       tiny-inflate: 1.0.3
 
-  unicode2latex@7.0.35:
+  unicode2latex@7.0.38:
     dependencies:
       '@pomgui/deep': 3.0.4
       just-permutations: 2.2.1
