@@ -26,9 +26,10 @@ deployed to GitHub Pages as a project site under `/flaviotinoco.github.io/`.
 - `tests/unit/**` (Vitest + fast-check), `tests/e2e/**` (Playwright + axe on the built site).
 - Folder patterns: parser `unknown → Result`, codec `decode ∘ encode = id`, transform, fold, compiler, formatter.
 - Shell code (adapters, islands, views, scripts) may do I/O and fail loudly; the core returns `Result`.
-- Reading room (ADR 0014): a decorative three.js scene in the gutters of the essay pages, behind an opaque
-  sheet that carries the text. `src/core/chrome/room.ts` decides off / still / live before anything is
-  downloaded; `three` is imported only by `src/islands/scenes/reading-room.ts` and has its own budget.
+- Reading room (ADR 0014): a decorative three.js scene behind the essay pages, seen where the opaque sheet that
+  carries the text is not — the band above it on every screen, the gutters on wide ones. `src/core/chrome/room.ts`
+  decides off / still / live before anything is downloaded; `three` is imported only by
+  `src/islands/scenes/reading-room.ts` and has its own budget.
 - Scope (ADR 0013): the `domains` facet is closed and two-tiered — eleven core disciplines and eleven
   foundations (`src/core/domain/facets.ts`, rules in `src/core/domain/scope.ts`). Every essay declares at least
   one core discipline (the content schema rejects it otherwise); both locales of a work declare the same

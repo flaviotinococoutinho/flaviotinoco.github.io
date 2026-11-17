@@ -242,16 +242,19 @@ diretiva explícita > frontmatter > dicionário:
   cartão do site. O cartão é descrito por um modelo puro (`src/core/chrome/card.ts`: estrato com glifo e nome,
   título, descrição, disciplinas, miniatura do laboratório) e rasterizado na compilação por satori e resvg, com
   as cores dos tokens convertidas de OKLCH (`src/core/design/oklch.ts`).
-- Ambiente: em todo ensaio o artigo é uma folha de papel no suporte de madeira, sobre uma mesa velha, desenhada
-  só com CSS (ADR 0014, decisão 17; some no modo de foco, com contraste aumentado e na impressão). Em janelas
-  largas, uma sala de leitura desenhada com three.js pode ocupar as calhas ao lado da folha (ADR 0014). Fica desligada até o leitor pedir: o botão "Sala de leitura" do cabeçalho do
-  ensaio (`ft-room-switch`, um botão de alternância que só aparece onde a sala cabe) ou a preferência `room`.
-  É uma camada atrás da página: o texto continua sobre os tokens de papel. A decisão de mostrá-la (`off`,
-  `still`, `live`) e o ritmo dela (`full`, `ambient`, `rest`: para quando o leitor para) são funções puras de
-  `src/core/chrome/room.ts`. A sala é calculada do site: a estante é o acervo, a obra lida fica sobre a mesa sob
-  o simplexo do seu estrato, e a vela queima com o progresso da leitura. Responde à mão só nas calhas: o olho
-  acompanha o ponteiro (paralaxe), a chama se inclina com o ar que a mão move, o vidro embaçado se limpa por
-  onde ela passa, e o livro sob o ponteiro sai da estante com o título ao lado; um clique abre a obra.
+- Ambiente: em todo ensaio o artigo é uma folha de papel no suporte de madeira, sobre uma mesa velha, com uma
+  faixa de mesa entre o cabeçalho e a folha, desenhada só com CSS (ADR 0014, decisões 17 e 18; some no modo de
+  foco, com contraste aumentado e na impressão). Onde o aparelho dá conta, uma sala de leitura desenhada com
+  three.js aparece onde a folha não está: na faixa, em qualquer tela, e nas calhas, nas telas largas
+  (ADR 0014). É automática por padrão e se desliga na preferência `room`, no painel. É uma camada atrás da
+  página: o texto continua sobre os tokens de papel, e acender a sala não move nada. A decisão de mostrá-la
+  (`off`, `still`, `live`), o palco (`gutters` ou `band`), as regiões desenhadas, a deriva da rolagem e o ritmo
+  (`full`, `ambient`, `rest`: para quando o leitor para) são funções puras de `src/core/chrome/room.ts`. A sala
+  é calculada do site: a estante é o acervo, a obra lida fica sobre a mesa sob o simplexo do seu estrato, e a
+  vela queima com o progresso da leitura. Responde à mão só onde está à vista: o olho acompanha o ponteiro
+  (paralaxe), a chama se inclina com o ar que a mão move, o vidro embaçado se limpa por onde ela passa, e o
+  livro sob o ponteiro sai da estante com o título ao lado; um clique abre a obra (no toque, o primeiro toque
+  nomeia e o segundo abre).
 
 ## 7. Ilhas (comportamento no cliente)
 
@@ -261,7 +264,7 @@ diretiva explícita > frontmatter > dicionário:
   anuncia resultados relevantes em `aria-live="polite"`.
 - Lógica não trivial (layout de grafo, mapeamentos de rolagem, easing) fica no núcleo e é testada.
 - Uma ilha que precisa de uma biblioteca pesada a importa de `src/islands/scenes/`, com `import()`, depois de
-  decidir que vai usá-la. Hoje há um caso: a cena da sala de leitura (three.js, 136,4 KiB em gzip).
+  decidir que vai usá-la. Hoje há um caso: a cena da sala de leitura (three.js, 137,2 KiB em gzip).
 
 ## 8. Verificações
 

@@ -1,6 +1,6 @@
 /**
  * The reader's preferences in storage and on <html> — one place for every island that changes them
- * (<ft-preferences>, the panel; <ft-room-switch>, the switch of the reading room on the essay pages).
+ * (today <ft-preferences>, the panel).
  *
  * Storage is the single source of truth (PREFS_STORAGE_KEY, canonical JSON from the pure codec in
  * src/core/chrome/preferences.ts). A change reads storage first and changes one key, so two controls never
