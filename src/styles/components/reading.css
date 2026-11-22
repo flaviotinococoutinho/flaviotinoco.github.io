@@ -582,7 +582,12 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
 }
 .prose .toc__item {
   display: grid;
-  grid-template-columns: [kind] 8.5em [title] minmax(0, max-content) [time] minmax(var(--space-2), 1fr);
+  /* The kind and the time never get less than their own width (WCAG 1.4.12: wider spacing must not overflow);
+     the title takes what is left, and wraps. */
+  grid-template-columns: [kind] minmax(max-content, 8.5em) [title] minmax(0, max-content) [time] minmax(
+      max-content,
+      1fr
+    );
   align-items: baseline;
   column-gap: var(--space-n2);
   margin-block: var(--space-n3) 0;
@@ -635,7 +640,7 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
 /* Narrow contents: the kind becomes an eyebrow above its title, as on the section headings. */
 @container (inline-size < 34rem) {
   .prose .toc__item {
-    grid-template-columns: [title] minmax(0, max-content) [time] minmax(var(--space-1), 1fr);
+    grid-template-columns: [title] minmax(0, max-content) [time] minmax(max-content, 1fr);
     margin-block-start: var(--space-n2);
   }
   .toc__kind {
