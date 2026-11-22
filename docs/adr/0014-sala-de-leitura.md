@@ -3,16 +3,20 @@
 - **Estado:** Aceito; a composição e as cores aguardam revisão do autor
 - **Data:** 2026-11-15; revisto em 2026-11-16 (desligada por padrão, interruptor no ensaio, repouso, interação;
   depois, a mesa e a folha em CSS em todo ensaio; por fim, automática por padrão, controle só no painel e a
-  sala em todas as telas, na faixa acima da folha: decisão 18)
+  sala em todas as telas, na faixa acima da folha: decisão 18) e em 2026-11-22 (o som da sala: decisão 19)
 - **Escopo:** `src/core/chrome/room.ts`, `src/islands/elements/ft-reading-room.ts`,
   `src/islands/scenes/reading-room.ts`,
   `src/islands/preferences-store.ts`, `src/styles/components/room.css`, `src/views/EssayView.astro`,
   `src/adapters/astro/shelf.ts`, `src/pages/[lang]/shelf.json.ts`, `src/core/chrome/preferences.ts`,
   `src/core/design/tokens.json`, `scripts/lib/budgets.ts`, `tests/unit/chrome/room.test.ts`,
-  `tests/e2e/room.spec.ts`
+  `tests/e2e/room.spec.ts`; o som (decisão 19): `src/core/chrome/sound.ts`, `src/core/chrome/sound-synth.ts`,
+  `src/islands/elements/ft-room-sound.ts`, `src/islands/scenes/room-sound.ts`, `src/islands/sound-store.ts`,
+  `src/islands/elements/ft-preferences.ts`, `src/core/chrome/preferences-form.ts`,
+  `tests/unit/chrome/sound.test.ts`, `tests/e2e/sound.spec.ts`
 - **Relacionados:** ADR 0001 (núcleo funcional), ADR 0004 (cor verificável), ADR 0009 (moldura sob demanda);
   [requisitos não funcionais](../requisitos-nao-funcionais.md) §1 e §2;
-  [plano de 15/11/2026](../planos/2026-11-15-sala-de-leitura.md)
+  [plano de 15/11/2026](../planos/2026-11-15-sala-de-leitura.md);
+  [plano de 22/11/2026](../planos/2026-11-22-som-da-sala.md)
 
 ## Contexto
 
@@ -220,6 +224,59 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
       sai da tela. Com movimento reduzido, nada desliza: a paralaxe de rolagem é a mais clássica causa de
       desconforto vestibular (WCAG 2.2, critério 2.3.3), e o quadro único fica parado até a rolagem acabar.
 
+19. **O som da sala.** Pedido do autor em 22/11: um som de ambiente, no espírito do ASMR, com o gerador
+    "Medieval Library" do myNoise (S. Pigeon, 2020) como exemplo.
+
+    - **O quê.** Cinco camadas, as da sala deste site: chuva no vidro, fogo, vento, páginas e a pena de um
+      copista. Nada é gravado nem baixado: as amostras são calculadas no navegador a partir de uma semente
+      (`src/core/chrome/sound-synth.ts`, puro e testado): camas em laço (ruído rosa pelo filtro de Kellet, ruído
+      marrom por integração com vazamento, emendadas por _crossfade_ de potência constante) e oito variantes de
+      cada evento curto (gota, estalo, traço da pena, página). O motor (`src/islands/scenes/room-sound.ts`)
+      monta o grafo Web Audio: filtros por camada (a chuva entre 0,5 e 6,5 kHz, o fogo abaixo de 380 Hz com o
+      brilho oscilando, o vento numa banda que vagueia, a pena acima de 2,2 kHz), a posição estéreo pela planta
+      da sala (janela e vela à direita, a mesa do copista e a estante à esquerda, as páginas do ensaio em frente)
+      e um compressor no fim, para que a mistura cheia não sature.
+    - **Do myNoise, e onde difere.** Vêm do myNoise a camada por controle, as predefinições (lá "The Quiet
+      Room", "The Fireplace", "Paperwork"…; aqui Sala quieta, Chuva, Fogo e Copista) e a animação lenta dos
+      níveis (o modo "Soft"). Difere em que o myNoise usa gravações de campo, de uso pessoal; aqui a síntese
+      cabe nos orçamentos, não tem licença a respeitar e varia com a semente. É menos realista que uma gravação.
+    - **A sala comanda o som.** As mesmas funções que desenham a sala (`src/core/chrome/room.ts`): a chuva cede
+      quando o ensaio acaba (`rainfall` → `rainShare`, até 30 % no fim, nunca o silêncio), o vento cresce com a
+      corrente de ar da rolagem (`gust` → `windShare`, e a banda sobe de 300 para 600 Hz), e uma página vira
+      quando o leitor entra numa seção (um `h2` do artigo cruza o terço de cima da tela, descendo ou voltando),
+      no máximo uma por gesto (`PAGE_GAP_S`, 4 s): uma rolagem rápida por cinco seções vira uma página.
+    - **Eventos.** Gotas e estalos são processos de Poisson (intervalos exponenciais; 24 gotas por segundo com
+      chuva plena, 2,2 estalos); a pena é uma cadeia de Markov da escrita (traços numa palavra, palavras numa
+      linha, pausas mais longas a cada nível); um livro da estante tem a página virada a cada dois minutos, em
+      média. Um temporizador de 100 ms agenda no relógio do áudio, com 0,3 s de antecedência (C. Wilson, "A
+      Tale of Two Clocks", 2013); se ele atrasar, os eventos perdidos não saem todos de uma vez.
+    - **Níveis.** De 0 a 10 por camada, 3 dB por degrau (30 dB de faixa, passos que soam iguais; Stevens,
+      1957), vezes uma calibração por camada. Cada nível oscila ±20 % num período próprio, de 29 a 83 s, todos
+      primos, para que as camadas nunca se movam juntas e o ouvido não se habitue (Thompson e Spencer, 1966).
+      Toda mudança desliza (`setTargetAtTime`), sem estalo. Medido no Chromium, RMS na saída: Sala quieta
+      ≈ −29 dBFS, Chuva ≈ −24, Fogo ≈ −23, Copista entre −36 e −27 (a pena é esparsa); tudo no máximo,
+      −15 dBFS, com pico de −3,9.
+    - **Só com o gesto do leitor.** Preferência `sound`, desligada por padrão. O som começa no primeiro gesto
+      do leitor na página (clique, toque ou tecla) e nunca sozinho. As duas condições são exigidas: um evento
+      confiável visto nesta página, e a permissão do navegador (`navigator.userActivation`). A permissão do
+      navegador sozinha não basta, porque ele pode trazer a ativação da página anterior, e o ensaio soaria ao
+      carregar. O navegador dos testes faz exatamente isso, e o teste exige silêncio mesmo assim. Escolher um
+      som no painel é um gesto, então o som começa na hora. Com a aba oculta, esmaece e suspende; ao sair da
+      página, fecha. WCAG 1.4.2: o painel tem o desligar e o volume de cada camada.
+    - **O painel.** O grupo "Som da sala" tem as seis escolhas e, abaixo, "Camadas", que só aparece com um som
+      escolhido: um `input type="range"` nativo por camada, em pé (`writing-mode`). O alvo tem 24 px ou mais
+      de largura (WCAG 2.5.8), e um clique na trilha muda o nível sem arrastar (2.5.7). Os controles mostram
+      o que toca. Mover um torna a mistura do leitor: a escolha passa a `custom`, a mistura é guardada em
+      `ft:sound-mix`, e o som acompanha enquanto o controle se move. "Restaurar" esquece a mistura.
+    - **Custo.** Sem som escolhido, nenhum `AudioContext` é criado e o motor não é baixado (testado). A ilha
+      `ft-room-sound` só observa a preferência, mas carrega em todo ensaio: 1,8 KiB em gzip, mais 1,9 KiB de
+      um pedaço que divide com o painel (a mistura e o modelo das preferências). Com som, o motor (2,7 KiB) é
+      buscado em ocioso. As amostras (1,7 MiB de `Float32`; camas a 16 kHz, filtradas abaixo de 6,5 kHz;
+      eventos a 24 kHz) são calculadas em cinco etapas, uma tarefa cada, depois do quadro seguinte ao clique.
+      Calculadas de uma vez, levavam 74 ms a frio num núcleo de desktop (40 ms aquecido) e cairiam inteiras
+      na latência do clique (INP); em etapas, nenhuma tarefa longa (> 50 ms) aparece depois do clique no
+      Chromium. O painel cresce 0,9 KiB (de 7,0 para 7,9 KiB em gzip).
+
 ## Alternativas consideradas
 
 | Alternativa                                           | Por que não                                                                                                                                                                                                                                          |
@@ -234,6 +291,10 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
 | Sala desligada por padrão, com interruptor no ensaio  | Foi o padrão da manhã de 16/11. O autor pediu depois que a sala apareça sempre, discretamente, e que o controle fique só no menu: um botão no cabeçalho de cada ensaio competia com o título. O custo de quem não quer a sala é um clique no painel. |
 | A estante navegável pelo teclado                      | Seria uma segunda navegação, sobre uma cena que o leitor de tela não vê; as mesmas obras já estão no índice de ensaios e na paleta de comandos, com foco visível.                                                                                    |
 | Animação contínua enquanto a sala está acesa          | Gasta bateria e atenção enquanto o leitor lê parado; o repouso (decisão 15) devolve o mesmo quadro sem custo.                                                                                                                                        |
+| Som gravado, como no myNoise                          | Dezenas a centenas de KiB por camada, uma licença a respeitar (o myNoise é de uso pessoal) e laços que se repetem iguais. A síntese não baixa nada e varia com a semente; perde em realismo.                                                         |
+| Um `<audio>` em laço por camada                       | Sem mistura fina, sem ligação ao estado da sala (a chuva que cede, a página que vira) e com emendas audíveis no laço; o Web Audio dá as duas coisas sem arquivo.                                                                                     |
+| Síntese contínua num `AudioWorklet`                   | Gastaria processador o tempo todo para gerar ruído que se repete bem em laço; amostras calculadas uma vez bastam, e o grafo nativo faz os filtros.                                                                                                   |
+| Som ligado ao carregar quando o navegador permite     | Daria continuidade entre ensaios (o navegador traz a ativação de um clique na página anterior), mas o ensaio soaria sem um gesto nele. O consentimento previsível venceu; fica como pendência.                                                       |
 
 ## Consequências
 
@@ -259,25 +320,33 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
     renderização por software (SwiftShader, quatro núcleos, 1920 × 1080), o navegador entregou de 17 a 21
     quadros por segundo; é o pior caso, e é o que o modo automático recusa.
   - A leitura do progresso para a vela e a chuva é a do artigo inteiro, incluídas as referências.
+  - O som para a cada troca de página (o site não é uma aplicação de página única) e só volta no primeiro gesto
+    da página seguinte; quem só rola a página com o dedo não faz gesto (rolar não ativa a página), e o som
+    espera um toque. A dica do painel diz isso.
+  - O som pode atrapalhar leitores de tela; a dica do painel avisa, e ele vem desligado.
+  - A calibração dos níveis foi feita por RMS medido, não por loudness ponderada (LUFS, ITU-R BS.1770) nem por
+    audição em fones: o ambiente de desenvolvimento não tem saída de áudio.
 
 ## Verificação
 
-| O quê                                                                                                                                                                                                | Onde                                   |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| Modo, qualidade, governador, calma, cintilação, calhas, estante, vela, chuva; ritmo, olho, corrente de ar da mão, embaçado, rótulos da estante; faixa, palco, regiões, deriva da rolagem (50 testes) | `tests/unit/chrome/room.test.ts`       |
-| Automática por padrão, e recusada no renderizador por software; preferência desligada ou modo de foco nunca pedem o pedaço da cena                                                                   | `tests/e2e/room.spec.ts`               |
-| Acender a sala não move a folha nem o título                                                                                                                                                         | idem                                   |
-| No celular a sala é a faixa: acesa, acima da folha, sem texto nela; um toque nomeia o livro e o segundo abre a obra; sem a faixa na tela, nenhum quadro                                              | idem                                   |
-| A sala desacelera e para com o leitor parado, e acorda quando ele se mexe                                                                                                                            | idem                                   |
-| Numa calha, o livro sob o ponteiro tem nome e o clique abre a obra; sobre a folha, nada responde                                                                                                     | idem                                   |
-| Sem a cena, em todo ensaio, nenhum glifo fica sobre a madeira nem na faixa; modo de foco e contraste aumentado tiram a mesa e a faixa                                                                | idem, um teste por ensaio              |
-| Com a sala ligada, nenhum glifo de nenhum ensaio fica fora da folha nem acima dela                                                                                                                   | idem, um teste por ensaio              |
-| axe com a sala ligada, tema claro e escuro                                                                                                                                                           | idem                                   |
-| Movimento reduzido: o _canvas_ não muda; sem ele, muda                                                                                                                                               | idem                                   |
-| A vela é um relógio: no meio do artigo o quadro é outro, e depois não muda mais                                                                                                                      | idem                                   |
-| Desligar a preferência remove a camada e devolve o fundo da página                                                                                                                                   | idem                                   |
-| Tokens da sala dentro do gamut sRGB                                                                                                                                                                  | `pnpm verify:palette`                  |
-| Teto de peso por módulo e da cena                                                                                                                                                                    | `pnpm check:budgets`; testes de guarda |
+| O quê                                                                                                                                                                                                                                                                                                                       | Onde                                   |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| Modo, qualidade, governador, calma, cintilação, calhas, estante, vela, chuva; ritmo, olho, corrente de ar da mão, embaçado, rótulos da estante; faixa, palco, regiões, deriva da rolagem (50 testes)                                                                                                                        | `tests/unit/chrome/room.test.ts`       |
+| Automática por padrão, e recusada no renderizador por software; preferência desligada ou modo de foco nunca pedem o pedaço da cena                                                                                                                                                                                          | `tests/e2e/room.spec.ts`               |
+| Acender a sala não move a folha nem o título                                                                                                                                                                                                                                                                                | idem                                   |
+| No celular a sala é a faixa: acesa, acima da folha, sem texto nela; um toque nomeia o livro e o segundo abre a obra; sem a faixa na tela, nenhum quadro                                                                                                                                                                     | idem                                   |
+| A sala desacelera e para com o leitor parado, e acorda quando ele se mexe                                                                                                                                                                                                                                                   | idem                                   |
+| Numa calha, o livro sob o ponteiro tem nome e o clique abre a obra; sobre a folha, nada responde                                                                                                                                                                                                                            | idem                                   |
+| Sem a cena, em todo ensaio, nenhum glifo fica sobre a madeira nem na faixa; modo de foco e contraste aumentado tiram a mesa e a faixa                                                                                                                                                                                       | idem, um teste por ensaio              |
+| Com a sala ligada, nenhum glifo de nenhum ensaio fica fora da folha nem acima dela                                                                                                                                                                                                                                          | idem, um teste por ensaio              |
+| axe com a sala ligada, tema claro e escuro                                                                                                                                                                                                                                                                                  | idem                                   |
+| Movimento reduzido: o _canvas_ não muda; sem ele, muda                                                                                                                                                                                                                                                                      | idem                                   |
+| A vela é um relógio: no meio do artigo o quadro é outro, e depois não muda mais                                                                                                                                                                                                                                             | idem                                   |
+| Desligar a preferência remove a camada e devolve o fundo da página                                                                                                                                                                                                                                                          | idem                                   |
+| Tokens da sala dentro do gamut sRGB                                                                                                                                                                                                                                                                                         | `pnpm verify:palette`                  |
+| Teto de peso por módulo e da cena                                                                                                                                                                                                                                                                                           | `pnpm check:budgets`; testes de guarda |
+| Som: codec da mistura (ida e volta), degraus de 3 dB, chuva e vento seguindo a sala, oscilação limitada e assíncrona, Poisson (média dos intervalos), cadeia da pena, amostras determinísticas, limitadas, que terminam em repouso e emendam sem degrau (21 testes)                                                         | `tests/unit/chrome/sound.test.ts`      |
+| Som: silêncio por padrão (nenhum contexto, motor nunca pedido); com som escolhido, nada antes do gesto mesmo com ativação herdada, e som na saída depois dele; painel por teclado (predefinição, controle → `custom`, armazenamento, axe); desligar fecha o contexto; página vira ao entrar numa seção; aba oculta suspende | `tests/e2e/sound.spec.ts`              |
 
 ## Pendências para o autor
 
@@ -288,3 +357,7 @@ O site tem restrições que a cena precisa respeitar, todas verificadas por máq
 3. **Estender a outras páginas** (laboratórios, conceitos): hoje só os ensaios têm a sala.
 4. **Rever a interação** numa placa gráfica real: a amplitude da paralaxe (4 cm), o alcance do ar da mão
    (140 px), o tempo para o vidro embaçar de novo (6 s) e os tempos do repouso (3 s, 20 s).
+5. **Ouvir o som** em fones e em caixas e dizer o que mudar: os níveis das predefinições, o timbre de cada
+   camada (a chuva e o fogo, sobretudo) e se falta alguma (o relógio e o sino do myNoise ficaram de fora).
+6. **Continuidade entre ensaios:** deixar o som começar ao carregar quando o navegador já permite (ativação
+   trazida de um clique na página anterior), ou manter a regra de hoje, o primeiro gesto em cada página.

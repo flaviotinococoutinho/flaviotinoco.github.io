@@ -255,6 +255,11 @@ diretiva explícita > frontmatter > dicionário:
   (paralaxe), a chama se inclina com o ar que a mão move, o vidro embaçado se limpa por onde ela passa, e o
   livro sob o ponteiro sai da estante com o título ao lado; um clique abre a obra (no toque, o primeiro toque
   nomeia e o segundo abre).
+- Som: a sala tem um som de ambiente, desligado por padrão (preferência `sound`; ADR 0014, decisão 19): chuva no
+  vidro, fogo, vento, páginas e pena, calculados no navegador a partir de uma semente, sem arquivo de áudio
+  (`src/core/chrome/sound-synth.ts`). O leitor escolhe uma predefinição ou mistura as camadas no painel. A sala
+  comanda o som pelas mesmas funções que a desenham: a chuva cede no fim do ensaio, o vento cresce com a rolagem,
+  uma página vira a cada seção. Só começa num gesto do leitor na própria página e pausa com a aba oculta.
 
 ## 7. Ilhas (comportamento no cliente)
 
@@ -263,8 +268,9 @@ diretiva explícita > frontmatter > dicionário:
 - Todo elemento tem conteúdo de fallback útil sem JavaScript, respeita `--motion`, é operável por teclado e
   anuncia resultados relevantes em `aria-live="polite"`.
 - Lógica não trivial (layout de grafo, mapeamentos de rolagem, easing) fica no núcleo e é testada.
-- Uma ilha que precisa de uma biblioteca pesada a importa de `src/islands/scenes/`, com `import()`, depois de
-  decidir que vai usá-la. Hoje há um caso: a cena da sala de leitura (three.js, 137,2 KiB em gzip).
+- Uma ilha que precisa de uma biblioteca pesada, ou de um motor que só serve a quem pediu, o importa de
+  `src/islands/scenes/`, com `import()`, depois de decidir que vai usá-lo. Hoje há dois casos: a cena da sala
+  de leitura (three.js, 137,2 KiB em gzip) e o motor do som da sala (Web Audio, 2,7 KiB).
 
 ## 8. Verificações
 

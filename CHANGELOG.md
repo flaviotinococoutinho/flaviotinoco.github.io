@@ -62,6 +62,14 @@ próprio frontmatter.
   inclina com o ar da mão, o vidro embaçado se limpa por onde ela passa, e o livro sob o ponteiro sai da
   estante com o título ao lado; um clique abre a obra. Títulos e endereços em `/<lang>/shelf.json`, da mesma
   lista que o atributo `shelf` (`src/adapters/astro/shelf.ts`), baixados só depois que a sala acende.
+- Som da sala ([ADR 0014](docs/adr/0014-sala-de-leitura.md), decisão 19;
+  [plano de 22/11/2026](docs/planos/2026-11-22-som-da-sala.md)): nos ensaios, um som de ambiente calculado no
+  navegador, sem arquivo de áudio (chuva no vidro, fogo, vento, páginas e pena), com o gerador "Medieval Library"
+  do myNoise como modelo: predefinições, um controle por camada no painel e a mistura que oscila devagar. A sala
+  comanda o som: a chuva cede no fim do ensaio, o vento cresce com a rolagem e uma página vira a cada seção.
+  Preferência `sound`, desligada por padrão; começa no primeiro gesto do leitor na página, nunca ao carregar, e
+  pausa com a aba oculta. Modelo e síntese puros (`src/core/chrome/sound.ts`, `sound-synth.ts`), motor Web Audio
+  sob demanda (`src/islands/scenes/room-sound.ts`), ilha `ft-room-sound`.
 
 ### Alterado
 
