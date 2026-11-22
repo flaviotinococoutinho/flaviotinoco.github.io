@@ -36,9 +36,9 @@ keywords: [otimização combinatória, lei de Amdahl, algoritmo de aproximação
 draft: false
 ---
 
-Poucas palavras sofrem tanta erosão no vocabulário diário de desenvolvimento quanto “otimizar”. Chama-se de otimização trocar uma lista encadeada por um vetor contíguo, remover uma consulta repetida, comprimir imagens ou reescrever um serviço inteiro em outra linguagem — muitas vezes antes de medir onde o tempo ou o dinheiro estão sendo gastos. No extremo oposto, especificações de produto pedem candidamente “a alocação ótima de rotas”, “a seleção ótima de versões compatíveis” ou “o agrupamento ótimo de tarefas”, sem notar que acabaram de enunciar problemas para os quais nenhum computador conhecido encontra o ótimo exato em tempo razoável quando a entrada cresce. Este ensaio percorre a passagem do estrato teórico ao formal para pôr ordem nos dois excessos: primeiro delimita onde vale a pena mexer; depois separa o ótimo tratável, a aproximação com garantia e a parada deliberada no suficiente.
-
 ::toc
+
+Poucas palavras sofrem tanta erosão no vocabulário diário de desenvolvimento quanto “otimizar”. Chama-se de otimização trocar uma lista encadeada por um vetor contíguo, remover uma consulta repetida, comprimir imagens ou reescrever um serviço inteiro em outra linguagem — muitas vezes antes de medir onde o tempo ou o dinheiro estão sendo gastos. No extremo oposto, especificações de produto pedem candidamente “a alocação ótima de rotas”, “a seleção ótima de versões compatíveis” ou “o agrupamento ótimo de tarefas”, sem notar que acabaram de enunciar problemas para os quais nenhum computador conhecido encontra o ótimo exato em tempo razoável quando a entrada cresce. Este ensaio percorre a passagem do estrato teórico ao formal para pôr ordem nos dois excessos: primeiro delimita onde vale a pena mexer; depois separa o ótimo tratável, a aproximação com garantia e a parada deliberada no suficiente.
 
 ## Dizer “melhor” exige duas declarações {#dizer-melhor .definition}
 

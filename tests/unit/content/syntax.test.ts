@@ -85,6 +85,18 @@ describe('content corpus', () => {
     expect(problems).toEqual([]);
   });
 
+  it.each(corpus.filter((d) => d.collection === 'essays').map((d) => [d.path, d] as const))(
+    '%s opens its body with the table of contents (the apparatus before the text)',
+    (_path, doc) => {
+      // Status, abstract and contents orient the reader; the text (epigraph, opening paragraph) begins after them.
+      const first = doc.tree.children[0];
+      expect(
+        first?.type === 'leafDirective' && first.name === 'toc',
+        `${doc.path}: first block is ${first?.type}`,
+      ).toBe(true);
+    },
+  );
+
   it.each(corpus.filter((d) => WORD_RANGES[d.collection] !== undefined).map((d) => [d.path, d] as const))(
     '%s has a body length within the specified range',
     (_path, doc) => {

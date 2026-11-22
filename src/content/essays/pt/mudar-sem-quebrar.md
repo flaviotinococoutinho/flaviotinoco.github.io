@@ -34,13 +34,13 @@ keywords: [arquitetura de software, ocultação de informação, camadas de ritm
 draft: false
 ---
 
+::toc
+
 :::epigraph{source="@brooks1995 [p. 182, tradução nossa]"}
 :foreign[“Following Aristotle, I divide them into essence—the difficulties inherent in the nature of the software—and accidents, those difficulties that today attend its production but that are not inherent.”]{lang=en}
 
 “Seguindo Aristóteles, divido-as em essência — as dificuldades inerentes à natureza do software — e acidentes, aquelas dificuldades que hoje acompanham sua produção, mas não lhe são inerentes.”
 :::
-
-::toc
 
 Quase todo sistema novo parece ágil nos primeiros meses. As entregas saem em dias, os testes correm depressa e cada arquivo tem tamanho razoável. Dois anos depois, sem que nenhuma linha isolada pareça monstruosa, trocar um fornecedor de pagamentos, acrescentar um segundo idioma ou mudar o formato de um relatório passa a exigir semanas de coordenação cuidadosa entre quatro equipes. O custo de um programa raramente mora na primeira escrita; mora na sequência de mudanças que ele precisará absorver enquanto permanecer vivo. Este ensaio ocupa o último estrato da ponte, o do **valor**, onde já não basta perguntar se um algoritmo termina ou se um modelo é consistente, mas a quem uma estrutura serve e quanto custa mantê-la de pé.
 

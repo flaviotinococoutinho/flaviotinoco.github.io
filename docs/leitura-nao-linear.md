@@ -111,11 +111,11 @@ No próprio texto, cada seção com tipo recebe acima do título o símbolo e o 
 ## 2. Autoria (exemplos)
 
 ```markdown
+::toc
+
 :::epigraph[Plutarco, _Vida de Pompeu_, 50]{lang=la}
 Navigare necesse est; vivere non est necesse.
 :::
-
-::toc
 
 ## O que é informação? {#questao .question}
 
@@ -171,6 +171,12 @@ Regras da linguagem (fechada — erros param a compilação, listados de uma vez
   `data.epigraphSource = true` (por exemplo a citação renderizada de `source="@chave"`), esse nó vira a legenda.
 - `::toc` (um por documento): sumário aninhado com os títulos do fluxo principal (fora de expansões, digressões,
   epígrafes, painéis e notas), até `depth` (2–6, padrão 3); título localizado ("Sumário" / "Contents") ou `[…]`.
+  O sumário é também o roteiro do argumento: a entrada de uma seção com tipo leva o símbolo e o rótulo do tipo
+  (fora do link, que se nomeia só pelo título), as entradas de tese e conclusão vêm em peso maior (a espinha do
+  argumento) e cada seção de nível 2 diz quanto tempo leva (palavras da seção ÷ 238, arredondado ao minuto mais
+  próximo, no mínimo 1; `sectionWords` e `sectionMinutes`). Nos ensaios, o `::toc` abre o corpo, antes da epígrafe e
+  do parágrafo de abertura: o aparato (estado, resumo, sumário) fica junto, e o texto começa depois dele (teste do
+  contrato editorial em `tests/unit/content/syntax.test.ts`).
 - Atributos desconhecidos são erro; a língua do documento vem de `lang` no frontmatter (`pt-BR` | `en`).
 
 ## 3. Preservação de informação

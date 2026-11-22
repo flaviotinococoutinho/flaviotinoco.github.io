@@ -34,11 +34,11 @@ keywords: [software architecture, information hiding, pace layering, essential c
 draft: false
 ---
 
+::toc
+
 :::epigraph{source="@brooks1995 [p. 182]"}
 “Following Aristotle, I divide them into essence—the difficulties inherent in the nature of the software—and accidents, those difficulties that today attend its production but that are not inherent.”
 :::
-
-::toc
 
 Almost every greenfield system feels nimble in its opening months. Features ship in days, tests finish in seconds, and every file fits comfortably on one screen. Two years later, without any single function turning monstrous, swapping a payment gateway, adding a second locale or revising a regulatory report suddenly demands weeks of anxious coordination across four teams. The real cost of software rarely sits in writing version one; it sits in the long sequence of changes the system must absorb while staying alive. This essay stands in the final stratum of the bridge, **value**, where asking whether an algorithm halts or whether a model is consistent is no longer enough: the question is whom an architecture serves, and at what ongoing cost.
 
