@@ -34,9 +34,9 @@ keywords: [ETL, engenharia de dados, desigualdade do processamento de dados, inf
 draft: false
 ---
 
-Toda organização que guarda dados acaba por movê-los: de um sistema que registra vendas para outro que as soma, de um sensor para um painel, de um arquivo para um modelo. O trabalho tem nome há décadas — extrair, transformar e carregar (ETL, do inglês :foreign[extract, transform, load]{lang=en}) — e um manual clássico da área o descreve pelo que faz com os dados: extrair, limpar, conformar e entregar [@kimball2004]. Este ensaio pergunta o que esse encadeamento de etapas, o pipeline, pode fazer com a informação que recebe. A resposta é um teorema da teoria da informação, e dele saem decisões de projeto. É uma travessia do estrato formal ao do valor.
-
 ::toc
+
+Toda organização que guarda dados acaba por movê-los: de um sistema que registra vendas para outro que as soma, de um sensor para um painel, de um arquivo para um modelo. O trabalho tem nome há décadas — extrair, transformar e carregar (ETL, do inglês :foreign[extract, transform, load]{lang=en}) — e um manual clássico da área o descreve pelo que faz com os dados: extrair, limpar, conformar e entregar [@kimball2004]. Este ensaio pergunta o que esse encadeamento de etapas, o pipeline, pode fazer com a informação que recebe. A resposta é um teorema da teoria da informação, e dele saem decisões de projeto. É uma travessia do estrato formal ao do valor.
 
 ## Três etapas, uma cadeia {#cadeia .example}
 

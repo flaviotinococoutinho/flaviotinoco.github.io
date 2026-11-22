@@ -112,7 +112,7 @@ const IDS = {
   card={cardPath(locale, 'essay', data.slug)}
 >
   {meta.hasMath && <MathAssets slot="head" />}
-  {meta.argument.nodes.length > 0 && <ArgumentGlyphs />}
+  {meta.argument.nodes.length > 0 && <ArgumentGlyphs kinds={meta.argument.nodes.map((n) => n.kind)} />}
   <ft-reading-room
     sheet=".essay"
     stratum={data.stratum}
@@ -145,7 +145,12 @@ const IDS = {
           {tc('date.published', { date: formatDate(locale, data.published) })}
         </time>
         {revised !== null && (
-          <time datetime={isoDate(revised)}>{tc('date.revised', { date: formatDate(locale, revised) })}</time>
+          <span class="essay__revised">
+            {/* The separator dot belongs to the item, outside the link (it must not be underlined). */}
+            <a href={`#${IDS.revisions}`}>
+              <time datetime={isoDate(revised)}>{tc('date.revised', { date: formatDate(locale, revised) })}</time>
+            </a>
+          </span>
         )}
         <span>
           {tc('reading.time', { minutes: formatNumber(locale, meta.readingMinutes) })}

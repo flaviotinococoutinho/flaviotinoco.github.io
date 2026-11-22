@@ -36,11 +36,11 @@ keywords: [sign, information, entropy, meaning, semiotics]
 draft: false
 ---
 
+::toc
+
 :::epigraph{source="@shannon1948 [p. 379]"}
 “Frequently the messages have meaning; that is they refer to or are correlated according to some system with certain physical or conceptual entities. These semantic aspects of communication are irrelevant to the engineering problem.”
 :::
-
-::toc
 
 Reading this page involves several things at once: telling letter shapes apart, recognising words, giving them sense, judging whether what is said is true, and deciding whether to keep going. The mathematical theory of communication that Claude Shannon published in 1948 chose to measure only the first of these — and that act of restraint is part of what made it so productive. This essay is the site's first crossing. It begins with the :concept[sign]{ref=sign}, a relation that always involves someone, and ends with :concept[information]{ref=information} in the technical sense, a measure of choice that mentions no one in particular. The aim is to make visible what is left behind on the way.
 

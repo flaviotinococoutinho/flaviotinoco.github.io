@@ -1302,7 +1302,7 @@ ft-ambient-field {
 }
 
 .stratum-head {
-  padding-block: var(--space-3) var(--space-1);
+  padding-block-end: var(--space-1);
 }
 .stratum-head__glyph {
   inline-size: var(--space-4);

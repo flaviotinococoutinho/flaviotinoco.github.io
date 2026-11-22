@@ -65,6 +65,12 @@ próprio frontmatter.
 
 ### Alterado
 
+- Hierarquia de leitura dos ensaios ([plano de 22/11/2026](docs/planos/2026-11-22-hierarquia-de-leitura.md)): o
+  sumário é o roteiro do argumento (tipo de cada seção em símbolo e rótulo, tese e conclusão em peso maior, minutos
+  por seção com pontilhado guia; `sectionWords` e `sectionMinutes`) e abre o corpo de todo ensaio, antes da
+  epígrafe e do parágrafo de abertura (contrato editorial); o resumo segue a medida do texto; "Revisado em" leva ao
+  histórico; no índice de ensaios, cada estrato mostra a pergunta-guia e o método, na margem nas telas largas.
+
 - Ambiente rústico em todo ensaio ([ADR 0014](docs/adr/0014-sala-de-leitura.md), decisão 17): o artigo é uma
   folha de papel no seu suporte de madeira, sobre uma mesa velha, só com CSS (`room.css`, `--wood-image` em
   `texture.css`): sem script, sem download, sem movimento. A sala em 3D é a versão acesa. A mesa dá lugar à cena
@@ -123,6 +129,14 @@ próprio frontmatter.
   abertura das frentes ("Onze disciplinas em cinco frentes") ganhou teste contra o modelo de escopo.
 
 ### Corrigido
+
+- Ritmo das páginas: toda página começa à mesma distância do cabeçalho (`--space-3`) e termina à mesma
+  distância do rodapé (`--space-4`), numa regra só de `layout.css`; antes o laboratório, a ontologia, as
+  fórmulas e o glossário começavam colados ao cabeçalho e o escopo a 42 px.
+- Transição entre páginas: respeita também a escolha de movimento reduzido do painel (a duração é escalada por
+  `--motion`), e não só a do sistema.
+- Sala de leitura: com a sala desligada no painel, ou com economia de dados sem pedido, o ensaio não reserva a
+  faixa acima da folha (só empurraria o texto); a mesa continua.
 
 - Separadores "·" nas linhas de metadados (ensaio, cartões, listas de disciplinas, laboratório do pipeline): o
   ponto ficava antes do item seguinte e abria a linha quando ela quebrava, lido como marcador de lista; agora

@@ -34,9 +34,9 @@ keywords: [sampling, Fourier transform, aliasing, Nyquist–Shannon theorem, sig
 draft: false
 ---
 
-A microphone turns changes in air pressure into a voltage that varies continuously; a computer can only store finite lists of numbers. Between the two lies a decision: at which instants to measure. The sampling theorem says when that decision loses nothing — a clear example of how a modelling assumption, once granted, becomes a mathematical guarantee. This essay is the site's second crossing, from the theoretical stratum to the formal one.
-
 ::toc
+
+A microphone turns changes in air pressure into a voltage that varies continuously; a computer can only store finite lists of numbers. Between the two lies a decision: at which instants to measure. The sampling theorem says when that decision loses nothing — a clear example of how a modelling assumption, once granted, becomes a mathematical guarantee. This essay is the site's second crossing, from the theoretical stratum to the formal one.
 
 ## Signal, frequency and transform {#signal-and-frequency .definition}
 

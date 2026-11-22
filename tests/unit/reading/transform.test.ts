@@ -175,10 +175,33 @@ describe('::toc', () => {
     const { html } = await render(md);
     expect(html).toContain(
       '<nav class="toc" id="toc" aria-labelledby="toc-title"><p class="toc__title" id="toc-title">Sumário</p><div class="toc__body"><ol class="toc__list" role="list">' +
-        '<li class="toc__item"><a href="#um" class="toc__link">Um</a><ol class="toc__list" role="list"><li class="toc__item"><a href="#um-ponto-um" class="toc__link">Um ponto um</a></li></ol></li>' +
-        '<li class="toc__item"><a href="#dois" class="toc__link">Dois</a></li></ol></div></nav>',
+        '<li class="toc__item"><a href="#um" class="toc__link">Um</a><span class="toc__time">1 min</span><ol class="toc__list" role="list"><li class="toc__item"><a href="#um-ponto-um" class="toc__link">Um ponto um</a></li></ol></li>' +
+        '<li class="toc__item"><a href="#dois" class="toc__link">Dois</a><span class="toc__time">1 min</span></li></ol></div></nav>',
     );
     expect((await render('::toc\n\n## A', 'en')).html).toContain('>Contents</p>');
+  });
+  it('is the outline of the argument: kind as shape + label, the spine set apart, a time per section', async () => {
+    const words = (n: number): string => Array.from({ length: n }, () => 'palavra').join(' ');
+    const md = `::toc\n\n## Um caso {#caso .example}\n\n${words(400)}\n\n## A tese {#tese .claim depends="caso"}\n\n${words(100)}\n\n### Detalhe {.proof}\n\n${words(300)}\n\n## Referências\n\n${words(10)}`;
+    const { html } = await render(md);
+    // The kind stays outside the link: the link is named by the section alone.
+    expect(html).toContain(
+      '<li class="toc__item"><span class="toc__kind"><svg class="toc__svg" aria-hidden="true" focusable="false"><use href="#arg-example"></use></svg>Exemplo</span>',
+    );
+    expect(html).toMatch(
+      /Exemplo<\/span><a href="#caso" class="toc__link">Um caso<\/a><span class="toc__time">2 min<\/span>/,
+    );
+    // A claim is part of the spine; its time covers its subsections (100 + 300 words + headings ≈ 2 min).
+    expect(html).toContain('<li class="toc__item toc__item--spine"><span class="toc__kind">');
+    expect(html).toMatch(
+      /Tese<\/span><a href="#tese" class="toc__link">A tese<\/a><span class="toc__time">2 min<\/span>/,
+    );
+    // Subsections carry their kind but no time of their own; a section outside the argument has no kind.
+    expect(html).toMatch(/Prova<\/span><a href="#detalhe" class="toc__link">Detalhe<\/a><\/li>/);
+    expect(html).toContain(
+      '<li class="toc__item"><a href="#refer%C3%AAncias" class="toc__link">Referências</a><span class="toc__time">1 min</span></li>',
+    );
+    expect((await render(md.replace('Um caso', 'A case'), 'en')).html).toContain('Example</span>');
   });
   it('accepts a depth and a custom title, and only one ::toc', async () => {
     const { html } = await render('::toc[Roteiro]{depth=4}\n\n## A\n\n### B\n\n#### C');

@@ -1,9 +1,5 @@
-/* Scope pages (ADR 0013): the scope index and one page per core discipline. */
-
-.scope-page__header,
-.discipline-page__header {
-  padding-block-start: var(--space-2);
-}
+/* Scope pages (ADR 0013): the scope index and one page per core discipline. Their opening below the header
+   is the shared one of layout.css. */
 .scope-page__title,
 .discipline-page__title {
   font-size: var(--step-5);

@@ -35,9 +35,9 @@ keywords: [ETL, data engineering, data processing inequality, mutual information
 draft: false
 ---
 
-Every organization that keeps data ends up moving them: from a system that records sales to one that adds them up, from a sensor to a dashboard, from a file to a model. The work has had a name for decades — extract, transform, load (ETL) — and a classic handbook of the field describes it by what it does to data: extracting, cleaning, conforming and delivering [@kimball2004]. This essay asks what that chain of stages, the pipeline, can do with the information it receives. The answer is a theorem of information theory, and design decisions follow from it. It is a crossing from the formal stratum to that of value.
-
 ::toc
+
+Every organization that keeps data ends up moving them: from a system that records sales to one that adds them up, from a sensor to a dashboard, from a file to a model. The work has had a name for decades — extract, transform, load (ETL) — and a classic handbook of the field describes it by what it does to data: extracting, cleaning, conforming and delivering [@kimball2004]. This essay asks what that chain of stages, the pipeline, can do with the information it receives. The answer is a theorem of information theory, and design decisions follow from it. It is a crossing from the formal stratum to that of value.
 
 ## Three stages, one chain {#chain .example}
 

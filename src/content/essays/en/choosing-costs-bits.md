@@ -34,9 +34,9 @@ keywords: [Hick–Hyman law, Huffman coding, entropy, interface design, decision
 draft: false
 ---
 
-Every interface asks for choices: which button, which menu item, which of the ways to send something. Each choice takes some of the user's time and attention. This essay asks whether that cost can be measured in bits — and answers that, in part and under explicit assumptions, it can. It is the site's third crossing, from the formal stratum to the stratum of :concept[value]{ref=value}: from what follows necessarily to what is useful to someone, and at what cost.
-
 ::toc
+
+Every interface asks for choices: which button, which menu item, which of the ways to send something. Each choice takes some of the user's time and attention. This essay asks whether that cost can be measured in bits — and answers that, in part and under explicit assumptions, it can. It is the site's third crossing, from the formal stratum to the stratum of :concept[value]{ref=value}: from what follows necessarily to what is useful to someone, and at what cost.
 
 ## A law of choice time {#hick-hyman-law .premise}
 

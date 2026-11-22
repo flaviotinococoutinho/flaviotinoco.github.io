@@ -231,6 +231,38 @@ export interface FoldOptions {
   readonly source: string | null;
 }
 
+/** The top-level section a child of the root opens: a level-2 heading of the main flow, bare or in its hgroup. */
+const sectionOpenedBy = (node: MdNode): string | null => {
+  if (node.type === 'heading') {
+    const record = node.data?.[HEADING_RECORD];
+    return isHeadingRecord(record) && record.inToc && node['depth'] === 2 ? record.id : null;
+  }
+  // An argument heading is wrapped by the reading stage with its kind and its dependencies.
+  if (node.data?.hName !== 'hgroup') return null;
+  for (const c of childrenOf(node)) {
+    const id = sectionOpenedBy(c);
+    if (id !== null) return id;
+  }
+  return null;
+};
+
+/**
+ * Words of each top-level section of the document, by the id of the heading that opens it: from a level-2 heading
+ * of the main flow to the next one, counted as foldDocument counts the whole (prose only). What comes before the
+ * first such heading belongs to no section, so the sections add up to the document's count minus its opening.
+ */
+export const sectionWords = (root: MdNode, options: FoldOptions): ReadonlyMap<string, number> => {
+  const out = new Map<string, number>();
+  let current: string | null = null;
+  for (const child of childrenOf(root)) {
+    current = sectionOpenedBy(child) ?? current;
+    if (current === null) continue;
+    const words = proseBlocks(child, options.source).reduce((acc, b) => acc + countWords(b.text, options.locale), 0);
+    out.set(current, (out.get(current) ?? 0) + words);
+  }
+  return out;
+};
+
 /** The metadata fold. Deterministic; reads only. */
 export const foldDocument = (root: MdNode, options: FoldOptions): DocumentMeta => {
   const blocks = proseBlocks(root, options.source);

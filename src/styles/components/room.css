@@ -50,6 +50,16 @@
   /* The stand, all round (on a phone its sides fall outside the screen). */
   box-shadow: 0 0 0 var(--space-n1) var(--room-board);
 }
+/* A reader who turned the room off, or saves data and did not ask for it, never gets the scene: the band would
+   only push the essay down. Both are known before the first paint (data-room is set by the pre-paint script). */
+:root[data-room='off'] .essay {
+  --room-headroom: 0px;
+}
+@media (prefers-reduced-data: reduce) {
+  :root:not([data-room='on']) .essay {
+    --room-headroom: 0px;
+  }
+}
 /* The lit room shows through the desk: the scene is the room now, and the sheet stays. */
 :root[data-scene] .essay {
   background: none;
