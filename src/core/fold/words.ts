@@ -38,3 +38,11 @@ export const countWords = (text: string, locale: Locale): number => {
 /** Brysbaert (2019): minutes = ⌈words / 238⌉, at least 1. */
 export const readingMinutes = (words: number, wordsPerMinute: number = WORDS_PER_MINUTE): number =>
   Math.max(1, Math.ceil(Math.max(0, words) / wordsPerMinute));
+
+/**
+ * Minutes of one section of a document: words / 238 rounded to the NEAREST minute, at least 1. A document's time
+ * is rounded up (readingMinutes, never under-estimated); its sections are rounded to the nearest so that they add
+ * up to about the document's time instead of over-counting a fraction of a minute in each of them.
+ */
+export const sectionMinutes = (words: number, wordsPerMinute: number = WORDS_PER_MINUTE): number =>
+  Math.max(1, Math.round(Math.max(0, words) / wordsPerMinute));

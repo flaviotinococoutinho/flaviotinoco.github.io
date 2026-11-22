@@ -553,8 +553,15 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
   margin-block-start: var(--space-n2);
 }
 
+/*
+ * Contents as the outline of the argument (src/core/reading/toc.ts): a column of kinds (shape + label, as on the
+ * section headings), the titles, a dotted leader and the reading time of each top-level section, set like the
+ * contents page of a book (leaders guide the eye across the measure; Bringhurst, 2004, §4.4). The kinds that
+ * carry the argument (claim, conclusion) are its spine, set in the heavier weight; shape and label say the same.
+ */
 .prose .toc {
-  margin-block: var(--space-1) var(--space-2);
+  container-type: inline-size;
+  margin-block: var(--space-0) var(--space-2);
   padding-block: var(--space-n1);
   border-block: 1px solid var(--rule);
   font-family: var(--font-ui);
@@ -573,17 +580,76 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
   padding: 0;
   list-style: none;
 }
-.prose .toc__list .toc__list {
-  padding-inline-start: var(--space-1);
-}
 .prose .toc__item {
+  display: grid;
+  grid-template-columns: [kind] 8.5em [title] minmax(0, max-content) [time] minmax(var(--space-2), 1fr);
+  align-items: baseline;
+  column-gap: var(--space-n2);
   margin-block: var(--space-n3) 0;
 }
+.toc__kind {
+  grid-column: kind;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-n3);
+  color: var(--ink-muted);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.toc__svg {
+  flex: none;
+  inline-size: 1em;
+  block-size: 1em;
+}
 .toc__link {
+  grid-column: title;
   text-decoration-line: none;
 }
 .toc__link:hover {
   text-decoration-line: underline;
+}
+.toc__item--spine > .toc__link {
+  font-weight: 600;
+}
+/* The time fills the rest of the row: a dotted leader, then the minutes at the right edge. */
+.toc__time {
+  grid-column: time;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-n2);
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.toc__time::before {
+  content: '';
+  flex: 1;
+  margin-block-end: 0.35em;
+  border-block-end: 1px dotted var(--rule-strong);
+}
+/* Subsections hang under their section's title. */
+.prose .toc__item > .toc__list {
+  grid-column: title / -1;
+}
+/* Narrow contents: the kind becomes an eyebrow above its title, as on the section headings. */
+@container (inline-size < 34rem) {
+  .prose .toc__item {
+    grid-template-columns: [title] minmax(0, max-content) [time] minmax(var(--space-1), 1fr);
+    margin-block-start: var(--space-n2);
+  }
+  .toc__kind {
+    grid-column: 1 / -1;
+  }
+  .prose .toc__item > .toc__list {
+    grid-column: 1 / -1;
+    padding-inline-start: var(--space-0);
+  }
+}
+@media (forced-colors: active) {
+  .toc__time::before {
+    border-block-end-color: CanvasText;
+  }
 }
 
 /* ───────────────────── 8. Essay page ───────────────────── */
@@ -644,6 +710,15 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
 }
 .essay__expandable {
   margin-inline-start: var(--space-n3);
+}
+/* The revised date leads to the revision history (what changed, and when). */
+.essay__revised a {
+  color: inherit;
+  text-decoration-style: dotted;
+  text-underline-offset: 0.2em;
+}
+.essay__revised a:hover {
+  text-decoration-style: solid;
 }
 
 .stratum-label {
@@ -756,6 +831,9 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
 }
 .abstract__text,
 .abstract__keywords {
+  /* The abstract is set smaller than the text; `ch` follows its own size, so the line keeps the text's measure
+     in characters instead of stretching to ~100 of them across the column. */
+  max-inline-size: var(--measure);
   margin: var(--space-n3) 0 0;
 }
 .abstract__keywords-label {
@@ -1093,8 +1171,62 @@ ft-reading-progress[data-mode='js'] {
   margin-block-start: var(--space-2);
 }
 .essays-index__stratum-title {
-  margin-block-end: var(--space-0);
+  margin-block-end: var(--space-n2);
   font-size: var(--step-2);
+}
+/* What lives in the group: the stratum's guiding question and method (strata collection). */
+.essays-index__about {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 var(--space-n1);
+  align-items: baseline;
+  margin: 0 0 var(--space-0);
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+}
+.essays-index__about dt {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+}
+.essays-index__about dd {
+  margin: 0;
+}
+.essays-index__question {
+  color: var(--ink);
+  font-style: italic;
+}
+/* Wide screens: the body spans the reading column and the margin, and each group puts its question in the margin,
+   level with its heading. */
+@media (width >= 72rem) {
+  .page-grid > .essays-index__body {
+    grid-column: main-start / margin-end;
+  }
+  .essays-index__body > .essay-filter {
+    max-inline-size: var(--measure);
+  }
+  .essays-index__stratum {
+    display: grid;
+    grid-template-columns: minmax(0, var(--measure)) var(--space-2) minmax(0, var(--margin));
+    grid-template-areas:
+      'title . about'
+      'list  . about';
+    grid-template-rows: auto 1fr;
+    align-items: start;
+  }
+  .essays-index__stratum-title {
+    grid-area: title;
+    margin-block-end: var(--space-0);
+  }
+  .essays-index__about {
+    grid-area: about;
+    margin: 0;
+    padding-block-start: var(--space-n1);
+    border-block-start: 1px solid var(--rule);
+  }
+  .essays-index__stratum > .essays-index__list {
+    grid-area: list;
+  }
 }
 .essays-index__stratum-title a {
   color: var(--ink);

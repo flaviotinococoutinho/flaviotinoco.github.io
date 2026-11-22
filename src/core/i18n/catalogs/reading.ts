@@ -10,6 +10,7 @@ import { defineMessages } from '../messages.ts';
 export default defineMessages({
   'pt-BR': {
     'toc.title': 'Sumário',
+    'toc.minutes': '{minutes} min',
     'sidenote.label': 'Nota lateral {n}',
     'marginnote.label': 'Nota de margem',
     'horizontal.hint': 'Deslize para o lado: {n} painéis',
@@ -105,6 +106,7 @@ export default defineMessages({
   },
   en: {
     'toc.title': 'Contents',
+    'toc.minutes': '{minutes} min',
     'sidenote.label': 'Side note {n}',
     'marginnote.label': 'Margin note',
     'horizontal.hint': 'Scroll sideways: {n} panels',

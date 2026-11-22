@@ -15,12 +15,20 @@ import {
   GLYPH_VIEWBOX,
   glyphSymbolId,
   pathPaint,
+  type ArgumentKind,
 } from '../../core/reading/argument.ts';
+
+export interface Props {
+  /** The kinds the page shows (its argument map, its contents); a symbol nobody references is bytes for nothing. */
+  readonly kinds?: readonly ArgumentKind[];
+}
+
+const { kinds = ARGUMENT_KINDS } = Astro.props;
 ---
 
 <svg class="reading-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
   <defs>
-    {ARGUMENT_KINDS.map((kind) => (
+    {ARGUMENT_KINDS.filter((kind) => kinds.includes(kind)).map((kind) => (
       <symbol id={glyphSymbolId(kind)} viewBox={GLYPH_VIEWBOX}>
         <g
           fill={GLYPH_PAINT.fill}
