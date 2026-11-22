@@ -36,6 +36,14 @@
  * Announcements come from the server catalog (no UI text here, no formatter
  * shipped): each option carries its sentence ("Tema: Escuro."), set on the
  * radio as data-announce; the reset button carries its own in data-announce.
+ *
+ * Under the group of the room's sound sits its mixer (ADR 0014, decision 19):
+ * one native range input per layer, 0…MIX_MAX, shown while a sound is chosen
+ * (CSS reads data-sound on <html>). The faders mirror what plays — a preset's
+ * levels, or the reader's own mix — and moving one makes the mix the reader's
+ * own: it is stored (src/islands/sound-store.ts), the choice becomes `custom`,
+ * and SOUND_MIX_EVENT tells <ft-room-sound> to follow at once. Reset forgets it
+ * (the event then carries nothing).
  */
 import {
   DEFAULT_PREFERENCES,
@@ -45,8 +53,20 @@ import {
   isPreferenceValue,
   type Preferences,
 } from '../../core/chrome/preferences.ts';
-import { decodePreferencesForm, type PreferenceGroup } from '../../core/chrome/preferences-form.ts';
+import { decodePreferencesForm, type MixerForm, type PreferenceGroup } from '../../core/chrome/preferences-form.ts';
+import {
+  MIX_MAX,
+  MIX_STORAGE_KEY,
+  SOUND_MIX_EVENT,
+  SOUND_PRESETS,
+  encodeMix,
+  isSoundLayer,
+  mixOf,
+  withLevel,
+  type Mix,
+} from '../../core/chrome/sound.ts';
 import { applyPreferences, readPreferences, setPreference, writePreferences } from '../preferences-store.ts';
+import { readMix, writeMix } from '../sound-store.ts';
 
 const TAG = 'ft-preferences';
 
@@ -87,8 +107,37 @@ const buildGroup = (group: PreferenceGroup): HTMLFieldSetElement => {
   return fieldset;
 };
 
+/** The mixer of the room's sound: one labelled fader per layer, built with DOM APIs only. */
+const buildMixer = (mixer: MixerForm): HTMLFieldSetElement => {
+  const fieldset = document.createElement('fieldset');
+  fieldset.className = 'prefs__group prefs__mixer';
+  const legend = document.createElement('legend');
+  legend.className = 'prefs__legend';
+  legend.textContent = mixer.legend;
+  const faders = document.createElement('div');
+  faders.className = 'prefs__faders';
+  for (const { layer, label } of mixer.layers) {
+    const fader = document.createElement('label');
+    fader.className = 'prefs__fader';
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = '0';
+    input.max = String(MIX_MAX);
+    input.step = '1';
+    input.dataset['layer'] = layer;
+    const text = document.createElement('span');
+    text.textContent = label;
+    fader.append(input, text);
+    faders.append(fader);
+  }
+  fieldset.append(legend, faders);
+  return fieldset;
+};
+
 class FtPreferences extends HTMLElement {
   #prefs: Preferences = DEFAULT_PREFERENCES;
+  /** The reader's own mix of the room's sound (null until they make one). */
+  #own: Mix | null = null;
   #abort: AbortController | null = null;
   #status: HTMLElement | null = null;
 
@@ -100,6 +149,7 @@ class FtPreferences extends HTMLElement {
     const { signal } = this.#abort;
 
     this.#prefs = readPreferences();
+    this.#own = readMix();
     applyPreferences(this.#prefs);
     void this.#build(form);
 
@@ -115,6 +165,27 @@ class FtPreferences extends HTMLElement {
       },
       { signal },
     );
+    // A fader of the mixer: the mix becomes the reader's own, and the room follows it as it moves.
+    form.addEventListener(
+      'input',
+      (event) => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement) || input.type !== 'range') return;
+        const layer = input.dataset['layer'];
+        if (!isSoundLayer(layer)) return;
+        const mix = withLevel(this.#playing(), layer, Number(input.value));
+        this.#own = mix;
+        writeMix(mix);
+        if (this.#prefs.sound !== 'custom') {
+          this.#prefs = setPreference('sound', 'custom');
+          this.#announce(
+            form.querySelector<HTMLElement>('input[data-key="sound"][value="custom"]')?.dataset['announce'] ?? '',
+          );
+        }
+        document.dispatchEvent(new CustomEvent<string>(SOUND_MIX_EVENT, { detail: encodeMix(mix) }));
+      },
+      { signal },
+    );
     form.addEventListener('submit', (event) => event.preventDefault(), { signal });
 
     const reset = this.querySelector<HTMLButtonElement>('[data-reset]');
@@ -122,6 +193,9 @@ class FtPreferences extends HTMLElement {
       'click',
       () => {
         this.#prefs = DEFAULT_PREFERENCES;
+        this.#own = null;
+        writeMix(null);
+        document.dispatchEvent(new CustomEvent<string>(SOUND_MIX_EVENT, { detail: '' }));
         writePreferences(this.#prefs);
         applyPreferences(this.#prefs);
         this.#sync(form);
@@ -133,8 +207,9 @@ class FtPreferences extends HTMLElement {
     window.addEventListener(
       'storage',
       (event) => {
-        if (event.key !== PREFS_STORAGE_KEY && event.key !== null) return;
+        if (event.key !== PREFS_STORAGE_KEY && event.key !== MIX_STORAGE_KEY && event.key !== null) return;
         this.#prefs = readPreferences();
+        this.#own = readMix();
         applyPreferences(this.#prefs);
         this.#sync(form);
       },
@@ -168,6 +243,7 @@ class FtPreferences extends HTMLElement {
       if (!decoded.ok) throw new Error(decoded.error);
       if (this.#abort === null) return; // disconnected meanwhile
       form.prepend(...decoded.value.groups.map(buildGroup));
+      form.querySelector('fieldset[data-key="sound"]')?.after(buildMixer(decoded.value.mixer));
       this.#sync(form);
       this.dataset['ready'] = '';
     } catch (error: unknown) {
@@ -175,12 +251,22 @@ class FtPreferences extends HTMLElement {
     }
   }
 
-  /** Checks the radio of every current value (the form mirrors the model, never the reverse). */
+  /** Checks the radio of every current value and sets every fader to what plays (the form mirrors the model). */
   #sync(form: HTMLFormElement): void {
     for (const input of form.querySelectorAll<HTMLInputElement>('input[type="radio"][data-key]')) {
       const key = input.dataset['key'];
       if (isPreferenceKey(key)) input.checked = this.#prefs[key] === input.value;
     }
+    const mix = this.#playing();
+    for (const input of form.querySelectorAll<HTMLInputElement>('input[type="range"][data-layer]')) {
+      const layer = input.dataset['layer'];
+      if (isSoundLayer(layer)) input.value = String(mix[layer]);
+    }
+  }
+
+  /** The mix the room plays for the current choice; for silence, the one a fader would start from. */
+  #playing(): Mix {
+    return mixOf(this.#prefs.sound, this.#own) ?? this.#own ?? SOUND_PRESETS.quiet;
   }
 
   #announce(text: string): void {
