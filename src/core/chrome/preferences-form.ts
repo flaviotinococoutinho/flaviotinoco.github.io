@@ -11,7 +11,8 @@
  * (PREFERENCE_KEYS × PREFERENCE_DOMAINS), labels and announcements from the
  * chrome catalog, so the island ships no UI text and no formatter. The form
  * used to be ≈ 7.6 KiB of static HTML in every page; <ft-preferences> now
- * builds it from this document the first time the panel opens.
+ * builds it from this document the first time the panel opens. The mixer of the
+ * room's sound (one fader per layer, src/core/chrome/sound.ts) travels with it.
  */
 import { err, ok, type Result } from '../algebra/result.ts';
 import { show } from '../algebra/show.ts';
@@ -27,8 +28,9 @@ import {
   preferenceOptionMessage,
   type PreferenceKey,
 } from './preferences.ts';
+import { SOUND_LAYERS, isSoundLayer, type SoundLayer } from './sound.ts';
 
-export const PREFERENCES_FORM_VERSION = 1;
+export const PREFERENCES_FORM_VERSION = 2;
 
 export interface PreferenceOption {
   readonly value: string;
@@ -46,9 +48,22 @@ export interface PreferenceGroup {
   readonly options: readonly PreferenceOption[];
 }
 
+/** One fader of the room's sound: a layer and its name. */
+export interface MixerLayer {
+  readonly layer: SoundLayer;
+  readonly label: string;
+}
+
+/** The faders shown under the sound group while the room plays. */
+export interface MixerForm {
+  readonly legend: string;
+  readonly layers: readonly MixerLayer[];
+}
+
 export interface PreferencesForm {
   readonly version: number;
   readonly groups: readonly PreferenceGroup[];
+  readonly mixer: MixerForm;
 }
 
 /** Keys with an explanatory hint below the group (`prefs.<key>.hint` in the chrome catalog). */
@@ -60,6 +75,7 @@ const HINTS: Partial<
     | 'prefs.ruler.hint'
     | 'prefs.focus.hint'
     | 'prefs.room.hint'
+    | 'prefs.sound.hint'
     | 'prefs.shortcut.hint'
     | 'prefs.cvd.hint'
   >
@@ -69,6 +85,7 @@ const HINTS: Partial<
   ruler: 'prefs.ruler.hint',
   focus: 'prefs.focus.hint',
   room: 'prefs.room.hint',
+  sound: 'prefs.sound.hint',
   shortcut: 'prefs.shortcut.hint',
   cvd: 'prefs.cvd.hint',
 };
@@ -97,6 +114,10 @@ export const preferencesForm = (locale: Locale): PreferencesForm => {
         }),
       };
     }),
+    mixer: {
+      legend: c('prefs.mixer'),
+      layers: SOUND_LAYERS.map((layer) => ({ layer, label: c(`prefs.mixer.${layer}`) })),
+    },
   };
 };
 
@@ -135,6 +156,22 @@ const parseGroup = (v: unknown, index: number): Result<PreferenceGroup, string> 
   return ok({ key, legend, hint, options: parsed });
 };
 
+/** The mixer: a legend and one named fader per layer, in SOUND_LAYERS order. */
+const parseMixer = (v: unknown): Result<MixerForm, string> => {
+  if (!isRecord(v)) return err(`mixer: not an object (${show(v)})`);
+  const { legend, layers } = v;
+  if (!nonEmpty(legend)) return err('mixer: legend must be a non-empty string');
+  if (!Array.isArray(layers) || layers.length !== SOUND_LAYERS.length)
+    return err(`mixer: layers must list the ${SOUND_LAYERS.length} layers`);
+  const parsed: MixerLayer[] = [];
+  for (const [i, l] of (layers as readonly unknown[]).entries()) {
+    if (!isRecord(l) || !isSoundLayer(l['layer']) || l['layer'] !== SOUND_LAYERS[i] || !nonEmpty(l['label']))
+      return err(`mixer: layer ${i} must be { layer: "${SOUND_LAYERS[i] ?? ''}", label: non-empty }`);
+    parsed.push({ layer: l['layer'], label: l['label'] });
+  }
+  return ok({ legend, layers: parsed });
+};
+
 /** Decodes a preferences.json payload; any malformed group fails the whole document. */
 export const decodePreferencesForm = (raw: unknown): Result<PreferencesForm, string> => {
   if (!isRecord(raw) || raw['version'] !== PREFERENCES_FORM_VERSION || !Array.isArray(raw['groups'])) {
@@ -149,5 +186,7 @@ export const decodePreferencesForm = (raw: unknown): Result<PreferencesForm, str
     seen.add(parsed.value.key);
     groups.push(parsed.value);
   }
-  return ok({ version: PREFERENCES_FORM_VERSION, groups });
+  const mixer = parseMixer(raw['mixer']);
+  if (!mixer.ok) return mixer;
+  return ok({ version: PREFERENCES_FORM_VERSION, groups, mixer: mixer.value });
 };
