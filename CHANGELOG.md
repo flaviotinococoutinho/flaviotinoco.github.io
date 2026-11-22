@@ -65,6 +65,12 @@ próprio frontmatter.
 
 ### Alterado
 
+- Hierarquia de leitura dos ensaios ([plano de 22/11/2026](docs/planos/2026-11-22-hierarquia-de-leitura.md)): o
+  sumário é o roteiro do argumento (tipo de cada seção em símbolo e rótulo, tese e conclusão em peso maior, minutos
+  por seção com pontilhado guia; `sectionWords` e `sectionMinutes`) e abre o corpo de todo ensaio, antes da
+  epígrafe e do parágrafo de abertura (contrato editorial); o resumo segue a medida do texto; "Revisado em" leva ao
+  histórico; no índice de ensaios, cada estrato mostra a pergunta-guia e o método, na margem nas telas largas.
+
 - Ambiente rústico em todo ensaio ([ADR 0014](docs/adr/0014-sala-de-leitura.md), decisão 17): o artigo é uma
   folha de papel no seu suporte de madeira, sobre uma mesa velha, só com CSS (`room.css`, `--wood-image` em
   `texture.css`): sem script, sem download, sem movimento. A sala em 3D é a versão acesa. A mesa dá lugar à cena

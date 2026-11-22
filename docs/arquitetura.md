@@ -186,7 +186,7 @@ Título acima ("Figura 1 – Título"), fonte abaixo ("Fonte: …"). Referência
 | `::::horizontal{label="…"}` + `:::panel`            | sequência horizontal dentro da rolagem vertical                               |
 | `:::epigraph{source="@chave"}`                      | epígrafe                                                                      |
 | `:::aside`                                          | digressão destacada                                                           |
-| `::toc`                                             | sumário do documento                                                          |
+| `::toc`                                             | sumário do documento: o roteiro do argumento (tipos, espinha, minutos)        |
 | `## Título {#id .claim depends="def-1,premissa-2"}` | nó do grafo argumentativo (Toulmin, 1958)                                     |
 | `:concept[entropia]{ref=entropy}`                   | link ao conceito com prévia da definição                                      |
 | `::concept-map{focus=entropy depth=2}`              | subgrafo da ontologia                                                         |
