@@ -15,7 +15,9 @@
  *
  * <ft-reading-room> is the decorative layer behind the page (ADR 0014): it shows the room around the paper
  * where the device allows it, and it never contains the article. The reader turns it off in the
- * preferences panel; without it the essay keeps the desk drawn in CSS (room.css).
+ * preferences panel; without it the essay keeps the desk drawn in CSS (room.css). <ft-room-sound> is the room's
+ * sound (decision 19): silent unless the reader chose one in the same panel, and then only after their first
+ * gesture on the page; it has no UI of its own.
  */
 import { getEntry, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -163,6 +165,7 @@ const IDS = {
     </header>
 
     <ft-reading-memory class="essay__memory" article={IDS.article} data-eager hidden></ft-reading-memory>
+    <ft-room-sound article={IDS.article} data-eager hidden></ft-room-sound>
 
     <EpistemicStatus
       locale={locale}

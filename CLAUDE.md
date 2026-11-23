@@ -10,7 +10,8 @@ deployed to GitHub Pages as a project site under `/flaviotinoco.github.io/`.
 - `src/adapters/unified/` — one remark/rehype stage per file; order and contracts in `pipeline.ts`.
 - `src/adapters/astro/`, `src/adapters/wasm/` — glue to Astro (i18n, content queries, fonts) and to the kernels.
 - `src/islands/` — `registry.ts` (the only global script) lazy-loads `elements/ft-*.ts` custom elements;
-  `scenes/` holds what an element imports on demand after deciding to use it (the three.js reading room, ADR 0014).
+  `scenes/` holds what an element imports on demand after deciding to use it (the three.js reading room and the
+  room's Web Audio sound, ADR 0014).
 - `src/views/` compose pages; `src/components/` are stateless; `src/pages/` only dispatch routes and serve the
   per-locale endpoints (RSS, `palette.json`, `preferences.json`: chrome content fetched on demand, ADR 0009;
   `card/<kind>/<slug>.png`: the share cards, described by `src/core/chrome/card.ts`, rendered by satori + resvg).
@@ -29,7 +30,9 @@ deployed to GitHub Pages as a project site under `/flaviotinoco.github.io/`.
 - Reading room (ADR 0014): a decorative three.js scene behind the essay pages, seen where the opaque sheet that
   carries the text is not — the band above it on every screen, the gutters on wide ones. `src/core/chrome/room.ts`
   decides off / still / live before anything is downloaded; `three` is imported only by
-  `src/islands/scenes/reading-room.ts` and has its own budget.
+  `src/islands/scenes/reading-room.ts` and has its own budget. Its sound (decision 19) is off by default,
+  computed in the browser (no audio files) and starts only at a trusted gesture of the reader on the page, never
+  at load.
 - Scope (ADR 0013): the `domains` facet is closed and two-tiered — eleven core disciplines and eleven
   foundations (`src/core/domain/facets.ts`, rules in `src/core/domain/scope.ts`). Every essay declares at least
   one core discipline (the content schema rejects it otherwise); both locales of a work declare the same

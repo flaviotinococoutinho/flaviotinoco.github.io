@@ -19,6 +19,7 @@
  */
 import { err, ok, type Result } from '../algebra/result.ts';
 import { CVD_TYPES } from '../design/cvd.ts';
+import { SOUND_CHOICES } from './sound.ts';
 
 /** localStorage key holding the serialised preferences. */
 export const PREFS_STORAGE_KEY = 'ft:prefs';
@@ -55,6 +56,12 @@ export const PREFERENCE_DOMAINS = {
    */
   room: ['auto', 'on', 'off'],
   /**
+   * Sound of the reading room on the essay pages (ADR 0014, decision 19; src/core/chrome/sound.ts): silence (the
+   * default), a preset mix, or the reader's own (`custom`, levels under MIX_STORAGE_KEY). Synthesised in the
+   * browser; it starts only after the reader's own gesture on the page.
+   */
+  sound: SOUND_CHOICES,
+  /**
    * The single-character shortcut "/" that opens the command palette. WCAG 2.2
    * SC 2.1.4 (Character Key Shortcuts, level A) requires a way to turn such a
    * shortcut off: speech-input users can trigger it by dictation. The chorded
@@ -81,6 +88,7 @@ export const PREFERENCE_KEYS = [
   'focus',
   'texture',
   'room',
+  'sound',
   'shortcut',
   'cvd',
 ] as const satisfies readonly PreferenceKey[];
@@ -102,6 +110,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   focus: 'off',
   texture: 'on',
   room: 'auto',
+  sound: 'off',
   shortcut: 'on',
   cvd: 'none',
 };

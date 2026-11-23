@@ -715,6 +715,48 @@ ft-preferences:not([data-ready]) .prefs__form {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
+/* The mixer of the room's sound (ADR 0014, decision 19): shown only while a sound is chosen — silence is the
+   absence of data-sound on <html>. One native range per layer, turned upright, the lowest level at the bottom;
+   the whole input is its target (≥ 24 CSS px across, WCAG 2.5.8), and a click on the track sets the level
+   without dragging (2.5.7). */
+:root:not([data-sound]) .prefs__mixer {
+  display: none;
+}
+.prefs__faders {
+  /* One row of equal columns; on the narrowest screens they wrap rather than squeeze the names. */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--space-2) + var(--space-n2))), 1fr));
+  gap: var(--space-n2);
+}
+.prefs__fader {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--space-n3);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+  text-align: center;
+}
+.prefs__fader input {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  inline-size: var(--space-4);
+  block-size: var(--space-1);
+  margin: 0;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+.prefs__fader input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.prefs__fader:hover {
+  color: var(--ink);
+}
 .prefs__reset {
   justify-self: start;
   min-block-size: var(--space-2);
