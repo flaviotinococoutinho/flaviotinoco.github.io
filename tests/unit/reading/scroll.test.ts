@@ -2,15 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
 import {
   activeStep,
-  bandPosition,
   clamp01,
-  currentSection,
   crossingProgress,
   narrativeTime,
-  panelAt,
   pinnedProgress,
-  progressOfPanel,
-  scrollOffsetForPanel,
   smoothstep,
 } from '../../../src/core/reading/scroll.ts';
 import { stackNotes } from '../../../src/core/reading/margin.ts';
@@ -69,7 +64,7 @@ describe('activeStep', () => {
   });
 });
 
-describe('pinned progress (horizontal passage, reading progress)', () => {
+describe('pinned progress (reading progress)', () => {
   it('runs from 0 (top at the top) to 1 (bottom at the bottom)', () => {
     expect(pinnedProgress(0, 3000, 1000)).toBe(0);
     expect(pinnedProgress(-1000, 3000, 1000)).toBe(0.5);
@@ -78,22 +73,7 @@ describe('pinned progress (horizontal passage, reading progress)', () => {
     expect(pinnedProgress(-10, 500, 1000)).toBe(1);
     expect(pinnedProgress(10, 500, 1000)).toBe(0);
   });
-  test.prop([
-    fc.integer({ min: 2, max: 12 }),
-    fc.nat(11),
-    fc.integer({ min: 0, max: 5000 }),
-    fc.integer({ min: 300, max: 1200 }),
-  ])('scrolling to scrollOffsetForPanel(i) shows panel i (inverse of pinnedProgress)', (panels, k, boxTop, vh) => {
-    const i = k % panels;
-    const height = panels * vh;
-    const y = scrollOffsetForPanel(i, panels, boxTop, height, vh);
-    const progress = pinnedProgress(boxTop - y, height, vh);
-    expect(progress).toBeCloseTo(progressOfPanel(i, panels), 9);
-    expect(panelAt(progress, panels)).toBe(i);
-  });
-  it('handles single panels and clamps', () => {
-    expect(progressOfPanel(0, 1)).toBe(0);
-    expect(panelAt(0.7, 1)).toBe(0);
+  it('clamps', () => {
     expect(clamp01(2)).toBe(1);
   });
 });
@@ -136,36 +116,5 @@ describe('stackNotes (sidenotes never overlap, and stay as close to their marks 
         8,
       ),
     ).toEqual([0, 108, 500]);
-  });
-});
-
-describe('currentSection (scroll-spy over IntersectionObserver band positions)', () => {
-  it('prefers the last heading inside the band, then the last one above it', () => {
-    expect(
-      currentSection(
-        new Map([
-          [0, 'above'],
-          [1, 'in'],
-          [2, 'in'],
-          [3, 'below'],
-        ]),
-      ),
-    ).toBe(2);
-    expect(
-      currentSection(
-        new Map([
-          [0, 'above'],
-          [1, 'above'],
-          [2, 'below'],
-        ]),
-      ),
-    ).toBe(1);
-    expect(currentSection(new Map([[0, 'below']]))).toBeNull();
-    expect(currentSection(new Map())).toBeNull();
-  });
-  it('classifies boxes against the band', () => {
-    expect(bandPosition(true, 500, 0)).toBe('in');
-    expect(bandPosition(false, -40, 0)).toBe('above');
-    expect(bandPosition(false, 700, 0)).toBe('below');
   });
 });

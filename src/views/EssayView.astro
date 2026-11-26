@@ -2,16 +2,19 @@
 /**
  * Essay page (route kind "essay").
  *
- * Quiet by default, expandable by the reader (progressive disclosure): the
- * article reads as a book page; the stratum, dates, epistemic status and
- * provenance sit above it; the argument map, side notes and margin notes live
- * in the margin column on wide screens and fold into the flow on narrow ones;
- * stretchtext, revision history and the map itself open only on request.
+ * The opening is a headspace, then the text (docs/planos/2026-11-26-experiencia-de-leitura.md): one
+ * line of context (stratum and disciplines), the title and its dek, one line of facts (dates, reading
+ * time), the epistemic status in one line, and the abstract folded (progressive disclosure: the dek and
+ * the contents already say what the essay is; the abstract is there for whoever wants it). The contents
+ * (the argument's outline, `::toc`) open the article, and the first paragraph follows.
  *
  * Layout (.page-grid, src/styles/layout.css): header blocks in the main column;
  * .essay__main spans main → margin as a subgrid holding the article (main) and,
- * beside it, the sticky argument map and the side notes (margin). Ids used here
- * are reserved for headings by src/core/reading/records.ts (PAGE_IDS).
+ * beside it, the side notes (margin). Ids used here are reserved for headings by
+ * src/core/reading/records.ts (PAGE_IDS).
+ *
+ * The end leads on: what to read next comes first, then the concepts the essay discusses, then the
+ * record of its revisions.
  *
  * <ft-reading-room> is the decorative layer behind the page (ADR 0014): it shows the room around the paper
  * where the device allows it, and it never contains the article. The reader turns it off in the
@@ -24,7 +27,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { cardPath } from '../core/chrome/card.ts';
 import MathAssets from '../components/MathAssets.astro';
 import ArgumentGlyphs from '../components/reading/ArgumentGlyphs.astro';
-import ArgumentMap from '../components/reading/ArgumentMap.astro';
 import AbstractBlock from '../components/reading/AbstractBlock.astro';
 import EpistemicStatus from '../components/reading/EpistemicStatus.astro';
 import EssayCard from '../components/reading/EssayCard.astro';
@@ -34,9 +36,8 @@ import StratumLabel from '../components/reading/StratumLabel.astro';
 import { localeCodec, type Locale } from '../core/domain/locale.ts';
 import common from '../core/i18n/catalogs/common.ts';
 import reading from '../core/i18n/catalogs/reading.ts';
-import { formatNumber, plural } from '../core/i18n/messages.ts';
+import { formatNumber } from '../core/i18n/messages.ts';
 import { parseDocumentMeta } from '../core/fold/meta.ts';
-import { WORDS_PER_MINUTE } from '../core/fold/words.ts';
 import { encodeShelf } from '../core/chrome/room.ts';
 import { bridgeTarget, isoDate, lastRevision } from '../core/reading/essay.ts';
 import {
@@ -72,8 +73,6 @@ const alternates = await alternatesByKey('essays', data.translationKey, (slug) =
 
 const revised = lastRevision(data.published, data.revisions);
 const notes = meta.sidenoteCount + meta.marginnoteCount;
-const expandableMinutes = Math.round(meta.expandableWordCount / WORDS_PER_MINUTE);
-const words = plural(locale, meta.wordCount, { one: t('essay.words.one'), other: t('essay.words.other') });
 
 // Concepts discussed: concept routes use the concept's slug in this locale.
 const conceptIndex = new Map((await concepts()).map((c) => [c.id, c]));
@@ -100,8 +99,6 @@ const IDS = {
   revisions: 'essay-revisions',
   concepts: 'essay-concepts',
   next: 'essay-next',
-  map: 'argument-map',
-  mapTitle: 'argument-map-title',
 } as const;
 ---
 
@@ -131,11 +128,6 @@ const IDS = {
         <a class="essay__stratum-link" href={href({ kind: 'stratum', stratum: data.stratum }, locale)}>
           <StratumLabel stratum={data.stratum} locale={locale} />
         </a>
-        {data.bridgesTo !== undefined && (
-          <span class="essay__bridge">
-            {t('essay.bridge', { from: tc(`strata.${data.stratum}`), to: tc(`strata.${data.bridgesTo}`) })}
-          </span>
-        )}
         <span class="essay__domains">{runIn(data.domains.slice(0, 3).map((d) => t(`domain.${d}`)))}</span>
       </p>
       <h1 class="essay__title" id={IDS.title}>
@@ -154,33 +146,23 @@ const IDS = {
             </a>
           </span>
         )}
-        <span>
-          {tc('reading.time', { minutes: formatNumber(locale, meta.readingMinutes) })}
-          {expandableMinutes > 0 && (
-            <span class="essay__expandable">({t('essay.expandable', { minutes: expandableMinutes })})</span>
-          )}
-        </span>
-        <span>{words}</span>
+        <span>{tc('reading.time', { minutes: formatNumber(locale, meta.readingMinutes) })}</span>
       </p>
+      <EpistemicStatus
+        locale={locale}
+        confidence={data.epistemic.confidence}
+        evidence={data.epistemic.evidence}
+        provenance={data.provenance}
+        headingId={IDS.status}
+      />
+      <AbstractBlock locale={locale} abstract={data.abstract} keywords={data.keywords} headingId={IDS.abstract} />
     </header>
 
     <ft-reading-memory class="essay__memory" article={IDS.article} data-eager hidden></ft-reading-memory>
     <ft-room-sound article={IDS.article} data-eager hidden></ft-room-sound>
 
-    <EpistemicStatus
-      locale={locale}
-      confidence={data.epistemic.confidence}
-      evidence={data.epistemic.evidence}
-      provenance={data.provenance}
-      headingId={IDS.status}
-    />
-    <AbstractBlock locale={locale} abstract={data.abstract} keywords={data.keywords} headingId={IDS.abstract} />
-
     <div class:list={['essay__main', { 'essay__main--notes': notes > 0 }]}>
       <span class="essay__rail" aria-hidden="true"></span>
-      {meta.argument.nodes.length > 1 && (
-        <ArgumentMap locale={locale} argument={meta.argument} notes={notes} id={IDS.map} titleId={IDS.mapTitle} />
-      )}
       {notes > 0 ? (
         <ft-sidenotes class="essay__notes" data-eager>
           <article class="prose essay__article" id={IDS.article} lang={data.lang} aria-labelledby={IDS.title}>
@@ -195,21 +177,6 @@ const IDS = {
     </div>
 
     <footer class="essay__footer">
-      <RevisionHistory locale={locale} published={data.published} revisions={data.revisions} id={IDS.revisions} />
-      {discussed.length > 0 && (
-        <nav class="essay__concepts" aria-labelledby={IDS.concepts}>
-          <h2 class="essay__footer-title" id={IDS.concepts}>
-            {t('concepts.title')}
-          </h2>
-          <ul class="essay__concept-list" role="list">
-            {discussed.map((c) => (
-              <li>
-                <a href={c.href}>{c.label}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      )}
       {next !== null && (
         <nav class="bridge-next" aria-labelledby={IDS.next} data-stratum={next}>
           <h2 class="essay__footer-title" id={IDS.next}>
@@ -250,6 +217,21 @@ const IDS = {
           )}
         </nav>
       )}
+      {discussed.length > 0 && (
+        <nav class="essay__concepts" aria-labelledby={IDS.concepts}>
+          <h2 class="essay__footer-title" id={IDS.concepts}>
+            {t('concepts.title')}
+          </h2>
+          <ul class="essay__concept-list" role="list">
+            {discussed.map((c) => (
+              <li>
+                <a href={c.href}>{c.label}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+      <RevisionHistory locale={locale} published={data.published} revisions={data.revisions} id={IDS.revisions} />
     </footer>
   </div>
 </BaseLayout>

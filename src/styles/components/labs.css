@@ -408,6 +408,12 @@
 .lab-page__widget > .lab {
   margin-block: var(--space-1) var(--space-2);
 }
+/* After the instrument, the status and the folded abstract are one or two lines of facts; one hangline closes
+   them before the text, as on an essay (reading.css). */
+.lab-page__article {
+  padding-block-start: var(--space-0);
+  border-block-start: 1px solid var(--rule-strong);
+}
 .lab-page__footer {
   display: grid;
   gap: var(--space-1);

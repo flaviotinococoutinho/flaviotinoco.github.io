@@ -38,9 +38,9 @@ keywords: [state machine, boolean flags, finite automaton, redundancy, software 
 draft: false
 ---
 
-::toc
-
 A video player is stopped, playing, paused or rewinding: four situations, one at a time. The code that controls it usually starts with one boolean — playing or not — and grows by another, and then another. This essay examines that growth: it counts how many configurations the booleans allow, compares that number with what the domain needs, and shows what an explicit state machine guarantees in their place. It is a crossing from the formal stratum to the stratum of value: from a definition in automata theory to an engineering decision, with its cost.:sidenote[This text rewrites an article and a talk given by the author on 23 November 2025. The Java examples come from the talk's demonstration code.]
+
+::toc
 
 ## Three flags, eight configurations {#three-flags .example}
 

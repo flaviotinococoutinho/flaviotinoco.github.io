@@ -1,7 +1,7 @@
 /**
  * Daypart — a coarse, decorative reading of the local clock.
  *
- * Only decorative layers (the ambient field behind the home hero) react to it;
+ * Only decorative layers (the candle of the reading room) react to it;
  * text colours never do, so legibility is independent of the time of day.
  * The clock is injected (the hour is an argument), keeping this pure.
  *

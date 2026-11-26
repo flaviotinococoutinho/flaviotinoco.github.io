@@ -37,9 +37,9 @@ keywords: [máquina de estados, flags booleanas, autômato finito, redundância,
 draft: false
 ---
 
-::toc
-
 Um reprodutor de vídeo está parado, tocando, pausado ou rebobinando: quatro situações, uma de cada vez. O código que o controla costuma começar com um booleano — está tocando ou não — e crescer com outro, e mais outro. Este ensaio examina esse crescimento: conta quantas configurações os booleanos permitem, compara esse número com o que o domínio precisa e mostra o que uma máquina de estados explícita garante no lugar deles. É uma travessia do estrato formal ao do valor: de uma definição da teoria dos autômatos a uma decisão de engenharia, com o seu custo.:sidenote[Este texto reescreve um artigo e uma palestra do autor, de 23 de novembro de 2025. Os exemplos em Java vêm do código de demonstração da palestra.]
+
+::toc
 
 ## Três flags, oito configurações {#tres-flags .example}
 

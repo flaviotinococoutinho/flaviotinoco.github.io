@@ -14,7 +14,6 @@ import {
   type PreferenceKey,
   type Preferences,
 } from '../../../src/core/chrome/preferences.ts';
-import { CVD_TYPES } from '../../../src/core/design/cvd.ts';
 
 /** Arbitrary over the whole (finite) preference space. */
 const prefsArb: fc.Arbitrary<Preferences> = fc.record(
@@ -51,8 +50,9 @@ describe('preference codec', () => {
     expect(isDefault(DEFAULT_PREFERENCES)).toBe(true);
   });
 
-  it('cvd domain is derived from the simulation model', () => {
-    expect(PREFERENCE_DOMAINS.cvd).toEqual(['none', ...CVD_TYPES]);
+  it('forgets the keys the site no longer has (the colour-vision simulation, removed on 2026-11-26)', () => {
+    expect(Object.hasOwn(PREFERENCE_DOMAINS, 'cvd')).toBe(false);
+    expect(decodePreferences('{"cvd":"tritanopia"}')).toEqual(DEFAULT_PREFERENCES);
   });
 });
 
@@ -91,10 +91,10 @@ describe('lenient decoder is total', () => {
   );
 
   it('keeps valid keys and drops invalid ones independently', () => {
-    expect(decodePreferences('{"theme":"dark","contrast":"ultra","cvd":"tritanopia"}')).toEqual({
+    expect(decodePreferences('{"theme":"dark","contrast":"ultra","face":"sans"}')).toEqual({
       ...DEFAULT_PREFERENCES,
       theme: 'dark',
-      cvd: 'tritanopia',
+      face: 'sans',
     });
   });
 
