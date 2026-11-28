@@ -20,6 +20,7 @@
  * carries no information competes with the text for attention).
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import LabTile from '../../components/labs/LabTile.astro';
 import SimplexScene from '../../components/chrome/SimplexScene.astro';
 import StratumMark from '../../components/chrome/StratumMark.astro';
 import FlagsSnapshot from '../../components/labs/FlagsSnapshot.astro';
@@ -56,8 +57,8 @@ const r = useTranslations(reading, locale);
 
 /** How many essays the home page lists; the full list lives in the essays index. */
 const LATEST = 5;
-/** How many labs the teaser names. */
-const LAB_NAMES = 3;
+/** How many labs the teaser shows, as tiles with their thumbnails (an even number fills its grid). */
+const LAB_NAMES = 4;
 
 const [strataEntries, latest, allLabs, allConcepts] = await Promise.all([
   strata(locale),
@@ -272,10 +273,16 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
         </h2>
         <p class="teaser__body">{c('home.labs.body')}</p>
         {labNames.length > 0 && (
-          <ul class="teaser__list" role="list">
+          <ul class="teaser__list lab-tiles" role="list">
             {labNames.map((l) => (
               <li>
-                <a href={href(routeOfLab(l), locale)}>{l.data.title}</a>
+                <LabTile
+                  href={href(routeOfLab(l), locale)}
+                  title={l.data.title}
+                  stratum={l.data.stratum}
+                  widget={l.data.widget}
+                  locale={locale}
+                />
               </li>
             ))}
           </ul>

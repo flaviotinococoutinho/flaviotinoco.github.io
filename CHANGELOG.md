@@ -73,6 +73,12 @@ próprio frontmatter.
 
 ### Alterado
 
+- Arte das páginas fora dos ensaios ([plano de 28/11/2026](docs/planos/2026-11-28-arte-e-experiencia.md)): o mapa
+  da ontologia e o reticulado entram no grid (`.wide`: começam na borda do título, não na da janela); na página de
+  conceito, o glifo da forma de uma obra (¶ Ensaio) fica no tamanho do rótulo e as subseções ganham espaço antes
+  do título; os conceitos de um estrato vêm em colunas (a página "Formal" encurtou 13 %); na página inicial e nas
+  dos estratos, os laboratórios aparecem como ladrilhos com a miniatura da compilação (`LabTile.astro`; no início,
+  com o glifo e o rótulo do estrato), sem JavaScript novo. Guardado por `tests/e2e/composition.spec.ts`.
 - Leitura dos ensaios ([plano de 26/11/2026](docs/planos/2026-11-26-experiencia-de-leitura.md)): o texto
   primeiro. O cabeçalho cabe em uma linha de contexto, título e subtítulo, uma de fatos e uma do estado epistêmico;
   o resumo fica recolhido sob "▸ Resumo e palavras-chave"; o sumário vem depois da introdução, antes da primeira

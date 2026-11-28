@@ -525,6 +525,58 @@
   stroke: none;
 }
 
+/*
+ * Lab tiles (LabTile.astro): where a page names labs, each shows its thumbnail above its title, the whole tile
+ * one link. The grid fits as many as the column holds: two in a teaser of the home page, four on a stratum page.
+ */
+.lab-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(9.5rem, 100%), 1fr));
+  gap: var(--space-0) var(--space-n1);
+  /* The block margins come from the list it is (.teaser__list, .stratum-items__list); the reset zeroes the rest. */
+  padding: 0;
+  list-style: none;
+}
+.lab-tiles > li + li {
+  margin-block-start: 0;
+}
+.lab-tile {
+  display: grid;
+  gap: var(--space-n2);
+  align-content: start;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+  text-decoration-line: none;
+}
+.lab-tile .lab-thumb {
+  transition: border-color calc(var(--duration-2) * var(--motion)) var(--ease-standard);
+}
+.lab-tile__title {
+  text-decoration-line: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.2em;
+}
+.lab-tile:hover .lab-thumb {
+  border-color: var(--ink-muted);
+}
+.lab-tile:hover .lab-tile__title {
+  text-decoration-color: currentColor;
+}
+/* The stratum of a tile, where the page does not name it: glyph + label under the link (rule 6). */
+.lab-tile__stratum {
+  display: flex;
+  margin-block-start: var(--space-n3);
+  /* Outside the link, it does not inherit the tile's face: the same face as the title, one step quieter in ink. */
+  font-family: var(--font-ui);
+  color: var(--ink-muted);
+}
+.lab-tile:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
 /* ───────────────────────── Forced colours ───────────────────────── */
 
 @media (forced-colors: active) {
