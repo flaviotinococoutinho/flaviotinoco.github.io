@@ -35,13 +35,13 @@ keywords: [information system, record, immutability, state, applied philosophy]
 draft: false
 ---
 
-::toc
-
 :::epigraph{source="@helland2015 [p. 102]"}
 “Accountants don't use erasers; otherwise they may go to jail. All entries in a ledger are additive.”
 :::
 
 When a hospital screen says that a patient is in Ward 4, or a bank reports an account balance of \$1,200.00, people speak of the database as though it were a clear window onto the building or the vault. On ordinary days the metaphor holds; on the day of an audit, a legal dispute or a production incident, it comes apart. The patient had already been discharged, though the transfer was never entered; a payment arrived twice after a network timeout, and a manual fix overwrote the earlier figure without leaving any trace of who changed it or why. This essay examines the philosophical mistake beneath that engineering failure. It begins with an ontological question — what kind of thing is a :concept[record]{ref=record}? — and crosses into the theoretical stratum, where an :concept[information system]{ref=information-system} is modelled not as a static cabinet of objects, but as institutional memory built from inscriptions in time.
+
+::toc
 
 ## The mirror illusion {#mirror-illusion .question}
 

@@ -15,7 +15,9 @@
  *   teasers   lab, ontology and formulas
  *
  * Everything is static HTML and reads completely without JavaScript and with
- * reduced motion; scroll only adds parallax and a gentle reveal (motion.css).
+ * reduced motion. Nothing waits for the scroll to appear: the sections are there when the reader arrives
+ * (the fade-in on entry and the particle field behind the claim went away on 2026-11-26: motion that
+ * carries no information competes with the text for attention).
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SimplexScene from '../../components/chrome/SimplexScene.astro';
@@ -116,12 +118,6 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
   <link slot="head" rel="alternate" type="application/rss+xml" title={c('feed.title')} href={feed} />
 
   <section class="hero page-grid" aria-labelledby="home-title">
-    <ft-ambient-field
-      class="hero__ambient"
-      data-daypart-aware
-      aria-hidden="true"
-      role="presentation"
-    ></ft-ambient-field>
     <div class="hero__text">
       <h1 id="home-title" class="hero__title">
         {c('home.hero.claim')}
@@ -171,7 +167,7 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
       <p class="section-lede">{c('home.axes.lede')}</p>
       <ul class="axes" role="list">
         {axes.map(({ axis, disciplines, latest: work }) => (
-          <li class="axis" data-reveal>
+          <li class="axis">
             <svg class="axis__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
               <use href={`#axis-${axis}`} />
             </svg>
@@ -208,7 +204,7 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
         </h2>
         <ul class="entry-list" role="list">
           {recent.map((e) => (
-            <li class="entry" data-reveal>
+            <li class="entry">
               <h3 class="entry__title">
                 <a href={href(routeOfEssay(e), locale)}>{e.data.title}</a>
               </h3>
@@ -242,7 +238,7 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
       </div>
       <ol class="bridge" role="list">
         {bridge.map(({ stratum, spec, data }) => (
-          <li class="bridge__step" data-stratum={stratum} data-reveal>
+          <li class="bridge__step" data-stratum={stratum}>
             <span class="bridge__node" aria-hidden="true">
               <svg focusable="false" viewBox="0 0 24 24">
                 <use href={`#${spec.glyph}`} />
@@ -267,7 +263,7 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
     </section>
 
     <div class="home-section teasers wide" data-pagefind-ignore>
-      <section class="teaser" aria-labelledby="labs-title" data-reveal>
+      <section class="teaser" aria-labelledby="labs-title">
         <svg class="teaser__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
           <use href={`#${FORM_GLYPH.lab}`}></use>
         </svg>
@@ -291,7 +287,7 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
           </svg>
         </a>
       </section>
-      <section class="teaser" aria-labelledby="ontology-title" data-reveal>
+      <section class="teaser" aria-labelledby="ontology-title">
         <svg class="teaser__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
           <use href={`#${FORM_GLYPH.map}`}></use>
         </svg>
@@ -311,7 +307,7 @@ const feed = asset(`${localeCodec.encode(locale)}/rss.xml`);
           </a>
         </p>
       </section>
-      <section class="teaser" aria-labelledby="formulas-title" data-reveal>
+      <section class="teaser" aria-labelledby="formulas-title">
         <svg class="teaser__glyph" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
           <use href="#form-formula"></use>
         </svg>

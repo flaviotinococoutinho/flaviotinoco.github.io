@@ -89,7 +89,7 @@ const STILL_TIME = 2;
  * flick must not uncover bare canvas at the edge of the band.
  */
 const SCROLL_SLACK = 48;
-const WATCHED = ['data-theme', 'data-contrast', 'data-motion', 'data-daypart', 'data-focus', 'data-room', 'data-cvd'];
+const WATCHED = ['data-theme', 'data-contrast', 'data-motion', 'data-daypart', 'data-focus', 'data-room'];
 const MEDIA = [
   '(prefers-reduced-motion: reduce)',
   '(prefers-color-scheme: dark)',

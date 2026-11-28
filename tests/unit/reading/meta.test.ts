@@ -141,7 +141,7 @@ describe('the meta fold', () => {
       title: 'Há um limite de transmissão',
       depends: ['def:entropia', 'premissa-ruido'],
     });
-    expect(meta.embeds).toEqual(['ft-horizontal', 'ft-scrolly']);
+    expect(meta.embeds).toEqual(['ft-scrolly']);
     expect(meta.hasEmbeds).toBe(true);
     expect(meta.hasMath).toBe(true);
     expect(meta.marginnoteCount).toBe(1);

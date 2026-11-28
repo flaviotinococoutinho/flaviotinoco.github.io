@@ -106,15 +106,15 @@ describe('scrollytelling (::::scrolly + :::step)', () => {
 });
 
 describe('horizontal passages (::::horizontal + :::panel)', () => {
-  it('becomes <ft-horizontal> around a labelled, focusable scroll region of panels', async () => {
+  it('becomes a native, labelled and focusable scroll region of panels (no scroll hijacking)', async () => {
     const { html } = await render(
       '::::horizontal{label="Leituras"}\n:::panel{label="A"}\nUm.\n:::\n\n:::panel\nDois.\n:::\n::::',
     );
     expect(html).toBe(
-      '<ft-horizontal class="horizontal" data-panels="2" style="--panels:2"><div class="horizontal__viewport" role="region" aria-label="Leituras" tabindex="0">' +
+      '<div class="horizontal"><div class="horizontal__viewport" role="region" aria-label="Leituras" tabindex="0">' +
         '<div class="horizontal__track"><div class="horizontal__panel" role="group" aria-label="A (Painel 1 de 2)" data-index="0"><p>Um.</p></div>' +
         '<div class="horizontal__panel" role="group" aria-label="Painel 2 de 2" data-index="1"><p>Dois.</p></div></div></div>' +
-        '<p class="horizontal__hint" aria-hidden="true">Deslize para o lado: 2 painéis</p></ft-horizontal>',
+        '<p class="horizontal__hint" aria-hidden="true">Deslize para o lado: 2 painéis</p></div>',
     );
   });
   it('requires a label and panels only', () => {

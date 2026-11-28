@@ -35,9 +35,9 @@ keywords: [combinatorial optimization, Amdahl's law, approximation algorithm, sa
 draft: false
 ---
 
-::toc
-
 Few verbs suffer as much wear in daily software work as “optimize”. Engineers say they are optimizing when they swap a linked list for a contiguous array, eliminate a duplicate query, compress assets or rewrite an entire service in a lower-level language — often before measuring where time or money actually goes. At the opposite extreme, product specifications casually ask for “the optimal delivery schedule”, “the optimal compatible dependency graph” or “the optimal cluster placement”, unaware that they have just stated problems for which no known algorithm finds the exact optimum in polynomial time as inputs grow. This essay crosses from the theoretical to the formal stratum to discipline both habits: first bounding where intervention can matter at all, then separating tractable optima, guaranteed approximations, and deliberate stopping rules.
+
+::toc
 
 ## Saying “better” requires two declarations {#saying-better .definition}
 

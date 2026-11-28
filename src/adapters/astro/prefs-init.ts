@@ -16,7 +16,7 @@
  *
  * Also sets data-daypart (dawn | day | dusk | night) from the local clock with
  * the expression compiled from src/core/chrome/daypart.ts: only decorative
- * layers (ambient hero) react to it, never text colours; and data-js, which CSS
+ * layers (the reading room's candle) react to it, never text colours; and data-js, which CSS
  * uses to reveal controls that need JavaScript.
  */
 import { createHash } from 'node:crypto';
@@ -27,7 +27,7 @@ export { PREFS_STORAGE_KEY };
 
 /**
  * Preference keys mirrored as data-<key> on <html>: theme, contrast, motion, text,
- * face, spacing, hyphens, ruler, focus, texture, shortcut, cvd — derived from the
+ * face, spacing, hyphens, ruler, focus, texture, room, sound, shortcut — derived from the
  * pure model, so a key added there is applied before paint without touching this file.
  */
 export const PREFS_KEYS = PREFERENCE_KEYS;

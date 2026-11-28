@@ -73,6 +73,12 @@ próprio frontmatter.
 
 ### Alterado
 
+- Leitura dos ensaios ([plano de 26/11/2026](docs/planos/2026-11-26-experiencia-de-leitura.md)): o texto
+  primeiro. O cabeçalho cabe em uma linha de contexto, título e subtítulo, uma de fatos e uma do estado epistêmico;
+  o resumo fica recolhido sob "▸ Resumo e palavras-chave"; o sumário vem depois da introdução, antes da primeira
+  seção (contrato editorial nos 16 ensaios). Nos oito ensaios, o primeiro parágrafo passou de 2,03 a 0,96 tela no
+  desktop e de 2,81 a 1,21 no celular. O fim leva adiante: próximo na ponte, conceitos, revisões. Saíram do
+  cabeçalho a "passagem" entre estratos e o número de palavras.
 - Hierarquia de leitura dos ensaios ([plano de 22/11/2026](docs/planos/2026-11-22-hierarquia-de-leitura.md)): o
   sumário é o roteiro do argumento (tipo de cada seção em símbolo e rótulo, tese e conclusão em peso maior, minutos
   por seção com pontilhado guia; `sectionWords` e `sectionMinutes`) e abre o corpo de todo ensaio, antes da
@@ -135,6 +141,15 @@ próprio frontmatter.
 - Índice dos laboratórios: a abertura não diz mais quantos são nem de que áreas ("Seis laboratórios… de sinais,
   informação, dinâmica e probabilidade" já eram oito, de mais áreas); cada cartão nomeia o seu resultado. A
   abertura das frentes ("Onze disciplinas em cinco frentes") ganhou teste contra o modelo de escopo.
+
+### Removido
+
+- Recursos que não agregavam à leitura ([plano de 26/11/2026](docs/planos/2026-11-26-experiencia-de-leitura.md)):
+  o mapa do argumento na margem (repetia o sumário e as linhas "Apoia-se em"; `ft-argument-map`,
+  `src/core/reading/argument-map.ts` e `layout.ts`); o modo "fixado" das passagens horizontais, que tomava a
+  rolagem do leitor (`ft-horizontal`: fica a região rolável nativa); a revelação na rolagem e o campo de partículas
+  da página inicial (`ft-ambient-field`); a simulação de visão de cores do painel (`cvd`; a verificação continua em
+  `pnpm verify:palette`).
 
 ### Corrigido
 

@@ -36,8 +36,6 @@ keywords: [signo, informação, entropia, significado, semiótica]
 draft: false
 ---
 
-::toc
-
 :::epigraph{source="@shannon1948 [p. 379, tradução nossa]"}
 :foreign[“Frequently the messages have meaning; that is they refer to or are correlated according to some system with certain physical or conceptual entities. These semantic aspects of communication are irrelevant to the engineering problem.”]{lang=en}
 
@@ -45,6 +43,8 @@ draft: false
 :::
 
 Quem lê esta página faz várias coisas ao mesmo tempo: distingue formas de letras, reconhece palavras, atribui-lhes sentido, avalia se o que se diz é verdadeiro e decide se vale a pena continuar. A teoria matemática da comunicação, publicada por Claude Shannon em 1948, escolheu medir apenas a primeira dessas atividades — e essa renúncia é parte do que a tornou tão fecunda. Este ensaio é a primeira travessia do site. Parte do :concept[signo]{ref=sign}, uma relação que sempre envolve alguém, e chega à :concept[informação]{ref=information} no sentido técnico, uma medida de escolha que não menciona ninguém em particular. O objetivo é tornar visível o que fica pelo caminho.
+
+::toc
 
 ## Que relação é um signo? {#o-que-e-um-signo .question}
 
