@@ -109,20 +109,12 @@ export default defineMessages({
     'prefs.focus.off': 'Desligado',
     'prefs.focus.on': 'Ligado',
     'prefs.focus.hint':
-      'Esconde a textura, o campo animado e a sala de leitura e deixa discretos as notas laterais e o mapa do argumento até você apontar ou focar neles.',
+      'Esconde a textura e a sala de leitura e deixa discretas as notas laterais até você apontar ou focar nelas.',
     'prefs.shortcut': 'Atalho de tecla única (/)',
     'prefs.shortcut.on': 'Ligado',
     'prefs.shortcut.off': 'Desligado',
     'prefs.shortcut.hint':
       'A tecla / abre a busca. Desligue se usa entrada por voz ou se o atalho dispara sem querer; Ctrl/⌘ K continua funcionando.',
-    'prefs.cvd': 'Simular visão de cores',
-    'prefs.cvd.none': 'Nenhuma',
-    'prefs.cvd.protanopia': 'Protanopia',
-    'prefs.cvd.deuteranopia': 'Deuteranopia',
-    'prefs.cvd.tritanopia': 'Tritanopia',
-    'prefs.cvd.achromatopsia': 'Acromatopsia',
-    'prefs.cvd.hint':
-      'Ferramenta de auditoria: mostra a página como seria percebida com cada deficiência de visão de cores (modelo de Machado, Oliveira e Fernandes, 2009).',
 
     'home.scene': 'Os quatro estratos como simplexos em profundidade: ponto, segmento, triângulo e tetraedro.',
     'home.bridge.title': 'A ponte',
@@ -299,20 +291,12 @@ export default defineMessages({
     'prefs.focus.off': 'Off',
     'prefs.focus.on': 'On',
     'prefs.focus.hint':
-      'Hides the paper texture, the ambient field and the reading room, and keeps side notes and the argument map discreet until you point at or focus them.',
+      'Hides the paper texture and the reading room, and keeps side notes discreet until you point at or focus them.',
     'prefs.shortcut': 'Single-key shortcut (/)',
     'prefs.shortcut.on': 'On',
     'prefs.shortcut.off': 'Off',
     'prefs.shortcut.hint':
       'The / key opens search. Turn it off if you use speech input or trigger it by accident; Ctrl/⌘ K keeps working.',
-    'prefs.cvd': 'Simulate colour vision',
-    'prefs.cvd.none': 'None',
-    'prefs.cvd.protanopia': 'Protanopia',
-    'prefs.cvd.deuteranopia': 'Deuteranopia',
-    'prefs.cvd.tritanopia': 'Tritanopia',
-    'prefs.cvd.achromatopsia': 'Achromatopsia',
-    'prefs.cvd.hint':
-      'An auditing tool: shows the page as it would be perceived with each colour-vision deficiency (model by Machado, Oliveira and Fernandes, 2009).',
 
     'home.scene': 'The four strata as simplices in depth: point, segment, triangle and tetrahedron.',
     'home.bridge.title': 'The bridge',

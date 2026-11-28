@@ -9,7 +9,7 @@
  * Each kind is drawn with a distinct SHAPE and always accompanied by its label,
  * so the encoding never relies on colour (WCAG 1.4.1). Shapes are pure data
  * (SVG path geometry in a 16×16 box) shared by the Markdown stage (heading
- * marks) and the argument-map component — a single source of truth.
+ * marks, the contents) and the page's sprite of kinds — a single source of truth.
  */
 import { type Brand, unsafeBrand } from '../algebra/brand.ts';
 import { absurd } from '../algebra/match.ts';
@@ -74,7 +74,7 @@ export const GLYPH_PAINT = {
   strokeLinejoin: 'round',
 } as const;
 
-/** Id of the SVG <symbol> of a kind in the argument-map sprite (src/components/reading/ArgumentGlyphs.astro). */
+/** Id of the SVG <symbol> of a kind in the page's sprite of kinds (src/components/reading/ArgumentGlyphs.astro). */
 export const glyphSymbolId = (kind: ArgumentKind): `arg-${ArgumentKind}` => `arg-${kind}`;
 
 /** What a path adds to the shared paint (hast property names; the sprite writes them in SVG spelling). */

@@ -1,6 +1,6 @@
 /**
- * Scroll mappings of the non-linear reading islands (ft-scrolly,
- * ft-horizontal, ft-reading-progress). The islands only measure the page
+ * Scroll mappings of the reading islands (ft-scrolly, ft-reading-progress,
+ * ft-reading-memory, and the reading room's clock). The islands only measure the page
  * (IntersectionObserver entries, bounding boxes); every mapping from those
  * measurements to narrative state lives here, pure and tested.
  *
@@ -57,7 +57,7 @@ export const activeStep = (crossing: Iterable<number>, previous: number | null):
 /**
  * Progress through a box taller than the viewport while it is pinned: 0 when
  * its top reaches the top of the viewport, 1 when its bottom reaches the
- * bottom. Used for the pinned horizontal passage and for reading progress.
+ * bottom. Used for reading progress (the hairline, the memory, the room's clock).
  * A box that fits in the viewport is either not reached (0) or passed (1).
  */
 export const pinnedProgress = (top: number, height: number, viewportHeight: number): number => {
@@ -65,46 +65,3 @@ export const pinnedProgress = (top: number, height: number, viewportHeight: numb
   if (travel <= 0) return top <= 0 ? 1 : 0;
   return clamp01(-top / travel);
 };
-
-/** Pinned progress at which panel i (0-based) of n is fully in view. */
-export const progressOfPanel = (i: number, panels: number): number => (panels <= 1 ? 0 : clamp01(i / (panels - 1)));
-
-/** Panel shown at a given pinned progress (nearest). */
-export const panelAt = (progress: number, panels: number): number =>
-  panels <= 1 ? 0 : Math.round(clamp01(progress) * (panels - 1));
-
-/**
- * Document scroll offset that shows panel i of a pinned horizontal passage
- * whose box starts at `boxTop` (document coordinate) — the inverse of
- * pinnedProgress, used to bring a focused panel into view.
- */
-export const scrollOffsetForPanel = (
-  i: number,
-  panels: number,
-  boxTop: number,
-  boxHeight: number,
-  viewportHeight: number,
-): number => boxTop + progressOfPanel(i, panels) * Math.max(0, boxHeight - viewportHeight);
-
-/** Where a section heading is relative to the reading band (the top part of the viewport). */
-export type BandPosition = 'above' | 'in' | 'below';
-
-/**
- * Current section for a scroll-spy (argument map, table of contents): the last
- * heading inside the reading band; when none is inside, the last heading that
- * has already scrolled above it; null before the first heading. Positions come
- * from IntersectionObserver entries (no scroll handlers), indexed in document order.
- */
-export const currentSection = (positions: ReadonlyMap<number, BandPosition>): number | null => {
-  let inside: number | null = null;
-  let above: number | null = null;
-  for (const [i, p] of positions) {
-    if (p === 'in' && (inside === null || i > inside)) inside = i;
-    if (p === 'above' && (above === null || i > above)) above = i;
-  }
-  return inside ?? above;
-};
-
-/** Band position of a box from an IntersectionObserver entry's geometry (viewport coordinates). */
-export const bandPosition = (isIntersecting: boolean, top: number, bandTop: number): BandPosition =>
-  isIntersecting ? 'in' : top < bandTop ? 'above' : 'below';

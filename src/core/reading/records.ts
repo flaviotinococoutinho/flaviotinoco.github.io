@@ -52,8 +52,8 @@ export const readingIds = (sidenotes: number, marginnotes: number): readonly str
 /**
  * Ids used by the page around a Markdown document, which a heading must
  * never take (an id is unique per page): the essay and lab views (src/views/EssayView.astro,
- * src/views/LabView.astro), the site chrome (SVG symbols of the strata and forms), the argument-map
- * sprite and remark-rehype's GFM footnotes section. Heading slugs that collide get the "-1" suffix.
+ * src/views/LabView.astro), the site chrome (SVG symbols of the strata and forms), the sprite of the
+ * argument's kinds and remark-rehype's GFM footnotes section. Heading slugs that collide get the "-1" suffix.
  */
 export const PAGE_IDS: readonly string[] = [
   'content',
@@ -69,8 +69,6 @@ export const PAGE_IDS: readonly string[] = [
   'lab-status',
   'lab-article',
   'lab-concepts',
-  'argument-map',
-  'argument-map-title',
   'footnote-label',
   'simplex-0',
   'simplex-1',

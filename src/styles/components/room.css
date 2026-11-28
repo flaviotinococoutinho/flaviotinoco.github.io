@@ -25,7 +25,7 @@
   --room-headroom: clamp(var(--space-4), 14svh, var(--space-4) + var(--space-2));
   position: relative;
   isolation: isolate;
-  padding-block-start: calc(var(--room-headroom) + var(--space-3));
+  padding-block-start: calc(var(--room-headroom) + var(--space-2));
   background-color: var(--room-wood);
   background-image: var(--wood-image);
   background-size: 640px 320px;

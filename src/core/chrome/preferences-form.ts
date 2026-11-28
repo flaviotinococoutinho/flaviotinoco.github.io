@@ -77,7 +77,6 @@ const HINTS: Partial<
     | 'prefs.room.hint'
     | 'prefs.sound.hint'
     | 'prefs.shortcut.hint'
-    | 'prefs.cvd.hint'
   >
 > = {
   face: 'prefs.face.hint',
@@ -87,7 +86,6 @@ const HINTS: Partial<
   room: 'prefs.room.hint',
   sound: 'prefs.sound.hint',
   shortcut: 'prefs.shortcut.hint',
-  cvd: 'prefs.cvd.hint',
 };
 
 /** The form of one locale, generated from the model and the catalog. */

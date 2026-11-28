@@ -6,15 +6,7 @@
  * redrawn as paths so they never depend on a font or turn into emoji.
  * All symbols share a 24-unit viewBox and a 1.6 stroke; strokes and fills use
  * currentColor so glyphs inherit text colour and forced-colors palettes.
- *
- * The sprite also carries the colour-vision-deficiency simulation filters used
- * by the reader preference "cvd" (applied with CSS filter:url(#cvd-…) in
- * src/styles/components/chrome.css). Matrix values come from the pure model
- * (Machado, Oliveira & Fernandes 2009; src/core/design/cvd.ts). The sprite is
- * hidden by zero size, not display:none, because filters inside an unrendered
- * SVG are ignored by some engines.
  */
-import { CVD_TYPES, feColorMatrixValues } from '../core/design/cvd.ts';
 ---
 
 <svg
@@ -263,12 +255,5 @@ import { CVD_TYPES, feColorMatrixValues } from '../core/design/cvd.ts';
         stroke-width="1.6"
       ></path>
     </symbol>
-
-    <!-- Colour-vision simulation (Machado et al. 2009), linearRGB as the model requires -->
-    {CVD_TYPES.map((type) => (
-      <filter id={`cvd-${type}`} color-interpolation-filters="linearRGB">
-        <feColorMatrix type="matrix" values={feColorMatrixValues(type)} />
-      </filter>
-    ))}
   </defs>
 </svg>

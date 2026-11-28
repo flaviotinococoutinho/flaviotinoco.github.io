@@ -33,9 +33,9 @@ keywords: [lei de Hick–Hyman, código de Huffman, entropia, interface, decisã
 draft: false
 ---
 
-::toc
-
 Toda interface pede escolhas: qual botão, qual item do menu, qual das opções de envio. Cada escolha consome tempo e atenção de quem usa o produto. Este ensaio pergunta se esse custo pode ser medido em bits — e responde que, em parte e sob hipóteses explícitas, pode. É a terceira travessia do site, do estrato formal ao do :concept[valor]{ref=value}: do que se segue necessariamente ao que serve a alguém, e a que custo.
+
+::toc
 
 ## Uma lei do tempo de escolha {#lei-de-hick-hyman .premise}
 

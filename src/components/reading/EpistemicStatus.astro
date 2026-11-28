@@ -7,7 +7,8 @@
  * (shape), its word and probability band printed beside it (text) — so neither
  * colour nor position alone carries the meaning. Evidence names the kind of
  * support. The provenance notice appears when the work declares AI assistance
- * or that the author has not reviewed it.
+ * or that the author has not reviewed it. It is one line under the dates: the
+ * heading names the section for assistive technology and is not shown.
  */
 import type { Confidence, Evidence } from '../../core/domain/epistemic.ts';
 import type { Locale } from '../../core/domain/locale.ts';
@@ -36,7 +37,7 @@ const width = STEP * (scale.length - 1) + 12;
 ---
 
 <section class="status" aria-labelledby={headingId}>
-  <h2 class="status__title" id={headingId}>
+  <h2 class="status__title visually-hidden" id={headingId}>
     {t('epistemic.title')}
   </h2>
   <dl class="status__list">
@@ -64,7 +65,13 @@ const width = STEP * (scale.length - 1) + 12;
           )}
         </svg>
         <span class="kent__label">{t(`confidence.${confidence}`)}</span>
-        <span class="kent__band">({t('epistemic.band', { range: band })})</span>
+        {/*
+          The band alone is seen, "(63%–87%)"; what it is, is read out first. The hidden words stand before the
+          parenthesis, so no line break of the source can put a space inside it.
+        */}
+        <span class="kent__band">
+          <span class="visually-hidden">{t('epistemic.band.label')} </span>({band})
+        </span>
         <span class="visually-hidden">{t('epistemic.scale', { i: position, n: scale.length })}</span>
       </dd>
     </div>

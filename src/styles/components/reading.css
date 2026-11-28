@@ -9,8 +9,6 @@
 
 ft-sidenotes,
 ft-scrolly,
-ft-horizontal,
-ft-argument-map,
 ft-essay-filter {
   display: block;
 }
@@ -455,62 +453,6 @@ ft-scrolly:defined .scrolly__step[data-active] {
   content: '\a0→';
   content: '\a0→' / '';
 }
-/* Pinned: vertical scroll drives the track (ft-horizontal sets data-mode). */
-@property --h-progress {
-  syntax: '<number>';
-  inherits: true;
-  initial-value: 0;
-}
-@keyframes h-progress {
-  from {
-    --h-progress: 0;
-  }
-  to {
-    --h-progress: 1;
-  }
-}
-/* One screen to pin, then 0.618 screen of vertical travel per panel change. */
-ft-horizontal[data-mode='pinned'] {
-  block-size: calc(100svh + (var(--panels) - 1) * 61.8svh);
-}
-ft-horizontal[data-mode='pinned'] .horizontal__viewport {
-  position: sticky;
-  inset-block-start: 0;
-  display: flex;
-  align-items: center;
-  block-size: 100svh;
-  overflow: clip;
-  scroll-snap-type: none;
-  border-block: 0;
-}
-ft-horizontal[data-mode='pinned'] .horizontal__track {
-  flex: none;
-  inline-size: calc(var(--panels) * 100%);
-  gap: 0;
-  transform: translateX(calc(var(--h-progress) * (1 / var(--panels) - 1) * 100%));
-}
-ft-horizontal[data-mode='pinned'] .horizontal__panel {
-  flex-basis: calc(100% / var(--panels));
-  padding-inline: var(--space-1);
-}
-ft-horizontal[data-mode='pinned'] .horizontal__hint {
-  display: none;
-}
-/*
- * Scroll-driven animations are written with longhands only: the CSS minifier
- * folds `animation` + `animation-timeline` into one `animation` shorthand with a
- * timeline, which browsers reject (the shorthand only resets the timeline).
- */
-@supports (animation-timeline: view()) {
-  ft-horizontal[data-mode='pinned'] {
-    animation-name: h-progress;
-    animation-timing-function: linear;
-    animation-fill-mode: both;
-    animation-timeline: view();
-    animation-range: contain 0% contain 100%;
-  }
-}
-
 /* ───────────────────── 7. Epigraph, aside, table of contents ───────────────────── */
 .prose .epigraph {
   inline-size: fit-content;
@@ -660,9 +602,12 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
 /* ───────────────────── 8. Essay page ───────────────────── */
 .essay {
   row-gap: var(--space-1);
-  padding-block: var(--space-3) var(--space-4);
+  padding-block: var(--space-2) var(--space-4);
 }
-/* Hangline pause between the essay headspace and the reading apparatus (Samara 2023, pp. 40, 68). */
+/*
+ * The headspace: context, title, dek, facts, status and the folded abstract, closed by one hangline before
+ * the text (Samara 2023, pp. 40, 68). One rule only: every block above it is a line or two of type.
+ */
 .essay__header {
   padding-block-end: var(--space-0);
   border-block-end: 1px solid var(--rule-strong);
@@ -671,7 +616,7 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-n2) var(--space-0);
+  gap: var(--space-n3) var(--space-n1);
   margin: 0;
   font-family: var(--font-ui);
   font-size: var(--step-n1);
@@ -713,9 +658,6 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
   content: '·' / '';
   margin-inline-start: var(--space-n1);
 }
-.essay__expandable {
-  margin-inline-start: var(--space-n3);
-}
 /* The revised date leads to the revision history (what changed, and when). */
 .essay__revised a {
   color: inherit;
@@ -738,22 +680,12 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
   color: var(--stratum, var(--ink));
 }
 
-/* Epistemic status and provenance. */
+/* Epistemic status and provenance: one line of facts under the dates (the heading is for assistive tech). */
 .status {
-  padding-block: var(--space-n1);
-  border-block: 1px solid var(--rule);
+  margin-block-start: var(--space-n2);
   font-family: var(--font-ui);
   font-size: var(--step-n1);
   line-height: var(--leading-ui);
-}
-.status__title {
-  margin: 0 0 var(--space-n3);
-  font-family: var(--font-ui);
-  font-size: var(--step-n1);
-  font-weight: 600;
-  font-variant-caps: all-small-caps;
-  letter-spacing: 0.05em;
-  color: var(--ink-muted);
 }
 .status__list {
   display: flex;
@@ -820,19 +752,52 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
   margin-block-start: var(--space-n3);
 }
 
-/* Abstract and keywords (ABNT NBR 6028). */
+/* Abstract and keywords (ABNT NBR 6028), folded under one line that says what opens. */
 .abstract {
+  margin-block-start: var(--space-n2);
   font-size: var(--step-n1);
   line-height: var(--leading-body);
+}
+.abstract__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-n3) var(--space-n2);
+  inline-size: fit-content;
+  min-block-size: var(--space-1);
+  font-family: var(--font-ui);
+  line-height: var(--leading-ui);
+  color: var(--ink-muted);
+  cursor: pointer;
+  list-style: none;
+}
+.abstract__summary::-webkit-details-marker {
+  display: none;
+}
+/* The disclosure's own sign, turned by the state: a chevron in the text colour, never a colour alone. */
+.abstract__summary::before {
+  content: '▸';
+  content: '▸' / '';
+  color: var(--ink);
+  transition: rotate calc(var(--duration-2) * var(--motion)) var(--ease-standard);
+}
+.abstract__disclosure[open] > .abstract__summary::before {
+  rotate: 90deg;
+}
+.abstract__summary:hover .abstract__title {
+  text-decoration-line: underline;
+  text-underline-offset: 0.2em;
+}
+.abstract__summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 .abstract__title {
   margin: 0;
   font-family: var(--font-ui);
   font-size: var(--step-n1);
   font-weight: 600;
-  font-variant-caps: all-small-caps;
-  letter-spacing: 0.05em;
-  color: var(--ink-muted);
+  color: var(--ink);
 }
 .abstract__text,
 .abstract__keywords {
@@ -847,7 +812,7 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
 
 /*
  * Main row: on wide screens a subgrid of the page grid — the article in the
- * main column; the sticky argument map and the side notes in the margin column.
+ * main column, the side notes level with their marks in the margin column.
  */
 .essay__main {
   position: relative;
@@ -870,15 +835,6 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
   .essay__main > .essay__rail {
     grid-column: margin;
     grid-row: 1;
-  }
-  .essay__main > .argmap {
-    grid-column: margin;
-    grid-row: 1;
-    position: sticky;
-    inset-block-start: var(--space-1);
-    z-index: 2;
-    max-block-size: calc(100svh - 2 * var(--space-1));
-    overflow-y: auto;
   }
 
   /*
@@ -973,113 +929,6 @@ ft-horizontal[data-mode='pinned'] .horizontal__hint {
 .bridge-next__list {
   display: grid;
   gap: var(--space-1);
-}
-
-/* ───────────────────── 9. Argument map ───────────────────── */
-.argmap {
-  margin-block-end: var(--space-1);
-  background-color: var(--paper);
-  font-family: var(--font-ui);
-  font-size: var(--step-n1);
-  line-height: var(--leading-ui);
-}
-.argmap__summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-n3) var(--space-n1);
-  padding-block: var(--space-n2);
-  border-block-end: 1px solid var(--rule);
-  font-weight: 600;
-  cursor: pointer;
-}
-.argmap__current {
-  font-size: var(--step-n2);
-  font-weight: 400;
-  color: var(--ink-muted);
-}
-.argmap__body {
-  padding-block: var(--space-n1);
-}
-.argmap__svg {
-  display: block;
-  inline-size: 100%;
-  block-size: auto;
-  overflow: visible;
-}
-.argmap__line {
-  fill: none;
-  stroke: var(--rule-strong);
-  stroke-width: 1.2;
-}
-/* Dialectical rebuttals are distinguished from constructive support by line geometry (Christiansen 2023, p. 188). */
-.argmap__edge[data-target-kind='objection'] .argmap__line {
-  stroke-dasharray: 4 3;
-}
-.argmap__head {
-  fill: var(--rule-strong);
-}
-.argmap__node {
-  color: var(--ink);
-  text-decoration: none;
-}
-.argmap__hit {
-  fill: var(--mark);
-  fill-opacity: 0;
-}
-.argmap__label {
-  font-family: var(--font-ui);
-  font-size: var(--step-n2);
-  fill: var(--ink-muted);
-}
-.argmap__node:is(:hover, :focus-visible) .argmap__label {
-  fill: var(--ink);
-  text-decoration: underline;
-}
-.argmap__node.is-current .argmap__hit {
-  fill-opacity: 1;
-}
-.argmap__node.is-current .argmap__label {
-  fill: var(--ink);
-  font-weight: 700;
-}
-.argmap__legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-n3) var(--space-n1);
-  margin: var(--space-n1) 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: var(--step-n2);
-  color: var(--ink-muted);
-}
-.argmap__legend li {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-n3);
-}
-.argmap__legend-glyph,
-.argmap__item-glyph {
-  inline-size: 1em;
-  block-size: 1em;
-  flex: none;
-}
-.argmap__item-glyph {
-  margin-inline-end: 0.3em;
-  vertical-align: -0.125em;
-}
-.argmap__list {
-  margin: 0;
-  padding-inline-start: 1.618em;
-}
-.argmap__item + .argmap__item {
-  margin-block-start: var(--space-n3);
-}
-.argmap__item.is-current > .argmap__link {
-  font-weight: 700;
-}
-.argmap__deps {
-  color: var(--ink-muted);
 }
 
 /* ───────────────────── 10. Reading progress ─────────────────────
@@ -1288,16 +1137,11 @@ ft-reading-progress[data-mode='js'] {
 
 /* ───────────────────── 12. Preferences, forced colours, print ───────────────────── */
 @media (forced-colors: active) {
-  .argmap__line,
   .kent__axis {
     stroke: CanvasText;
   }
-  .argmap__head,
   .kent__mark--active {
     fill: CanvasText;
-  }
-  .argmap__node.is-current .argmap__hit {
-    fill: Highlight;
   }
   .reading-progress__bar {
     forced-color-adjust: none;
@@ -1320,23 +1164,15 @@ ft-reading-progress[data-mode='js'] {
   [data-collapsed] > :is(.sidenote__note, .marginnote__note) {
     display: block;
   }
-  ft-horizontal[data-mode='pinned'] {
-    block-size: auto;
-  }
-  .horizontal__viewport,
-  ft-horizontal[data-mode='pinned'] .horizontal__viewport {
+  .horizontal__viewport {
     position: static;
     block-size: auto;
     overflow: visible;
   }
-  .horizontal__track,
-  ft-horizontal[data-mode='pinned'] .horizontal__track {
+  .horizontal__track {
     display: block;
     inline-size: auto;
     transform: none;
-  }
-  .argmap__figure[hidden] {
-    display: none;
   }
 }
 

@@ -49,8 +49,10 @@ Valores de cor espalhados pelo CSS também impedem verificar qualquer coisa: nã
 ## Consequências
 
 - **Positivas:** qualquer ajuste de cor é verificado em segundos, com relatório por par; temas alto contraste
-  e escuro são cidadãos de primeira classe; a mesma matriz de Machado alimenta filtros SVG de simulação no
-  navegador (`feColorMatrixValues`).
+  e escuro são cidadãos de primeira classe. A mesma matriz de Machado alimentou, até 26/11/2026, filtros SVG
+  que simulavam a discromatopsia na página (uma preferência do painel). A simulação saiu do painel: é uma
+  ferramenta de auditoria, não de leitura, e a verificação continua em `pnpm verify:palette`
+  (`feColorMatrixValues` segue no modelo, testado).
 - **Negativas:** a paleta fica restrita a regiões do espaço de cor que satisfazem todos os limiares ao mesmo
   tempo (em especial os quatro estratos sob tritanopia); mudar a identidade visual exige trabalhar com os
   números, não só com o olho.

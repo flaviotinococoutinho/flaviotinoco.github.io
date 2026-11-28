@@ -33,9 +33,9 @@ keywords: [amostragem, transformada de Fourier, aliasing, teorema de Nyquist–S
 draft: false
 ---
 
-::toc
-
 Um microfone converte variações de pressão do ar numa tensão elétrica que muda continuamente; um computador só guarda listas finitas de números. Entre os dois há uma decisão: em que instantes medir. O teorema da amostragem diz quando essa decisão não perde nada — e é um exemplo nítido de como uma hipótese de modelo, uma vez aceita, se converte em garantia matemática. Este ensaio é a segunda travessia do site, do estrato teórico ao formal.
+
+::toc
 
 ## Sinal, frequência e transformada {#sinal-e-frequencia .definition}
 

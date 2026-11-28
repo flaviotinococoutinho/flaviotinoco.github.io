@@ -22,7 +22,7 @@ uma tradição por trás:
 | Notas laterais e de margem | E. Tufte, _Beautiful Evidence_ (2006); Tufte CSS                | lê o comentário ao lado da linha, sem perder o lugar         |
 | _Scrollytelling_           | narrativa visual do jornalismo de dados (_Snow Fall_, NYT 2012) | rola o texto enquanto uma figura fixa muda de estado         |
 | Passagem horizontal        | álbum de painéis, _storyboard_                                  | atravessa uma sequência lateral sem sair da leitura vertical |
-| Mapa do argumento          | S. Toulmin, _The Uses of Argument_ (1958)                       | salta entre as seções pela estrutura lógica, não pela ordem  |
+| Tipos de argumento         | S. Toulmin, _The Uses of Argument_ (1958)                       | lê no sumário e nos títulos o papel de cada seção            |
 
 ### 1.1 Stretchtext (Nelson)
 
@@ -63,12 +63,11 @@ continuam a mudar. Sem JavaScript: os passos são lidos em sequência e a figura
 `::::horizontal{label="…"}` com painéis `:::panel` é, por padrão, uma **região rolável nativa** com
 _scroll-snap_, `role="region"`, `aria-label`, `tabindex="0"` e uma indicação visível ("Deslize para o lado: 3
 painéis →"): funciona com teclado, toque e leitor de tela, sem JavaScript, em telas estreitas e com movimento
-reduzido. Em telas largas com movimento permitido, `ft-horizontal` "fixa" a passagem: a rolagem vertical
-desliza a faixa de painéis (animação guiada por rolagem do CSS, `view()` com intervalo `contain`; onde não
-existe — Firefox —, o mesmo progresso calculado no núcleo a partir da rolagem). O foco de teclado que entra num
-painel leva a página até a posição que mostra esse painel.
+reduzido. É assim em todas as telas: até 26/11/2026, em telas largas, uma ilha "fixava" a passagem e a rolagem
+vertical deslizava os painéis de lado. Isso tomava do leitor o controle da rolagem (_scrolljacking_: a roda
+fazia outra coisa que rolar), e saiu ([plano de 26/11/2026](planos/2026-11-26-experiencia-de-leitura.md)).
 
-### 1.5 Mapa do argumento (Toulmin)
+### 1.5 Tipos de argumento (Toulmin)
 
 Cada seção pode declarar o seu papel no argumento e do que depende:
 
@@ -97,25 +96,28 @@ Pares vazado/cheio compartilham sentido (questão ○ → tese ●; definição 
 O tipo é sempre **forma + rótulo**, nunca só cor (WCAG 1.4.1).
 
 As dependências formam um grafo dirigido que precisa ser **acíclico** (um ciclo seria petição de princípio:
-a compilação falha e mostra o ciclo). O mapa é desenhado em camadas (método de Sugiyama: camadas pelo caminho
-mais longo, vértices fictícios em arestas longas, redução de cruzamentos pelo baricentro — determinístico,
-`src/core/reading/layout.ts`): **toda dependência fica acima do que nela se apoia**. Cada nó é um link para a sua
-seção; a seção em leitura é destacada (`aria-current="location"`). Em telas largas o mapa fica fixo na coluna de
-margem — aberto quando o ensaio não tem notas laterais, recolhido quando a margem é das notas —; em telas
-estreitas é uma divulgação (`<details>`) antes do texto. Sem JavaScript: uma lista ordenada do argumento, com os
-tipos por extenso e "apoia-se em …".
+a compilação falha e mostra o ciclo).
 
-No próprio texto, cada seção com tipo recebe acima do título o símbolo e o rótulo do tipo e, abaixo, os links
-"Apoia-se em: …" para as seções de que depende.
+O argumento aparece em dois lugares, ambos no fluxo do texto. O **sumário** (`::toc`), logo depois da
+introdução e antes da primeira seção, é o roteiro: cada seção com o símbolo e o rótulo do seu tipo, a tese e a
+conclusão em peso maior, e o tempo de leitura de cada uma. Em **cada seção**, o símbolo e o rótulo do tipo ficam
+acima do título e, abaixo, os links "Apoia-se em: …" para as seções de que ela depende.
+
+Até 26/11/2026 havia também um mapa do argumento desenhado como grafo, fixo na coluna de margem. Ele repetia o
+sumário (os mesmos nós e tipos) e as linhas "Apoia-se em" (as mesmas arestas). Em sete dos oito ensaios a margem
+é das notas laterais, e o mapa aparecia ali recolhido, como um título solto sobre uma caixa vazia. Saiu ([plano
+de 26/11/2026](planos/2026-11-26-experiencia-de-leitura.md)).
 
 ## 2. Autoria (exemplos)
 
 ```markdown
-::toc
-
 :::epigraph[Plutarco, _Vida de Pompeu_, 50]{lang=la}
 Navigare necesse est; vivere non est necesse.
 :::
+
+A introdução: o gancho e a tese, em um a três parágrafos.
+
+::toc
 
 ## O que é informação? {#questao .question}
 
@@ -174,9 +176,11 @@ Regras da linguagem (fechada — erros param a compilação, listados de uma vez
   O sumário é também o roteiro do argumento: a entrada de uma seção com tipo leva o símbolo e o rótulo do tipo
   (fora do link, que se nomeia só pelo título), as entradas de tese e conclusão vêm em peso maior (a espinha do
   argumento) e cada seção de nível 2 diz quanto tempo leva (palavras da seção ÷ 238, arredondado ao minuto mais
-  próximo, no mínimo 1; `sectionWords` e `sectionMinutes`). Nos ensaios, o `::toc` abre o corpo, antes da epígrafe e
-  do parágrafo de abertura: o aparato (estado, resumo, sumário) fica junto, e o texto começa depois dele (teste do
-  contrato editorial em `tests/unit/content/syntax.test.ts`).
+  próximo, no mínimo 1; `sectionWords` e `sectionMinutes`). Nos ensaios, o `::toc` vem depois da introdução e
+  logo antes da primeira seção (a ordem da Wikipédia: introdução, sumário, corpo). O parágrafo de abertura, com a
+  capitular, é o primeiro texto que o leitor encontra: o gancho e a tese. O sumário vem em seguida, como a rota que
+  o ensaio vai seguir (teste do contrato editorial em `tests/unit/content/syntax.test.ts`; até 26/11/2026 o sumário
+  abria o corpo e empurrava o primeiro parágrafo para a segunda tela).
 - Atributos desconhecidos são erro; a língua do documento vem de `lang` no frontmatter (`pt-BR` | `en`).
 
 ## 3. Preservação de informação

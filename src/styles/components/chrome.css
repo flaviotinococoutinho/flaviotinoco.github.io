@@ -57,14 +57,11 @@
   margin-block-start: var(--space-2);
 }
 
-/* Focus mode: nothing moves or textures the page; marginalia (side notes, the
-   argument map) stay discreet until pointed at or focused. Inline notes on
-   narrow screens are part of the text and keep full contrast. */
+/* Focus mode: nothing textures the page; marginalia (side notes) stay discreet
+   until pointed at or focused. Inline notes on narrow screens are part of the
+   text and keep full contrast. */
 :root[data-focus='on'] {
   --grain-image: none;
-}
-:root[data-focus='on'] ft-ambient-field {
-  display: none;
 }
 @media (width >= 72rem) {
   :root[data-focus='on'] .essay__main :is(.sidenote__note, .marginnote__note),
@@ -99,30 +96,6 @@ ft-reading-ruler {
 @media (forced-colors: active), print {
   ft-reading-ruler {
     display: none !important;
-  }
-}
-
-/* Colour-vision simulation (audit tool): SVG feColorMatrix filters defined in
-   Glyphs.astro from Machado et al. (2009). On the root element a filter creates
-   no containing block for fixed-position descendants (Filter Effects 1 §5). */
-:root[data-cvd='protanopia'] {
-  filter: url('#cvd-protanopia');
-}
-:root[data-cvd='deuteranopia'] {
-  filter: url('#cvd-deuteranopia');
-}
-:root[data-cvd='tritanopia'] {
-  filter: url('#cvd-tritanopia');
-}
-:root[data-cvd='achromatopsia'] {
-  filter: url('#cvd-achromatopsia');
-}
-/* The simulation is an on-screen audit: never in forced colours (the system palette
-   is authoritative) nor on paper. Top-layer surfaces (palette dialog, preferences
-   popover) are rendered outside the root's filter, so the controls stay legible. */
-@media (forced-colors: active), print {
-  :root[data-cvd] {
-    filter: none;
   }
 }
 
@@ -861,19 +834,6 @@ ft-preferences:not([data-ready]) .prefs__form {
   isolation: isolate;
   padding-block: var(--space-2) var(--space-1);
   overflow: clip;
-}
-/* Canvas host for the labs workstream (curl-noise ambient field): fills the whole
-   hero box, behind its content. An absolutely positioned grid child takes its grid
-   area as containing block, so it must span the full track range explicitly. */
-ft-ambient-field {
-  position: absolute;
-  /* Behind the claim only: the strokes never run under the body-size text below it. */
-  inset: 0 0 auto;
-  block-size: min(100%, 21rem);
-  z-index: -1;
-  display: block;
-  grid-column: full;
-  pointer-events: none;
 }
 .hero__text {
   grid-column: main;
