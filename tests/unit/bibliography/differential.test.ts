@@ -8,17 +8,29 @@
  * Known, deliberate divergences are listed in DIVERGENT with the reason and the
  * output of each side, and are asserted too: if either side changes, the test
  * says so.
+ *
+ * Since version 13 the oracle is the Rust/WebAssembly build that Better BibTeX itself runs; it is initialised
+ * once, synchronously, from the binary the package ships. (Its `/js` entry, the TypeScript port, sentence-cases
+ * titles whatever the options say, so it is not the reference.) `english: []` keeps every title as entered —
+ * the old `english: false, sentenceCase: false` — and `caseProtection: 'strict'` keeps braces as protection
+ * only, never as markup.
  */
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
-import { parse as oracle } from '@retorquere/bibtex-parser';
+import { initSync, parse as oracle, type Options } from '@retorquere/bibtex-parser';
 import { decodeLatex } from '../../../src/core/bibliography/bibtex/latex.ts';
 import { parseNames } from '../../../src/core/bibliography/bibtex/names.ts';
 
 const normalise = (s: string): string =>
   s.replace(/[ıȷ](?=[\u0300-\u036F])/gu, (c) => (c === 'ı' ? 'i' : 'j')).normalize('NFC');
 
-const OPTIONS = { english: false, sentenceCase: false, caseProtection: 'strict' } as const;
+initSync({
+  module: readFileSync(createRequire(import.meta.url).resolve('@retorquere/bibtex-parser/bibtex_parser_bg.wasm')),
+});
+
+const OPTIONS: Options = { english: [], caseProtection: 'strict' };
 
 /** Field values: accents in every notation, special letters, ligatures, escapes, protection. */
 const VALUES: readonly string[] = [
