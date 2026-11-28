@@ -4,6 +4,11 @@
  * stratum in bridge order (philosophy → theory → formal → value), each with
  * its simplex glyph, title, description, date and reading time.
  *
+ * Each group says what kind of essay lives in it: the guiding question and the
+ * method of its stratum (the strata collection), in the margin column on wide
+ * screens and under the group's heading on narrow ones — information scent
+ * before the titles (Pirolli & Card, 1999).
+ *
  * A quiet filter by the domain facet (Ranganathan's faceted classification) is
  * a progressive enhancement: without JavaScript the page is the plain grouped
  * list and no inert control is shown; <ft-essay-filter> reveals the select,
@@ -18,7 +23,8 @@ import type { Locale } from '../core/domain/locale.ts';
 import reading from '../core/i18n/catalogs/reading.ts';
 import { parseDocumentMeta } from '../core/fold/meta.ts';
 import { domainsPresent, groupByStratum } from '../core/reading/essay.ts';
-import { alternatesForAll, essays, routeOfEssay } from '../adapters/astro/content.ts';
+import chrome from '../core/i18n/catalogs/chrome.ts';
+import { alternatesForAll, essays, routeOfEssay, strata } from '../adapters/astro/content.ts';
 import { href, useTranslations } from '../adapters/astro/i18n.ts';
 
 export interface Props {
@@ -27,7 +33,9 @@ export interface Props {
 
 const { locale } = Astro.props;
 const t = useTranslations(reading, locale);
+const c = useTranslations(chrome, locale);
 const all = await essays(locale);
+const about = new Map((await strata(locale)).map((s) => [s.data.stratum, s.data] as const));
 const minutes = new Map(
   await Promise.all(
     all.map(async (e) => {
@@ -78,6 +86,14 @@ const alternates = alternatesForAll(() => ({ kind: 'essays' }));
                 <StratumLabel stratum={g.stratum} locale={locale} />
               </a>
             </h2>
+            {about.has(g.stratum) && (
+              <dl class="essays-index__about">
+                <dt class="ui">{c('home.bridge.question')}</dt>
+                <dd class="essays-index__question">{about.get(g.stratum)?.question}</dd>
+                <dt class="ui">{c('home.bridge.method')}</dt>
+                <dd>{about.get(g.stratum)?.method}</dd>
+              </dl>
+            )}
             <div class="essays-index__list">
               {g.items.map((e) => (
                 <EssayCard

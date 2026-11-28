@@ -23,14 +23,13 @@ próprio frontmatter.
   autômato recusa e a redundância do histórico (`src/core/labs/flags.ts`, `ft-lab-flags`).
 - Página inicial: a proposição do site como título, as chamadas, o acervo em números e o laboratório de flags
   em forma compacta na primeira tela; sem JavaScript, a mesma figura desenhada na compilação.
-- Sala de leitura ([ADR 0014](docs/adr/0014-sala-de-leitura.md)): nos ensaios, em janelas largas, uma cena
-  three.js (mesa, estante, janela com chuva, vela) ocupa as calhas ao lado do texto, que continua sobre uma
-  folha opaca com os tokens de papel. A decisão de mostrá-la é uma função pura (`src/core/chrome/room.ts`):
-  nada é baixado sem calha, com economia de dados, contraste aumentado ou renderizador por software; com
-  movimento reduzido fica um quadro. A sala é calculada do site: a estante é o acervo (uma lombada por ensaio,
+- Sala de leitura ([ADR 0014](docs/adr/0014-sala-de-leitura.md)): nos ensaios, uma cena three.js (mesa,
+  estante, janela com chuva, vela) atrás do texto, que continua sobre uma folha opaca com os tokens de papel.
+  A decisão de mostrá-la é uma função pura (`src/core/chrome/room.ts`): nada é baixado com economia de dados,
+  contraste aumentado ou renderizador por software; com movimento reduzido fica um quadro. A sala é calculada do site: a estante é o acervo (uma lombada por ensaio,
   um caderno por laboratório, cor do estrato), a obra lida fica sobre a mesa sob o simplexo do seu estrato, a
-  vela queima com o progresso da leitura e a chuva cede no fim. Preferência `room` (desligada por padrão,
-  automática, ligada) no painel; tokens `--room-*`; dependência `three` 0.187.0, isolada num módulo sob demanda.
+  vela queima com o progresso da leitura e a chuva cede no fim. Preferência `room` (automática por padrão,
+  ligada, desligada) no painel; tokens `--room-*`; dependência `three` 0.187.0, isolada num módulo sob demanda.
 - Laboratório `pipeline` ("O pipeline"): um pipeline de ETL de até seis etapas sobre uma distribuição exata de
   144 vendas; depois de cada etapa, a informação mútua com a venda inteira e com uma pergunta escolhida pelo
   leitor, calculada por `information.wasm`, e a etapa em que a pergunta deixa de ser respondida
@@ -63,25 +62,49 @@ próprio frontmatter.
   inclina com o ar da mão, o vidro embaçado se limpa por onde ela passa, e o livro sob o ponteiro sai da
   estante com o título ao lado; um clique abre a obra. Títulos e endereços em `/<lang>/shelf.json`, da mesma
   lista que o atributo `shelf` (`src/adapters/astro/shelf.ts`), baixados só depois que a sala acende.
+- Som da sala ([ADR 0014](docs/adr/0014-sala-de-leitura.md), decisão 19;
+  [plano de 22/11/2026](docs/planos/2026-11-22-som-da-sala.md)): nos ensaios, um som de ambiente calculado no
+  navegador, sem arquivo de áudio (chuva no vidro, fogo, vento, páginas e pena), com o gerador "Medieval Library"
+  do myNoise como modelo: predefinições, um controle por camada no painel e a mistura que oscila devagar. A sala
+  comanda o som: a chuva cede no fim do ensaio, o vento cresce com a rolagem e uma página vira a cada seção.
+  Preferência `sound`, desligada por padrão; começa no primeiro gesto do leitor na página, nunca ao carregar, e
+  pausa com a aba oculta. Modelo e síntese puros (`src/core/chrome/sound.ts`, `sound-synth.ts`), motor Web Audio
+  sob demanda (`src/islands/scenes/room-sound.ts`), ilha `ft-room-sound`.
 
 ### Alterado
 
+- Leitura dos ensaios ([plano de 26/11/2026](docs/planos/2026-11-26-experiencia-de-leitura.md)): o texto
+  primeiro. O cabeçalho cabe em uma linha de contexto, título e subtítulo, uma de fatos e uma do estado epistêmico;
+  o resumo fica recolhido sob "▸ Resumo e palavras-chave"; o sumário vem depois da introdução, antes da primeira
+  seção (contrato editorial nos 16 ensaios). Nos oito ensaios, o primeiro parágrafo passou de 2,03 a 0,96 tela no
+  desktop e de 2,81 a 1,21 no celular. O fim leva adiante: próximo na ponte, conceitos, revisões. Saíram do
+  cabeçalho a "passagem" entre estratos e o número de palavras.
+- Hierarquia de leitura dos ensaios ([plano de 22/11/2026](docs/planos/2026-11-22-hierarquia-de-leitura.md)): o
+  sumário é o roteiro do argumento (tipo de cada seção em símbolo e rótulo, tese e conclusão em peso maior, minutos
+  por seção com pontilhado guia; `sectionWords` e `sectionMinutes`) e abre o corpo de todo ensaio, antes da
+  epígrafe e do parágrafo de abertura (contrato editorial); o resumo segue a medida do texto; "Revisado em" leva ao
+  histórico; no índice de ensaios, cada estrato mostra a pergunta-guia e o método, na margem nas telas largas.
+
 - Ambiente rústico em todo ensaio ([ADR 0014](docs/adr/0014-sala-de-leitura.md), decisão 17): o artigo é uma
   folha de papel no seu suporte de madeira, sobre uma mesa velha, só com CSS (`room.css`, `--wood-image` em
-  `texture.css`): sem script, sem download, sem movimento. A sala em 3D continua a versão acesa, pelo botão do
-  ensaio. A mesa some com a cena acesa, no modo de foco, com contraste aumentado, com cores forçadas e na
-  impressão.
+  `texture.css`): sem script, sem download, sem movimento. A sala em 3D é a versão acesa. A mesa dá lugar à cena
+  acesa e some no modo de foco, com contraste aumentado, com cores forçadas e na impressão.
 - Proveniência das obras: por decisão do autor, os ensaios e laboratórios publicados até 16/11/2026 deixam de
   declarar o uso de IA. O campo `provenance` passa a opcional (`src/content.config.ts`); o contrato editorial
   (`tests/unit/content/syntax.test.ts`) exige a nota só de quem declarar; guia e programa editoriais, "Sobre" e
   "Colofão" acompanham.
-- Sala de leitura desligada por padrão (a preferência `room` passa a `off` | `auto` | `on`, com `off` por
-  padrão): nada dela é baixado até o leitor pedir. O pedido mais perto é o botão "Sala de leitura" no
-  cabeçalho do ensaio (`ft-room-switch`, botão de alternância com `aria-pressed`), que só aparece onde a sala
-  cabe e grava a mesma preferência do painel. Quem havia escolhido "ligada" continua com a sala.
+- Sala de leitura em todas as telas ([ADR 0014](docs/adr/0014-sala-de-leitura.md), decisão 18): todo ensaio
+  reserva uma faixa entre o cabeçalho e a folha (`--room-headroom`, de 110 a 152 px), que é mesa sem a cena e
+  sala com ela; a folha passa a ser a da página, em fluxo, e acender a sala não move nada. Abaixo de 96 px de
+  calha a sala é composta na faixa (`roomStage`: estante com o acervo, janela, vela e simplexo no peitoril);
+  nas telas largas continua nas calhas. Só as partes da janela que a página deixa à vista são desenhadas
+  (`roomRegions`, uma tesoura por parte), e nenhum quadro quando nenhuma está na tela. Paralaxe de rolagem
+  (`scrollDrift`), sombra da folha também na borda de cima e vinheta. A preferência `room` (`auto` | `on` |
+  `off`) é automática por padrão e fica só no painel; no toque, o primeiro toque num livro o nomeia e o
+  segundo abre a obra.
 - Preferências: ler, gravar e aplicar ficam num armazenamento compartilhado (`src/islands/preferences-store.ts`)
-  que relê o que está guardado antes de mudar uma chave, para que o painel e o botão da sala não se
-  sobrescrevam; o painel espelha mudanças feitas por outro controle da página.
+  que relê o que está guardado antes de mudar uma chave, para que dois controles não se sobrescrevam; o painel
+  espelha mudanças feitas por outro controle da página.
 - Faceta de domínio: `technology` passa a `information-technology`; entram `software-architecture`,
   `systems-design`, `systems-optimization` e `data-engineering`; quatro ensaios e treze conceitos foram
   reclassificados (sem mudança de prosa; a revisão está registrada em cada ensaio).
@@ -119,7 +142,24 @@ próprio frontmatter.
   informação, dinâmica e probabilidade" já eram oito, de mais áreas); cada cartão nomeia o seu resultado. A
   abertura das frentes ("Onze disciplinas em cinco frentes") ganhou teste contra o modelo de escopo.
 
+### Removido
+
+- Recursos que não agregavam à leitura ([plano de 26/11/2026](docs/planos/2026-11-26-experiencia-de-leitura.md)):
+  o mapa do argumento na margem (repetia o sumário e as linhas "Apoia-se em"; `ft-argument-map`,
+  `src/core/reading/argument-map.ts` e `layout.ts`); o modo "fixado" das passagens horizontais, que tomava a
+  rolagem do leitor (`ft-horizontal`: fica a região rolável nativa); a revelação na rolagem e o campo de partículas
+  da página inicial (`ft-ambient-field`); a simulação de visão de cores do painel (`cvd`; a verificação continua em
+  `pnpm verify:palette`).
+
 ### Corrigido
+
+- Ritmo das páginas: toda página começa à mesma distância do cabeçalho (`--space-3`) e termina à mesma
+  distância do rodapé (`--space-4`), numa regra só de `layout.css`; antes o laboratório, a ontologia, as
+  fórmulas e o glossário começavam colados ao cabeçalho e o escopo a 42 px.
+- Transição entre páginas: respeita também a escolha de movimento reduzido do painel (a duração é escalada por
+  `--motion`), e não só a do sistema.
+- Sala de leitura: com a sala desligada no painel, ou com economia de dados sem pedido, o ensaio não reserva a
+  faixa acima da folha (só empurraria o texto); a mesa continua.
 
 - Separadores "·" nas linhas de metadados (ensaio, cartões, listas de disciplinas, laboratório do pipeline): o
   ponto ficava antes do item seguinte e abria a linha quando ela quebrava, lido como marcador de lista; agora

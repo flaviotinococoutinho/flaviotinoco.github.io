@@ -1,8 +1,8 @@
-# Sala de leitura: só quando pedida, e respondendo à mão — 16/11/2026
+# Sala de leitura: quando aparece, onde, e respondendo à mão — 16/11/2026
 
 - Status: executado na branch `flavio/vibrant-hamilton-wowk2z`; aguarda revisão do autor
 - Autor: Flávio Tinoco (execução assistida por IA, Claude)
-- Relacionados: [ADR 0014](../adr/0014-sala-de-leitura.md), decisões 11, 15 e 16;
+- Relacionados: [ADR 0014](../adr/0014-sala-de-leitura.md), decisões 11, 15, 16, 17 e 18;
   [plano de 15/11/2026](2026-11-15-sala-de-leitura.md)
 
 Documento de projeto desta rodada: o que foi pedido, como foi lido, o que entrou e o que ficou para depois.
@@ -108,3 +108,64 @@ Pedido do autor: continuar, aplicar o ambiente rústico e retirar das obras atua
 
 Pendências desta rodada: decidir se os avisos "Sobre este texto" de "Sobre" e "Colofão" também saem; a revisão
 dos textos continua sendo do autor, e o histórico do repositório guarda as notas retiradas.
+
+## 8. Terceira rodada do dia: a sala em todas as telas
+
+Pedido do autor: "a sala 3d sempre aparece, deixe a config do menu discreto, e faça a sala de leitura aparecer
+discretamente melhor em todas as telas, use melhores ilusões e interações gráficas otimizadas pra isso. Deixe
+o layout organizado até se precisar refazer partes novamente".
+
+### 8.1 Leitura do pedido
+
+A primeira frase admite duas leituras: uma queixa ("a sala sempre aparece") ou um estado desejado ("a sala
+sempre aparece"). O resto do pedido decide: ele quer a sala em todas as telas e o controle discreto no menu, o
+que só faz sentido se a sala aparece sem ser pedida. A leitura adotada é a segunda; se for a primeira, basta
+voltar o padrão da preferência para `off` (uma linha em `src/core/chrome/preferences.ts`), e todo o resto
+desta rodada continua valendo.
+
+| Parte do pedido                  | Critério                                                                                         |
+| -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| A sala sempre aparece            | `room` automática por padrão: aparece onde o aparelho dá conta, sem pedido                       |
+| Controle discreto no menu        | o interruptor do ensaio sai; a escolha fica só no painel de preferências, com texto curto        |
+| Em todas as telas, discretamente | um lugar para a sala em qualquer largura, que não seja do texto nem empurre o texto ao acender   |
+| Ilusões melhores                 | profundidade pelo movimento relativo, a folha sobre a sala, a luz da vela                        |
+| Otimizadas                       | só os pixels à vista são desenhados; nenhum quadro quando nada da sala está na tela              |
+| Layout organizado                | a folha passa a ser uma só (a da página), com e sem a cena; a camada fixa não desenha mais papel |
+
+### 8.2 O que entrou
+
+Está no ADR 0014, decisão 18 (e decisões 1, 2, 5, 11, 16 e 17 revistas).
+
+| Peça                          | Arquivos                                                                                        |
+| ----------------------------- | ----------------------------------------------------------------------------------------------- |
+| Faixa, palco, regiões, deriva | `src/core/chrome/room.ts` (`headroomPx`, `roomStage`, `roomRegions`, `scrollDrift`); testes     |
+| Padrão e controle             | `src/core/chrome/preferences.ts`; `src/core/i18n/catalogs/chrome.ts`; `ft-room-switch` removido |
+| Folha e faixa em CSS          | `src/styles/components/room.css`; `src/views/EssayView.astro`                                   |
+| Ilha                          | `src/islands/elements/ft-reading-room.ts`: mede a folha da página, desenha por regiões, toque   |
+| Cena                          | `src/islands/scenes/reading-room.ts`: palco `band`, tesoura por região, sombra, vinheta         |
+| Testes de ponta a ponta       | `tests/e2e/room.spec.ts`                                                                        |
+| Documentação                  | ADR 0014; arquitetura §6; requisitos não funcionais; registro de mudanças; este plano           |
+
+Dois defeitos de composição apareceram nas capturas e foram corrigidos antes de entrar: na faixa, a vela ficava
+na frente da janela e a escondia (o peitoril passou a se estender à esquerda do vidro, e a vela fica nele); e a
+placa do simplexo, deitada no peitoril, sumia atrás da borda dele, porque o olho fica abaixo do peitoril (ela
+passou a ficar de pé, com o vértice para cima).
+
+### 8.3 Medidas
+
+| Medida                                    | Valor                                                              |
+| ----------------------------------------- | ------------------------------------------------------------------ |
+| Pedaço da cena, gzip                      | 137,2 KiB de 140 (era 136,4)                                       |
+| Elemento `ft-reading-room`, gzip          | 6,0 KiB de 16 (era 5,5)                                            |
+| Maior página HTML (`amostrar-e-decidir`)  | 159,3 KiB de 160 (era 159,8: sai o elemento do interruptor)        |
+| Altura da faixa                           | de 110 a 152 px (118 px num celular de 390 × 844)                  |
+| Palco por largura (alturas comuns)        | 390 px: faixa; 1 024 px: calhas; 1 440 px: faixa; 1 920 px: calhas |
+| Área desenhada no topo da página, celular | 14 % da tela (a faixa); depois que ela sai, nenhum quadro          |
+| Testes de ponta a ponta da sala           | 51, todos passando, com o Chromium do ambiente (SwiftShader)       |
+
+### 8.4 Pendências do autor
+
+1. Confirmar a leitura de 8.1 (sala automática por padrão).
+2. Altura da faixa e se a faixa de mesa fica também para quem desligou a sala (hoje fica, para que acender a
+   sala não mova nada).
+3. Ver a faixa num celular real: a estante tem livros de 2 a 3 cm; é ambiente, não navegação.

@@ -30,7 +30,7 @@ export function remarkMeta(_options: RemarkMetaOptions) {
   return (tree: Root, file: VFile): Root => {
     const locale = documentLocale(file, 'meta');
     const source = String(file.value);
-    const filled = fillToc(tree as unknown as MdNode, source);
+    const filled = fillToc(tree as unknown as MdNode, source, locale);
     const meta = foldDocument(filled, { locale, source });
     const astro = (file.data.astro ??= {});
     const frontmatter: Readonly<Record<string, unknown>> = astro.frontmatter ?? {};

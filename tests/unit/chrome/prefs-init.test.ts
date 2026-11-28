@@ -57,9 +57,10 @@ describe('pre-paint script', () => {
     expect(PREFS_INIT_SCRIPT.length).toBeLessThan(1024);
   });
 
-  it('covers every preference key, including cvd', () => {
+  it('covers every preference key, including the room and its sound', () => {
     expect([...PREFS_KEYS]).toEqual([...PREFERENCE_KEYS]);
-    expect(PREFS_KEYS).toContain('cvd');
+    expect(PREFS_KEYS).toContain('room');
+    expect(PREFS_KEYS).toContain('sound');
   });
 
   test.prop([prefsArb])('applies exactly the attributes of the pure model', (p) => {
@@ -78,10 +79,11 @@ describe('pre-paint script', () => {
   );
 
   it('only writes allow-listed values', () => {
-    const attrs = run('{"theme":"light dark","text":"xxl","motion":"auto","face":"sans","cvd":"none"}');
+    const attrs = run('{"theme":"light dark","text":"xxl","motion":"auto","face":"sans","cvd":"protanopia"}');
     expect(attrs.get('data-theme')).toBeUndefined();
     expect(attrs.get('data-text')).toBeUndefined();
     expect(attrs.get('data-motion')).toBeUndefined();
+    // A key the site no longer has (the colour-vision simulation, removed on 2026-11-26) is never applied.
     expect(attrs.get('data-cvd')).toBeUndefined();
     expect(attrs.get('data-face')).toBe('sans');
     for (const k of PREFERENCE_KEYS) for (const v of ATTRIBUTE_VALUES[k]) expect(v).toMatch(/^[a-z]+$/);

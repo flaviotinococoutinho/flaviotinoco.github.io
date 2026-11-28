@@ -1,21 +1,24 @@
 /**
- * The reading room (docs/adr/0014-sala-de-leitura.md): the three.js scene in the gutters of the essays.
+ * The reading room (docs/adr/0014-sala-de-leitura.md): the three.js scene behind the essays, seen in the band
+ * above the sheet on every screen and in the gutters beside it on wide ones.
  *
  * What is checked is the rule of the design — the room makes the atmosphere, the reading keeps the
  * priority — as observable facts:
  *
- *   cost      the room is off by default; on a viewport without gutters, or with the preference off, the
- *             scene's chunk is never requested; on a software renderer the automatic mode does not load it;
- *   switch    on a wide window the essay offers a switch (a toggle button), which lights the room and puts
- *             it out, by keyboard too, and the choice holds on the next page; without gutters, no switch;
+ *   cost      the room is automatic by default, and the automatic mode does not load it on a software
+ *             renderer; with the preference off, or in focus mode, the scene's chunk is never requested;
  *   reading   with the room on, every piece of text of every essay lies on the opaque sheet (no glyph
  *             over the scene), and axe finds no violation in the light or in the dark scheme;
+ *   layout    lighting the room moves nothing: the sheet and the title are where they are without it;
+ *   phone     on a phone the room is the band above the sheet; a tap names a book and a second tap opens
+ *             it; once the band has scrolled away no frame is drawn at all;
  *   motion    with prefers-reduced-motion the room is one still frame, redrawn only after the reader
  *             scrolled (the candle is a reading clock: a state, not an animation);
  *   control   turning the preference off removes the layer and returns the page to what it was;
  *   rest      a reader who does not move gets a room that slows, then holds still, and wakes when they do;
  *   the hand  in a gutter, the book under the pointer is named and a click opens its work; over the sheet,
- *             nothing of the room answers.
+ *             nothing of the room answers;
+ *   the desk  without the scene, every essay is a sheet on a desk, with the band of desk above it.
  *
  * The test browser draws WebGL on the CPU (SwiftShader), which the automatic mode refuses on purpose, so
  * the scene itself is exercised with the reader's preference set to "on". The `guard` fixture fails any
@@ -34,14 +37,61 @@ const essays = loadSitePages().filter((p) => ESSAY.test(p.path));
 const sample = essays.filter((p, i) => essays.findIndex((q) => q.locale === p.locale) === i);
 
 const WIDE = { width: 1920, height: 1080 };
+const PHONE = { width: 390, height: 844 };
 const SCENE_CHUNK = /\/reading-room\.[\w-]+\.js$/;
 
-const withPreference = async (page: Page, room: 'on' | 'off' | 'auto'): Promise<void> => {
+const withPreference = async (
+  page: Page,
+  room: 'on' | 'off' | 'auto',
+  more: Readonly<Record<string, string>> = {},
+): Promise<void> => {
   await page.addInitScript(
     ([key, value]) => localStorage.setItem(key as string, value as string),
-    [PREFS_STORAGE_KEY, JSON.stringify({ room })],
+    [PREFS_STORAGE_KEY, JSON.stringify({ room, ...more })],
   );
 };
+
+/**
+ * The sheet (the essay's ::before) and the header's bottom in viewport px; whether the sheet is drawn, and
+ * whether the desk is (the essay's wood, which gives way to the scene when the room is lit).
+ */
+const paper = (page: Page) =>
+  page.locator('.essay').evaluate((essay) => {
+    const box = essay.getBoundingClientRect();
+    const sheet = getComputedStyle(essay, '::before');
+    const width = Number.parseFloat(sheet.width);
+    const sheeted = sheet.content !== 'none';
+    return {
+      sheet: sheeted,
+      drawn: sheeted && getComputedStyle(essay).backgroundColor !== 'rgba(0, 0, 0, 0)',
+      left: box.left + (box.width - width) / 2,
+      right: box.left + (box.width + width) / 2,
+      top: box.top + Number.parseFloat(sheet.top),
+      header: document.querySelector('.site-header')?.getBoundingClientRect().bottom ?? 0,
+      headroom: getComputedStyle(essay).getPropertyValue('--room-headroom').trim(),
+    };
+  });
+
+/** Text of the essay above `top` (viewport px): what would sit in the band, on the room, instead of the paper. */
+const textAbove = (page: Page, top: number): Promise<string[]> =>
+  page.evaluate((limit) => {
+    const essay = document.querySelector('.essay');
+    const above: string[] = [];
+    if (essay === null) return ['no essay'];
+    const walker = document.createTreeWalker(essay, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+      const parent = node.parentElement;
+      if (parent === null || (node.textContent ?? '').trim() === '') continue;
+      if (!parent.checkVisibility({ visibilityProperty: true, opacityProperty: true })) continue;
+      if (parent.closest('.visually-hidden') !== null) continue;
+      range.selectNodeContents(node);
+      const rects = [...range.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
+      if (rects.some((r) => r.top < limit - 0.5))
+        above.push(`${parent.localName}: “${(node.textContent ?? '').trim()}”`);
+    }
+    return above;
+  }, top);
 
 /** URLs of the scene's chunk requested by the page (the element's own module is not the scene). */
 const sceneRequests = (page: Page): string[] => {
@@ -108,9 +158,10 @@ test.describe('reading room: cost', () => {
   test.skip(sample.length === 0, 'the build has no essay');
   const essay = sample[0]?.path ?? '';
 
-  test('no gutter, no download: the default desktop viewport never requests the scene', async ({ page }) => {
+  test('focus mode: nothing decorative, so the scene is never requested even when asked for', async ({ page }) => {
+    await page.setViewportSize(WIDE);
     const requests = sceneRequests(page);
-    await withPreference(page, 'on');
+    await withPreference(page, 'on', { focus: 'on' });
     await page.goto(essay);
     await idle(page);
     expect(await scene(page)).toBeNull();
@@ -127,19 +178,9 @@ test.describe('reading room: cost', () => {
     expect(requests).toEqual([]);
   });
 
-  test('off by default: a wide viewport never requests the scene until the reader asks', async ({ page }) => {
+  test('automatic by default: a software renderer gets no room and no download', async ({ page }) => {
     await page.setViewportSize(WIDE);
     const requests = sceneRequests(page);
-    await page.goto(essay);
-    await idle(page);
-    expect(await scene(page)).toBeNull();
-    expect(requests).toEqual([]);
-  });
-
-  test('automatic: a software renderer gets no room and no download', async ({ page }) => {
-    await page.setViewportSize(WIDE);
-    const requests = sceneRequests(page);
-    await withPreference(page, 'auto');
     await page.goto(essay);
     await idle(page);
     const software = await page.evaluate(() => {
@@ -168,13 +209,12 @@ test.describe('reading room: reading keeps the priority', () => {
       await expect(layer).toHaveAttribute('aria-hidden', 'true');
       expect(await layer.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
 
-      const sheet = await page.locator('.room__sheet').evaluate((el) => {
-        const box = el.getBoundingClientRect();
-        return { left: box.left, right: box.right, width: innerWidth };
-      });
-      const report = { sheet, outside: await textOutside(page, sheet.left, sheet.right) };
-      expect(report.outside, 'text outside the opaque sheet').toEqual([]);
-      expect(Math.min(sheet.left, sheet.width - sheet.right)).toBeGreaterThanOrEqual(ROOM_MIN_GUTTER_PX);
+      await expect(layer).toHaveAttribute('data-stage', 'gutters');
+      const sheet = await paper(page);
+      expect(sheet.sheet, 'the sheet is drawn').toBe(true);
+      expect(await textOutside(page, sheet.left, sheet.right), 'text outside the opaque sheet').toEqual([]);
+      expect(await textAbove(page, sheet.top), 'text above the sheet').toEqual([]);
+      expect(Math.min(sheet.left, WIDE.width - sheet.right)).toBeGreaterThanOrEqual(ROOM_MIN_GUTTER_PX);
 
       // The bands that cross the gutters are opaque too.
       for (const selector of ['.site-header', '.site-footer']) {
@@ -206,6 +246,120 @@ test.describe('reading room: reading keeps the priority', () => {
       });
     }
   }
+});
+
+test.describe('reading room: lighting it moves nothing', () => {
+  test.use({ viewport: WIDE });
+  test.skip(sample.length === 0, 'the build has no essay');
+
+  for (const { path } of sample) {
+    test(`the sheet and the title stay where they are: /${path}`, async ({ context }) => {
+      const where = async (page: Page): Promise<readonly number[]> => {
+        const p = await paper(page);
+        const title = await page.locator('.essay__title').evaluate((el) => el.getBoundingClientRect().top);
+        return [p.left, p.right, p.top, title];
+      };
+      // One page per preference (an init script runs again on every load of its page). Unlit: the automatic
+      // default, which the test browser's software renderer refuses.
+      const unlitPage = await context.newPage();
+      await unlitPage.goto(path);
+      await settle(unlitPage);
+      const unlit = await where(unlitPage);
+      await unlitPage.close();
+
+      const page = await context.newPage();
+      await withPreference(page, 'on');
+      await page.goto(path);
+      await expect(page.locator('html')).toHaveAttribute('data-scene', 'live', { timeout: 20_000 });
+      await settle(page);
+      expect(await where(page)).toEqual(unlit);
+    });
+  }
+});
+
+test.describe('reading room on a phone: the band above the sheet', () => {
+  test.use({ viewport: PHONE, hasTouch: true });
+  test.skip(sample.length === 0, 'the build has no essay');
+  const essay = sample[0]?.path ?? '';
+
+  test('the room is the band: lit, above the sheet, and no text in it', async ({ page }) => {
+    const requests = sceneRequests(page);
+    await withPreference(page, 'on');
+    await page.goto(essay);
+    await expect(page.locator('html')).toHaveAttribute('data-scene', 'live', { timeout: 20_000 });
+    await expect(page.locator('ft-reading-room')).toHaveAttribute('data-stage', 'band');
+    expect(requests.length, 'the scene is downloaded').toBeGreaterThan(0);
+    await settle(page);
+    const sheet = await paper(page);
+    expect(sheet.top - sheet.header, 'the band is tall enough for the room').toBeGreaterThanOrEqual(ROOM_MIN_GUTTER_PX);
+    expect(await textAbove(page, sheet.top), 'text in the band').toEqual([]);
+  });
+
+  test('a tap names the book, a second tap opens it', async ({ page, guard }) => {
+    test.setTimeout(90_000);
+    // Chromium reports an aborted cross-document view transition on part of the navigations away from an
+    // essay, with a mouse as with a finger and with the room off: it reproduces on main (essay → home, 5 of
+    // 8 clicks), so it is not the room's. Allowed here only, until the transition itself is fixed.
+    guard.allow(/Transition was aborted because of invalid state\. ViewTransition opt-in disabled/);
+    await withPreference(page, 'on');
+    await page.goto(essay);
+    await expect(page.locator('html')).toHaveAttribute('data-scene', 'live', { timeout: 20_000 });
+    await settle(page);
+    const labels = (await page.evaluate(async () => {
+      const url = document.querySelector('ft-reading-room')?.getAttribute('labels') ?? '';
+      return (await (await fetch(url)).json()) as unknown;
+    })) as readonly { readonly title: string; readonly href: string }[];
+    const sheet = await paper(page);
+    const label = page.locator('.room__label');
+    let found: { readonly x: number; readonly y: number } | null = null;
+    for (let y = sheet.header + 12; y < sheet.top - 8 && found === null; y += 8) {
+      for (let x = 8; x < PHONE.width / 2 && found === null; x += 8) {
+        await page.touchscreen.tap(x, y);
+        if (await label.isVisible()) found = { x, y };
+      }
+    }
+    expect(found, 'a book on the shelf answers a tap').not.toBeNull();
+    const title = (await label.textContent()) ?? '';
+    const target = labels.find((l) => l.title === title);
+    expect(target, `the label names a work of the shelf (“${title}”)`).toBeDefined();
+    expect(new URL(page.url()).pathname, 'the first tap only names').toContain(essay);
+    if (found !== null && target !== undefined) {
+      // A reader reads the name before tapping again; two quick taps would be a double tap, another gesture.
+      await page.waitForTimeout(600);
+      await page.touchscreen.tap(found.x, found.y);
+      await page.waitForURL((url) => url.pathname === target.href);
+    }
+  });
+
+  test('once the band has scrolled away, no frame is drawn', async ({ page }) => {
+    // Every animation frame the page asks for is counted: the room's loop is the only one that runs by itself.
+    await page.addInitScript(() => {
+      const ask = window.requestAnimationFrame.bind(window);
+      (window as Window & { frames_?: number }).frames_ = 0;
+      window.requestAnimationFrame = (callback) => {
+        (window as Window & { frames_?: number }).frames_ =
+          ((window as Window & { frames_?: number }).frames_ ?? 0) + 1;
+        return ask(callback);
+      };
+    });
+    await withPreference(page, 'on');
+    await page.goto(essay);
+    await expect(page.locator('html')).toHaveAttribute('data-scene', 'live', { timeout: 20_000 });
+    await settle(page);
+    const frames = (): Promise<number> => page.evaluate(() => (window as Window & { frames_?: number }).frames_ ?? 0);
+    const during = async (ms: number): Promise<number> => {
+      const before = await frames();
+      await page.waitForTimeout(ms);
+      return (await frames()) - before;
+    };
+    expect(await during(800), 'the band in view: the room is drawn').toBeGreaterThan(0);
+    await page.evaluate(() => {
+      const box = document.querySelector('.essay')?.getBoundingClientRect();
+      if (box !== undefined) window.scrollTo({ top: box.top + window.scrollY + box.height / 2, behavior: 'instant' });
+    });
+    await page.waitForTimeout(400);
+    expect(await during(1000), 'only paper in view: nothing is drawn').toBe(0);
+  });
 });
 
 test.describe('reading room: motion and control', () => {
@@ -272,46 +426,6 @@ test.describe('reading room: motion and control', () => {
   });
 });
 
-test.describe('reading room: the switch', () => {
-  test.skip(sample.length === 0, 'the build has no essay');
-  const essay = sample[0]?.path ?? '';
-  const button = (page: Page) => page.locator('ft-room-switch button');
-
-  test('no gutter, no switch: the default desktop viewport does not offer the room', async ({ page }) => {
-    await page.goto(essay);
-    await idle(page);
-    await expect(page.locator('ft-room-switch')).toBeHidden();
-  });
-
-  test('lights the room and puts it out, by keyboard; the choice holds on the next page', async ({ page }) => {
-    await page.setViewportSize(WIDE);
-    const requests = sceneRequests(page);
-    await page.goto(essay);
-    await settle(page);
-    await expect(button(page)).toBeVisible();
-    await expect(button(page)).toHaveAttribute('aria-pressed', 'false');
-    await expect(button(page)).toHaveAccessibleName(/Sala de leitura|Reading room/);
-
-    await button(page).focus();
-    await page.keyboard.press('Space');
-    await expect(page.locator('html')).toHaveAttribute('data-scene', 'live', { timeout: 20_000 });
-    await expect(button(page)).toHaveAttribute('aria-pressed', 'true');
-    expect(requests.length, 'the scene is downloaded once asked for').toBeGreaterThan(0);
-
-    await page.reload();
-    await expect(page.locator('html')).toHaveAttribute('data-scene', 'live', { timeout: 20_000 });
-    await expect(button(page)).toHaveAttribute('aria-pressed', 'true');
-
-    await button(page).focus();
-    await page.keyboard.press('Enter');
-    await expect(page.locator('html')).not.toHaveAttribute('data-scene', /.*/);
-    await expect(button(page)).toHaveAttribute('aria-pressed', 'false');
-    await expect(button(page)).toBeFocused();
-    // Off is the default: nothing is left in storage for the room.
-    expect(await page.evaluate((key) => localStorage.getItem(key) ?? '{}', PREFS_STORAGE_KEY)).not.toContain('room');
-  });
-});
-
 test.describe('reading room: rest and the hand', () => {
   test.use({ viewport: WIDE });
   test.skip(sample.length === 0, 'the build has no essay');
@@ -335,8 +449,11 @@ test.describe('reading room: rest and the hand', () => {
 
   test('in a gutter the book under the pointer is named and opens its work; over the sheet nothing answers', async ({
     page,
+    guard,
   }) => {
     test.setTimeout(90_000);
+    // The same aborted view transition as in the phone test (it reproduces on main, without the room).
+    guard.allow(/Transition was aborted because of invalid state\. ViewTransition opt-in disabled/);
     await withPreference(page, 'on');
     await page.goto(essay);
     await expect(page.locator('html')).toHaveAttribute('data-scene', 'live', { timeout: 20_000 });
@@ -347,7 +464,7 @@ test.describe('reading room: rest and the hand', () => {
     })) as readonly { readonly title: string; readonly href: string }[];
     expect(labels.length).toBeGreaterThan(0);
 
-    const sheetLeft = await page.locator('.room__sheet').evaluate((el) => el.getBoundingClientRect().left);
+    const sheetLeft = (await paper(page)).left;
     const label = page.locator('.room__label');
     let found: { readonly x: number; readonly y: number } | null = null;
     for (let y = 120; y < WIDE.height - 120 && found === null; y += 14) {
@@ -379,34 +496,24 @@ test.describe('reading room: rest and the hand', () => {
 });
 
 test.describe('reading room without the scene: the desk', () => {
-  // A laptop window: gutters too narrow for the scene, wide enough for the desk to show.
+  // A laptop window: gutters too narrow for the scene's furniture, wide enough for the desk to show.
   test.use({ viewport: { width: 1440, height: 900 } });
-
-  /** The paper (the essay's ::before) in viewport px, and whether the desk is drawn at all. */
-  const desk = (page: Page) =>
-    page.locator('.essay').evaluate((essay) => {
-      const box = essay.getBoundingClientRect();
-      const sheet = getComputedStyle(essay, '::before');
-      const width = Number.parseFloat(sheet.width);
-      return {
-        drawn: sheet.content !== 'none' && getComputedStyle(essay).backgroundColor !== 'rgba(0, 0, 0, 0)',
-        left: box.left + (box.width - width) / 2,
-        right: box.left + (box.width + width) / 2,
-      };
-    });
 
   for (const { path } of essays) {
     test(`every glyph on the paper, none on the wood: /${path}`, async ({ page }) => {
+      // The automatic default: the software renderer of the test browser refuses the scene.
       await page.goto(path);
       await settle(page);
-      const d = await desk(page);
+      const d = await paper(page);
       expect(d.drawn, 'the desk is there without the scene').toBe(true);
       expect(d.left, 'wood shows beside the paper').toBeGreaterThan(0);
+      expect(d.top - d.header, 'and above it, the band').toBeGreaterThanOrEqual(ROOM_MIN_GUTTER_PX);
       expect(await textOutside(page, d.left, d.right), 'text on the wood').toEqual([]);
+      expect(await textAbove(page, d.top), 'text on the band of wood').toEqual([]);
     });
   }
 
-  test('nothing decorative in focus mode or with more contrast', async ({ page }) => {
+  test('nothing decorative in focus mode or with more contrast: no desk, no band', async ({ page }) => {
     await page.goto(sample[0]?.path ?? '');
     await settle(page);
     for (const attribute of [
@@ -414,9 +521,20 @@ test.describe('reading room without the scene: the desk', () => {
       ['data-contrast', 'more'],
     ] as const) {
       await page.evaluate(([name, value]) => document.documentElement.setAttribute(name, value), attribute);
-      expect((await desk(page)).drawn, `${attribute.join('=')}: no desk`).toBe(false);
+      const d = await paper(page);
+      expect(d.drawn, `${attribute.join('=')}: no desk`).toBe(false);
+      expect(d.headroom, `${attribute.join('=')}: no band`).toBe('0px');
       await page.evaluate(([name]) => document.documentElement.removeAttribute(name), attribute);
     }
-    expect((await desk(page)).drawn).toBe(true);
+    expect((await paper(page)).drawn).toBe(true);
+  });
+
+  test('the room turned off: the desk stays, the band goes', async ({ page }) => {
+    await withPreference(page, 'off');
+    await page.goto(sample[0]?.path ?? '');
+    await settle(page);
+    const d = await paper(page);
+    expect(d.drawn, 'the desk is still there').toBe(true);
+    expect(d.headroom, 'no band above the sheet').toBe('0px');
   });
 });

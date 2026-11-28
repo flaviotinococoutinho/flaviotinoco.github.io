@@ -6,7 +6,7 @@
  *   :sidenote[…]       → numbered sidenote                 (E. Tufte; Tufte CSS)
  *   :marginnote[…]     → unnumbered margin note
  *   ::::scrolly        → <ft-scrolly> (sticky figure + :::step{state})
- *   ::::horizontal     → <ft-horizontal> (:::panel sequence)
+ *   ::::horizontal     → <div class="horizontal"> (:::panel sequence, a native scroll region)
  *   :::epigraph        → <figure class="epigraph"> (blockquote + source)
  *   :::aside           → <aside class="aside">
  *   ::toc              → <nav class="toc"> (list filled by the meta stage)
@@ -707,22 +707,17 @@ export const transformReading = (root: MdNode, ctx: ReadingContext): ReadingResu
       );
     });
     return [
-      claim(
-        node,
-        'ft-horizontal',
-        { className: ['horizontal'], dataPanels: n, style: `--panels:${n}`, id: attrs['id'] },
-        [
-          element('div', { className: ['horizontal__viewport'], role: 'region', ariaLabel: label, tabIndex: 0 }, [
-            element('div', { className: ['horizontal__track'] }, panelNodes),
-          ]),
-          element(
-            'p',
-            { className: ['horizontal__hint'], ariaHidden: 'true' },
-            [text(t('horizontal.hint', { n }), true)],
-            { generated: true },
-          ),
-        ],
-      ),
+      claim(node, 'div', { className: ['horizontal'], id: attrs['id'] }, [
+        element('div', { className: ['horizontal__viewport'], role: 'region', ariaLabel: label, tabIndex: 0 }, [
+          element('div', { className: ['horizontal__track'] }, panelNodes),
+        ]),
+        element(
+          'p',
+          { className: ['horizontal__hint'], ariaHidden: 'true' },
+          [text(t('horizontal.hint', { n }), true)],
+          { generated: true },
+        ),
+      ]),
     ];
   };
 

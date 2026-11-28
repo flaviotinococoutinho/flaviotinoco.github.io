@@ -18,15 +18,21 @@
   --motion: 0;
 }
 
-/* Cross-document view transitions (Chromium, Safari; Firefox navigates instantly). */
-@media (prefers-reduced-motion: no-preference) {
-  @view-transition {
-    navigation: auto;
-  }
+/*
+ * Cross-document view transitions (Chromium, Safari; Firefox navigates instantly). The opt-in is
+ * unconditional and the motion is scaled by --motion instead: the reader's choice ([data-motion]) and the
+ * OS setting both reach it, where a media query around @view-transition could only see the OS setting.
+ */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-duration: calc(var(--duration-4) * var(--motion));
 }
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: var(--duration-4);
   animation-timing-function: var(--ease-standard);
 }
 
@@ -81,26 +87,5 @@
     animation-fill-mode: both;
     animation-timeline: view();
     animation-range: cover;
-  }
-}
-
-/* Reveal on entry: opacity only (no layout shift), resting state = visible. */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    :root:not([data-motion='reduce']) [data-reveal] {
-      animation-name: reveal;
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 38.2%;
-    }
-  }
-}
-@keyframes reveal {
-  from {
-    opacity: 0.001;
-  }
-  to {
-    opacity: 1;
   }
 }

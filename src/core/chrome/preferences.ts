@@ -18,7 +18,7 @@
  * minimal and "reset" is simply the empty object.
  */
 import { err, ok, type Result } from '../algebra/result.ts';
-import { CVD_TYPES } from '../design/cvd.ts';
+import { SOUND_CHOICES } from './sound.ts';
 
 /** localStorage key holding the serialised preferences. */
 export const PREFS_STORAGE_KEY = 'ft:prefs';
@@ -45,15 +45,21 @@ export const PREFERENCE_DOMAINS = {
   hyphens: ['on', 'off'],
   /** Reading ruler: a band of two lines that follows the pointer and the keyboard focus (BDA style guide). */
   ruler: ['off', 'on'],
-  /** Focus mode: no paper texture or ambient field; side notes and the argument map discreet until pointed at. */
+  /** Focus mode: no paper texture and no reading room; side notes discreet until pointed at. */
   focus: ['off', 'on'],
   texture: ['on', 'off'],
   /**
-   * Reading room: the decorative three.js scene in the gutters of the essay pages (ADR 0014). Off unless the
-   * reader asks for it (the switch on the essay page, or this panel): `on` shows it wherever it fits; `auto`
-   * only where the device can afford it too (src/core/chrome/room.ts); `off` never loads it.
+   * Reading room: the decorative three.js scene around the paper of the essay pages (ADR 0014). `auto` (the
+   * default) shows it where the device can afford it (src/core/chrome/room.ts); `on` asks for it on any
+   * device; `off` never loads it, and the essay keeps its desk drawn in CSS.
    */
-  room: ['off', 'auto', 'on'],
+  room: ['auto', 'on', 'off'],
+  /**
+   * Sound of the reading room on the essay pages (ADR 0014, decision 19; src/core/chrome/sound.ts): silence (the
+   * default), a preset mix, or the reader's own (`custom`, levels under MIX_STORAGE_KEY). Synthesised in the
+   * browser; it starts only after the reader's own gesture on the page.
+   */
+  sound: SOUND_CHOICES,
   /**
    * The single-character shortcut "/" that opens the command palette. WCAG 2.2
    * SC 2.1.4 (Character Key Shortcuts, level A) requires a way to turn such a
@@ -61,7 +67,6 @@ export const PREFERENCE_DOMAINS = {
    * Ctrl/⌘ K shortcut is unaffected (it is not a character key shortcut).
    */
   shortcut: ['on', 'off'],
-  cvd: ['none', ...CVD_TYPES],
 } as const satisfies Readonly<Record<string, readonly [string, ...string[]]>>;
 
 export type PreferenceKey = keyof typeof PREFERENCE_DOMAINS;
@@ -81,8 +86,8 @@ export const PREFERENCE_KEYS = [
   'focus',
   'texture',
   'room',
+  'sound',
   'shortcut',
-  'cvd',
 ] as const satisfies readonly PreferenceKey[];
 
 /** Proof obligation: PREFERENCE_KEYS lists every key of the domain table (checked by the compiler). */
@@ -101,9 +106,9 @@ export const DEFAULT_PREFERENCES: Preferences = {
   ruler: 'off',
   focus: 'off',
   texture: 'on',
-  room: 'off',
+  room: 'auto',
+  sound: 'off',
   shortcut: 'on',
-  cvd: 'none',
 };
 
 export const isPreferenceKey = (v: unknown): v is PreferenceKey =>

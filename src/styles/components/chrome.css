@@ -57,14 +57,11 @@
   margin-block-start: var(--space-2);
 }
 
-/* Focus mode: nothing moves or textures the page; marginalia (side notes, the
-   argument map) stay discreet until pointed at or focused. Inline notes on
-   narrow screens are part of the text and keep full contrast. */
+/* Focus mode: nothing textures the page; marginalia (side notes) stay discreet
+   until pointed at or focused. Inline notes on narrow screens are part of the
+   text and keep full contrast. */
 :root[data-focus='on'] {
   --grain-image: none;
-}
-:root[data-focus='on'] ft-ambient-field {
-  display: none;
 }
 @media (width >= 72rem) {
   :root[data-focus='on'] .essay__main :is(.sidenote__note, .marginnote__note),
@@ -99,30 +96,6 @@ ft-reading-ruler {
 @media (forced-colors: active), print {
   ft-reading-ruler {
     display: none !important;
-  }
-}
-
-/* Colour-vision simulation (audit tool): SVG feColorMatrix filters defined in
-   Glyphs.astro from Machado et al. (2009). On the root element a filter creates
-   no containing block for fixed-position descendants (Filter Effects 1 §5). */
-:root[data-cvd='protanopia'] {
-  filter: url('#cvd-protanopia');
-}
-:root[data-cvd='deuteranopia'] {
-  filter: url('#cvd-deuteranopia');
-}
-:root[data-cvd='tritanopia'] {
-  filter: url('#cvd-tritanopia');
-}
-:root[data-cvd='achromatopsia'] {
-  filter: url('#cvd-achromatopsia');
-}
-/* The simulation is an on-screen audit: never in forced colours (the system palette
-   is authoritative) nor on paper. Top-layer surfaces (palette dialog, preferences
-   popover) are rendered outside the root's filter, so the controls stay legible. */
-@media (forced-colors: active), print {
-  :root[data-cvd] {
-    filter: none;
   }
 }
 
@@ -715,6 +688,48 @@ ft-preferences:not([data-ready]) .prefs__form {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
+/* The mixer of the room's sound (ADR 0014, decision 19): shown only while a sound is chosen — silence is the
+   absence of data-sound on <html>. One native range per layer, turned upright, the lowest level at the bottom;
+   the whole input is its target (≥ 24 CSS px across, WCAG 2.5.8), and a click on the track sets the level
+   without dragging (2.5.7). */
+:root:not([data-sound]) .prefs__mixer {
+  display: none;
+}
+.prefs__faders {
+  /* One row of equal columns; on the narrowest screens they wrap rather than squeeze the names. */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--space-2) + var(--space-n2))), 1fr));
+  gap: var(--space-n2);
+}
+.prefs__fader {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--space-n3);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  color: var(--ink-muted);
+  font-size: var(--step-n1);
+  line-height: var(--leading-ui);
+  text-align: center;
+}
+.prefs__fader input {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  inline-size: var(--space-4);
+  block-size: var(--space-1);
+  margin: 0;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+.prefs__fader input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.prefs__fader:hover {
+  color: var(--ink);
+}
 .prefs__reset {
   justify-self: start;
   min-block-size: var(--space-2);
@@ -819,19 +834,6 @@ ft-preferences:not([data-ready]) .prefs__form {
   isolation: isolate;
   padding-block: var(--space-2) var(--space-1);
   overflow: clip;
-}
-/* Canvas host for the labs workstream (curl-noise ambient field): fills the whole
-   hero box, behind its content. An absolutely positioned grid child takes its grid
-   area as containing block, so it must span the full track range explicitly. */
-ft-ambient-field {
-  position: absolute;
-  /* Behind the claim only: the strokes never run under the body-size text below it. */
-  inset: 0 0 auto;
-  block-size: min(100%, 21rem);
-  z-index: -1;
-  display: block;
-  grid-column: full;
-  pointer-events: none;
 }
 .hero__text {
   grid-column: main;
@@ -1302,7 +1304,7 @@ ft-ambient-field {
 }
 
 .stratum-head {
-  padding-block: var(--space-3) var(--space-1);
+  padding-block-end: var(--space-1);
 }
 .stratum-head__glyph {
   inline-size: var(--space-4);

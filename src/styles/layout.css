@@ -24,6 +24,11 @@
     [full-end];
   container-type: inline-size;
 }
+/* Every page begins at the same distance below the header and ends at the same distance above the footer
+   (the rhythm of the essays); a page with its own opening, like the hero, sets it in its component. */
+main > .page-grid {
+  padding-block: var(--space-3) var(--space-4);
+}
 .page-grid > * {
   grid-column: main;
 }

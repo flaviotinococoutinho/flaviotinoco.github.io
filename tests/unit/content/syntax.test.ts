@@ -85,6 +85,23 @@ describe('content corpus', () => {
     expect(problems).toEqual([]);
   });
 
+  it.each(corpus.filter((d) => d.collection === 'essays').map((d) => [d.path, d] as const))(
+    '%s opens with its introduction, then the table of contents, then the first section',
+    (_path, doc) => {
+      // The lede comes first (it is the hook and states the thesis); the contents follow it, right before the
+      // first section, as the route the essay will take (Wikipedia's lead → contents → body; plan of 2026-11-26).
+      const blocks = doc.tree.children;
+      const toc = blocks.findIndex((b) => b.type === 'leafDirective' && b.name === 'toc');
+      const firstSection = blocks.findIndex((b) => b.type === 'heading' && b.depth === 2);
+      expect(toc, `${doc.path}: no ::toc`).toBeGreaterThan(0);
+      expect(firstSection, `${doc.path}: the ::toc stands right before the first section`).toBe(toc + 1);
+      expect(
+        blocks.slice(0, toc).some((b) => b.type === 'paragraph'),
+        `${doc.path}: an introduction precedes the contents`,
+      ).toBe(true);
+    },
+  );
+
   it.each(corpus.filter((d) => WORD_RANGES[d.collection] !== undefined).map((d) => [d.path, d] as const))(
     '%s has a body length within the specified range',
     (_path, doc) => {

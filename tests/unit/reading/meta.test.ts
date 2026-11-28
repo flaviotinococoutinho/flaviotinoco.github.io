@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { fc, test } from '@fast-check/vitest';
 import { fixture, parse, render } from './helpers.ts';
-import { countWords, readingMinutes, WORDS_PER_MINUTE } from '../../../src/core/fold/words.ts';
-import { foldDocument, parseDocumentMeta } from '../../../src/core/fold/meta.ts';
+import { countWords, readingMinutes, sectionMinutes, WORDS_PER_MINUTE } from '../../../src/core/fold/words.ts';
+import { foldDocument, parseDocumentMeta, sectionWords } from '../../../src/core/fold/meta.ts';
 import { transformReading } from '../../../src/core/reading/transform.ts';
 import { fillToc } from '../../../src/core/reading/toc.ts';
 import { PAGE_IDS } from '../../../src/core/reading/records.ts';
@@ -44,10 +44,68 @@ describe('readingMinutes (Brysbaert 2019: 238 words/min, rounded up, at least 1)
   });
 });
 
+describe('sectionMinutes (a section to the nearest minute, at least 1)', () => {
+  it('rounds to the nearest minute', () => {
+    expect([0, 1, 118, 119, 238, 356, 357, 2380].map((w) => sectionMinutes(w))).toEqual([1, 1, 1, 1, 1, 1, 2, 10]);
+  });
+  test.prop([fc.nat(100_000)])('is monotone and within half a minute of the words (or one minute)', (w) => {
+    const m = sectionMinutes(w);
+    expect(m).toBeGreaterThanOrEqual(1);
+    expect(sectionMinutes(w + 1)).toBeGreaterThanOrEqual(m);
+    if (m > 1) expect(Math.abs(m * WORDS_PER_MINUTE - w)).toBeLessThanOrEqual(WORDS_PER_MINUTE / 2);
+  });
+});
+
+describe('sectionWords (the words of each top-level section)', () => {
+  const sections = (md: string, locale: Locale = 'pt-BR') => {
+    const reading = transformReading(parse(md), { locale, source: md, reservedIds: PAGE_IDS });
+    const tree = fillToc(reading.tree, md, locale);
+    return {
+      words: sectionWords(tree, { locale, source: md }),
+      total: foldDocument(tree, { locale, source: md }).wordCount,
+    };
+  };
+
+  it('counts from each level-2 heading of the main flow to the next, subsections included', () => {
+    const { words } = sections(
+      'Abertura sem seção.\n\n::toc\n\n## Um {.example}\n\nduas palavras\n\n### Sub\n\ntrês palavras aqui\n\n## Dois\n\n:::stretch{label="x"}\n## Escondido\n\nquatro palavras bem escondidas\n:::',
+    );
+    // Headings count as words of their section; the table of contents and the opening count for none.
+    expect([...words]).toEqual([
+      ['um', 1 + 2 + 1 + 3],
+      ['dois', 1 + 1 + 4],
+    ]);
+  });
+  test.prop([
+    fc.array(
+      fc.record({
+        heading: fc.boolean(),
+        words: fc.array(fc.stringMatching(/^[a-z]{1,8}$/), { minLength: 1, maxLength: 12 }),
+      }),
+      { maxLength: 12 },
+    ),
+  ])('adds up to the whole count minus what precedes the first section', (blocks) => {
+    let md = '';
+    let opening = 0;
+    let seen = false;
+    blocks.forEach((b, i) => {
+      if (b.heading) {
+        md += `## S${i} ${b.words.join(' ')}\n\n`;
+        seen = true;
+      } else {
+        md += `${b.words.join(' ')}\n\n`;
+        if (!seen) opening += b.words.length;
+      }
+    });
+    const { words, total } = sections(md);
+    expect([...words.values()].reduce((a, b) => a + b, 0)).toBe(total - opening);
+  });
+});
+
 describe('the meta fold', () => {
   const fold = (md: string, locale: Locale = 'pt-BR') => {
     const reading = transformReading(parse(md), { locale, source: md, reservedIds: PAGE_IDS });
-    return foldDocument(fillToc(reading.tree, md), { locale, source: md });
+    return foldDocument(fillToc(reading.tree, md, locale), { locale, source: md });
   };
 
   it('excludes code, math, image alt, generated labels and the table of contents', () => {
@@ -83,7 +141,7 @@ describe('the meta fold', () => {
       title: 'Há um limite de transmissão',
       depends: ['def:entropia', 'premissa-ruido'],
     });
-    expect(meta.embeds).toEqual(['ft-horizontal', 'ft-scrolly']);
+    expect(meta.embeds).toEqual(['ft-scrolly']);
     expect(meta.hasEmbeds).toBe(true);
     expect(meta.hasMath).toBe(true);
     expect(meta.marginnoteCount).toBe(1);

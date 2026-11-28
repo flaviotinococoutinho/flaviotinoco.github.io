@@ -19,6 +19,7 @@ import {
   preferencesForm,
 } from '../../../src/core/chrome/preferences-form.ts';
 import { DEFAULT_PREFERENCES, PREFERENCE_DOMAINS, PREFERENCE_KEYS } from '../../../src/core/chrome/preferences.ts';
+import { SOUND_LAYERS } from '../../../src/core/chrome/sound.ts';
 
 const text = fc.string({ minLength: 1, maxLength: 20 });
 const entryArb: fc.Arbitrary<PaletteEntry> = fc.record({
@@ -87,13 +88,35 @@ describe('preferences form', () => {
     it(`${locale}: decode ∘ JSON.parse ∘ encode = ok(id)`, () => {
       expect(decodePreferencesForm(JSON.parse(encodePreferencesForm(form)))).toEqual({ ok: true, value: form });
     });
+
+    it(`${locale}: the mixer of the room's sound names every layer, in order, from the catalog`, () => {
+      expect(form.mixer.legend).toBe(chrome[locale]['prefs.mixer']);
+      expect(form.mixer.layers.map((l) => l.layer)).toEqual([...SOUND_LAYERS]);
+      for (const l of form.mixer.layers) expect(l.label).toBe(chrome[locale][`prefs.mixer.${l.layer}`]);
+    });
   }
+
+  it('refuses a malformed mixer: missing, out of order, or unnamed layers', () => {
+    const form = preferencesForm('pt-BR');
+    const doc = JSON.parse(encodePreferencesForm(form)) as Record<string, unknown>;
+    expect(decodePreferencesForm({ ...doc, mixer: undefined }).ok).toBe(false);
+    expect(decodePreferencesForm({ ...doc, mixer: { ...form.mixer, legend: '' } }).ok).toBe(false);
+    expect(
+      decodePreferencesForm({ ...doc, mixer: { ...form.mixer, layers: [...form.mixer.layers].reverse() } }).ok,
+    ).toBe(false);
+    expect(
+      decodePreferencesForm({
+        ...doc,
+        mixer: { ...form.mixer, layers: form.mixer.layers.map((l) => ({ ...l, label: '' })) },
+      }).ok,
+    ).toBe(false);
+  });
 
   it('refuses malformed documents: version, unknown key or value, missing checked option, duplicates', () => {
     const form = preferencesForm('pt-BR');
     const group = form.groups[0];
     if (group === undefined) throw new Error('no groups');
-    const withGroups = (groups: readonly unknown[]): unknown => ({ version: 1, groups });
+    const withGroups = (groups: readonly unknown[]): unknown => ({ version: 2, groups, mixer: form.mixer });
     expect(decodePreferencesForm({ version: 0, groups: [] }).ok).toBe(false);
     expect(decodePreferencesForm(withGroups([{ ...group, key: 'font' }])).ok).toBe(false);
     expect(decodePreferencesForm(withGroups([{ ...group, legend: '' }])).ok).toBe(false);

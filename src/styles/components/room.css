@@ -1,30 +1,31 @@
 /*
- * Reading room (docs/adr/0014-sala-de-leitura.md) — the layer behind the essay pages.
+ * Reading room (docs/adr/0014-sala-de-leitura.md) — the desk, the sheet and the layer behind the essay pages.
  *
- * <ft-reading-room> is a fixed layer below the page (z-index −1, above the root background and under
- * every element in flow). It holds the canvas of the three.js scene and, over it, the sheet: an opaque
- * strip of the paper tokens exactly as wide as the text columns, so the article reads on the same
- * surface as without the room and the scene shows only in the gutters. The header and the footer cross
- * the gutters, so they become opaque too. Nothing here applies until the island publishes
- * data-scene on <html>; without it the layer stays hidden and the page is unchanged.
+ * The sheet (ADR 0014, decisions 17 and 18): on every essay page the article is a sheet of paper on its
+ * wooden stand, lying on an aged desk. It is the ::before of .essay, in flow, and the same with or without
+ * the 3D room, so lighting the room shifts nothing. Above it the essay keeps a headroom, the band between the
+ * header and the paper: on every screen, phones included, there is a strip of the room to see; on wide
+ * screens the gutters beside the sheet are room too. Without the scene the room is the desk drawn here;
+ * with it, the scene shows through the same places.
  *
- * The element's own padding carries two tokens the island measures (resolved lengths, not strings):
- * inline — how far the sheet extends beyond the text columns; block — the rim of the wooden stand.
- */
-/*
- * The rustic room without the scene (ADR 0014, decision 17): on every essay page, the article is a sheet of
- * paper on its wooden stand, lying on an aged desk. Static CSS — no script, no download, no motion — so it
- * holds for every reader, while the 3D room stays the lit version, at the reader's request.
+ * The sheet is the text columns plus var(--space-1) on each side. The side tracks of .page-grid are equal
+ * (1fr) and the middle ones are tokens, so the columns are centred and their width is known: the sheet is
+ * centred too, and every line of the essay lies on it (tests/e2e/room.spec.ts). On a phone the sheet takes
+ * the whole width, and the band above it is all the room there is.
  *
- * The sheet is the text columns plus var(--space-1) on each side, like the scene's sheet. The side tracks of
- * .page-grid are equal (1fr) and the middle ones are tokens, so the columns are centred and their width is
- * known: the sheet is centred too, and every line of the essay lies on it (tests/e2e/room.spec.ts). On a
- * phone the sheet takes the whole width and no wood shows.
+ * <ft-reading-room> is a fixed layer below the page (z-index −1, above the root background and under every
+ * element in flow) holding the canvas of the three.js scene. Its block padding carries a token the island
+ * measures (a resolved length): the rim of the stand. Nothing of the layer shows until the island
+ * publishes data-scene on <html>.
  */
 .essay {
   --sheet: calc(var(--measure) + var(--space-2) + var(--margin));
+  /* About a seventh of the screen's height: never less than the room needs (ROOM_MIN_GUTTER_PX, 96 px), never
+     more than a heading's worth of the first screen. */
+  --room-headroom: clamp(var(--space-4), 14svh, var(--space-4) + var(--space-2));
   position: relative;
   isolation: isolate;
+  padding-block-start: calc(var(--room-headroom) + var(--space-2));
   background-color: var(--room-wood);
   background-image: var(--wood-image);
   background-size: 640px 320px;
@@ -37,7 +38,8 @@
 .essay::before {
   content: '';
   position: absolute;
-  inset-block: 0;
+  /* Below the headroom; above the end of the essay by a strip of desk, inside its bottom padding. */
+  inset-block: var(--room-headroom) var(--space-2);
   inset-inline-start: 50%;
   z-index: -1;
   inline-size: min(100%, 100% - 2 * var(--gutter) + 2 * var(--space-1), var(--sheet) + 2 * var(--space-1));
@@ -45,22 +47,34 @@
   background-color: var(--paper);
   background-image: var(--grain-image);
   background-size: 256px 256px;
-  /* The stand shows at the sides only: above and below are the header and the footer, and on a phone, where the
-     sheet takes the whole width, the rim falls outside the screen instead of drawing a band under the header. */
-  box-shadow:
-    calc(-1 * var(--space-n1)) 0 0 0 var(--room-board),
-    var(--space-n1) 0 0 0 var(--room-board);
+  /* The stand, all round (on a phone its sides fall outside the screen). */
+  box-shadow: 0 0 0 var(--space-n1) var(--room-board);
 }
-/* Nothing decorative in focus mode, with more contrast or a system palette, on paper; and the lit room
-   brings its own desk and sheet. */
-:root:is([data-scene], [data-focus='on'], [data-contrast='more']) .essay {
+/* A reader who turned the room off, or saves data and did not ask for it, never gets the scene: the band would
+   only push the essay down. Both are known before the first paint (data-room is set by the pre-paint script). */
+:root[data-room='off'] .essay {
+  --room-headroom: 0px;
+}
+@media (prefers-reduced-data: reduce) {
+  :root:not([data-room='on']) .essay {
+    --room-headroom: 0px;
+  }
+}
+/* The lit room shows through the desk: the scene is the room now, and the sheet stays. */
+:root[data-scene] .essay {
   background: none;
 }
-:root:is([data-scene], [data-focus='on'], [data-contrast='more']) .essay::before {
+/* Nothing decorative in focus mode, with more contrast or a system palette, on paper: the essay is the page. */
+:root:is([data-focus='on'], [data-contrast='more']) .essay {
+  --room-headroom: 0px;
+  background: none;
+}
+:root:is([data-focus='on'], [data-contrast='more']) .essay::before {
   content: none;
 }
 @media (prefers-contrast: more) {
   :root:not([data-contrast='normal']) .essay {
+    --room-headroom: 0px;
     background: none;
   }
   :root:not([data-contrast='normal']) .essay::before {
@@ -68,12 +82,16 @@
   }
 }
 @media (forced-colors: active) {
+  .essay {
+    --room-headroom: 0px;
+  }
   .essay::before {
     content: none;
   }
 }
 @media print {
   .essay {
+    --room-headroom: 0px;
     background: none;
   }
   .essay::before {
@@ -88,11 +106,14 @@ ft-reading-room {
   visibility: hidden;
   pointer-events: none;
   contain: strict;
-  padding-inline-start: var(--space-1);
   padding-block-start: var(--space-n1);
 }
 :root[data-scene] ft-reading-room {
   visibility: visible;
+  /* Under the canvas while it fades in: the desk it replaces, so the room comes out of the wood, not the page. */
+  background-color: var(--room-wood);
+  background-image: var(--wood-image);
+  background-size: 640px 320px;
 }
 
 .room__canvas {
@@ -104,21 +125,8 @@ ft-reading-room {
   background-color: var(--room-wall);
 }
 
-/* The paper on its stand: the sheet, and the rim of wood that shows around it. The island measures the
-   columns in physical pixels from the left edge (both locales are left-to-right). */
-.room__sheet {
-  position: absolute;
-  inset-block: 0;
-  left: var(--sheet-left, 0);
-  inline-size: var(--sheet-width, 100%);
-  background-color: var(--paper);
-  background-image: var(--grain-image);
-  background-size: 256px 256px;
-  box-shadow: 0 0 0 var(--space-n1) var(--room-board);
-}
-
 /* The page background is painted by <html> (base.css); <body> repeats it as an ordinary block, which
-   would cover a layer at z-index −1. With the room on, the sheet carries the paper instead. */
+   would cover a layer at z-index −1. With the room on, the sheet, the header and the footer carry the paper. */
 :root[data-scene] body {
   background-color: transparent;
   background-image: none;
@@ -129,8 +137,8 @@ ft-reading-room {
   background-size: 256px 256px;
 }
 
-/* The title of the book under the pointer, beside it and inside its gutter (the island keeps it off the
-   sheet). A slip of paper: the same tokens as the page, never a colour of the room. */
+/* The title of the book under the pointer, beside it and inside the part of the room it is in (the island
+   keeps it off the sheet). A slip of paper: the same tokens as the page, never a colour of the room. */
 .room__label {
   position: absolute;
   inset-block-start: 0;
@@ -172,62 +180,6 @@ ft-reading-room {
 }
 @media print {
   ft-reading-room {
-    display: none;
-  }
-}
-
-/*
- * The switch on the essay page (<ft-room-switch>): a toggle button whose candle is lit when the room is.
- * The state is the pictogram (a flame or none) and aria-pressed, never a colour alone.
- */
-.room-switch {
-  display: block;
-  margin-block-start: var(--space-n1);
-}
-.room-switch[hidden] {
-  display: none;
-}
-.room-switch__button {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-n2);
-  min-block-size: 1.5rem;
-  padding: var(--space-n3) var(--space-n1);
-  border: 1px solid var(--rule-strong);
-  border-radius: 2px;
-  background-color: var(--paper);
-  color: var(--ink-muted);
-  font-family: var(--font-ui);
-  font-size: var(--step-n1);
-  line-height: var(--leading-ui);
-  cursor: pointer;
-}
-.room-switch__button[aria-pressed='true'] {
-  border-color: var(--ink);
-  color: var(--ink);
-}
-.room-switch__button:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
-.room-switch__candle {
-  inline-size: 1em;
-  block-size: 1em;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.room-switch__flame {
-  visibility: hidden;
-}
-.room-switch__button[aria-pressed='true'] .room-switch__flame {
-  visibility: visible;
-  fill: currentColor;
-}
-@media print {
-  .room-switch {
     display: none;
   }
 }

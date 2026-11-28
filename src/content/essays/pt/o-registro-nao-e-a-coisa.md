@@ -41,9 +41,9 @@ draft: false
 “Contadores não usam borracha; do contrário podem ir presos. Todos os lançamentos num livro-razão são aditivos.”
 :::
 
-::toc
-
 Quando um hospital diz que o paciente está na enfermaria 4, ou um banco informa que o saldo da conta é de R$ 1 200,00, fala-se do banco de dados como se fosse uma janela aberta sobre o edifício ou sobre o cofre. Na maior parte dos dias a metáfora funciona; nos dias de auditoria, disputa judicial ou incidente em produção, ela se desfaz. O paciente já havia recebido alta, mas a passagem não fora lançada; um pagamento entrara duas vezes após uma falha de rede, e uma correção manual sobrescrevera o valor anterior sem deixar rastro de quem o alterou nem do motivo. Este ensaio examina o equívoco filosófico sob esse defeito técnico. Parte da pergunta ontológica — que espécie de coisa é um :concept[registro]{ref=record}? — e atravessa para o estrato teórico, onde um :concept[sistema de informação]{ref=information-system} deixa de ser visto como vitrine estática de objetos e passa a ser modelado como memória institucional construída sobre inscrições no tempo.
+
+::toc
 
 ## A ilusão do espelho {#ilusao-do-espelho .question}
 
