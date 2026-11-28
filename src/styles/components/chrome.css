@@ -1373,6 +1373,18 @@ ft-preferences:not([data-ready]) .prefs__form {
 .stratum-items__list li + li {
   margin-block-start: var(--space-n3);
 }
+/* The concepts of a stratum are many short names: set in columns, not in one long line down the page. */
+.stratum-items__list--columns {
+  columns: 14rem;
+  column-gap: var(--space-2);
+}
+.stratum-items__list--columns li {
+  break-inside: avoid;
+  margin-block-end: var(--space-n3);
+}
+.stratum-items__list--columns li + li {
+  margin-block-start: 0;
+}
 .stratum-items__empty {
   margin-block-start: var(--space-n1);
   color: var(--ink-muted);

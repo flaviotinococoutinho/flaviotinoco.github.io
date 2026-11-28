@@ -1,0 +1,35 @@
+---
+/**
+ * A lab as a small tile: its thumbnail — drawn at build time by the same pure functions that shape the lab's
+ * plots (src/core/labs/thumbnails.ts) — and its title, the whole tile one link. Where a page lists labs by
+ * name (the home page's teaser, a stratum page), the tiles show what each lab draws before it is opened.
+ * The thumbnail is decorative: the title names the link.
+ *
+ * The thumbnail takes the colour of the lab's stratum, and a stratum is never shown by colour alone (WCAG 1.4.1,
+ * rule 6 of CLAUDE.md): where the page does not already name the stratum (the home page), pass `locale` and the
+ * tile carries the stratum's glyph and label under the link, outside its accessible name. On a stratum page the
+ * heading of the page names it, and the mark would repeat it on every tile.
+ */
+import type { Locale } from '../../core/domain/locale.ts';
+import type { Stratum } from '../../core/domain/strata.ts';
+import type { Widget } from '../../core/labs/widgets.ts';
+import StratumMark from '../chrome/StratumMark.astro';
+import LabThumbnail from './LabThumbnail.astro';
+
+export interface Props {
+  readonly href: string;
+  readonly title: string;
+  readonly stratum: Stratum;
+  readonly widget: Widget;
+  /** Shows the stratum's mark (glyph + label) under the tile, in this locale. */
+  readonly locale?: Locale;
+}
+
+const { href, title, stratum, widget, locale } = Astro.props;
+---
+
+<a class="lab-tile" href={href} data-stratum={stratum}>
+  <LabThumbnail widget={widget} />
+  <span class="lab-tile__title">{title}</span>
+</a>
+{locale !== undefined && <StratumMark class="lab-tile__stratum" stratum={stratum} locale={locale} size="s" />}

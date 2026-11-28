@@ -479,10 +479,17 @@
   text-decoration-thickness: 0.12em;
 }
 
+/* The explorer and the lattice span the reading column and the margin (.wide): they start where every other
+   block of the page starts, and their heading reads on the same left edge as the rest. */
 .ontology__explorer-head,
 .ontology__fca-head {
   max-inline-size: var(--measure);
-  margin-inline: auto;
+}
+/* The explorer is its own query container: whether the detail panel stands beside the map depends on the width the
+   explorer has (.wide: the column and the margin, the column alone below 72rem), not on the page's. Measured against
+   the page, a tablet (64–72rem) put the panel beside a map squeezed into half of the reading column. */
+.ontology__explorer {
+  container-type: inline-size;
 }
 .explorer {
   display: grid;
@@ -928,8 +935,26 @@
 .concept__facets dd {
   margin: 0;
 }
+/*
+ * The rhythm of a concept page: sections a heading apart (--space-2), a section's heading close to what it
+ * titles, a sub-heading (the formal analysis, the external matches) set off from the block above it. Before,
+ * the sub-headings sat on the line under the list or the citation they followed.
+ */
 .concept > section {
+  margin-block-start: var(--space-2);
+}
+.concept > section > h2 {
+  margin-block-end: var(--space-n2);
+}
+.concept > section > * + * {
+  margin-block-start: var(--space-n2);
+}
+.concept > section :is(h3, .concept__fca) {
   margin-block-start: var(--space-1);
+}
+.concept > section h3 {
+  margin-block-end: var(--space-n3);
+  font-size: var(--step-1);
 }
 .concept__note {
   color: var(--ink-muted);
@@ -1020,6 +1045,18 @@
   gap: var(--space-n3) var(--space-n1);
   color: var(--ink-muted);
   font-size: var(--step-n1);
+}
+/* The form of a work (¶ essay, the flask of a lab): a glyph the size of the text beside its name. */
+.form-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-n3);
+}
+.form-mark__glyph {
+  flex: none;
+  inline-size: 1.15em;
+  block-size: 1.15em;
+  color: var(--ink-muted);
 }
 .related-works__reason {
   margin-block: var(--space-n3) 0;

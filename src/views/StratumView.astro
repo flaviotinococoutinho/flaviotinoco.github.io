@@ -16,9 +16,11 @@ import { render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import MathAssets from '../components/MathAssets.astro';
 import StratumMark from '../components/chrome/StratumMark.astro';
+import LabTile from '../components/labs/LabTile.astro';
 import type { Locale } from '../core/domain/locale.ts';
 import { STRATA, STRATUM_SPECS, nextStratum, previousStratum, type Stratum } from '../core/domain/strata.ts';
 import { FORM_GLYPH } from '../core/domain/facets.ts';
+import type { Widget } from '../core/labs/widgets.ts';
 import common from '../core/i18n/catalogs/common.ts';
 import chrome from '../core/i18n/catalogs/chrome.ts';
 import { href, useTranslations } from '../adapters/astro/i18n.ts';
@@ -55,15 +57,25 @@ interface Item {
   readonly href: string;
   readonly lang?: string;
 }
+interface Lab {
+  readonly title: string;
+  readonly href: string;
+  readonly widget: Widget;
+}
 interface Group {
   readonly id: 'essays' | 'labs' | 'concepts';
   readonly heading: string;
   readonly glyph: string;
   readonly items: readonly Item[];
+  /** The labs, drawn as tiles with their thumbnails (only for the labs group). */
+  readonly labs?: readonly Lab[];
 }
 
 const [allEssays, allLabs, allConcepts] = await Promise.all([essays(locale), labs(locale), concepts()]);
 const collator = new Intl.Collator(locale);
+const stratumLabs: readonly Lab[] = allLabs
+  .filter((e) => e.data.stratum === stratum)
+  .map((e) => ({ title: e.data.title, href: href(routeOfLab(e), locale), widget: e.data.widget }));
 const groups: readonly Group[] = (
   [
     {
@@ -78,9 +90,8 @@ const groups: readonly Group[] = (
       id: 'labs',
       heading: c('stratum.items.labs'),
       glyph: FORM_GLYPH.lab,
-      items: allLabs
-        .filter((e) => e.data.stratum === stratum)
-        .map((e) => ({ title: e.data.title, href: href(routeOfLab(e), locale) })),
+      items: stratumLabs,
+      labs: stratumLabs,
     },
     {
       id: 'concepts',
@@ -150,13 +161,26 @@ const alternates = alternatesForAll(() => ({ kind: 'stratum', stratum }));
             </svg>
             {g.heading}
           </h3>
-          <ul class="stratum-items__list" role="list">
-            {g.items.map((item) => (
-              <li>
-                <a href={item.href}>{item.title}</a>
-              </li>
-            ))}
-          </ul>
+          {g.labs !== undefined ? (
+            <ul class="stratum-items__list lab-tiles" role="list">
+              {g.labs.map((lab) => (
+                <li>
+                  <LabTile href={lab.href} title={lab.title} stratum={stratum} widget={lab.widget} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <ul
+              class:list={['stratum-items__list', { 'stratum-items__list--columns': g.id === 'concepts' }]}
+              role="list"
+            >
+              {g.items.map((item) => (
+                <li>
+                  <a href={item.href}>{item.title}</a>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       ))}
     </section>
